@@ -1,0 +1,43 @@
+{
+  "name": "agent-from-scratch",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "从零手写到上框架：一套面向初学者的 TypeScript Agent 开发完整学习路径",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lesson": "tsx",
+    "capstone": "tsx capstone/deep-research-agent/src/cli.ts"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "llm",
+    "typescript",
+    "rag",
+    "langgraph",
+    "tutorial",
+    "course"
+  ],
+  "dependencies": {
+    "@ai-sdk/anthropic": "^1.0.0",
+    "@anthropic-ai/sdk": "^0.40.0",
+    "@langchain/anthropic": "^0.3.0",
+    "@langchain/core": "^0.3.0",
+    "@langchain/langgraph": "^0.2.0",
+    "ai": "^4.0.0",
+    "dotenv": "^16.4.0",
+    "openai": "^4.77.0",
+    "zod": "^3.24.0",
+    "zod-to-json-schema": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

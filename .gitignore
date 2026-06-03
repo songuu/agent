@@ -1,0 +1,32 @@
+# 依赖
+node_modules/
+.pnpm-store/
+
+# 环境变量（含密钥，绝不提交）
+.env
+.env.local
+.env.*.local
+
+# 构建产物
+dist/
+build/
+*.tsbuildinfo
+
+# 日志
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# 编辑器
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+.DS_Store
+
+# 课程产生的本地数据（向量库缓存、临时文件）
+**/.cache/
+**/data/*.local.*
+
+# Sprint 协议交接文件
+docs/plans/.handoff/
