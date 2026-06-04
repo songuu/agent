@@ -18,6 +18,41 @@
 - 已读 [第 07 章 · 短期记忆](../07-short-term-memory/README.md)，知道上下文有长度上限——这正是后面要"检索"的动机。
 - 已在 `.env` 配好 **`OPENAI_API_KEY`**（embedding 默认走 OpenAI，见下文）。
 
+## 三层学习路线
+
+| 层级 | 学习目标 | 你要完成什么 |
+|------|----------|--------------|
+| 极简 | 把文本变成向量并完成一次语义搜索。 | 能运行 embedding 示例,理解 top-k 返回的是语义相近而不只是关键词相同。 |
+| 进阶 | 理解距离度量、metadata 和索引质量。 | 解释余弦相似度、chunk 粒度、过滤条件、召回率和噪声之间的关系。 |
+| 真实实践 | 为 RAG 系统选择向量存储和索引策略。 | 把小型内存向量库映射到真实 vector DB,考虑重建索引、增量更新和权限过滤。 |
+
+---
+
+## 图解学习地图
+
+> 读图顺序：先看本章主线,再回到代码走读。核心焦点：**把文本变成可计算的语义空间**。
+
+```mermaid
+flowchart LR
+  A["文档文本"] --> B["embedding 模型"]
+  B --> C["向量"]
+  C --> D["向量库 add"]
+  E["用户 query"] --> F["query embedding"]
+  F --> G["cosineSimilarity"]
+  D --> G
+  G --> H["top-k 语义命中"]
+```
+
+### 原理展开
+
+- embedding 的意义是把不可直接比较的文本变成可以计算距离的向量。语义相近的句子在向量空间里方向更接近。
+- 余弦相似度看方向不看长度,适合比较不同长度文本的语义相关性。分数不是绝对真理,而是排序信号。
+- 向量检索不是答案生成。它只负责从知识库捞候选材料,真正的组织、引用和回答要等 RAG 阶段完成。
+
+### 本章和整条路径的关系
+
+本章是 RAG 的检索地基。下一章会把 top-k 结果和问题一起喂给 LLM,形成检索增强生成。
+
 ---
 
 ## 一、原理：把"语义"变成可以做减法的数字
@@ -168,6 +203,53 @@ OPENAI_API_KEY=sk-... npx tsx lessons/08-embeddings-and-vector-search/index.ts
 5. **进阶**：把手写 `cosineSimilarity` 换成"点积"或"欧氏距离"作为排序依据，对比 top-k 是否变化，理解为什么文本检索偏爱余弦。
 
 ---
+
+<!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
+
+## 知识图谱与延伸阅读
+
+> 本节由 `npm run kg` 自动生成（数据源 `knowledge-graph/data/graph.ts`）。要增删请改数据源后重跑。
+
+### 本章概念图谱
+
+```mermaid
+graph LR
+  n_c08_embedding["Embedding (语义向量)"]
+  n_c08_cosine_similarity["余弦相似度"]
+  n_c08_vector_store["内存向量库 (add/search)"]
+  n_c08_topk_retrieval["Top-k 检索"]
+  n_c08_semantic_vs_keyword["语义检索 vs 关键词检索"]
+  n_c08_rag_foundation["RAG 检索地基"]
+  n_c09_rag_pipeline["RAG 全流程（第09章）"]
+  n_c08_embedding -->|前置| n_c08_cosine_similarity
+  n_c08_cosine_similarity -->|组成| n_c08_vector_store
+  n_c08_embedding -->|组成| n_c08_vector_store
+  n_c08_vector_store -->|应用| n_c08_topk_retrieval
+  n_c08_embedding -->|应用| n_c08_semantic_vs_keyword
+  n_c08_topk_retrieval -->|前置| n_c08_rag_foundation
+  n_c08_semantic_vs_keyword -->|深化| n_c08_rag_foundation
+  n_c09_rag_pipeline -->|深化| n_c08_rag_foundation
+  n_c09_rag_pipeline -->|组成| n_c08_vector_store
+  style n_c08_embedding stroke:#ff9f0a,stroke-width:3px
+  style n_c08_cosine_similarity stroke:#ff9f0a,stroke-width:3px
+  style n_c08_vector_store stroke:#ff9f0a,stroke-width:3px
+  style n_c08_topk_retrieval stroke:#ff9f0a,stroke-width:3px
+  style n_c08_semantic_vs_keyword stroke:#ff9f0a,stroke-width:3px
+  style n_c08_rag_foundation stroke:#ff9f0a,stroke-width:3px
+```
+
+### 与其他章节的关系
+
+- `RAG 全流程` —**深化**→ `RAG 检索地基`（第 09 章）
+- `RAG 全流程` —**组成**→ `内存向量库 (add/search)`（第 09 章）
+
+### 延伸阅读
+
+- [Vector embeddings - OpenAI API documentation](https://platform.openai.com/docs/guides/embeddings) — 本章 embedding 默认调用 OpenAI text-embedding-3-small，官方指南 `doc`
+
+> 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
+
+<!-- KG:END -->
 
 ## 五、小结与延伸
 

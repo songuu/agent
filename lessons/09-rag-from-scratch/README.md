@@ -19,6 +19,41 @@
 - 已读 [第 02 章 · 你的第一次 LLM 调用](../02-first-llm-call/README.md)（会用 `getLLM()` 和 `system` 提示）。
 - 已按 [环境搭建](../../docs/setup.md) 配好 `.env`。注意：**embedding 默认走 OpenAI**，所以本章需要 `OPENAI_API_KEY`（生成可继续用 Claude 或 OpenAI）。
 
+## 三层学习路线
+
+| 层级 | 学习目标 | 你要完成什么 |
+|------|----------|--------------|
+| 极简 | 跑通 chunk 到 retrieve 到 augment 到 generate 的 RAG 闭环。 | 能指出回答中的哪些信息来自检索上下文,哪些来自模型语言组织。 |
+| 进阶 | 理解 RAG 质量来自检索链路而不只是大模型。 | 比较 chunk overlap、top-k、rerank、引用溯源和无答案处理如何影响可靠性。 |
+| 真实实践 | 连接到生产级知识库项目。 | 把本章最小 RAG 对照到 `songuu/rag-system`: 文档入库、检索服务、答案引用、权限和可观测性。 |
+
+---
+
+## 图解学习地图
+
+> 读图顺序：先看本章主线,再回到代码走读。核心焦点：**把检索结果接入生成,降低私有知识幻觉**。
+
+```mermaid
+flowchart LR
+  A["私有文档"] --> B["切块 chunk"]
+  B --> C["embedding"]
+  C --> D["向量库"]
+  E["用户问题"] --> F["检索 top-k"]
+  D --> F
+  F --> G["组装 context prompt"]
+  G --> H["LLM 生成带引用答案"]
+```
+
+### 原理展开
+
+- RAG 的关键不是让模型记住你的知识,而是在回答前把相关片段临时放进上下文。模型仍然是生成器,知识来源来自检索。
+- chunk 粒度决定召回质量。太大容易带入噪声,太小容易丢上下文; 好的切块通常按语义边界而不是固定字符数盲切。
+- 引用是 RAG 的可审计性。没有来源标注的答案很难排查是检索错、提示错,还是模型自己编的。
+
+### 本章和整条路径的关系
+
+本章把第 08 章检索能力变成可回答私有知识的 agent 能力。capstone 的研究资料搜索会复用同一模式。
+
 ---
 
 ## 一、原理：模型不懂你的「私有数据」，所以会编
@@ -164,10 +199,78 @@ LLM_PROVIDER=openai npx tsx lessons/09-rag-from-scratch/index.ts
 
 ---
 
+<!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
+
+## 知识图谱与延伸阅读
+
+> 本节由 `npm run kg` 自动生成（数据源 `knowledge-graph/data/graph.ts`）。要增删请改数据源后重跑。
+
+### 本章概念图谱
+
+```mermaid
+graph LR
+  n_c09_rag_pipeline["RAG 全流程"]
+  n_c09_chunk_overlap["分块与重叠 (chunk/overlap)"]
+  n_c09_topk_retrieval["top-k 检索"]
+  n_c09_augment_prompt["上下文增强 (augment)"]
+  n_c09_citation["引用溯源"]
+  n_c09_hallucination_reduction["幻觉抑制与 A/B 对比"]
+  n_c08_rag_foundation["RAG 检索地基（第08章）"]
+  n_c08_vector_store["内存向量库 (add/search)（第08章）"]
+  n_c17_isolate_and_label["隔离 + 标注 (wrapUntrusted)（第17章）"]
+  n_ccapstone_rag_corpus["RAG 内置语料检索（第capstone章）"]
+  n_c09_chunk_overlap -->|组成| n_c09_rag_pipeline
+  n_c09_topk_retrieval -->|组成| n_c09_rag_pipeline
+  n_c09_augment_prompt -->|组成| n_c09_rag_pipeline
+  n_c09_chunk_overlap -->|前置| n_c09_topk_retrieval
+  n_c09_topk_retrieval -->|前置| n_c09_augment_prompt
+  n_c09_augment_prompt -->|应用| n_c09_citation
+  n_c09_augment_prompt -->|应用| n_c09_hallucination_reduction
+  n_c09_citation -->|深化| n_c09_hallucination_reduction
+  n_c09_rag_pipeline -->|深化| n_c08_rag_foundation
+  n_c09_rag_pipeline -->|组成| n_c08_vector_store
+  n_c17_isolate_and_label -->|应用| n_c09_augment_prompt
+  n_ccapstone_rag_corpus -->|组成| n_c09_rag_pipeline
+  style n_c09_rag_pipeline stroke:#ff9f0a,stroke-width:3px
+  style n_c09_chunk_overlap stroke:#ff9f0a,stroke-width:3px
+  style n_c09_topk_retrieval stroke:#ff9f0a,stroke-width:3px
+  style n_c09_augment_prompt stroke:#ff9f0a,stroke-width:3px
+  style n_c09_citation stroke:#ff9f0a,stroke-width:3px
+  style n_c09_hallucination_reduction stroke:#ff9f0a,stroke-width:3px
+```
+
+### 与其他章节的关系
+
+- `RAG 全流程` —**深化**→ `RAG 检索地基`（第 08 章）
+- `RAG 全流程` —**组成**→ `内存向量库 (add/search)`（第 08 章）
+- `隔离 + 标注 (wrapUntrusted)` —**应用**→ `上下文增强 (augment)`（第 17 章）
+- `RAG 内置语料检索` —**组成**→ `RAG 全流程`（第 capstone 章）
+
+### 延伸阅读
+
+- [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401) — RAG 原始论文 (Lewis et al., 2020)，提出检索增强生成范式 `paper`
+
+> 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
+
+<!-- KG:END -->
+
 ## 五、小结与延伸
 
 - RAG = **检索**把私有资料找出来，**增强**生成时的上下文，让模型「有据可依」。
 - **分块 + 重叠** 决定召回质量；**「只许根据资料 + 标注编号」** 决定答案的可信与可溯源。
 - 上一章 [第 08 章 · Embedding 与向量检索](../08-embeddings-and-vector-search/README.md) 打好了向量基础；下一章 [第 10 章 · 推理模式](../10-reasoning-patterns/README.md) 学习如何让模型更好地「思考与决策」。
+
+### 进阶项目：songuu/rag-system
+
+本章是“最小可解释 RAG”。如果你要继续看生产级 RAG 系统如何演进，接着读 [RAG 系统实战项目](../../docs/rag-system-project.md)，它会把本章的分块、向量化、检索、引用，连接到独立项目 [songuu/rag-system](https://github.com/songuu/rag-system)。
+
+对照时重点看这些差异：
+
+| 本章最小版 | RAG 系统项目应继续深化 |
+|------------|------------------------|
+| 单份虚构知识文本 | 多文件 / 多格式 / 批量导入 |
+| 内存向量库 | 持久化向量库与索引管理 |
+| top-k 直接注入 | rerank / hybrid search / context assembly |
+| 手工观察输出 | eval 指标、来源回放、质量监控 |
 
 > 💡 **面试会问**：RAG 为什么能降低幻觉？分块为什么要做 overlap？top-k 的 k 怎么取？如何让 RAG 的答案可溯源？

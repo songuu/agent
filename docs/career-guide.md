@@ -113,7 +113,9 @@
 
 ## 三、用本仓库做作品集
 
-一个会被记住的简历，靠的不是"学过 18 章"，而是**一个能演示、能深挖、有数据的项目**。毕业项目 **Deep Research Agent** 就是为此设计的——它综合了 agent 循环、工具系统、RAG、多智能体编排、结构化输出、评估、成本控制，是天然的"全栈 Agent 能力展示窗"。
+一个会被记住的简历，靠的不是"学过 19 章"，而是**一个能演示、能深挖、有数据的项目**。毕业项目 **Deep Research Agent** 就是为此设计的——它综合了 agent 循环、工具系统、RAG、多智能体编排、结构化输出、评估、成本控制，是天然的"全栈 Agent 能力展示窗"。
+
+如果你想突出 RAG 工程能力，再把 [RAG 系统实战项目](./rag-system-project.md) 和 [songuu/rag-system](https://github.com/songuu/rag-system) 作为第二个作品集项目：前者展示 agent 综合能力，后者展示知识库/RAG 系统深度。
 
 ### 3.1 STAR 式简历项目描述模板
 
@@ -131,7 +133,7 @@
 ### 3.2 一个填好的示例（可直接改名套用）
 
 > **Deep Research Agent · 自主深度研究助手**（TypeScript / Node 20）
-> [GitHub](https://github.com/你的用户名/deep-research-agent) · [Demo 视频](链接)
+> [GitHub](https://github.com/你的用户名/deep-research-agent) · Demo 视频：填入你的演示视频 URL
 >
 > - **(S/T)** 针对"开放式调研问题需要人工查多个来源、汇总耗时"的痛点，独立设计并实现一个多智能体研究助手：输入一个问题，自动检索、交叉验证、生成带引用来源的结构化报告。
 > - **(A)** 从零手写 **ReAct agent 循环**（思考-调工具-观察，带 `maxSteps` 防失控）；用 **zod** 构建带 schema 校验的**工具系统**（搜索 / 抓取 / 计算），错误以字符串回灌模型自愈；搭建 **RAG** 管线（分块+50 字符重叠、向量化入库、余弦相似度 top-k 检索、注入时强制标注 `[片段 N]` 引用）；用 **supervisor + worker 多智能体**（协调者 JSON 决策路由 → researcher/writer 专才）拆分长上下文。

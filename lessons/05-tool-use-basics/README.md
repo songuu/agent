@@ -18,6 +18,42 @@
 - 已读 [第 04 章 · The Agent Loop](../04-the-agent-loop/README.md)（用「文本解析」手动驱动工具）。
 - 已读 [第 02 章 · 你的第一次 LLM 调用](../02-first-llm-call/README.md)，熟悉 `getLLM()` 与 `chat()`。
 
+## 三层学习路线
+
+| 层级 | 学习目标 | 你要完成什么 |
+|------|----------|--------------|
+| 极简 | 完成一次原生 function calling 往返。 | 让模型选择一个工具,执行后把 observation 回填给模型并拿到最终回答。 |
+| 进阶 | 理解工具调用不是字符串拼接,而是受 schema 约束的动作。 | 分析参数校验、工具错误、重复调用、多工具选择时模型和本地代码各负责什么。 |
+| 真实实践 | 为真实业务工具设计权限和审计边界。 | 把一个危险操作拆成 dry-run、确认、执行三步,并记录调用参数、结果和操作者意图。 |
+
+---
+
+## 图解学习地图
+
+> 读图顺序：先看本章主线,再回到代码走读。核心焦点：**理解模型请求工具与你执行工具的职责边界**。
+
+```mermaid
+flowchart LR
+  A["工具描述 specs"] --> B["发送给模型"]
+  B --> C["模型选择工具名和参数"]
+  C --> D["本地代码校验参数"]
+  D --> E{"校验通过?"}
+  E -->|"是"| F["执行真实函数"]
+  E -->|"否"| G["返回可读错误"]
+  F --> H["工具结果回填给模型"]
+  G --> H
+```
+
+### 原理展开
+
+- 模型不会真正执行工具,它只是在响应里提出一次工具调用请求。真正的权限、校验、执行都在你的代码里。
+- 工具参数必须校验。模型生成的 JSON 只是建议,不是可信输入; zod schema 是工具边界的第一道门。
+- 错误也应该回填给模型。与其让进程崩溃,不如把参数错误、未知工具、执行失败变成工具结果,让模型有机会自我修正。
+
+### 本章和整条路径的关系
+
+本章是工具调用的单次路径。第 06 章会把多个工具、schema 转换和错误兜底整理成可复用系统。
+
 ---
 
 ## 一、原理：模型只会「点菜」，下厨的还是你
@@ -173,6 +209,69 @@ LLM_PROVIDER=openai npx tsx lessons/05-tool-use-basics/index.ts
 5. **进阶**：把问题改成需要「先查北京、再查上海、最后算温差」，验证一回合可能返回**多个** `toolCalls`，以及你的回传循环是否都覆盖到了。
 
 ---
+
+<!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
+
+## 知识图谱与延伸阅读
+
+> 本节由 `npm run kg` 自动生成（数据源 `knowledge-graph/data/graph.ts`）。要增删请改数据源后重跑。
+
+### 本章概念图谱
+
+```mermaid
+graph LR
+  n_c05_native_tool_use["原生工具调用 (Function Calling)"]
+  n_c05_request_execute_boundary["请求/执行职责边界"]
+  n_c05_toolspec_schema["ToolSpec 与 JSON Schema"]
+  n_c05_roundtrip_loop["工具调用往返循环"]
+  n_c05_stop_reason["stopReason 终止控制"]
+  n_c05_tool_call_id["toolCallId 结果绑定"]
+  n_c05_error_feedback["工具错误回传"]
+  n_c04_text_protocol["文本协议 + 正则解析（第04章）"]
+  n_c04_agent_loop["Agent 循环（第04章）"]
+  n_c06_define_tool["defineTool / defineMiniTool（第06章）"]
+  n_c06_run_agent_loop["runAgent 循环（第06章）"]
+  n_c06_self_correction_loop["LLM 自我纠错闭环（第06章）"]
+  n_c19_mcp["MCP (模型上下文协议)（第19章）"]
+  n_c05_native_tool_use -->|组成| n_c05_request_execute_boundary
+  n_c05_toolspec_schema -->|前置| n_c05_native_tool_use
+  n_c05_native_tool_use -->|应用| n_c05_roundtrip_loop
+  n_c05_stop_reason -->|组成| n_c05_roundtrip_loop
+  n_c05_tool_call_id -->|组成| n_c05_roundtrip_loop
+  n_c05_error_feedback -->|深化| n_c05_roundtrip_loop
+  n_c05_toolspec_schema -->|深化| n_c05_request_execute_boundary
+  n_c05_native_tool_use -->|对比| n_c04_text_protocol
+  n_c05_roundtrip_loop -->|深化| n_c04_agent_loop
+  n_c06_define_tool -->|深化| n_c05_toolspec_schema
+  n_c06_run_agent_loop -->|深化| n_c05_roundtrip_loop
+  n_c06_self_correction_loop -->|深化| n_c05_error_feedback
+  n_c19_mcp -->|应用| n_c05_native_tool_use
+  style n_c05_native_tool_use stroke:#ff9f0a,stroke-width:3px
+  style n_c05_request_execute_boundary stroke:#ff9f0a,stroke-width:3px
+  style n_c05_toolspec_schema stroke:#ff9f0a,stroke-width:3px
+  style n_c05_roundtrip_loop stroke:#ff9f0a,stroke-width:3px
+  style n_c05_stop_reason stroke:#ff9f0a,stroke-width:3px
+  style n_c05_tool_call_id stroke:#ff9f0a,stroke-width:3px
+  style n_c05_error_feedback stroke:#ff9f0a,stroke-width:3px
+```
+
+### 与其他章节的关系
+
+- `原生工具调用 (Function Calling)` —**对比**→ `文本协议 + 正则解析`（第 04 章）
+- `工具调用往返循环` —**深化**→ `Agent 循环`（第 04 章）
+- `defineTool / defineMiniTool` —**深化**→ `ToolSpec 与 JSON Schema`（第 06 章）
+- `runAgent 循环` —**深化**→ `工具调用往返循环`（第 06 章）
+- `LLM 自我纠错闭环` —**深化**→ `工具错误回传`（第 06 章）
+- `MCP (模型上下文协议)` —**应用**→ `原生工具调用 (Function Calling)`（第 19 章）
+
+### 延伸阅读
+
+- [Anthropic Docs · Tool use (function calling) with Claude](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) — 官方工具调用文档，含 tool_use stopReason 与 tool_result 回传机制 `doc`
+- [OpenAI Docs · Function calling](https://platform.openai.com/docs/guides/function-calling) — OpenAI 侧 function calling 指南，与本章抽象对应 `doc`
+
+> 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
+
+<!-- KG:END -->
 
 ## 五、小结与延伸
 

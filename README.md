@@ -16,7 +16,9 @@
 本课程的取舍：
 
 - 🧱 **先手写，后框架**：先纯手写 agent loop、工具调用、记忆、RAG、多智能体，**理解每一行为什么存在**；再引入 LangGraph.js / Vercel AI SDK，知其所以然。
+- 🪜 **三层学习路线**：每章都分成「极简 → 进阶 → 真实实践」，先跑通最小闭环，再理解原理边界，最后映射到真实项目。
 - ▶️ **每章可运行**：`npx tsx` 直接跑，零编译、零环境折腾。
+- 🗺️ **先看图，再看代码**：每章都有 `图解学习地图`，用 Mermaid 流程图先建立心智模型，再进入原理讲解和代码走读。
 - 🔌 **厂商无关**：统一的 `getLLM()` 抽象，换 Claude / OpenAI 只改一行 `.env`。
 - 💼 **能写进简历**：毕业项目是一个完整可演示的小产品；附**求职指南**（简历模板 + 面试题）与**创业指南**（demo → 产品）。
 
@@ -48,6 +50,20 @@ npx tsx lessons/02-first-llm-call/index.ts
 
 ## 学习路径
 
+每章都按「三层学习路线」设计，保证不是只看懂概念，而是一路走到能用在真实项目里：
+
+| 层级 | 目标 | 产出 |
+|------|------|------|
+| 极简 | 跑通本章最小闭环，先建立“我会用了”的手感 | 一个能运行、能解释输入输出的小例子 |
+| 进阶 | 追问原理、边界、失败模式和取舍 | 能说清为什么这样设计，以及哪里会坏 |
+| 真实实践 | 把本章能力映射到产品、团队或生产系统 | 一份可迁移到真实项目的设计判断或 checklist |
+
+每一层都建议按这个顺序学：
+
+1. 先读 `图解学习地图`，把流程、数据流、控制流装进脑子。
+2. 再读 `原理展开`，理解为什么这样设计，以及它解决了 LLM 的哪个边界。
+3. 最后看 `代码走读` 并运行 `npx tsx lessons/NN-xxx/index.ts`，把图里的每个节点对应到真实代码。
+
 ```
 第00章 环境搭建
    │
@@ -71,13 +87,22 @@ npx tsx lessons/02-first-llm-call/index.ts
                             18 部署：变成服务
    │
    ▼
+第七部分 · 前沿与生态
+ 19 Agent 前沿发展与生态拆解
+   │
+   ▼
 🎓 毕业项目 · Deep Research Agent（综合实战）
+   │
+   ▼
+📚 进阶项目 · songuu/rag-system（生产级 RAG 系统）
    │
    ▼
 💼 求职指南   🚀 创业指南
 ```
 
 完整大纲见 [**docs/curriculum.md**](./docs/curriculum.md)。
+
+🗺️ 想看概念之间怎么串联？[**全局知识图谱**](./docs/knowledge-graph.md)（每章末尾也有各自的概念图谱与延伸阅读，交互版见 `knowledge-graph/output/index.html`）。
 
 ---
 
@@ -110,7 +135,10 @@ npx tsx lessons/02-first-llm-call/index.ts
 | 16 | [可观测性与成本](./lessons/16-observability-and-cost/) | ⭐⭐ | trace、token 核算、费用估算 |
 | 17 | [安全与护栏](./lessons/17-safety-and-guardrails/) | ⭐⭐⭐ | prompt injection、人工确认 |
 | 18 | [部署：变成服务](./lessons/18-deployment/) | ⭐⭐⭐ | HTTP API、SSE、部署清单 |
+| **第七部分** | **前沿与生态** | | |
+| 19 | [Agent 前沿发展与生态拆解](./lessons/19-agent-ecosystem-and-frontier/) | ⭐⭐⭐ | MCP、A2A、Agents SDK、LangGraph、生态选型 |
 | 🎓 | [毕业项目 · Deep Research Agent](./capstone/deep-research-agent/) | ⭐⭐⭐⭐ | 综合所有能力的实战项目 |
+| 📚 | [RAG 系统实战项目](./docs/rag-system-project.md) | ⭐⭐⭐⭐ | 连接到 `songuu/rag-system`，从课程最小 RAG 走向生产级知识库系统 |
 
 ---
 
@@ -131,7 +159,7 @@ agent/
 │   ├── agent/                 #   工具系统 (tool) + 可复用 agent 循环 (loop)
 │   ├── rag/                   #   内存向量库
 │   └── util/                  #   env / logger / ui
-├── lessons/                   # 18 章课程，每章 README + 可运行代码
+├── lessons/                   # 19 章课程，每章 README + 可运行代码
 │   ├── 01-what-is-an-agent/
 │   └── ...
 └── capstone/
@@ -148,6 +176,7 @@ agent/
 
 - 💼 [**求职指南**](./docs/career-guide.md)：岗位画像、技能清单、用本项目写简历、高频面试题。
 - 🚀 [**创业指南**](./docs/startup-guide.md)：机会判断、MVP 裁剪、成本控制、上线 checklist。
+- 📚 [**RAG 系统实战项目**](./docs/rag-system-project.md)：连接到 [songuu/rag-system](https://github.com/songuu/rag-system)，把第 08/09 章的最小 RAG 扩展成独立知识库系统。
 
 ---
 

@@ -1,0 +1,598 @@
+# 🗺️ 全局知识图谱
+
+> 本文件由 `npm run kg` 自动生成（数据源 [`knowledge-graph/data/graph.ts`](../knowledge-graph/data/graph.ts)）。**请勿手改**，改数据源后重跑即可。
+
+交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
+
+共 **20** 个单元、**137** 个概念、**191** 条关系、**29** 篇关联文章。
+
+## 章节地图
+
+```mermaid
+flowchart LR
+  subgraph P0["第一部分 · 基础概念"]
+    C_01["01 什么是 Agent"]
+    C_02["02 你的第一次 LLM 调用"]
+    C_03["03 提示工程"]
+  end
+  subgraph P1["第二部分 · 从零手写核心"]
+    C_04["04 手写 Agent 循环 (ReAct)"]
+    C_05["05 工具调用基础"]
+    C_06["06 从零构建工具系统"]
+    C_07["07 短期记忆与上下文"]
+  end
+  subgraph P2["第三部分 · 知识与检索"]
+    C_08["08 Embedding 与向量检索"]
+    C_09["09 从零实现 RAG"]
+  end
+  subgraph P3["第四部分 · 进阶模式"]
+    C_10["10 推理范式"]
+    C_11["11 多智能体编排"]
+  end
+  subgraph P4["第五部分 · 工程化与框架"]
+    C_12["12 上框架：LangGraph.js 与 Vercel AI SDK"]
+    C_13["13 结构化输出与校验"]
+    C_14["14 流式输出与 UX"]
+  end
+  subgraph P5["第六部分 · 生产化"]
+    C_15["15 评估与测试"]
+    C_16["16 可观测性与成本"]
+    C_17["17 安全与护栏"]
+    C_18["18 部署：把 Agent 变成服务"]
+  end
+  subgraph P6["第七部分 · 前沿与生态"]
+    C_19["19 Agent 前沿发展与生态拆解"]
+  end
+  subgraph P7["毕业项目"]
+    C_capstone["capstone 毕业项目 · Deep Research Agent"]
+  end
+  C_01 --> C_02
+  C_02 --> C_03
+  C_03 --> C_04
+  C_04 --> C_05
+  C_05 --> C_06
+  C_06 --> C_07
+  C_07 --> C_08
+  C_08 --> C_09
+  C_09 --> C_10
+  C_10 --> C_11
+  C_11 --> C_12
+  C_12 --> C_13
+  C_13 --> C_14
+  C_14 --> C_15
+  C_15 --> C_16
+  C_16 --> C_17
+  C_17 --> C_18
+  C_18 --> C_19
+  C_19 --> C_capstone
+```
+
+## 概念图谱
+
+> 关系类型：`前置`（学它前要先会）· `深化`（更深一层）· `对比`（同类对照）· `应用`（落地用法）· `组成`（构成部件）。
+
+```mermaid
+graph LR
+  subgraph G0["第一部分 · 基础概念"]
+    n_c01_llm_vs_agent["LLM 与 Agent 的区别"]
+    n_c01_agent_formula["Agent 公式"]
+    n_c01_react_loop["感知-决策-行动-观察循环"]
+    n_c01_tool_as_capability["工具的本质"]
+    n_c01_message_memory["消息数组即记忆"]
+    n_c01_max_steps["maxSteps 安全阀"]
+    n_c01_yagni_when_not_agent["何时不该用 Agent"]
+    n_c02_llm_call_pure_function["LLM 调用本质 (无状态纯函数)"]
+    n_c02_get_llm_abstraction["provider 无关抽象 getLLM()"]
+    n_c02_chat["chat() 一次性调用"]
+    n_c02_stream["stream() 流式输出"]
+    n_c02_usage_token["usage 与 token 成本"]
+    n_c02_stop_reason["stopReason 停止原因"]
+    n_c03_system_vs_user["system 提示 vs user 提示"]
+    n_c03_role_instruction["角色设定 + 明确指令"]
+    n_c03_few_shot["few-shot 示例"]
+    n_c03_cot["思维链 (CoT)"]
+    n_c03_constrained_output["约束输出格式 (JSON)"]
+    n_c03_temperature["temperature"]
+    n_c03_prompt_as_spec["提示即行为规格"]
+  end
+  subgraph G1["第二部分 · 从零手写核心"]
+    n_c04_react["ReAct (Reasoning + Acting)"]
+    n_c04_agent_loop["Agent 循环"]
+    n_c04_text_protocol["文本协议 + 正则解析"]
+    n_c04_max_steps["maxSteps 停止条件"]
+    n_c04_scratchpad["scratchpad 短期记忆"]
+    n_c04_tool_table["工具分发表"]
+    n_c04_native_fc["原生 function calling"]
+    n_c05_native_tool_use["原生工具调用 (Function Calling)"]
+    n_c05_request_execute_boundary["请求/执行职责边界"]
+    n_c05_toolspec_schema["ToolSpec 与 JSON Schema"]
+    n_c05_roundtrip_loop["工具调用往返循环"]
+    n_c05_stop_reason["stopReason 终止控制"]
+    n_c05_tool_call_id["toolCallId 结果绑定"]
+    n_c05_error_feedback["工具错误回传"]
+    n_c06_single_zod_schema["单一 zod schema"]
+    n_c06_define_tool["defineTool / defineMiniTool"]
+    n_c06_tool_registry["工具注册表 (ToolRegistry)"]
+    n_c06_safe_execution["安全执行"]
+    n_c06_type_erasure["类型擦除 run(unknown)"]
+    n_c06_self_correction_loop["LLM 自我纠错闭环"]
+    n_c06_run_agent_loop["runAgent 循环"]
+    n_c07_conversation_as_array["记忆即回灌 messages"]
+    n_c07_context_window_budget["上下文窗口预算"]
+    n_c07_sliding_window["滑动窗口"]
+    n_c07_llm_summary_compression["LLM 摘要压缩"]
+    n_c07_message_layout["三段式消息结构"]
+    n_c07_summarize_threshold["压缩阈值与滚动摘要"]
+    n_c07_conversation_class["Conversation 类"]
+  end
+  subgraph G2["第三部分 · 知识与检索"]
+    n_c08_embedding["Embedding (语义向量)"]
+    n_c08_cosine_similarity["余弦相似度"]
+    n_c08_vector_store["内存向量库 (add/search)"]
+    n_c08_topk_retrieval["Top-k 检索"]
+    n_c08_semantic_vs_keyword["语义检索 vs 关键词检索"]
+    n_c08_rag_foundation["RAG 检索地基"]
+    n_c09_rag_pipeline["RAG 全流程"]
+    n_c09_chunk_overlap["分块与重叠 (chunk/overlap)"]
+    n_c09_topk_retrieval["top-k 检索"]
+    n_c09_augment_prompt["上下文增强 (augment)"]
+    n_c09_citation["引用溯源"]
+    n_c09_hallucination_reduction["幻觉抑制与 A/B 对比"]
+  end
+  subgraph G3["第四部分 · 进阶模式"]
+    n_c10_reasoning_pattern["推理范式 (控制流选择)"]
+    n_c10_react["ReAct (边想边做)"]
+    n_c10_plan_and_execute["Plan-and-Execute (先规划再执行)"]
+    n_c10_reflection["Reflection (自我反思修正)"]
+    n_c10_zod_plan_schema["zod 计划契约"]
+    n_c10_scratchpad["scratchpad 滚动上下文"]
+    n_c10_cost_tradeoff["步数/成本/可靠性权衡"]
+    n_c11_supervisor_worker["Supervisor + Worker 模式"]
+    n_c11_supervisor_routing["Supervisor 路由决策"]
+    n_c11_worker_specialist["Worker 专才"]
+    n_c11_scratchpad["Scratchpad 共享工作台"]
+    n_c11_orchestration_loop["编排主循环"]
+    n_c11_cost_tradeoff["多 agent 取舍"]
+    n_c11_decision_validation["决策容错校验"]
+  end
+  subgraph G4["第五部分 · 工程化与框架"]
+    n_c12_why_frameworks["为什么生产要上框架"]
+    n_c12_vercel_ai_sdk["Vercel AI SDK"]
+    n_c12_max_steps["maxSteps 自动工具循环"]
+    n_c12_langgraph["LangGraph.js"]
+    n_c12_react_agent["createReactAgent 预制图"]
+    n_c12_state_graph["状态机图模型"]
+    n_c12_framework_choice["框架选型决策"]
+    n_c13_structured_output["结构化输出"]
+    n_c13_zod_schema["zod schema 单一事实来源"]
+    n_c13_strict_prompt["强约束提示"]
+    n_c13_retry_repair["retry-repair 自我修复重试"]
+    n_c13_extract_json["extractJson 解析容错"]
+    n_c13_runtime_validation["运行期校验"]
+    n_c13_generate_object["框架 generateObject"]
+    n_c14_token_streaming["Token 流式输出 (typewriter)"]
+    n_c14_perceived_latency["首字延迟与体感"]
+    n_c14_progress_streaming["进度流 (onStep)"]
+    n_c14_abort_controller["AbortController 取消"]
+    n_c14_consumer_side_cancel["消费侧取消"]
+    n_c14_graceful_cleanup["优雅善后"]
+  end
+  subgraph G5["第六部分 · 生产化"]
+    n_c15_nondeterminism["LLM 输出非确定性"]
+    n_c15_eval_dataset["离线评估数据集"]
+    n_c15_eval_harness["评估框架 runEval"]
+    n_c15_rule_scoring["规则评分"]
+    n_c15_llm_judge["LLM-as-judge"]
+    n_c15_regression_ci["回归测试与 CI 门槛"]
+    n_c15_sut_separation["被测对象与评估分离"]
+    n_c16_observability["可观测性 (Observability)"]
+    n_c16_span_trace_tree["Span 与 Trace 树"]
+    n_c16_decorator_tracer["装饰器模式 Tracer"]
+    n_c16_cost_estimation["费用估算公式"]
+    n_c16_price_table["价格表单一事实来源"]
+    n_c16_bottleneck_location["瓶颈定位"]
+    n_c16_production_tooling["生产工具 LangSmith/OTel"]
+    n_c17_prompt_injection["提示注入 (Prompt Injection)"]
+    n_c17_trust_boundary["信任边界"]
+    n_c17_isolate_and_label["隔离 + 标注 (wrapUntrusted)"]
+    n_c17_defense_in_depth["纵深防御"]
+    n_c17_output_validation["出口行为校验"]
+    n_c17_pii_redaction["PII 脱敏"]
+    n_c17_human_in_the_loop["最小权限 + 人在回路"]
+    n_c18_agent_as_service["脚本到服务 (Agent as Service)"]
+    n_c18_stateless["无状态服务 (Stateless)"]
+    n_c18_request_timeout["请求超时 (Timeout)"]
+    n_c18_error_fallback["错误兜底 (withGuards)"]
+    n_c18_secret_safety["密钥安全 (Secrets)"]
+    n_c18_sse_streaming["SSE 流式接口 (/chat/stream)"]
+    n_c18_deploy_checklist["部署 checklist 与 Docker"]
+  end
+  subgraph G6["第七部分 · 前沿与生态"]
+    n_c19_ecosystem_layers["Agent 生态分层"]
+    n_c19_mcp["MCP (模型上下文协议)"]
+    n_c19_a2a["A2A (Agent2Agent)"]
+    n_c19_agent_sdk["Agent SDK"]
+    n_c19_orchestration_runtime["编排 runtime"]
+    n_c19_hosted_tools["Hosted tools 与 sandbox"]
+    n_c19_stack_selection["需求倒推选型"]
+    n_c19_governance["可观测与安全治理"]
+  end
+  subgraph G7["毕业项目"]
+    n_ccapstone_plan_and_execute["Plan-and-Execute 架构"]
+    n_ccapstone_research_pipeline["research() 研究主干"]
+    n_ccapstone_tool_registry["工具系统 (search/calc/saveNote)"]
+    n_ccapstone_rag_corpus["RAG 内置语料检索"]
+    n_ccapstone_structured_output["结构化输出 (zod 约束)"]
+    n_ccapstone_tracer_cost["Tracer 可观测与成本"]
+    n_ccapstone_dual_entrypoint["CLI / HTTP 双入口"]
+  end
+  n_c01_llm_vs_agent -->|深化| n_c01_agent_formula
+  n_c01_agent_formula -->|组成| n_c01_react_loop
+  n_c01_agent_formula -->|组成| n_c01_tool_as_capability
+  n_c01_agent_formula -->|组成| n_c01_message_memory
+  n_c01_react_loop -->|应用| n_c01_tool_as_capability
+  n_c01_react_loop -->|应用| n_c01_message_memory
+  n_c01_react_loop -->|前置| n_c01_max_steps
+  n_c01_llm_vs_agent -->|应用| n_c01_yagni_when_not_agent
+  n_c02_llm_call_pure_function -->|应用| n_c02_get_llm_abstraction
+  n_c02_get_llm_abstraction -->|组成| n_c02_chat
+  n_c02_get_llm_abstraction -->|组成| n_c02_stream
+  n_c02_chat -->|对比| n_c02_stream
+  n_c02_chat -->|应用| n_c02_usage_token
+  n_c02_chat -->|应用| n_c02_stop_reason
+  n_c03_prompt_as_spec -->|组成| n_c03_system_vs_user
+  n_c03_system_vs_user -->|应用| n_c03_role_instruction
+  n_c03_role_instruction -->|深化| n_c03_few_shot
+  n_c03_role_instruction -->|深化| n_c03_cot
+  n_c03_system_vs_user -->|应用| n_c03_constrained_output
+  n_c03_few_shot -->|应用| n_c03_temperature
+  n_c03_constrained_output -->|应用| n_c03_temperature
+  n_c03_prompt_as_spec -->|组成| n_c03_temperature
+  n_c04_react -->|组成| n_c04_agent_loop
+  n_c04_agent_loop -->|组成| n_c04_max_steps
+  n_c04_agent_loop -->|组成| n_c04_scratchpad
+  n_c04_agent_loop -->|组成| n_c04_tool_table
+  n_c04_text_protocol -->|应用| n_c04_agent_loop
+  n_c04_scratchpad -->|应用| n_c04_react
+  n_c04_native_fc -->|对比| n_c04_text_protocol
+  n_c05_native_tool_use -->|组成| n_c05_request_execute_boundary
+  n_c05_toolspec_schema -->|前置| n_c05_native_tool_use
+  n_c05_native_tool_use -->|应用| n_c05_roundtrip_loop
+  n_c05_stop_reason -->|组成| n_c05_roundtrip_loop
+  n_c05_tool_call_id -->|组成| n_c05_roundtrip_loop
+  n_c05_error_feedback -->|深化| n_c05_roundtrip_loop
+  n_c05_toolspec_schema -->|深化| n_c05_request_execute_boundary
+  n_c06_single_zod_schema -->|组成| n_c06_define_tool
+  n_c06_define_tool -->|组成| n_c06_tool_registry
+  n_c06_define_tool -->|组成| n_c06_safe_execution
+  n_c06_define_tool -->|应用| n_c06_type_erasure
+  n_c06_type_erasure -->|前置| n_c06_tool_registry
+  n_c06_safe_execution -->|深化| n_c06_self_correction_loop
+  n_c06_tool_registry -->|应用| n_c06_run_agent_loop
+  n_c06_self_correction_loop -->|应用| n_c06_run_agent_loop
+  n_c07_context_window_budget -->|前置| n_c07_conversation_as_array
+  n_c07_sliding_window -->|应用| n_c07_context_window_budget
+  n_c07_llm_summary_compression -->|应用| n_c07_context_window_budget
+  n_c07_sliding_window -->|对比| n_c07_llm_summary_compression
+  n_c07_message_layout -->|组成| n_c07_sliding_window
+  n_c07_message_layout -->|组成| n_c07_llm_summary_compression
+  n_c07_summarize_threshold -->|深化| n_c07_llm_summary_compression
+  n_c07_conversation_class -->|组成| n_c07_message_layout
+  n_c07_conversation_class -->|组成| n_c07_summarize_threshold
+  n_c08_embedding -->|前置| n_c08_cosine_similarity
+  n_c08_cosine_similarity -->|组成| n_c08_vector_store
+  n_c08_embedding -->|组成| n_c08_vector_store
+  n_c08_vector_store -->|应用| n_c08_topk_retrieval
+  n_c08_embedding -->|应用| n_c08_semantic_vs_keyword
+  n_c08_topk_retrieval -->|前置| n_c08_rag_foundation
+  n_c08_semantic_vs_keyword -->|深化| n_c08_rag_foundation
+  n_c09_chunk_overlap -->|组成| n_c09_rag_pipeline
+  n_c09_topk_retrieval -->|组成| n_c09_rag_pipeline
+  n_c09_augment_prompt -->|组成| n_c09_rag_pipeline
+  n_c09_chunk_overlap -->|前置| n_c09_topk_retrieval
+  n_c09_topk_retrieval -->|前置| n_c09_augment_prompt
+  n_c09_augment_prompt -->|应用| n_c09_citation
+  n_c09_augment_prompt -->|应用| n_c09_hallucination_reduction
+  n_c09_citation -->|深化| n_c09_hallucination_reduction
+  n_c10_reasoning_pattern -->|组成| n_c10_react
+  n_c10_reasoning_pattern -->|组成| n_c10_plan_and_execute
+  n_c10_reasoning_pattern -->|组成| n_c10_reflection
+  n_c10_react -->|对比| n_c10_plan_and_execute
+  n_c10_plan_and_execute -->|应用| n_c10_zod_plan_schema
+  n_c10_plan_and_execute -->|应用| n_c10_scratchpad
+  n_c10_reasoning_pattern -->|深化| n_c10_cost_tradeoff
+  n_c10_cost_tradeoff -->|应用| n_c10_reflection
+  n_c11_supervisor_worker -->|组成| n_c11_supervisor_routing
+  n_c11_supervisor_worker -->|组成| n_c11_worker_specialist
+  n_c11_supervisor_routing -->|深化| n_c11_decision_validation
+  n_c11_orchestration_loop -->|应用| n_c11_supervisor_routing
+  n_c11_orchestration_loop -->|应用| n_c11_scratchpad
+  n_c11_scratchpad -->|应用| n_c11_worker_specialist
+  n_c11_cost_tradeoff -->|前置| n_c11_supervisor_worker
+  n_c12_why_frameworks -->|应用| n_c12_vercel_ai_sdk
+  n_c12_why_frameworks -->|应用| n_c12_langgraph
+  n_c12_vercel_ai_sdk -->|组成| n_c12_max_steps
+  n_c12_langgraph -->|组成| n_c12_react_agent
+  n_c12_langgraph -->|深化| n_c12_state_graph
+  n_c12_react_agent -->|应用| n_c12_state_graph
+  n_c12_max_steps -->|对比| n_c12_state_graph
+  n_c12_vercel_ai_sdk -->|前置| n_c12_framework_choice
+  n_c12_langgraph -->|前置| n_c12_framework_choice
+  n_c13_structured_output -->|应用| n_c13_zod_schema
+  n_c13_zod_schema -->|应用| n_c13_strict_prompt
+  n_c13_zod_schema -->|应用| n_c13_runtime_validation
+  n_c13_strict_prompt -->|前置| n_c13_retry_repair
+  n_c13_runtime_validation -->|组成| n_c13_retry_repair
+  n_c13_extract_json -->|前置| n_c13_runtime_validation
+  n_c13_retry_repair -->|对比| n_c13_generate_object
+  n_c13_zod_schema -->|应用| n_c13_generate_object
+  n_c14_token_streaming -->|应用| n_c14_perceived_latency
+  n_c14_token_streaming -->|对比| n_c14_progress_streaming
+  n_c14_abort_controller -->|深化| n_c14_consumer_side_cancel
+  n_c14_abort_controller -->|组成| n_c14_graceful_cleanup
+  n_c14_consumer_side_cancel -->|应用| n_c14_perceived_latency
+  n_c15_nondeterminism -->|前置| n_c15_eval_dataset
+  n_c15_eval_dataset -->|应用| n_c15_eval_harness
+  n_c15_rule_scoring -->|组成| n_c15_eval_harness
+  n_c15_llm_judge -->|组成| n_c15_eval_harness
+  n_c15_rule_scoring -->|对比| n_c15_llm_judge
+  n_c15_eval_harness -->|应用| n_c15_regression_ci
+  n_c15_sut_separation -->|前置| n_c15_eval_harness
+  n_c16_observability -->|组成| n_c16_span_trace_tree
+  n_c16_decorator_tracer -->|应用| n_c16_observability
+  n_c16_decorator_tracer -->|应用| n_c16_span_trace_tree
+  n_c16_cost_estimation -->|前置| n_c16_price_table
+  n_c16_span_trace_tree -->|应用| n_c16_cost_estimation
+  n_c16_span_trace_tree -->|应用| n_c16_bottleneck_location
+  n_c16_decorator_tracer -->|对比| n_c16_production_tooling
+  n_c17_prompt_injection -->|前置| n_c17_trust_boundary
+  n_c17_trust_boundary -->|应用| n_c17_isolate_and_label
+  n_c17_defense_in_depth -->|组成| n_c17_isolate_and_label
+  n_c17_defense_in_depth -->|组成| n_c17_output_validation
+  n_c17_defense_in_depth -->|组成| n_c17_pii_redaction
+  n_c17_defense_in_depth -->|组成| n_c17_human_in_the_loop
+  n_c17_output_validation -->|对比| n_c17_pii_redaction
+  n_c17_prompt_injection -->|深化| n_c17_defense_in_depth
+  n_c18_agent_as_service -->|组成| n_c18_stateless
+  n_c18_agent_as_service -->|组成| n_c18_request_timeout
+  n_c18_agent_as_service -->|组成| n_c18_error_fallback
+  n_c18_agent_as_service -->|组成| n_c18_secret_safety
+  n_c18_agent_as_service -->|组成| n_c18_sse_streaming
+  n_c18_stateless -->|前置| n_c18_deploy_checklist
+  n_c18_request_timeout -->|组成| n_c18_error_fallback
+  n_c18_sse_streaming -->|应用| n_c18_error_fallback
+  n_c18_secret_safety -->|应用| n_c18_deploy_checklist
+  n_c18_deploy_checklist -->|组成| n_c18_request_timeout
+  n_c19_ecosystem_layers -->|组成| n_c19_mcp
+  n_c19_ecosystem_layers -->|组成| n_c19_agent_sdk
+  n_c19_ecosystem_layers -->|组成| n_c19_orchestration_runtime
+  n_c19_ecosystem_layers -->|组成| n_c19_governance
+  n_c19_mcp -->|对比| n_c19_a2a
+  n_c19_agent_sdk -->|深化| n_c19_orchestration_runtime
+  n_c19_hosted_tools -->|对比| n_c19_mcp
+  n_c19_stack_selection -->|应用| n_c19_ecosystem_layers
+  n_c19_stack_selection -->|应用| n_c19_agent_sdk
+  n_c19_governance -->|应用| n_c19_orchestration_runtime
+  n_ccapstone_plan_and_execute -->|组成| n_ccapstone_research_pipeline
+  n_ccapstone_research_pipeline -->|应用| n_ccapstone_tool_registry
+  n_ccapstone_tool_registry -->|组成| n_ccapstone_rag_corpus
+  n_ccapstone_research_pipeline -->|应用| n_ccapstone_structured_output
+  n_ccapstone_tracer_cost -->|应用| n_ccapstone_research_pipeline
+  n_ccapstone_research_pipeline -->|前置| n_ccapstone_dual_entrypoint
+  n_ccapstone_rag_corpus -->|深化| n_ccapstone_plan_and_execute
+  n_c02_llm_call_pure_function -->|深化| n_c01_llm_vs_agent
+  n_c04_agent_loop -->|深化| n_c01_react_loop
+  n_c04_agent_loop -->|应用| n_c02_chat
+  n_c04_text_protocol -->|应用| n_c03_system_vs_user
+  n_c05_native_tool_use -->|对比| n_c04_text_protocol
+  n_c05_roundtrip_loop -->|深化| n_c04_agent_loop
+  n_c06_define_tool -->|深化| n_c05_toolspec_schema
+  n_c06_run_agent_loop -->|深化| n_c05_roundtrip_loop
+  n_c06_self_correction_loop -->|深化| n_c05_error_feedback
+  n_c07_conversation_as_array -->|深化| n_c01_message_memory
+  n_c07_context_window_budget -->|应用| n_c02_usage_token
+  n_c09_rag_pipeline -->|深化| n_c08_rag_foundation
+  n_c09_rag_pipeline -->|组成| n_c08_vector_store
+  n_c10_react -->|深化| n_c04_react
+  n_c10_reasoning_pattern -->|对比| n_c04_agent_loop
+  n_c11_orchestration_loop -->|应用| n_c06_run_agent_loop
+  n_c12_vercel_ai_sdk -->|对比| n_c06_run_agent_loop
+  n_c12_langgraph -->|对比| n_c04_agent_loop
+  n_c12_react_agent -->|应用| n_c04_react
+  n_c13_structured_output -->|深化| n_c03_constrained_output
+  n_c14_token_streaming -->|深化| n_c02_stream
+  n_c14_progress_streaming -->|应用| n_c06_run_agent_loop
+  n_c15_eval_dataset -->|应用| n_c13_structured_output
+  n_c16_cost_estimation -->|深化| n_c02_usage_token
+  n_c16_decorator_tracer -->|应用| n_c02_get_llm_abstraction
+  n_c17_isolate_and_label -->|应用| n_c09_augment_prompt
+  n_c17_human_in_the_loop -->|应用| n_c06_tool_registry
+  n_c18_sse_streaming -->|深化| n_c14_token_streaming
+  n_c18_agent_as_service -->|应用| n_c06_run_agent_loop
+  n_c19_ecosystem_layers -->|深化| n_c12_framework_choice
+  n_c19_mcp -->|应用| n_c05_native_tool_use
+  n_ccapstone_research_pipeline -->|深化| n_c10_plan_and_execute
+  n_ccapstone_tool_registry -->|组成| n_c06_tool_registry
+  n_ccapstone_rag_corpus -->|组成| n_c09_rag_pipeline
+  n_ccapstone_structured_output -->|组成| n_c13_structured_output
+  n_ccapstone_tracer_cost -->|组成| n_c16_decorator_tracer
+  n_ccapstone_dual_entrypoint -->|组成| n_c18_agent_as_service
+```
+
+## 概念索引
+
+| 概念 | 章节 | 说明 |
+| --- | --- | --- |
+| LLM 与 Agent 的区别 | [01 什么是 Agent](../lessons/01-what-is-an-agent/README.md) | LLM 是无状态、无工具、活在过去的纯函数；Agent 是给它装上机制后的执行体 |
+| Agent 公式 | [01 什么是 Agent](../lessons/01-what-is-an-agent/README.md) | Agent = LLM + 循环 + 工具 + 记忆，对应 LLM 的三大缺陷 |
+| 感知-决策-行动-观察循环 | [01 什么是 Agent](../lessons/01-what-is-an-agent/README.md) | Agent 的核心心智模型：四步循环往复推进任务 |
+| 工具的本质 | [01 什么是 Agent](../lessons/01-what-is-an-agent/README.md) | 工具是一段模型不会、但代码会的能力，是 LLM 伸向真实世界的手 |
+| 消息数组即记忆 | [01 什么是 Agent](../lessons/01-what-is-an-agent/README.md) | 不断追加的多轮消息数组是最初级的记忆，让下一步看见上一步 |
+| maxSteps 安全阀 | [01 什么是 Agent](../lessons/01-what-is-an-agent/README.md) | 强制的步数上限，防止模型反复要工具导致无限循环烧钱 |
+| 何时不该用 Agent | [01 什么是 Agent](../lessons/01-what-is-an-agent/README.md) | 一次问答能解决的需求别套 Agent，YAGNI 在 AI 工程的体现 |
+| LLM 调用本质 (无状态纯函数) | [02 你的第一次 LLM 调用](../lessons/02-first-llm-call/README.md) | 消息进、文本进 token 出，模型不记历史，需自行回传上下文 |
+| provider 无关抽象 getLLM() | [02 你的第一次 LLM 调用](../lessons/02-first-llm-call/README.md) | 统一 LLMClient 接口隔离厂商差异，换厂商只改 .env |
+| chat() 一次性调用 | [02 你的第一次 LLM 调用](../lessons/02-first-llm-call/README.md) | 发起一轮对话并一次性返回完整 ChatResult |
+| stream() 流式输出 | [02 你的第一次 LLM 调用](../lessons/02-first-llm-call/README.md) | 逐字增量返回，降低首字延迟，最后一块带完整结果 |
+| usage 与 token 成本 | [02 你的第一次 LLM 调用](../lessons/02-first-llm-call/README.md) | 输入/输出 token 用量是成本与可观测性的地基 |
+| stopReason 停止原因 | [02 你的第一次 LLM 调用](../lessons/02-first-llm-call/README.md) | 归一的停止原因 stop/tool_use/max_tokens/other |
+| system 提示 vs user 提示 | [03 提示工程](../lessons/03-prompt-engineering/README.md) | system 设角色规则全局生效，user 给本次具体任务 |
+| 角色设定 + 明确指令 | [03 提示工程](../lessons/03-prompt-engineering/README.md) | 把受众、格式、长度等隐含期望显式写进提示 |
+| few-shot 示例 | [03 提示工程](../lessons/03-prompt-engineering/README.md) | 给几个输入→输出范例，不微调即对齐自定义标签 |
+| 思维链 (CoT) | [03 提示工程](../lessons/03-prompt-engineering/README.md) | 让模型先写推理步骤再给结论，提升多步正确率 |
+| 约束输出格式 (JSON) | [03 提示工程](../lessons/03-prompt-engineering/README.md) | 用 system 锁定固定结构，供下游代码稳定解析 |
+| temperature | [03 提示工程](../lessons/03-prompt-engineering/README.md) | 控制随机性：0 确定可复现，接近 1 发散有创意 |
+| 提示即行为规格 | [03 提示工程](../lessons/03-prompt-engineering/README.md) | 提示是可测试可版本化的程序，需配合评估迭代 |
+| ReAct (Reasoning + Acting) | [04 手写 Agent 循环 (ReAct)](../lessons/04-the-agent-loop/README.md) | 思考与行动交替的范式：想一步、做一步、看结果再想 |
+| Agent 循环 | [04 手写 Agent 循环 (ReAct)](../lessons/04-the-agent-loop/README.md) | 带停止条件的 while 循环：思考→行动→观察→…→答案 |
+| 文本协议 + 正则解析 | [04 手写 Agent 循环 (ReAct)](../lessons/04-the-agent-loop/README.md) | 用 system 约定固定格式，再正则抠出模型想调的工具 |
+| maxSteps 停止条件 | [04 手写 Agent 循环 (ReAct)](../lessons/04-the-agent-loop/README.md) | 防止死循环和预算失控的安全阀，比循环体更重要 |
+| scratchpad 短期记忆 | [04 手写 Agent 循环 (ReAct)](../lessons/04-the-agent-loop/README.md) | 手动维护的草稿纸，每轮重放历史弥补 LLM 无状态 |
+| 工具分发表 | [04 手写 Agent 循环 (ReAct)](../lessons/04-the-agent-loop/README.md) | 名字到字符串进出纯函数的映射，新增工具只登记一行 |
+| 原生 function calling | [04 手写 Agent 循环 (ReAct)](../lessons/04-the-agent-loop/README.md) | 模型直接返回结构化工具调用，下一章取代手摇文本协议 |
+| 原生工具调用 (Function Calling) | [05 工具调用基础](../lessons/05-tool-use-basics/README.md) | 模型返回结构化 toolCalls 而非裸文本来请求调用工具 |
+| 请求/执行职责边界 | [05 工具调用基础](../lessons/05-tool-use-basics/README.md) | 模型只请求调用，校验执行副作用全在你的本地代码里 |
+| ToolSpec 与 JSON Schema | [05 工具调用基础](../lessons/05-tool-use-basics/README.md) | 用 parameters(JSON Schema) 教模型何时调用、参数怎么填 |
+| 工具调用往返循环 | [05 工具调用基础](../lessons/05-tool-use-basics/README.md) | chat→读toolCalls→执行→回传tool消息→再chat 的闭环 |
+| stopReason 终止控制 | [05 工具调用基础](../lessons/05-tool-use-basics/README.md) | stopReason 不再是 tool_use 时即拿到最终答案、结束循环 |
+| toolCallId 结果绑定 | [05 工具调用基础](../lessons/05-tool-use-basics/README.md) | 每个 toolCall 必须有对应 id 的 tool 结果消息回传 |
+| 工具错误回传 | [05 工具调用基础](../lessons/05-tool-use-basics/README.md) | 把异常转字符串回传给模型，让它有机会自我修正 |
+| 单一 zod schema | [06 从零构建工具系统](../lessons/06-building-a-tool-system/README.md) | 一份 schema 同时做运行期校验和生成模型可读描述 |
+| defineTool / defineMiniTool | [06 从零构建工具系统](../lessons/06-building-a-tool-system/README.md) | 把校验、执行、字符串化封装进统一工具对象 |
+| 工具注册表 (ToolRegistry) | [06 从零构建工具系统](../lessons/06-building-a-tool-system/README.md) | 按名登记、列举 specs、分发执行的权限边界 |
+| 安全执行 | [06 从零构建工具系统](../lessons/06-building-a-tool-system/README.md) | 未知工具/非法参数/抛错都转字符串回给模型 |
+| 类型擦除 run(unknown) | [06 从零构建工具系统](../lessons/06-building-a-tool-system/README.md) | 对外统一入参，规避函数参数逆变导致的集合不兼容 |
+| LLM 自我纠错闭环 | [06 从零构建工具系统](../lessons/06-building-a-tool-system/README.md) | 错误字符串回传模型，下一轮补参数或换工具 |
+| runAgent 循环 | [06 从零构建工具系统](../lessons/06-building-a-tool-system/README.md) | 调模型→registry.run→回传 tool 消息→再调模型 |
+| 记忆即回灌 messages | [07 短期记忆与上下文](../lessons/07-short-term-memory/README.md) | LLM 无状态，多轮记忆靠每次把历史数组重新塞回请求 |
+| 上下文窗口预算 | [07 短期记忆与上下文](../lessons/07-short-term-memory/README.md) | 窗口有 token 上限，且成本随轮次累积上升，不能无脑堆历史 |
+| 滑动窗口 | [07 短期记忆与上下文](../lessons/07-short-term-memory/README.md) | 只保留最近 N 轮原文，更早的直接丢弃以控规模 |
+| LLM 摘要压缩 | [07 短期记忆与上下文](../lessons/07-short-term-memory/README.md) | 把窗口外旧历史交给模型压成一条摘要，省 token 又不失忆 |
+| 三段式消息结构 | [07 短期记忆与上下文](../lessons/07-short-term-memory/README.md) | system + 一条前情摘要 + 最近 N 轮原文 的拼装顺序 |
+| 压缩阈值与滚动摘要 | [07 短期记忆与上下文](../lessons/07-short-term-memory/README.md) | 攒够一批旧历史才压一次，并喂回旧摘要防早期信息流失 |
+| Conversation 类 | [07 短期记忆与上下文](../lessons/07-short-term-memory/README.md) | 自管理规模的对话对象，封装窗口、摘要与回灌逻辑 |
+| Embedding (语义向量) | [08 Embedding 与向量检索](../lessons/08-embeddings-and-vector-search/README.md) | 用模型把文本压成高维向量，语义近则向量近 |
+| 余弦相似度 | [08 Embedding 与向量检索](../lessons/08-embeddings-and-vector-search/README.md) | 算两向量夹角余弦，只看方向作为检索排序信号 |
+| 内存向量库 (add/search) | [08 Embedding 与向量检索](../lessons/08-embeddings-and-vector-search/README.md) | add 存原文+向量，search 算相似度排序取 top-k |
+| Top-k 检索 | [08 Embedding 与向量检索](../lessons/08-embeddings-and-vector-search/README.md) | 按相似度降序取前 k 条作为候选材料 |
+| 语义检索 vs 关键词检索 | [08 Embedding 与向量检索](../lessons/08-embeddings-and-vector-search/README.md) | 向量跨越字面差异(汽车≈轿车)，关键词只做字面匹配 |
+| RAG 检索地基 | [08 Embedding 与向量检索](../lessons/08-embeddings-and-vector-search/README.md) | 向量检索负责捞候选，不生成答案，是 RAG 的前置 |
+| RAG 全流程 | [09 从零实现 RAG](../lessons/09-rag-from-scratch/README.md) | 加载→分块→入库→检索→增强→生成的检索增强闭环 |
+| 分块与重叠 (chunk/overlap) | [09 从零实现 RAG](../lessons/09-rag-from-scratch/README.md) | 滑动窗口切块并让相邻块重叠，防边界信息被截断 |
+| top-k 检索 | [09 从零实现 RAG](../lessons/09-rag-from-scratch/README.md) | 按余弦相似度取最相近 k 块，k 太小漏答太大引噪 |
+| 上下文增强 (augment) | [09 从零实现 RAG](../lessons/09-rag-from-scratch/README.md) | 把命中片段+'仅据资料作答'约束拼进 system 提示 |
+| 引用溯源 | [09 从零实现 RAG](../lessons/09-rag-from-scratch/README.md) | 片段编号注入并要求标注依据，让答案可审计可核对 |
+| 幻觉抑制与 A/B 对比 | [09 从零实现 RAG](../lessons/09-rag-from-scratch/README.md) | 注入私有知识+约束作答，对同一问题对比有无 RAG |
+| 推理范式 (控制流选择) | [10 推理范式](../lessons/10-reasoning-patterns/README.md) | 组织模型多步思考的结构，决定可控性、成本与稳定性 |
+| ReAct (边想边做) | [10 推理范式](../lessons/10-reasoning-patterns/README.md) | 思考→调工具→观察→再思考循环，动态自适应探索 |
+| Plan-and-Execute (先规划再执行) | [10 推理范式](../lessons/10-reasoning-patterns/README.md) | 先产出 JSON 步骤计划，再逐步执行，可控可复用 |
+| Reflection (自我反思修正) | [10 推理范式](../lessons/10-reasoning-patterns/README.md) | 初稿→批评→改写，用调用次数换产出质量 |
+| zod 计划契约 | [10 推理范式](../lessons/10-reasoning-patterns/README.md) | 用 schema 强校验把 LLM 计划固化为可程序消费的数据 |
+| scratchpad 滚动上下文 | [10 推理范式](../lessons/10-reasoning-patterns/README.md) | 每步结论喂给下一步，让后续步骤站在前面的肩膀上 |
+| 步数/成本/可靠性权衡 | [10 推理范式](../lessons/10-reasoning-patterns/README.md) | 按调用次数与稳定性三轴为任务选范式，三者可组合 |
+| Supervisor + Worker 模式 | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 协调者只决策派活/结束，worker 是按职责裁剪的专才 |
+| Supervisor 路由决策 | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 一次结构化 JSON 的 LLM 调用，决定派给谁或 done |
+| Worker 专才 | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 独立 system prompt 与按职责裁剪的工具，输入子任务输出文本 |
+| Scratchpad 共享工作台 | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 累积各 worker 产出，让结果在 agent 间流动 |
+| 编排主循环 | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 决策→派活→回写→再决策，maxRounds 防死循环 |
+| 多 agent 取舍 | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 聚焦/可维护 vs token/复杂度，过载且边界清晰才拆 |
+| 决策容错校验 | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 宽容提取 JSON + zod 校验，失败退化为安全默认值 |
+| 为什么生产要上框架 | [12 上框架：LangGraph.js 与 Vercel AI SDK](../lessons/12-intro-to-frameworks/README.md) | 手写够学原理，生产需状态/持久化/恢复/流式/可观测等重活标准化 |
+| Vercel AI SDK | [12 上框架：LangGraph.js 与 Vercel AI SDK](../lessons/12-intro-to-frameworks/README.md) | 把 agent 看作一次带工具的文本生成，轻量、流式、贴近前端 |
+| maxSteps 自动工具循环 | [12 上框架：LangGraph.js 与 Vercel AI SDK](../lessons/12-intro-to-frameworks/README.md) | generateText 一个参数替代第06章整段手写工具 for 循环 |
+| LangGraph.js | [12 上框架：LangGraph.js 与 Vercel AI SDK](../lessons/12-intro-to-frameworks/README.md) | 把 agent 看作一张状态机图，强在持久化与可恢复编排 |
+| createReactAgent 预制图 | [12 上框架：LangGraph.js 与 Vercel AI SDK](../lessons/12-intro-to-frameworks/README.md) | 已编译状态图，内置模型节点↔工具节点的循环边 |
+| 状态机图模型 | [12 上框架：LangGraph.js 与 Vercel AI SDK](../lessons/12-intro-to-frameworks/README.md) | 节点做计算、边定转移、状态在节点间流动，可视化/持久化/恢复 |
+| 框架选型决策 | [12 上框架：LangGraph.js 与 Vercel AI SDK](../lessons/12-intro-to-frameworks/README.md) | 聊天/Web 流式选 AI SDK；长流程/checkpoint/多agent 选 LangGraph |
+| 结构化输出 | [13 结构化输出与校验](../lessons/13-structured-output/README.md) | 让模型产出程序可消费的数据而非自由文本 |
+| zod schema 单一事实来源 | [13 结构化输出与校验](../lessons/13-structured-output/README.md) | 一个 schema 约束模型、运行期校验、推导类型 |
+| 强约束提示 | [13 结构化输出与校验](../lessons/13-structured-output/README.md) | 明确要求只输出 JSON 并贴 JSON Schema 当契约 |
+| retry-repair 自我修复重试 | [13 结构化输出与校验](../lessons/13-structured-output/README.md) | 校验失败把 zod 错误回传给模型让它改 |
+| extractJson 解析容错 | [13 结构化输出与校验](../lessons/13-structured-output/README.md) | 从带围栏/客套话的文本里抠出 JSON |
+| 运行期校验 | [13 结构化输出与校验](../lessons/13-structured-output/README.md) | 用 safeParse 校验模型返回，类型仅编译期不可信 |
+| 框架 generateObject | [13 结构化输出与校验](../lessons/13-structured-output/README.md) | AI SDK 内建要 JSON+按 schema 校验+推类型 |
+| Token 流式输出 (typewriter) | [14 流式输出与 UX](../lessons/14-streaming-and-ux/README.md) | 用 llm.stream() 逐字蹦出文本，降低首字延迟焦虑 |
+| 首字延迟与体感 | [14 流式输出与 UX](../lessons/14-streaming-and-ux/README.md) | 流式优化的是体感与首字延迟，不缩短总耗时 |
+| 进度流 (onStep) | [14 流式输出与 UX](../lessons/14-streaming-and-ux/README.md) | 用 runAgent 的 onStep 回调实时播报每步工具调用与结果 |
+| AbortController 取消 | [14 流式输出与 UX](../lessons/14-streaming-and-ux/README.md) | 协作式取消：abort() 置位 signal，消费方在检查点主动退出 |
+| 消费侧取消 | [14 流式输出与 UX](../lessons/14-streaming-and-ux/README.md) | 停止向 async generator 要数据即关闭流，跨厂商最通用 |
+| 优雅善后 | [14 流式输出与 UX](../lessons/14-streaming-and-ux/README.md) | 区分完成与已取消，finally 中清理定时器避免悬挂 |
+| LLM 输出非确定性 | [15 评估与测试](../lessons/15-evaluation-and-testing/README.md) | 同一输入多次输出可能不同，传统单测的确定性前提不成立 |
+| 离线评估数据集 | [15 评估与测试](../lessons/15-evaluation-and-testing/README.md) | 一组固定的 input→期望/评分标准样本，数据集即测试集 |
+| 评估框架 runEval | [15 评估与测试](../lessons/15-evaluation-and-testing/README.md) | 跑数据集→逐条打分→汇总通过率与失败明细，与被测函数解耦 |
+| 规则评分 | [15 评估与测试](../lessons/15-evaluation-and-testing/README.md) | 字段相等/含子串/正则等精确判定，确定、免费、快 |
+| LLM-as-judge | [15 评估与测试](../lessons/15-evaluation-and-testing/README.md) | 用另一个模型按标准打分并给 reason，适合开放式输出 |
+| 回归测试与 CI 门槛 | [15 评估与测试](../lessons/15-evaluation-and-testing/README.md) | 重跑全集比对通过率，低于阈值让流水线变红，拦住静默退化 |
+| 被测对象与评估分离 | [15 评估与测试](../lessons/15-evaluation-and-testing/README.md) | SUT 与评分逻辑分文件，同一数据集可复用测不同版本 |
+| 可观测性 (Observability) | [16 可观测性与成本](../lessons/16-observability-and-cost/README.md) | 在每次外部调用进出两端打点，把一次任务还原成可复盘的调用树 |
+| Span 与 Trace 树 | [16 可观测性与成本](../lessons/16-observability-and-cost/README.md) | 每次调用记一条 span（model/tokens/耗时/stopReason），聚合成 trace 树 |
+| 装饰器模式 Tracer | [16 可观测性与成本](../lessons/16-observability-and-cost/README.md) | 用装饰器包住 LLMClient，对业务零侵入地收集 span |
+| 费用估算公式 | [16 可观测性与成本](../lessons/16-observability-and-cost/README.md) | 成本 = 输入tokens×输入单价 + 输出tokens×输出单价 |
+| 价格表单一事实来源 | [16 可观测性与成本](../lessons/16-observability-and-cost/README.md) | 按每百万 token 维护价格常量表，未知模型回退兜底价 |
+| 瓶颈定位 | [16 可观测性与成本](../lessons/16-observability-and-cost/README.md) | 从 span 中找出最慢、最贵的一步，定位慢与贵的根因 |
+| 生产工具 LangSmith/OTel | [16 可观测性与成本](../lessons/16-observability-and-cost/README.md) | 把 span 上报后台看板，原理与本章 Tracer 一致 |
+| 提示注入 (Prompt Injection) | [17 安全与护栏](../lessons/17-safety-and-guardrails/README.md) | 外部数据里的文本被模型当成指令执行，劫持系统意图 |
+| 信任边界 | [17 安全与护栏](../lessons/17-safety-and-guardrails/README.md) | 只有系统规则和用户问题是命令，其余一切都是不可信数据 |
+| 隔离 + 标注 (wrapUntrusted) | [17 安全与护栏](../lessons/17-safety-and-guardrails/README.md) | 用唯一分隔符框住不可信内容并声明框内永远是数据 |
+| 纵深防御 | [17 安全与护栏](../lessons/17-safety-and-guardrails/README.md) | 隔离/强化system/出口校验/脱敏/人工确认多层叠加，无单点银弹 |
+| 出口行为校验 | [17 安全与护栏](../lessons/17-safety-and-guardrails/README.md) | 在边界检查输出是否复述注入话术或泄露内部口令 |
+| PII 脱敏 | [17 安全与护栏](../lessons/17-safety-and-guardrails/README.md) | 输出落地前用正则过滤邮箱/手机/身份证/卡号并留审计 |
+| 最小权限 + 人在回路 | [17 安全与护栏](../lessons/17-safety-and-guardrails/README.md) | 工具白名单，危险不可逆操作在execute内由人确认放行 |
+| 脚本到服务 (Agent as Service) | [18 部署：把 Agent 变成服务](../lessons/18-deployment/README.md) | 把跑一次就退的脚本包成常驻、并发、多用户的 HTTP 服务 |
+| 无状态服务 (Stateless) | [18 部署：把 Agent 变成服务](../lessons/18-deployment/README.md) | 请求自带完整上下文，会话不放进程内存，多实例才能水平扩展 |
+| 请求超时 (Timeout) | [18 部署：把 Agent 变成服务](../lessons/18-deployment/README.md) | Promise.race 给每请求设上限，防慢请求拖垮服务 |
+| 错误兜底 (withGuards) | [18 部署：把 Agent 变成服务](../lessons/18-deployment/README.md) | 异常统一转结构化错误、不泄堆栈，进程绝不因单请求崩溃 |
+| 密钥安全 (Secrets) | [18 部署：把 Agent 变成服务](../lessons/18-deployment/README.md) | key 只从环境变量读，绝不进代码/响应/日志 |
+| SSE 流式接口 (/chat/stream) | [18 部署：把 Agent 变成服务](../lessons/18-deployment/README.md) | text/event-stream 把 token 逐字推前端，断开做消费侧取消 |
+| 部署 checklist 与 Docker | [18 部署：把 Agent 变成服务](../lessons/18-deployment/README.md) | 端口从 env 读、健康检查、优雅退出、Dockerfile 与上线自查清单 |
+| Agent 生态分层 | [19 Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | 把 agent 栈拆成 8 个可替换工程层的拆解框架 |
+| MCP (模型上下文协议) | [19 Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | 标准化 agent 连接外部工具/数据/资源的协议，AI 的 USB-C |
+| A2A (Agent2Agent) | [19 Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | 标准化不同厂商 agent 间发现、通信与协作的协议 |
+| Agent SDK | [19 Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | 封装 loop/handoff/guardrail/session 的开发层，如 OpenAI/Vercel SDK |
+| 编排 runtime | [19 Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | 管长任务持久化、恢复、人工介入的状态层，如 LangGraph/CrewAI |
+| Hosted tools 与 sandbox | [19 Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | 平台内置的 web/file search、computer use、代码沙箱执行能力 |
+| 需求倒推选型 | [19 Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | 从约束出发判断手写还是选 SDK/runtime/协议的决策方法 |
+| 可观测与安全治理 | [19 Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | tracing/eval/cost/guardrails/HITL 作为上线门槛与一等部件 |
+| Plan-and-Execute 架构 | [capstone 毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md) | 先规划拆子问题再多步执行，减少无效工具调用且可审计 |
+| research() 研究主干 | [capstone 毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md) | 规划→检索推理→结构化汇总→成本统计的端到端纯逻辑 |
+| 工具系统 (search/calc/saveNote) | [capstone 毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md) | 工厂函数+闭包注入状态，zod schema 同管描述与校验 |
+| RAG 内置语料检索 | [capstone 毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md) | 虚构语料装入内存向量库，search 工具做语义检索防幻觉 |
+| 结构化输出 (zod 约束) | [capstone 毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md) | planSchema/reportSchema 把不确定模型输出收敛为类型安全产物 |
+| Tracer 可观测与成本 | [capstone 毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md) | 装饰器无侵入包裹 LLMClient，统计 tokens/调用并估算成本 |
+| CLI / HTTP 双入口 | [capstone 毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md) | 核心逻辑与展示层解耦，同一份能力暴露为命令行和 HTTP 服务 |
+
+## 关联文章
+
+> 想新增文章？在 `knowledge-graph/data/graph.ts` 的 `ARTICLES` 加一条，跑 `npm run kg` 即可。外部链接请自行核实有效性。
+
+| 文章 | 类型 | 关联章节 | 说明 |
+| --- | --- | --- | --- |
+| [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) | doc | 01, 11, 19 | Anthropic 官方工程博客，系统讲解 Agent 的循环、工具与何时该用 Agent，与本章心智模型高度对应 |
+| [Anthropic Messages API 文档](https://docs.anthropic.com/en/api/messages) | doc | 02 | Claude 的 messages.create 接口，对应本章 chat() 的底层 |
+| [OpenAI Chat Completions API 文档](https://platform.openai.com/docs/api-reference/chat) | doc | 02 | OpenAI 的 chat.completions.create 接口，本章 provider 抽象的另一实现 |
+| [Chain-of-Thought Prompting Elicits Reasoning in Large Language Models](https://arxiv.org/abs/2201.11903) | paper | 03 | 思维链 (CoT) 的奠基论文，对应本章实验三 |
+| [Language Models are Few-Shot Learners (GPT-3)](https://arxiv.org/abs/2005.14165) | paper | 03 | few-shot 学习的代表性论文，对应本章实验二 |
+| [Anthropic 文档：Prompt engineering overview](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview) | doc | 03 | 官方提示工程技巧汇总，覆盖角色/示例/格式约束 |
+| [ReAct: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629) | paper | 04, 10, capstone | ReAct 原始论文，本章「思考+行动交替」范式的来源 |
+| [Anthropic Docs · Tool use (function calling) with Claude](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) | doc | 05, 06 | 官方工具调用文档，含 tool_use stopReason 与 tool_result 回传机制 |
+| [OpenAI Docs · Function calling](https://platform.openai.com/docs/guides/function-calling) | doc | 05 | OpenAI 侧 function calling 指南，与本章抽象对应 |
+| [Zod 官方文档](https://zod.dev) | doc | 06 | 本章 schema 校验与类型推断的基础库，README 前置知识引用 |
+| [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) | blog | 07 | Anthropic 官方：上下文是有限资源，需主动裁剪与压缩，与本章窗口预算/摘要思路一致 |
+| [Vector embeddings - OpenAI API documentation](https://platform.openai.com/docs/guides/embeddings) | doc | 08 | 本章 embedding 默认调用 OpenAI text-embedding-3-small，官方指南 |
+| [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401) | paper | 09, capstone | RAG 原始论文 (Lewis et al., 2020)，提出检索增强生成范式 |
+| [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366) | paper | 10 | Reflection/自我反思修正的代表性论文 |
+| [Vercel AI SDK 官方文档](https://sdk.vercel.ai/docs) | doc | 12 | generateText / streamText / tool / maxSteps 的权威参考 |
+| [LangGraph.js 官方文档](https://langchain-ai.github.io/langgraphjs/) | doc | 12 | StateGraph / createReactAgent / checkpointer 的权威参考 |
+| [Zod - TypeScript-first schema validation](https://zod.dev/) | doc | 13 | z.object / z.infer / safeParse 官方文档 |
+| [Vercel AI SDK - generateObject](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-object) | doc | 13 | 框架内建结构化输出 API 参考 |
+| [AbortController - Web APIs | MDN](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) | doc | 14 | 本章取消机制的权威参考，README 中直接引用 |
+| [Streaming Messages - Anthropic API](https://docs.anthropic.com/en/api/messages-streaming) | doc | 14 | 官方流式消息 SSE 协议，对应底层 stream() 的实现 |
+| [Statistical Approaches to Evaluating LLM Outputs (Anthropic - Create strong empirical evaluations)](https://docs.anthropic.com/en/docs/test-and-evaluate/develop-tests) | doc | 15 | Anthropic 官方关于设计评估与评分（含规则与模型评分）的指南 |
+| [promptfoo - LLM evals & testing](https://www.promptfoo.dev/docs/intro/) | doc | 15 | 本章小结点名的生产级 eval/数据集管理框架官方文档 |
+| [Anthropic Pricing](https://www.anthropic.com/pricing) | doc | 16 | Anthropic 官方价格页，价格表单价的权威来源 |
+| [OpenAI API Pricing](https://openai.com/api/pricing) | doc | 16 | OpenAI 官方价格页，对比厂商单价用 |
+| [OpenAI Agents — Guardrails](https://platform.openai.com/docs/guides/agents/guardrails) | doc | 17 | 官方对 agent 输入/输出护栏的设计说明，与本章分层防御思路一致 |
+| [Server-sent events - MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) | doc | 18 | SSE 与 EventSource 的官方权威说明，对应本章 /chat/stream |
+| [Node.js HTTP module documentation](https://nodejs.org/api/http.html) | doc | 18 | node:http 内置模块文档，本章无框架起服务的基础 |
+| [Model Context Protocol: What is MCP?](https://modelcontextprotocol.io/docs/getting-started/intro) | doc | 19 | MCP 官方入门，工具/数据连接标准化的一手来源 |
+| [LangGraph overview](https://docs.langchain.com/oss/javascript/langgraph/overview) | doc | 19 | 编排 runtime 代表，长任务持久化与 human-in-the-loop 官方文档 |

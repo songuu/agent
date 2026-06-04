@@ -152,6 +152,9 @@ async function runReActLoop(question: string, maxSteps = 6): Promise<string> {
     });
 
     const text = result.text.trim();
+    // 设 DEBUG=1 运行可看到每步「原始输出 + token 用量」——logger.debug 仅在 DEBUG 置位时打印。
+    logger.debug(`本步原始输出 ↓\n${text}`);
+    logger.debug(`本步用量：输入 ${result.usage.inputTokens} / 输出 ${result.usage.outputTokens} token`);
     const parsed = parseStep(text);
 
     // —— 情况一：模型给出最终答案，循环正常收敛 ——

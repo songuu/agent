@@ -14,10 +14,49 @@
 
 ## 前置知识
 
-- 已读 [第 04/05 章](../05-the-agent-loop/README.md)：理解 agent 循环（思考 → 调工具 → 观察）。本章直接复用 `runAgent`。
-- 已读 [第 06 章 · 工具系统](../06-building-tools/README.md)：理解 `defineTool` / `ToolRegistry`。
+- 已读 [第 04 章 · Agent 循环](../04-the-agent-loop/README.md) 与 [第 05 章 · 工具调用基础](../05-tool-use-basics/README.md)：理解 agent 循环（思考 → 调工具 → 观察）。本章直接复用 `runAgent`。
+- 已读 [第 06 章 · 工具系统](../06-building-a-tool-system/README.md)：理解 `defineTool` / `ToolRegistry`。
 - 已读 [第 10 章 · 推理模式](../10-reasoning-patterns/README.md)。
 - 已配好 `.env`（**一个厂商的 key 即可**，本章不需要 embedding key）。
+
+## 三层学习路线
+
+| 层级 | 学习目标 | 你要完成什么 |
+|------|----------|--------------|
+| 极简 | 跑通 supervisor + worker 的协作模型。 | 能说明主管 agent 如何拆任务,worker 如何返回结果。 |
+| 进阶 | 理解多智能体的通信协议和上下文合并问题。 | 分析任务分配、结果冲突、重复劳动、上下文污染和停止条件。 |
+| 真实实践 | 把多智能体映射到真实团队流程。 | 设计一个研究员、执行者、审查者协作的流程,明确每个 agent 的权限和交付物。 |
+
+---
+
+## 图解学习地图
+
+> 读图顺序：先看本章主线,再回到代码走读。核心焦点：**把复杂任务拆给多个角色协作**。
+
+```mermaid
+flowchart LR
+  A["用户目标"] --> B["Orchestrator"]
+  B --> C["Researcher"]
+  B --> D["Writer"]
+  B --> E["Critic"]
+  C --> F["事实材料"]
+  D --> G["初稿"]
+  E --> H["审查意见"]
+  F --> B
+  G --> B
+  H --> B
+  B --> I["最终交付"]
+```
+
+### 原理展开
+
+- 多智能体的价值来自分工,不是数量。每个 agent 应该有清晰输入、输出和责任边界,否则只是把单 agent 的混乱放大。
+- Orchestrator 是系统稳定性的核心。它决定谁先做、谁复核、何时停止,也负责把中间结果压缩成最终上下文。
+- 多 agent 会增加通信成本和一致性风险。任务足够复杂、角色视角确实不同、输出可合并时才值得拆。
+
+### 本章和整条路径的关系
+
+本章把单条 agent loop 扩展成协作网络。后续框架章节会展示如何用图结构更稳地表达这种编排。
 
 ---
 
@@ -172,6 +211,53 @@ DEBUG=1 npx tsx lessons/11-multi-agent-orchestration/index.ts
 5. **健壮性**：故意把 supervisor 的 system prompt 改坏（让它输出非 JSON），验证 `parseDecision` 的兜底是否生效。
 
 ---
+
+<!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
+
+## 知识图谱与延伸阅读
+
+> 本节由 `npm run kg` 自动生成（数据源 `knowledge-graph/data/graph.ts`）。要增删请改数据源后重跑。
+
+### 本章概念图谱
+
+```mermaid
+graph LR
+  n_c11_supervisor_worker["Supervisor + Worker 模式"]
+  n_c11_supervisor_routing["Supervisor 路由决策"]
+  n_c11_worker_specialist["Worker 专才"]
+  n_c11_scratchpad["Scratchpad 共享工作台"]
+  n_c11_orchestration_loop["编排主循环"]
+  n_c11_cost_tradeoff["多 agent 取舍"]
+  n_c11_decision_validation["决策容错校验"]
+  n_c06_run_agent_loop["runAgent 循环（第06章）"]
+  n_c11_supervisor_worker -->|组成| n_c11_supervisor_routing
+  n_c11_supervisor_worker -->|组成| n_c11_worker_specialist
+  n_c11_supervisor_routing -->|深化| n_c11_decision_validation
+  n_c11_orchestration_loop -->|应用| n_c11_supervisor_routing
+  n_c11_orchestration_loop -->|应用| n_c11_scratchpad
+  n_c11_scratchpad -->|应用| n_c11_worker_specialist
+  n_c11_cost_tradeoff -->|前置| n_c11_supervisor_worker
+  n_c11_orchestration_loop -->|应用| n_c06_run_agent_loop
+  style n_c11_supervisor_worker stroke:#ff9f0a,stroke-width:3px
+  style n_c11_supervisor_routing stroke:#ff9f0a,stroke-width:3px
+  style n_c11_worker_specialist stroke:#ff9f0a,stroke-width:3px
+  style n_c11_scratchpad stroke:#ff9f0a,stroke-width:3px
+  style n_c11_orchestration_loop stroke:#ff9f0a,stroke-width:3px
+  style n_c11_cost_tradeoff stroke:#ff9f0a,stroke-width:3px
+  style n_c11_decision_validation stroke:#ff9f0a,stroke-width:3px
+```
+
+### 与其他章节的关系
+
+- `编排主循环` —**应用**→ `runAgent 循环`（第 06 章）
+
+### 延伸阅读
+
+- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) — Anthropic 官方工程博客，系统讲解 Agent 的循环、工具与何时该用 Agent，与本章心智模型高度对应 `doc`
+
+> 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
+
+<!-- KG:END -->
 
 ## 五、小结与延伸
 

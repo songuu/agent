@@ -18,6 +18,44 @@
 - 已读 [第 09 章 · 从零实现 RAG](../09-rag-from-scratch/README.md)（理解「检索结果会拼进上下文」这一注入入口）。
 - 已读上一章 [第 16 章 · 可观测性与成本](../16-observability-and-cost/README.md)。
 
+## 三层学习路线
+
+| 层级 | 学习目标 | 你要完成什么 |
+|------|----------|--------------|
+| 极简 | 识别一次 prompt injection 和敏感操作风险。 | 能说明为什么外部文档、网页、用户输入都不能直接被信任。 |
+| 进阶 | 理解护栏是分层系统而不是一句安全 prompt。 | 设计输入过滤、工具权限、人工确认、输出检查和审计日志的组合。 |
+| 真实实践 | 为真实 Agent 制定风险分级策略。 | 把读操作、写操作、付费操作、外发消息分别放进不同确认和沙箱等级。 |
+
+---
+
+## 图解学习地图
+
+> 读图顺序：先看本章主线,再回到代码走读。核心焦点：**在不可信输入和可执行工具之间建立护栏**。
+
+```mermaid
+flowchart LR
+  A["用户/网页/文档输入"] --> B["输入分类"]
+  B --> C{"风险等级"}
+  C -->|"低"| D["正常进入 agent"]
+  C -->|"中"| E["重写/加约束"]
+  C -->|"高"| F["拒绝或人工确认"]
+  D --> G["工具权限检查"]
+  E --> G
+  G --> H{"危险动作?"}
+  H -->|"是"| I["确认/阻断"]
+  H -->|"否"| J["执行"]
+```
+
+### 原理展开
+
+- Agent 安全的难点在于模型会读不可信内容,又可能调用真实工具。提示注入就是让外部文本劫持系统意图。
+- 护栏要分层: 输入过滤、系统提示约束、工具权限、执行确认、输出检查都各守一段,不能只靠一句不要做坏事。
+- 危险能力要默认最小权限。能读不要给写,能模拟不要真执行,需要执行时加确认、审计和可回滚设计。
+
+### 本章和整条路径的关系
+
+本章给部署前最后一道安全门。第 18 章服务化后,输入规模和攻击面都会变大,这些护栏必须前置。
+
 ---
 
 ## 一、原理：当 agent 读进「不可信内容」
@@ -148,6 +186,57 @@ LLM_PROVIDER=openai npx tsx lessons/17-safety-and-guardrails/index.ts
 5. **进阶**：再加一个 `move_file` 工具，按风险把工具分成「只读 / 可写 / 危险」三档，只有「危险」档才触发人工确认。
 
 ---
+
+<!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
+
+## 知识图谱与延伸阅读
+
+> 本节由 `npm run kg` 自动生成（数据源 `knowledge-graph/data/graph.ts`）。要增删请改数据源后重跑。
+
+### 本章概念图谱
+
+```mermaid
+graph LR
+  n_c17_prompt_injection["提示注入 (Prompt Injection)"]
+  n_c17_trust_boundary["信任边界"]
+  n_c17_isolate_and_label["隔离 + 标注 (wrapUntrusted)"]
+  n_c17_defense_in_depth["纵深防御"]
+  n_c17_output_validation["出口行为校验"]
+  n_c17_pii_redaction["PII 脱敏"]
+  n_c17_human_in_the_loop["最小权限 + 人在回路"]
+  n_c09_augment_prompt["上下文增强 (augment)（第09章）"]
+  n_c06_tool_registry["工具注册表 (ToolRegistry)（第06章）"]
+  n_c17_prompt_injection -->|前置| n_c17_trust_boundary
+  n_c17_trust_boundary -->|应用| n_c17_isolate_and_label
+  n_c17_defense_in_depth -->|组成| n_c17_isolate_and_label
+  n_c17_defense_in_depth -->|组成| n_c17_output_validation
+  n_c17_defense_in_depth -->|组成| n_c17_pii_redaction
+  n_c17_defense_in_depth -->|组成| n_c17_human_in_the_loop
+  n_c17_output_validation -->|对比| n_c17_pii_redaction
+  n_c17_prompt_injection -->|深化| n_c17_defense_in_depth
+  n_c17_isolate_and_label -->|应用| n_c09_augment_prompt
+  n_c17_human_in_the_loop -->|应用| n_c06_tool_registry
+  style n_c17_prompt_injection stroke:#ff9f0a,stroke-width:3px
+  style n_c17_trust_boundary stroke:#ff9f0a,stroke-width:3px
+  style n_c17_isolate_and_label stroke:#ff9f0a,stroke-width:3px
+  style n_c17_defense_in_depth stroke:#ff9f0a,stroke-width:3px
+  style n_c17_output_validation stroke:#ff9f0a,stroke-width:3px
+  style n_c17_pii_redaction stroke:#ff9f0a,stroke-width:3px
+  style n_c17_human_in_the_loop stroke:#ff9f0a,stroke-width:3px
+```
+
+### 与其他章节的关系
+
+- `隔离 + 标注 (wrapUntrusted)` —**应用**→ `上下文增强 (augment)`（第 09 章）
+- `最小权限 + 人在回路` —**应用**→ `工具注册表 (ToolRegistry)`（第 06 章）
+
+### 延伸阅读
+
+- [OpenAI Agents — Guardrails](https://platform.openai.com/docs/guides/agents/guardrails) — 官方对 agent 输入/输出护栏的设计说明，与本章分层防御思路一致 `doc`
+
+> 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
+
+<!-- KG:END -->
 
 ## 五、小结与延伸
 

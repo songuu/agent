@@ -16,7 +16,43 @@
 
 - 已读 [第 02 章 · 你的第一次 LLM 调用](../02-first-llm-call/README.md)，见过 `stream()` 的 `text` 流。
 - 已读 [第 13 章 · 结构化输出](../13-structured-output/README.md)。
-- 了解 `runAgent` 的基本用法（见 [第 04/05 章](../04-tool-calling/README.md) 与 [`src/shared/agent/loop.ts`](../../src/shared/agent/loop.ts)）。
+- 了解 `runAgent` 的基本用法（见 [第 04 章](../04-the-agent-loop/README.md)、[第 05 章](../05-tool-use-basics/README.md) 与 [`src/shared/agent/loop.ts`](../../src/shared/agent/loop.ts)）。
+
+## 三层学习路线
+
+| 层级 | 学习目标 | 你要完成什么 |
+|------|----------|--------------|
+| 极简 | 跑通 token streaming 并看到增量输出。 | 能区分最终结果、过程事件、工具步骤和用户取消。 |
+| 进阶 | 理解流式 UX 的事件协议和资源控制。 | 设计 chunk、progress、tool-call、done、error、abort 这些事件如何流向前端。 |
+| 真实实践 | 把 agent 做成可感知进度的产品体验。 | 为长任务设计 SSE 或 WebSocket 流、取消按钮、重试提示和部分结果展示。 |
+
+---
+
+## 图解学习地图
+
+> 读图顺序：先看本章主线,再回到代码走读。核心焦点：**用流式输出降低等待焦虑,用取消控制成本**。
+
+```mermaid
+flowchart LR
+  A["用户发起请求"] --> B["LLM stream"]
+  B --> C["chunk 逐段返回"]
+  C --> D["UI 立即渲染"]
+  D --> E{"用户取消?"}
+  E -->|"否"| C
+  E -->|"是"| F["AbortController"]
+  F --> G["停止读取/释放资源"]
+  C --> H["完整答案"]
+```
+
+### 原理展开
+
+- 流式不一定缩短总耗时,但会显著降低首字延迟。用户越早看到系统在动,越能接受长任务。
+- 流式是协议问题也是 UX 问题。后端要逐块产出,前端要增量渲染,状态栏要说明当前阶段,错误要能在半路显示。
+- 取消是成本控制能力。没有取消,用户关页面后模型可能继续烧 token; 生产系统必须把 abort 信号传到尽可能深的调用层。
+
+### 本章和整条路径的关系
+
+本章把 agent 从命令行输出推向产品体验。部署章节会把流式能力包装成 SSE 服务接口。
 
 ---
 
@@ -173,6 +209,56 @@ LLM_PROVIDER=openai npx tsx lessons/14-streaming-and-ux/index.ts
 5. **进阶 · 超时即重试**：把演示 3 包一层——若 `aborted` 为真，则换更短的 prompt 重发一次，实现"超时降级"。
 
 ---
+
+<!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
+
+## 知识图谱与延伸阅读
+
+> 本节由 `npm run kg` 自动生成（数据源 `knowledge-graph/data/graph.ts`）。要增删请改数据源后重跑。
+
+### 本章概念图谱
+
+```mermaid
+graph LR
+  n_c14_token_streaming["Token 流式输出 (typewriter)"]
+  n_c14_perceived_latency["首字延迟与体感"]
+  n_c14_progress_streaming["进度流 (onStep)"]
+  n_c14_abort_controller["AbortController 取消"]
+  n_c14_consumer_side_cancel["消费侧取消"]
+  n_c14_graceful_cleanup["优雅善后"]
+  n_c02_stream["stream() 流式输出（第02章）"]
+  n_c06_run_agent_loop["runAgent 循环（第06章）"]
+  n_c18_sse_streaming["SSE 流式接口 (/chat/stream)（第18章）"]
+  n_c14_token_streaming -->|应用| n_c14_perceived_latency
+  n_c14_token_streaming -->|对比| n_c14_progress_streaming
+  n_c14_abort_controller -->|深化| n_c14_consumer_side_cancel
+  n_c14_abort_controller -->|组成| n_c14_graceful_cleanup
+  n_c14_consumer_side_cancel -->|应用| n_c14_perceived_latency
+  n_c14_token_streaming -->|深化| n_c02_stream
+  n_c14_progress_streaming -->|应用| n_c06_run_agent_loop
+  n_c18_sse_streaming -->|深化| n_c14_token_streaming
+  style n_c14_token_streaming stroke:#ff9f0a,stroke-width:3px
+  style n_c14_perceived_latency stroke:#ff9f0a,stroke-width:3px
+  style n_c14_progress_streaming stroke:#ff9f0a,stroke-width:3px
+  style n_c14_abort_controller stroke:#ff9f0a,stroke-width:3px
+  style n_c14_consumer_side_cancel stroke:#ff9f0a,stroke-width:3px
+  style n_c14_graceful_cleanup stroke:#ff9f0a,stroke-width:3px
+```
+
+### 与其他章节的关系
+
+- `Token 流式输出 (typewriter)` —**深化**→ `stream() 流式输出`（第 02 章）
+- `进度流 (onStep)` —**应用**→ `runAgent 循环`（第 06 章）
+- `SSE 流式接口 (/chat/stream)` —**深化**→ `Token 流式输出 (typewriter)`（第 18 章）
+
+### 延伸阅读
+
+- [AbortController - Web APIs | MDN](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) — 本章取消机制的权威参考，README 中直接引用 `doc`
+- [Streaming Messages - Anthropic API](https://docs.anthropic.com/en/api/messages-streaming) — 官方流式消息 SSE 协议，对应底层 stream() 的实现 `doc`
+
+> 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
+
+<!-- KG:END -->
 
 ## 五、小结与延伸
 

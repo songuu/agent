@@ -126,7 +126,7 @@
   → 返回给用户 / 写回业务系统
 ```
 
-毕业项目 **Deep Research Agent** 就是这套骨架的完整范例——它本身可以直接改成一个「调研助手」类 MVP 的起点。
+毕业项目 **Deep Research Agent** 就是这套骨架的完整范例——它本身可以直接改成一个「调研助手」类 MVP 的起点。若你的产品核心是“上传资料 → 知识库问答 → 引用溯源”，则把 [RAG 系统实战项目](./rag-system-project.md) 与 [songuu/rag-system](https://github.com/songuu/rag-system) 作为主线,比从 Deep Research Agent 改造更直接。
 
 ---
 

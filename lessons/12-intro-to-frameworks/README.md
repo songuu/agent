@@ -19,6 +19,41 @@
 - 已读 [第 11 章 · 多 Agent 编排](../11-multi-agent-orchestration/README.md)。
 - 已配好 `.env` 里的 `ANTHROPIC_API_KEY`（本章框架 SDK 会自动读取它）。
 
+## 三层学习路线
+
+| 层级 | 学习目标 | 你要完成什么 |
+|------|----------|--------------|
+| 极简 | 把手写版 agent 能力映射到框架概念。 | 说清 LangGraph.js、Vercel AI SDK 分别帮你托管了哪些样板代码。 |
+| 进阶 | 理解框架的状态、节点、边、stream 和持久化抽象。 | 对比手写 loop 与 LangGraph state graph,知道框架何时降低复杂度、何时增加约束。 |
+| 真实实践 | 制定从 demo 迁移到框架的路线。 | 为一个已有手写 agent 选择保留、替换、重写的模块,避免被框架重构吞没。 |
+
+---
+
+## 图解学习地图
+
+> 读图顺序：先看本章主线,再回到代码走读。核心焦点：**理解框架把手写循环封装成图和节点**。
+
+```mermaid
+flowchart LR
+  A["手写 agent loop"] --> B["状态 State"]
+  B --> C["节点 Node"]
+  C --> D["边 Edge"]
+  D --> E["Graph 执行"]
+  E --> F["可视化/持久化/恢复"]
+  A --> G["Vercel AI SDK"]
+  G --> H["流式 UI 与工具调用封装"]
+```
+
+### 原理展开
+
+- 框架不是替代原理,而是把已经学过的循环、工具和状态封装成更可维护的结构。先手写再上框架,你才能判断抽象是否合适。
+- LangGraph 的核心是显式状态图: 节点做计算,边决定下一步,状态在节点间流动。它适合长流程和可恢复编排。
+- Vercel AI SDK 更偏产品体验: 流式、工具调用、前端集成更顺手。选框架时要看任务控制流和 UI 形态。
+
+### 本章和整条路径的关系
+
+本章是从底层原理到生产抽象的桥。后续结构化输出、流式 UX、部署都会受益于框架提供的封装。
+
 ---
 
 ## 一、原理：手写够学原理，生产需要框架
@@ -186,6 +221,65 @@ ANTHROPIC_API_KEY=sk-ant-... npx tsx lessons/12-intro-to-frameworks/index.ts
 5. **进阶 · 持久化**：给 LangGraph 的 `createReactAgent` 传 `checkpointer`（如 `MemorySaver`）+ `invoke` 时带 `thread_id`，连续两次提问，验证它「记得」上一轮——这正是手写版做不到的「状态持久化」。
 
 ---
+
+<!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
+
+## 知识图谱与延伸阅读
+
+> 本节由 `npm run kg` 自动生成（数据源 `knowledge-graph/data/graph.ts`）。要增删请改数据源后重跑。
+
+### 本章概念图谱
+
+```mermaid
+graph LR
+  n_c12_why_frameworks["为什么生产要上框架"]
+  n_c12_vercel_ai_sdk["Vercel AI SDK"]
+  n_c12_max_steps["maxSteps 自动工具循环"]
+  n_c12_langgraph["LangGraph.js"]
+  n_c12_react_agent["createReactAgent 预制图"]
+  n_c12_state_graph["状态机图模型"]
+  n_c12_framework_choice["框架选型决策"]
+  n_c06_run_agent_loop["runAgent 循环（第06章）"]
+  n_c04_agent_loop["Agent 循环（第04章）"]
+  n_c04_react["ReAct (Reasoning + Acting)（第04章）"]
+  n_c19_ecosystem_layers["Agent 生态分层（第19章）"]
+  n_c12_why_frameworks -->|应用| n_c12_vercel_ai_sdk
+  n_c12_why_frameworks -->|应用| n_c12_langgraph
+  n_c12_vercel_ai_sdk -->|组成| n_c12_max_steps
+  n_c12_langgraph -->|组成| n_c12_react_agent
+  n_c12_langgraph -->|深化| n_c12_state_graph
+  n_c12_react_agent -->|应用| n_c12_state_graph
+  n_c12_max_steps -->|对比| n_c12_state_graph
+  n_c12_vercel_ai_sdk -->|前置| n_c12_framework_choice
+  n_c12_langgraph -->|前置| n_c12_framework_choice
+  n_c12_vercel_ai_sdk -->|对比| n_c06_run_agent_loop
+  n_c12_langgraph -->|对比| n_c04_agent_loop
+  n_c12_react_agent -->|应用| n_c04_react
+  n_c19_ecosystem_layers -->|深化| n_c12_framework_choice
+  style n_c12_why_frameworks stroke:#ff9f0a,stroke-width:3px
+  style n_c12_vercel_ai_sdk stroke:#ff9f0a,stroke-width:3px
+  style n_c12_max_steps stroke:#ff9f0a,stroke-width:3px
+  style n_c12_langgraph stroke:#ff9f0a,stroke-width:3px
+  style n_c12_react_agent stroke:#ff9f0a,stroke-width:3px
+  style n_c12_state_graph stroke:#ff9f0a,stroke-width:3px
+  style n_c12_framework_choice stroke:#ff9f0a,stroke-width:3px
+```
+
+### 与其他章节的关系
+
+- `Vercel AI SDK` —**对比**→ `runAgent 循环`（第 06 章）
+- `LangGraph.js` —**对比**→ `Agent 循环`（第 04 章）
+- `createReactAgent 预制图` —**应用**→ `ReAct (Reasoning + Acting)`（第 04 章）
+- `Agent 生态分层` —**深化**→ `框架选型决策`（第 19 章）
+
+### 延伸阅读
+
+- [Vercel AI SDK 官方文档](https://sdk.vercel.ai/docs) — generateText / streamText / tool / maxSteps 的权威参考 `doc`
+- [LangGraph.js 官方文档](https://langchain-ai.github.io/langgraphjs/) — StateGraph / createReactAgent / checkpointer 的权威参考 `doc`
+
+> 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
+
+<!-- KG:END -->
 
 ## 五、小结与延伸
 

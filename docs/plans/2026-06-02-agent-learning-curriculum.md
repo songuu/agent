@@ -165,15 +165,26 @@ deadcode_until: []
 | 测试覆盖 | 通过但有边界 | 类型检查已跑通; 无 API key,未做真实模型端到端输出校验。 |
 | 第 6 视角: 集成连续性 | 通过 | 18 章均有 `README.md + index.ts`; 4 份指南文档与 capstone 已落地; 无 dead code / feature gate 债务登记项。 |
 
-### Findings
+### Findings（多视角并行审查 workflow：18 reviewer 逐章核查，2026-06-03）
 
-- P0: 无。
-- P1: 无。
-- P2: 真实 LLM / embedding 输出未在当前无 key 环境验证。处理: README 与 `.env.example` 已写明配置方式; 后续填入 key 后运行关键章节和 capstone e2e。
+实跑结果：**P0=3、P1=7、P2=11**。P0/P1 已全部处理：
+
+**P0（3，已修）**
+- `01 index.ts + README`：伪 agent 循环用 `role:"tool"`（且无 toolCallId）回灌工具结果，而上一条 assistant 只是纯文本——下一轮 chat 时 Anthropic/OpenAI 两家 API 都会 400（tool 消息必须与真实 tool_use/tool_calls 配对）。→ 改为 `role:"user"` 普通消息回灌，并注明本章是文本协议、真 tool 配对见第 04/05 章。
+- `10 README`：「预期输出」人均算错（写「162 ÷ 4 ≈ 40.5」）。→ 按 index.ts 实际菜价修正为「2×58+3×12=152，满 100 打 9 折 = 136.8 ÷ 4 = 34.2」。
+
+**P1（7，全部处理）**
+- `04 README`：声称 `DEBUG=1` 会有 `logger.debug` 输出，但 index.ts 无该调用。→ 在循环中补 `logger.debug`（每步原始输出 + token 用量），使提示名副其实。
+- `07 README 练习1`：固定轮数下「调大窗口 → 压缩触发更晚」实为「不再触发」。→ 改写为「窗口越大触发越晚、最终不触发，是『记忆保真度 vs 成本』权衡」。
+- `10/11/14 README` 前置链接失效（`04-react-and-tools`/`06-tool-system`/`05-the-agent-loop`/`06-building-tools`/`04-tool-calling`）：**经逐一核验，这 5 处已在 README 增补过程中修正为真实路径**（grep 确认旧路径已不存在），无需再改。对抗式复核避免了重复编辑。
+
+**P2（11）**：措辞/示意片段微调与真模型 e2e 待验，记录备查、不阻塞（详见 review 输出 JSON）。
 
 ### 验证记录
 
-- `npx tsc --noEmit` → pass。
+- `npx tsc --noEmit` → pass（P0/P1 修复后复跑仍零错误）。
+- 全仓 `role:"tool"` 复核：除 01 章已改为 `role:"user"`，其余均为真实工具调用配对（`loop.ts` / `lesson 05`，含 `toolCallId: call.id`）。
+- `npx tsc --noEmit`（修复前）→ pass。
 - `rg -n 'TODO|FIXME|new Anthropic|new OpenAI|@anthropic-ai/sdk'` → no matches。
 - `npx tsx lessons\01-what-is-an-agent\index.ts` (沙盒外) → 入口启动; 缺 `ANTHROPIC_API_KEY` 时输出预期错误。
 - `npx tsx lessons\06-building-a-tool-system\index.ts` → 离线工具系统 smoke 通过; 真模型段缺 `ANTHROPIC_API_KEY` 时输出预期错误。

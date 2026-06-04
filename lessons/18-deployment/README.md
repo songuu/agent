@@ -19,6 +19,42 @@
 - 了解 `runAgent` 的用法（见 [`src/shared/agent/loop.ts`](../../src/shared/agent/loop.ts)）。
 - 已读 [第 17 章 · 安全与护栏](../17-safety-and-guardrails/README.md)（服务化把"输入即攻击面"放大了）。
 
+## 三层学习路线
+
+| 层级 | 学习目标 | 你要完成什么 |
+|------|----------|--------------|
+| 极简 | 把 agent 包成一个 HTTP `/chat` 服务。 | 能通过请求触发 agent,拿到正常响应和错误响应。 |
+| 进阶 | 理解服务化后的超时、并发、无状态和流式输出。 | 说明为什么要有 health check、request id、SSE、rate limit、secret 管理。 |
+| 真实实践 | 把课程 agent 推向可上线服务。 | 写出部署 checklist: 环境变量、日志、监控、回滚、预算、权限和故障预案。 |
+
+---
+
+## 图解学习地图
+
+> 读图顺序：先看本章主线,再回到代码走读。核心焦点：**把脚本式 agent 包装成可运维服务**。
+
+```mermaid
+flowchart LR
+  A["HTTP 请求"] --> B["解析与校验"]
+  B --> C["创建无状态 agent"]
+  C --> D{"接口类型"}
+  D -->|"POST /chat"| E["JSON 响应"]
+  D -->|"POST /chat/stream"| F["SSE 流式响应"]
+  E --> G["日志/用量/错误码"]
+  F --> G
+  G --> H["Docker/云平台运行"]
+```
+
+### 原理展开
+
+- 服务化的第一原则是无状态。请求需要的上下文要由客户端或外部存储提供,不要依赖单个 Node 进程内存。
+- 生产 API 必须有超时、大小限制、错误码和密钥隔离。脚本里可以简单 throw,服务里要给调用方稳定契约。
+- 部署不是最后一步复制命令,而是把运行假设显式化: Node 版本、PORT、环境变量、健康检查、日志、成本和回滚路径。
+
+### 本章和整条路径的关系
+
+本章把前 17 章能力交付成服务边界。到这里,学习者已经具备从 demo 到可演示产品的完整链路。
+
 ---
 
 ## 一、原理：从脚本到服务
@@ -336,12 +372,69 @@ CMD ["npx", "tsx", "lessons/18-deployment/index.ts"]
 
 ---
 
+<!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
+
+## 知识图谱与延伸阅读
+
+> 本节由 `npm run kg` 自动生成（数据源 `knowledge-graph/data/graph.ts`）。要增删请改数据源后重跑。
+
+### 本章概念图谱
+
+```mermaid
+graph LR
+  n_c18_agent_as_service["脚本到服务 (Agent as Service)"]
+  n_c18_stateless["无状态服务 (Stateless)"]
+  n_c18_request_timeout["请求超时 (Timeout)"]
+  n_c18_error_fallback["错误兜底 (withGuards)"]
+  n_c18_secret_safety["密钥安全 (Secrets)"]
+  n_c18_sse_streaming["SSE 流式接口 (/chat/stream)"]
+  n_c18_deploy_checklist["部署 checklist 与 Docker"]
+  n_c14_token_streaming["Token 流式输出 (typewriter)（第14章）"]
+  n_c06_run_agent_loop["runAgent 循环（第06章）"]
+  n_ccapstone_dual_entrypoint["CLI / HTTP 双入口（第capstone章）"]
+  n_c18_agent_as_service -->|组成| n_c18_stateless
+  n_c18_agent_as_service -->|组成| n_c18_request_timeout
+  n_c18_agent_as_service -->|组成| n_c18_error_fallback
+  n_c18_agent_as_service -->|组成| n_c18_secret_safety
+  n_c18_agent_as_service -->|组成| n_c18_sse_streaming
+  n_c18_stateless -->|前置| n_c18_deploy_checklist
+  n_c18_request_timeout -->|组成| n_c18_error_fallback
+  n_c18_sse_streaming -->|应用| n_c18_error_fallback
+  n_c18_secret_safety -->|应用| n_c18_deploy_checklist
+  n_c18_deploy_checklist -->|组成| n_c18_request_timeout
+  n_c18_sse_streaming -->|深化| n_c14_token_streaming
+  n_c18_agent_as_service -->|应用| n_c06_run_agent_loop
+  n_ccapstone_dual_entrypoint -->|组成| n_c18_agent_as_service
+  style n_c18_agent_as_service stroke:#ff9f0a,stroke-width:3px
+  style n_c18_stateless stroke:#ff9f0a,stroke-width:3px
+  style n_c18_request_timeout stroke:#ff9f0a,stroke-width:3px
+  style n_c18_error_fallback stroke:#ff9f0a,stroke-width:3px
+  style n_c18_secret_safety stroke:#ff9f0a,stroke-width:3px
+  style n_c18_sse_streaming stroke:#ff9f0a,stroke-width:3px
+  style n_c18_deploy_checklist stroke:#ff9f0a,stroke-width:3px
+```
+
+### 与其他章节的关系
+
+- `SSE 流式接口 (/chat/stream)` —**深化**→ `Token 流式输出 (typewriter)`（第 14 章）
+- `脚本到服务 (Agent as Service)` —**应用**→ `runAgent 循环`（第 06 章）
+- `CLI / HTTP 双入口` —**组成**→ `脚本到服务 (Agent as Service)`（第 capstone 章）
+
+### 延伸阅读
+
+- [Server-sent events - MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) — SSE 与 EventSource 的官方权威说明，对应本章 /chat/stream `doc`
+- [Node.js HTTP module documentation](https://nodejs.org/api/http.html) — node:http 内置模块文档，本章无框架起服务的基础 `doc`
+
+> 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
+
+<!-- KG:END -->
+
 ## 五、小结与延伸
 
 - 服务化 = 把"跑一次就退出的脚本"变成"常驻、并发、多用户"的进程。
 - 四条生命线：**无状态**（会话别放进程内存）、**超时**（慢请求要有上限）、**错误兜底**（异常转结构化响应、进程不崩）、**密钥安全**（只从 env 读、永不外泄）。
 - SSE 是把 token 流给浏览器的最轻方案；客户端断开要做**消费侧取消**。
 - 端口从 env 读、加健康检查、处理 `SIGTERM`——这些细节决定了你的服务能不能被平台正确托管。
-- 上一章 [第 17 章 · 安全与护栏](../17-safety-and-guardrails/README.md)；这是学习路径的最后一章，接下来去 [毕业项目 · Deep Research Agent](../../capstone/deep-research-agent/README.md) 把所学拼成一个完整作品吧！
+- 上一章 [第 17 章 · 安全与护栏](../17-safety-and-guardrails/README.md)；下一章 [第 19 章 · Agent 前沿发展与生态拆解](../19-agent-ecosystem-and-frontier/README.md) 会把前面学到的零件放回真实生态里，再去 [毕业项目 · Deep Research Agent](../../capstone/deep-research-agent/README.md) 拼成完整作品。
 
 > 💡 **面试会问**：为什么 web 服务要"无状态"？多实例水平扩展时把会话放内存会出什么问题？SSE 和 WebSocket 有什么区别、各自适合什么场景？请求超时该怎么做，做不好会怎样？API key 这类 secret 该怎么管理？

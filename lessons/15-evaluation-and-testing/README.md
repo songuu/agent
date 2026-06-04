@@ -19,6 +19,43 @@
 - 了解「结构化抽取」：让模型只吐 JSON 再用 zod 校验（即上一阶段第 13 章的做法，本章会原样复用一个抽取函数当"被测对象"）。
 - 已读 [第 14 章 · 流式输出与 UX](../14-streaming-and-ux/README.md)。
 
+## 三层学习路线
+
+| 层级 | 学习目标 | 你要完成什么 |
+|------|----------|--------------|
+| 极简 | 为 agent 写第一组 eval 样例。 | 能运行固定输入输出检查,知道 demo 成功不等于系统稳定。 |
+| 进阶 | 理解规则评分、LLM-as-judge 和回归测试。 | 区分 determinism、正确性、相关性、幻觉、安全性这些不同质量维度。 |
+| 真实实践 | 把 eval 接进 CI 和发布门禁。 | 设计一套上线前必须通过的质量阈值,并记录失败样例用于 prompt 或工具修复。 |
+
+---
+
+## 图解学习地图
+
+> 读图顺序：先看本章主线,再回到代码走读。核心焦点：**用评估集和打分器替代凭感觉验收**。
+
+```mermaid
+flowchart LR
+  A["固定样例集"] --> B["运行 agent/prompt"]
+  B --> C["收集输出"]
+  C --> D["规则打分"]
+  C --> E["LLM-as-judge"]
+  D --> F["报告"]
+  E --> F
+  F --> G{"低于阈值?"}
+  G -->|"是"| H["定位 prompt/工具/检索"]
+  G -->|"否"| I["允许发布"]
+```
+
+### 原理展开
+
+- AI 应用测试不是只断言一个字符串。更常见的是用样例集、规则评分、人工复核和 LLM judge 组合判断质量。
+- 评估集要覆盖真实失败模式: 格式错误、事实错误、拒答边界、工具失败、检索不到。只测 happy path 会制造虚假安全感。
+- 分数要可追踪。每次改 prompt、模型或工具后,都应该能比较前后质量,否则优化会变成主观印象。
+
+### 本章和整条路径的关系
+
+本章是课程进入工程化的质量门。后续可观测和部署解决线上发生什么,评估解决上线前是否该发。
+
 ---
 
 ## 一、原理：为什么不能只靠「看着对」
@@ -210,6 +247,54 @@ LLM_PROVIDER=openai npx tsx lessons/15-evaluation-and-testing/index.ts
 5. **进阶·接 vitest**：把 `runEval` 的结果改写成 vitest 的 `test.each` 断言（`expect(report.passRate).toBeGreaterThanOrEqual(0.75)`），让 `pnpm test` 直接跑这套评估。
 
 ---
+
+<!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
+
+## 知识图谱与延伸阅读
+
+> 本节由 `npm run kg` 自动生成（数据源 `knowledge-graph/data/graph.ts`）。要增删请改数据源后重跑。
+
+### 本章概念图谱
+
+```mermaid
+graph LR
+  n_c15_nondeterminism["LLM 输出非确定性"]
+  n_c15_eval_dataset["离线评估数据集"]
+  n_c15_eval_harness["评估框架 runEval"]
+  n_c15_rule_scoring["规则评分"]
+  n_c15_llm_judge["LLM-as-judge"]
+  n_c15_regression_ci["回归测试与 CI 门槛"]
+  n_c15_sut_separation["被测对象与评估分离"]
+  n_c13_structured_output["结构化输出（第13章）"]
+  n_c15_nondeterminism -->|前置| n_c15_eval_dataset
+  n_c15_eval_dataset -->|应用| n_c15_eval_harness
+  n_c15_rule_scoring -->|组成| n_c15_eval_harness
+  n_c15_llm_judge -->|组成| n_c15_eval_harness
+  n_c15_rule_scoring -->|对比| n_c15_llm_judge
+  n_c15_eval_harness -->|应用| n_c15_regression_ci
+  n_c15_sut_separation -->|前置| n_c15_eval_harness
+  n_c15_eval_dataset -->|应用| n_c13_structured_output
+  style n_c15_nondeterminism stroke:#ff9f0a,stroke-width:3px
+  style n_c15_eval_dataset stroke:#ff9f0a,stroke-width:3px
+  style n_c15_eval_harness stroke:#ff9f0a,stroke-width:3px
+  style n_c15_rule_scoring stroke:#ff9f0a,stroke-width:3px
+  style n_c15_llm_judge stroke:#ff9f0a,stroke-width:3px
+  style n_c15_regression_ci stroke:#ff9f0a,stroke-width:3px
+  style n_c15_sut_separation stroke:#ff9f0a,stroke-width:3px
+```
+
+### 与其他章节的关系
+
+- `离线评估数据集` —**应用**→ `结构化输出`（第 13 章）
+
+### 延伸阅读
+
+- [Statistical Approaches to Evaluating LLM Outputs (Anthropic - Create strong empirical evaluations)](https://docs.anthropic.com/en/docs/test-and-evaluate/develop-tests) — Anthropic 官方关于设计评估与评分（含规则与模型评分）的指南 `doc`
+- [promptfoo - LLM evals & testing](https://www.promptfoo.dev/docs/intro/) — 本章小结点名的生产级 eval/数据集管理框架官方文档 `doc`
+
+> 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
+
+<!-- KG:END -->
 
 ## 五、小结与延伸
 

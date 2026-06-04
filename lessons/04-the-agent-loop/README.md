@@ -18,6 +18,42 @@
 - 已读 [第 02 章 · 你的第一次 LLM 调用](../02-first-llm-call/README.md)，理解 `getLLM().chat()` 与「LLM 是无状态的」。
 - 已读 [第 03 章 · 提示工程](../03-prompt-engineering/README.md)，理解 system 提示如何约束模型行为。
 
+## 三层学习路线
+
+| 层级 | 学习目标 | 你要完成什么 |
+|------|----------|--------------|
+| 极简 | 跑通一个最小 ReAct 循环。 | 看懂 Thought、Action、Observation 如何组成多步任务,并能指出循环何时停止。 |
+| 进阶 | 理解 agent loop 的控制权和上下文管理。 | 解释 messages、tool result、stopReason、maxSteps 如何共同决定下一轮。 |
+| 真实实践 | 把手写 loop 抽成可复用 runtime 的雏形。 | 为一个需要查资料或算步骤的任务设计 loop、日志、错误回灌和人工终止点。 |
+
+---
+
+## 图解学习地图
+
+> 读图顺序：先看本章主线,再回到代码走读。核心焦点：**手写 ReAct 风格的多步循环**。
+
+```mermaid
+flowchart LR
+  A["messages"] --> B["LLM 思考下一步"]
+  B --> C{"stopReason"}
+  C -->|"tool_use"| D["执行工具"]
+  D --> E["追加 tool message"]
+  E --> A
+  C -->|"stop"| F["最终答案"]
+  C -->|"max_tokens/other"| G["兜底错误"]
+  A --> H["maxSteps 安全阀"]
+```
+
+### 原理展开
+
+- Agent loop 的核心是消息数组的可变历史。每一轮模型输出都被写回 history,工具结果也被写回 history,下一轮模型因此拥有新状态。
+- maxSteps 是必要安全阀。模型可能反复要工具、工具可能返回无效信息,没有上限就会变成无限循环和无限账单。
+- ReAct 的可调试性来自把 Reason/Act/Observe 分开。你能看见模型为什么调用某工具、工具返回什么、下一步如何变化。
+
+### 本章和整条路径的关系
+
+第 05/06 章把这里的手写工具执行抽象成工具系统; capstone 则把这条循环扩展成完整研究流程。
+
 ---
 
 ## 一、原理：为什么一次调用不够，需要「循环」
@@ -195,6 +231,77 @@ LLM_PROVIDER=openai npx tsx lessons/04-the-agent-loop/index.ts
 5. **进阶**：把 `scratchpad`（单条 user 消息）改造成真正的多轮 `messages` 数组（assistant 放模型输出、user 放 Observation），对比两种「记忆」组织方式的差异。
 
 ---
+
+<!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
+
+## 知识图谱与延伸阅读
+
+> 本节由 `npm run kg` 自动生成（数据源 `knowledge-graph/data/graph.ts`）。要增删请改数据源后重跑。
+
+### 本章概念图谱
+
+```mermaid
+graph LR
+  n_c04_react["ReAct (Reasoning + Acting)"]
+  n_c04_agent_loop["Agent 循环"]
+  n_c04_text_protocol["文本协议 + 正则解析"]
+  n_c04_max_steps["maxSteps 停止条件"]
+  n_c04_scratchpad["scratchpad 短期记忆"]
+  n_c04_tool_table["工具分发表"]
+  n_c04_native_fc["原生 function calling"]
+  n_c01_react_loop["感知-决策-行动-观察循环（第01章）"]
+  n_c02_chat["chat() 一次性调用（第02章）"]
+  n_c03_system_vs_user["system 提示 vs user 提示（第03章）"]
+  n_c05_native_tool_use["原生工具调用 (Function Calling)（第05章）"]
+  n_c05_roundtrip_loop["工具调用往返循环（第05章）"]
+  n_c10_react["ReAct (边想边做)（第10章）"]
+  n_c10_reasoning_pattern["推理范式 (控制流选择)（第10章）"]
+  n_c12_langgraph["LangGraph.js（第12章）"]
+  n_c12_react_agent["createReactAgent 预制图（第12章）"]
+  n_c04_react -->|组成| n_c04_agent_loop
+  n_c04_agent_loop -->|组成| n_c04_max_steps
+  n_c04_agent_loop -->|组成| n_c04_scratchpad
+  n_c04_agent_loop -->|组成| n_c04_tool_table
+  n_c04_text_protocol -->|应用| n_c04_agent_loop
+  n_c04_scratchpad -->|应用| n_c04_react
+  n_c04_native_fc -->|对比| n_c04_text_protocol
+  n_c04_agent_loop -->|深化| n_c01_react_loop
+  n_c04_agent_loop -->|应用| n_c02_chat
+  n_c04_text_protocol -->|应用| n_c03_system_vs_user
+  n_c05_native_tool_use -->|对比| n_c04_text_protocol
+  n_c05_roundtrip_loop -->|深化| n_c04_agent_loop
+  n_c10_react -->|深化| n_c04_react
+  n_c10_reasoning_pattern -->|对比| n_c04_agent_loop
+  n_c12_langgraph -->|对比| n_c04_agent_loop
+  n_c12_react_agent -->|应用| n_c04_react
+  style n_c04_react stroke:#ff9f0a,stroke-width:3px
+  style n_c04_agent_loop stroke:#ff9f0a,stroke-width:3px
+  style n_c04_text_protocol stroke:#ff9f0a,stroke-width:3px
+  style n_c04_max_steps stroke:#ff9f0a,stroke-width:3px
+  style n_c04_scratchpad stroke:#ff9f0a,stroke-width:3px
+  style n_c04_tool_table stroke:#ff9f0a,stroke-width:3px
+  style n_c04_native_fc stroke:#ff9f0a,stroke-width:3px
+```
+
+### 与其他章节的关系
+
+- `Agent 循环` —**深化**→ `感知-决策-行动-观察循环`（第 01 章）
+- `Agent 循环` —**应用**→ `chat() 一次性调用`（第 02 章）
+- `文本协议 + 正则解析` —**应用**→ `system 提示 vs user 提示`（第 03 章）
+- `原生工具调用 (Function Calling)` —**对比**→ `文本协议 + 正则解析`（第 05 章）
+- `工具调用往返循环` —**深化**→ `Agent 循环`（第 05 章）
+- `ReAct (边想边做)` —**深化**→ `ReAct (Reasoning + Acting)`（第 10 章）
+- `推理范式 (控制流选择)` —**对比**→ `Agent 循环`（第 10 章）
+- `LangGraph.js` —**对比**→ `Agent 循环`（第 12 章）
+- `createReactAgent 预制图` —**应用**→ `ReAct (Reasoning + Acting)`（第 12 章）
+
+### 延伸阅读
+
+- [ReAct: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629) — ReAct 原始论文，本章「思考+行动交替」范式的来源 `paper`
+
+> 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
+
+<!-- KG:END -->
 
 ## 五、小结与延伸
 

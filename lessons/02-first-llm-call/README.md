@@ -17,6 +17,40 @@
 - 已读 [第 01 章 · 什么是 Agent](../01-what-is-an-agent/README.md)。
 - 已按 [环境搭建](../../docs/setup.md) 配好 `.env`（至少一个厂商的 key）。
 
+## 三层学习路线
+
+| 层级 | 学习目标 | 你要完成什么 |
+|------|----------|--------------|
+| 极简 | 跑通第一次 provider 无关的 LLM 调用。 | 能用 `getLLM().chat()` 发消息并读懂 text、usage、stopReason。 |
+| 进阶 | 理解一次模型调用的输入、输出、费用和停止原因。 | 对比 chat 与 stream,知道 temperature、maxTokens、model、provider 这些参数如何影响结果。 |
+| 真实实践 | 把模型调用封装成项目里的稳定入口。 | 写出一个不会把 Claude/OpenAI 细节泄漏到业务代码里的 LLM client 使用方式。 |
+
+---
+
+## 图解学习地图
+
+> 读图顺序：先看本章主线,再回到代码走读。核心焦点：**掌握 LLM 调用的最小闭环和 provider 抽象**。
+
+```mermaid
+flowchart LR
+  A[".env 选择厂商"] --> B["getLLM()"]
+  B --> C["LLMClient.chat()"]
+  C --> D["messages + system"]
+  D --> E["厂商 SDK"]
+  E --> F["统一 ChatResult"]
+  F --> G["课程代码只读 text / usage"]
+```
+
+### 原理展开
+
+- 一次 LLM 调用可以理解为带随机性的函数: 输入 messages、system、temperature,输出 text、toolCalls、usage。先把这个边界看清,后面才不会把框架魔法误当原理。
+- provider 抽象的价值是隔离变化: Anthropic 和 OpenAI 的 SDK 参数不同,但课程代码只依赖 LLMClient。厂商差异集中在 shared 层,学习者更容易追踪。
+- usage 不是装饰信息,它是成本和可观测性的地基。每次调用都应该能回答用了多少输入 token、输出 token、模型是什么。
+
+### 本章和整条路径的关系
+
+后续所有章节都复用这个调用边界。工具调用、结构化输出、流式输出只是 chat/stream 的不同用法。
+
 ---
 
 ## 一、原理：LLM 调用就是一个「纯函数」
@@ -109,6 +143,66 @@ LLM_PROVIDER=openai npx tsx lessons/02-first-llm-call/index.ts
 4. **进阶**：打印 `result.stopReason`，理解它什么时候是 `stop`、什么时候可能是 `max_tokens`（试着把 `maxTokens` 设成 10）。
 
 ---
+
+<!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
+
+## 知识图谱与延伸阅读
+
+> 本节由 `npm run kg` 自动生成（数据源 `knowledge-graph/data/graph.ts`）。要增删请改数据源后重跑。
+
+### 本章概念图谱
+
+```mermaid
+graph LR
+  n_c02_llm_call_pure_function["LLM 调用本质 (无状态纯函数)"]
+  n_c02_get_llm_abstraction["provider 无关抽象 getLLM()"]
+  n_c02_chat["chat() 一次性调用"]
+  n_c02_stream["stream() 流式输出"]
+  n_c02_usage_token["usage 与 token 成本"]
+  n_c02_stop_reason["stopReason 停止原因"]
+  n_c01_llm_vs_agent["LLM 与 Agent 的区别（第01章）"]
+  n_c04_agent_loop["Agent 循环（第04章）"]
+  n_c07_context_window_budget["上下文窗口预算（第07章）"]
+  n_c14_token_streaming["Token 流式输出 (typewriter)（第14章）"]
+  n_c16_cost_estimation["费用估算公式（第16章）"]
+  n_c16_decorator_tracer["装饰器模式 Tracer（第16章）"]
+  n_c02_llm_call_pure_function -->|应用| n_c02_get_llm_abstraction
+  n_c02_get_llm_abstraction -->|组成| n_c02_chat
+  n_c02_get_llm_abstraction -->|组成| n_c02_stream
+  n_c02_chat -->|对比| n_c02_stream
+  n_c02_chat -->|应用| n_c02_usage_token
+  n_c02_chat -->|应用| n_c02_stop_reason
+  n_c02_llm_call_pure_function -->|深化| n_c01_llm_vs_agent
+  n_c04_agent_loop -->|应用| n_c02_chat
+  n_c07_context_window_budget -->|应用| n_c02_usage_token
+  n_c14_token_streaming -->|深化| n_c02_stream
+  n_c16_cost_estimation -->|深化| n_c02_usage_token
+  n_c16_decorator_tracer -->|应用| n_c02_get_llm_abstraction
+  style n_c02_llm_call_pure_function stroke:#ff9f0a,stroke-width:3px
+  style n_c02_get_llm_abstraction stroke:#ff9f0a,stroke-width:3px
+  style n_c02_chat stroke:#ff9f0a,stroke-width:3px
+  style n_c02_stream stroke:#ff9f0a,stroke-width:3px
+  style n_c02_usage_token stroke:#ff9f0a,stroke-width:3px
+  style n_c02_stop_reason stroke:#ff9f0a,stroke-width:3px
+```
+
+### 与其他章节的关系
+
+- `LLM 调用本质 (无状态纯函数)` —**深化**→ `LLM 与 Agent 的区别`（第 01 章）
+- `Agent 循环` —**应用**→ `chat() 一次性调用`（第 04 章）
+- `上下文窗口预算` —**应用**→ `usage 与 token 成本`（第 07 章）
+- `Token 流式输出 (typewriter)` —**深化**→ `stream() 流式输出`（第 14 章）
+- `费用估算公式` —**深化**→ `usage 与 token 成本`（第 16 章）
+- `装饰器模式 Tracer` —**应用**→ `provider 无关抽象 getLLM()`（第 16 章）
+
+### 延伸阅读
+
+- [Anthropic Messages API 文档](https://docs.anthropic.com/en/api/messages) — Claude 的 messages.create 接口，对应本章 chat() 的底层 `doc`
+- [OpenAI Chat Completions API 文档](https://platform.openai.com/docs/api-reference/chat) — OpenAI 的 chat.completions.create 接口，本章 provider 抽象的另一实现 `doc`
+
+> 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
+
+<!-- KG:END -->
 
 ## 五、小结与延伸
 

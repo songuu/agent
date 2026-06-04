@@ -19,6 +19,41 @@
 - 已读 [第 02 章 · 你的第一次 LLM 调用](../02-first-llm-call/README.md)，会用 `getLLM().chat()`、读得懂 `usage`。
 - 已配好 `.env`（至少一个厂商的 key）。
 
+## 三层学习路线
+
+| 层级 | 学习目标 | 你要完成什么 |
+|------|----------|--------------|
+| 极简 | 能通过 system prompt 和少量示例改善输出。 | 改写同一个任务的 prompt,观察角色、约束、示例对结果的影响。 |
+| 进阶 | 理解 prompt 是行为规格而不是文案装饰。 | 比较 zero-shot、few-shot、CoT、格式约束和 temperature 的边界,知道何时该换成结构化输出。 |
+| 真实实践 | 把 prompt 当成可版本化的产品资产。 | 为一个真实功能写 prompt spec、坏例子、回归样例,为后续 eval 做准备。 |
+
+---
+
+## 图解学习地图
+
+> 读图顺序：先看本章主线,再回到代码走读。核心焦点：**把提示词当成可测试的行为规格**。
+
+```mermaid
+flowchart LR
+  A["任务目标"] --> B["角色与边界"]
+  B --> C["输入格式"]
+  C --> D["输出格式"]
+  D --> E["示例 few-shot"]
+  E --> F["失败样例与约束"]
+  F --> G["模型输出"]
+  G --> H["评估与迭代"]
+```
+
+### 原理展开
+
+- 提示词不是咒语,而是行为规格。好的 prompt 会说明目标、边界、输入输出格式和失败时如何处理,让模型在可预期轨道内工作。
+- few-shot 的本质是给模型局部模式,不是让它背答案。示例要覆盖边界条件,尤其是拒答、格式错误和歧义输入。
+- 提示工程必须和评估一起出现。只看一次输出很容易误判,至少要用固定样例集反复比较不同 prompt 的稳定性。
+
+### 本章和整条路径的关系
+
+本章把自然语言变成工程接口。后续 agent 的 system prompt、工具描述、安全策略都依赖这套写法。
+
 ---
 
 ## 一、原理：提示就是 agent 的「程序」
@@ -154,6 +189,59 @@ LLM_PROVIDER=openai npx tsx lessons/03-prompt-engineering/index.ts
 5. **进阶 · 测稳定性**：把实验五的 `temperature` 改成 `0.3` 和 `0.7` 各跑几次，找到「既不呆板又不离谱」的甜区，并记录你的观察。
 
 ---
+
+<!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
+
+## 知识图谱与延伸阅读
+
+> 本节由 `npm run kg` 自动生成（数据源 `knowledge-graph/data/graph.ts`）。要增删请改数据源后重跑。
+
+### 本章概念图谱
+
+```mermaid
+graph LR
+  n_c03_system_vs_user["system 提示 vs user 提示"]
+  n_c03_role_instruction["角色设定 + 明确指令"]
+  n_c03_few_shot["few-shot 示例"]
+  n_c03_cot["思维链 (CoT)"]
+  n_c03_constrained_output["约束输出格式 (JSON)"]
+  n_c03_temperature["temperature"]
+  n_c03_prompt_as_spec["提示即行为规格"]
+  n_c04_text_protocol["文本协议 + 正则解析（第04章）"]
+  n_c13_structured_output["结构化输出（第13章）"]
+  n_c03_prompt_as_spec -->|组成| n_c03_system_vs_user
+  n_c03_system_vs_user -->|应用| n_c03_role_instruction
+  n_c03_role_instruction -->|深化| n_c03_few_shot
+  n_c03_role_instruction -->|深化| n_c03_cot
+  n_c03_system_vs_user -->|应用| n_c03_constrained_output
+  n_c03_few_shot -->|应用| n_c03_temperature
+  n_c03_constrained_output -->|应用| n_c03_temperature
+  n_c03_prompt_as_spec -->|组成| n_c03_temperature
+  n_c04_text_protocol -->|应用| n_c03_system_vs_user
+  n_c13_structured_output -->|深化| n_c03_constrained_output
+  style n_c03_system_vs_user stroke:#ff9f0a,stroke-width:3px
+  style n_c03_role_instruction stroke:#ff9f0a,stroke-width:3px
+  style n_c03_few_shot stroke:#ff9f0a,stroke-width:3px
+  style n_c03_cot stroke:#ff9f0a,stroke-width:3px
+  style n_c03_constrained_output stroke:#ff9f0a,stroke-width:3px
+  style n_c03_temperature stroke:#ff9f0a,stroke-width:3px
+  style n_c03_prompt_as_spec stroke:#ff9f0a,stroke-width:3px
+```
+
+### 与其他章节的关系
+
+- `文本协议 + 正则解析` —**应用**→ `system 提示 vs user 提示`（第 04 章）
+- `结构化输出` —**深化**→ `约束输出格式 (JSON)`（第 13 章）
+
+### 延伸阅读
+
+- [Chain-of-Thought Prompting Elicits Reasoning in Large Language Models](https://arxiv.org/abs/2201.11903) — 思维链 (CoT) 的奠基论文，对应本章实验三 `paper`
+- [Language Models are Few-Shot Learners (GPT-3)](https://arxiv.org/abs/2005.14165) — few-shot 学习的代表性论文，对应本章实验二 `paper`
+- [Anthropic 文档：Prompt engineering overview](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview) — 官方提示工程技巧汇总，覆盖角色/示例/格式约束 `doc`
+
+> 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
+
+<!-- KG:END -->
 
 ## 五、小结与延伸
 

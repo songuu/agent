@@ -18,6 +18,42 @@
 - 已读 [第 06 章 · 构建工具系统](../06-building-a-tool-system/README.md)，熟悉 `messages` 数组的来回传递。
 - 已按 [环境搭建](../../docs/setup.md) 配好 `.env`（至少一个厂商的 key）。
 
+## 三层学习路线
+
+| 层级 | 学习目标 | 你要完成什么 |
+|------|----------|--------------|
+| 极简 | 用 history array 保留多轮对话。 | 能解释为什么每次调用都要把必要历史重新放进 messages。 |
+| 进阶 | 掌握上下文窗口、摘要压缩和 token 预算。 | 比较最近 N 轮、滑动窗口、摘要记忆三种策略的成本和丢信息风险。 |
+| 真实实践 | 为真实会话设计记忆生命周期。 | 定义哪些内容进短期记忆、哪些进长期记忆、哪些必须因隐私或合规被丢弃。 |
+
+---
+
+## 图解学习地图
+
+> 读图顺序：先看本章主线,再回到代码走读。核心焦点：**把对话历史当作可裁剪的工作记忆**。
+
+```mermaid
+flowchart LR
+  A["新用户消息"] --> B["追加到 history"]
+  B --> C["估算上下文大小"]
+  C --> D{"超过预算?"}
+  D -->|"否"| E["直接发送给模型"]
+  D -->|"是"| F["裁剪/摘要旧消息"]
+  F --> E
+  E --> G["模型回复"]
+  G --> B
+```
+
+### 原理展开
+
+- 短期记忆不是模型内部自动记住,而是你把历史消息重新放进下一次请求。少放会失忆,多放会超上下文和烧成本。
+- 记忆管理本质是信息压缩: 保留目标、约束、最近交互和工具结果,丢弃寒暄、重复内容和已经沉淀的中间推理。
+- 上下文窗口是资源预算。真实产品会同时考虑 token 成本、延迟、隐私和相关性,不是简单把全部聊天记录塞进去。
+
+### 本章和整条路径的关系
+
+本章解决短会话状态。第 08/09 章会引入向量检索,处理放不进上下文的长期知识。
+
 ---
 
 ## 一、原理：「记忆」是你手动维护的一个数组
@@ -181,13 +217,65 @@ DEBUG=1 npx tsx lessons/07-short-term-memory/index.ts
 
 ## 四、练习
 
-1. **改窗口大小**：把演示二的 `keepRecentTurns` 调大到 5，观察压缩触发得更晚、单次请求更贵。
+1. **改窗口大小**：逐步调大演示二的 `keepRecentTurns`，观察压缩触发得越来越晚、单次请求越来越贵；当窗口大到能装下整段演示时，压缩就不再触发——这正说明窗口大小是「记忆保真度 vs 成本」的权衡。
 2. **故意「失忆」**：把 `summarize()` 的 system 提示改成「随便概括两个字」，再跑演示二，观察会员编号被丢掉——体会摘要质量决定记忆质量。
 3. **统计 token 成本**：在 `ask()` 里打印 `result.usage.inputTokens`，对比「开压缩」与「关压缩」两种情况下，靠后轮次的输入 token 差距。
 4. **按 token 而非条数压缩**：把 `summarizeThreshold` 的判断从「消息条数」换成「估算字符数 / 4」（粗略 token 数），更贴近真实窗口约束。
 5. **进阶**：让 `Conversation` 支持 `tool` 角色消息（配合第 06 章的工具系统），保证压缩时不破坏 `toolCallId` 的对应关系。
 
 ---
+
+<!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
+
+## 知识图谱与延伸阅读
+
+> 本节由 `npm run kg` 自动生成（数据源 `knowledge-graph/data/graph.ts`）。要增删请改数据源后重跑。
+
+### 本章概念图谱
+
+```mermaid
+graph LR
+  n_c07_conversation_as_array["记忆即回灌 messages"]
+  n_c07_context_window_budget["上下文窗口预算"]
+  n_c07_sliding_window["滑动窗口"]
+  n_c07_llm_summary_compression["LLM 摘要压缩"]
+  n_c07_message_layout["三段式消息结构"]
+  n_c07_summarize_threshold["压缩阈值与滚动摘要"]
+  n_c07_conversation_class["Conversation 类"]
+  n_c01_message_memory["消息数组即记忆（第01章）"]
+  n_c02_usage_token["usage 与 token 成本（第02章）"]
+  n_c07_context_window_budget -->|前置| n_c07_conversation_as_array
+  n_c07_sliding_window -->|应用| n_c07_context_window_budget
+  n_c07_llm_summary_compression -->|应用| n_c07_context_window_budget
+  n_c07_sliding_window -->|对比| n_c07_llm_summary_compression
+  n_c07_message_layout -->|组成| n_c07_sliding_window
+  n_c07_message_layout -->|组成| n_c07_llm_summary_compression
+  n_c07_summarize_threshold -->|深化| n_c07_llm_summary_compression
+  n_c07_conversation_class -->|组成| n_c07_message_layout
+  n_c07_conversation_class -->|组成| n_c07_summarize_threshold
+  n_c07_conversation_as_array -->|深化| n_c01_message_memory
+  n_c07_context_window_budget -->|应用| n_c02_usage_token
+  style n_c07_conversation_as_array stroke:#ff9f0a,stroke-width:3px
+  style n_c07_context_window_budget stroke:#ff9f0a,stroke-width:3px
+  style n_c07_sliding_window stroke:#ff9f0a,stroke-width:3px
+  style n_c07_llm_summary_compression stroke:#ff9f0a,stroke-width:3px
+  style n_c07_message_layout stroke:#ff9f0a,stroke-width:3px
+  style n_c07_summarize_threshold stroke:#ff9f0a,stroke-width:3px
+  style n_c07_conversation_class stroke:#ff9f0a,stroke-width:3px
+```
+
+### 与其他章节的关系
+
+- `记忆即回灌 messages` —**深化**→ `消息数组即记忆`（第 01 章）
+- `上下文窗口预算` —**应用**→ `usage 与 token 成本`（第 02 章）
+
+### 延伸阅读
+
+- [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) — Anthropic 官方：上下文是有限资源，需主动裁剪与压缩，与本章窗口预算/摘要思路一致 `blog`
+
+> 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
+
+<!-- KG:END -->
 
 ## 五、小结与延伸
 

@@ -18,6 +18,41 @@
 - 已读 [第 02 章 · 你的第一次 LLM 调用](../02-first-llm-call/README.md)：熟悉 `getLLM()` 与 `chat()`。
 - 了解 [zod](https://zod.dev) 的基本写法（`z.object`、`z.number`、`z.enum`）。
 
+## 三层学习路线
+
+| 层级 | 学习目标 | 你要完成什么 |
+|------|----------|--------------|
+| 极简 | 用 `defineTool` 和 registry 管理多个工具。 | 新增一个工具,能被注册、校验、执行,并返回结构化结果。 |
+| 进阶 | 理解工具系统的类型、运行期校验和安全执行。 | 说明 zod schema、ToolSpec、ToolRegistry、错误包装如何一起减少不可信输入风险。 |
+| 真实实践 | 把工具层升级成企业 Agent 的能力边界。 | 设计一组内部工具的命名、权限、超时、审计和未来接入 MCP 的映射方式。 |
+
+---
+
+## 图解学习地图
+
+> 读图顺序：先看本章主线,再回到代码走读。核心焦点：**从零实现可复用 ToolRegistry**。
+
+```mermaid
+flowchart LR
+  A["defineTool"] --> B["zod schema"]
+  B --> C["JSON Schema 给模型"]
+  B --> D["parse 校验运行时输入"]
+  D --> E["execute typed input"]
+  E --> F["string result"]
+  F --> G["ToolRegistry.run"]
+  G --> H["runAgent 循环复用"]
+```
+
+### 原理展开
+
+- 工具系统的目标是单一事实来源: 同一个 zod schema 同时服务模型描述和运行时校验,避免文档和代码漂移。
+- 注册表应该存同构工具。作者写工具时保留具体类型,注册后擦除成统一 Tool,可以避免 TypeScript 函数参数逆变导致的集合类型问题。
+- ToolRegistry 是权限边界。未来做生产系统时,审计日志、限流、危险工具确认都应该挂在这一层,而不是散落在每个 lesson。
+
+### 本章和整条路径的关系
+
+本章产物是后续所有 agent 的工具基础设施。RAG 搜索、计算器、保存笔记、部署 API 都会以工具形式接入循环。
+
 ---
 
 ## 一、原理：为什么需要一个「工具系统」
@@ -187,6 +222,79 @@ LLM_PROVIDER=openai npx tsx lessons/06-building-a-tool-system/index.ts
 5. **进阶**：给 `MiniToolRegistry`（手写版）补一个 `has(name): boolean` 与 `unregister(name): boolean`，并写两行断言验证；体会注册表作为「容器」可以有哪些自然的扩展点。
 
 ---
+
+<!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
+
+## 知识图谱与延伸阅读
+
+> 本节由 `npm run kg` 自动生成（数据源 `knowledge-graph/data/graph.ts`）。要增删请改数据源后重跑。
+
+### 本章概念图谱
+
+```mermaid
+graph LR
+  n_c06_single_zod_schema["单一 zod schema"]
+  n_c06_define_tool["defineTool / defineMiniTool"]
+  n_c06_tool_registry["工具注册表 (ToolRegistry)"]
+  n_c06_safe_execution["安全执行"]
+  n_c06_type_erasure["类型擦除 run(unknown)"]
+  n_c06_self_correction_loop["LLM 自我纠错闭环"]
+  n_c06_run_agent_loop["runAgent 循环"]
+  n_c05_toolspec_schema["ToolSpec 与 JSON Schema（第05章）"]
+  n_c05_roundtrip_loop["工具调用往返循环（第05章）"]
+  n_c05_error_feedback["工具错误回传（第05章）"]
+  n_c11_orchestration_loop["编排主循环（第11章）"]
+  n_c12_vercel_ai_sdk["Vercel AI SDK（第12章）"]
+  n_c14_progress_streaming["进度流 (onStep)（第14章）"]
+  n_c17_human_in_the_loop["最小权限 + 人在回路（第17章）"]
+  n_c18_agent_as_service["脚本到服务 (Agent as Service)（第18章）"]
+  n_ccapstone_tool_registry["工具系统 (search/calc/saveNote)（第capstone章）"]
+  n_c06_single_zod_schema -->|组成| n_c06_define_tool
+  n_c06_define_tool -->|组成| n_c06_tool_registry
+  n_c06_define_tool -->|组成| n_c06_safe_execution
+  n_c06_define_tool -->|应用| n_c06_type_erasure
+  n_c06_type_erasure -->|前置| n_c06_tool_registry
+  n_c06_safe_execution -->|深化| n_c06_self_correction_loop
+  n_c06_tool_registry -->|应用| n_c06_run_agent_loop
+  n_c06_self_correction_loop -->|应用| n_c06_run_agent_loop
+  n_c06_define_tool -->|深化| n_c05_toolspec_schema
+  n_c06_run_agent_loop -->|深化| n_c05_roundtrip_loop
+  n_c06_self_correction_loop -->|深化| n_c05_error_feedback
+  n_c11_orchestration_loop -->|应用| n_c06_run_agent_loop
+  n_c12_vercel_ai_sdk -->|对比| n_c06_run_agent_loop
+  n_c14_progress_streaming -->|应用| n_c06_run_agent_loop
+  n_c17_human_in_the_loop -->|应用| n_c06_tool_registry
+  n_c18_agent_as_service -->|应用| n_c06_run_agent_loop
+  n_ccapstone_tool_registry -->|组成| n_c06_tool_registry
+  style n_c06_single_zod_schema stroke:#ff9f0a,stroke-width:3px
+  style n_c06_define_tool stroke:#ff9f0a,stroke-width:3px
+  style n_c06_tool_registry stroke:#ff9f0a,stroke-width:3px
+  style n_c06_safe_execution stroke:#ff9f0a,stroke-width:3px
+  style n_c06_type_erasure stroke:#ff9f0a,stroke-width:3px
+  style n_c06_self_correction_loop stroke:#ff9f0a,stroke-width:3px
+  style n_c06_run_agent_loop stroke:#ff9f0a,stroke-width:3px
+```
+
+### 与其他章节的关系
+
+- `defineTool / defineMiniTool` —**深化**→ `ToolSpec 与 JSON Schema`（第 05 章）
+- `runAgent 循环` —**深化**→ `工具调用往返循环`（第 05 章）
+- `LLM 自我纠错闭环` —**深化**→ `工具错误回传`（第 05 章）
+- `编排主循环` —**应用**→ `runAgent 循环`（第 11 章）
+- `Vercel AI SDK` —**对比**→ `runAgent 循环`（第 12 章）
+- `进度流 (onStep)` —**应用**→ `runAgent 循环`（第 14 章）
+- `最小权限 + 人在回路` —**应用**→ `工具注册表 (ToolRegistry)`（第 17 章）
+- `脚本到服务 (Agent as Service)` —**应用**→ `runAgent 循环`（第 18 章）
+- `工具系统 (search/calc/saveNote)` —**组成**→ `工具注册表 (ToolRegistry)`（第 capstone 章）
+
+### 延伸阅读
+
+- [Anthropic Docs · Tool use (function calling) with Claude](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) — 官方工具调用文档，含 tool_use stopReason 与 tool_result 回传机制 `doc`
+- [Zod 官方文档](https://zod.dev) — 本章 schema 校验与类型推断的基础库，README 前置知识引用 `doc`
+
+> 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
+
+<!-- KG:END -->
 
 ## 五、小结与延伸
 

@@ -19,6 +19,42 @@
 - 已读 [第 15 章 · 评估与测试](../15-evaluation-and-testing/README.md)：评估关心"对不对"，本章关心"快不快、贵不贵"。
 - 熟悉 `runAgent`（[`loop.ts`](../../src/shared/agent/loop.ts)）与 `getLLM`（[`types.ts`](../../src/shared/llm/types.ts)）。
 
+## 三层学习路线
+
+| 层级 | 学习目标 | 你要完成什么 |
+|------|----------|--------------|
+| 极简 | 为一次 agent 运行记录 trace 和 token 成本。 | 能看出每一步用了哪个模型、多少 token、耗时多久。 |
+| 进阶 | 理解 spans、latency、cost、error rate 如何定位问题。 | 用 trace 判断瓶颈来自模型、工具、检索、网络还是重试。 |
+| 真实实践 | 搭建生产可观测和预算治理思路。 | 设计 dashboard、告警、用户级成本归因和每日预算上限。 |
+
+---
+
+## 图解学习地图
+
+> 读图顺序：先看本章主线,再回到代码走读。核心焦点：**给每次模型和工具调用装上仪表盘**。
+
+```mermaid
+flowchart LR
+  A["agent step"] --> B["LLM 调用"]
+  A --> C["工具调用"]
+  B --> D["tokens / latency / model"]
+  C --> E["tool name / args / duration"]
+  D --> F["trace"]
+  E --> F
+  F --> G["成本估算"]
+  F --> H["故障定位"]
+```
+
+### 原理展开
+
+- 可观测性要贴近边界: 每次外部模型调用、工具调用、检索调用都应该记录输入规模、耗时、结果状态和成本相关信息。
+- 成本不是月底账单才看。token、模型单价、调用次数、重试次数都能在请求级估算,这能指导 prompt 压缩和模型分层。
+- 日志要保护隐私和密钥。能记录元数据就不要记录完整敏感输入; 需要排障样本时要脱敏和限权。
+
+### 本章和整条路径的关系
+
+本章让 agent 从 demo 变成可运营系统。capstone 里的成本统计就是这套思想的产品化示例。
+
 ---
 
 ## 一、原理：可观测性 = 在每次外部调用的进出两端打点
@@ -207,6 +243,60 @@ LLM_PROVIDER=openai npx tsx lessons/16-observability-and-cost/index.ts
    写一句话结论：什么任务值得用贵模型、什么任务用便宜模型即可。
 
 ---
+
+<!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
+
+## 知识图谱与延伸阅读
+
+> 本节由 `npm run kg` 自动生成（数据源 `knowledge-graph/data/graph.ts`）。要增删请改数据源后重跑。
+
+### 本章概念图谱
+
+```mermaid
+graph LR
+  n_c16_observability["可观测性 (Observability)"]
+  n_c16_span_trace_tree["Span 与 Trace 树"]
+  n_c16_decorator_tracer["装饰器模式 Tracer"]
+  n_c16_cost_estimation["费用估算公式"]
+  n_c16_price_table["价格表单一事实来源"]
+  n_c16_bottleneck_location["瓶颈定位"]
+  n_c16_production_tooling["生产工具 LangSmith/OTel"]
+  n_c02_usage_token["usage 与 token 成本（第02章）"]
+  n_c02_get_llm_abstraction["provider 无关抽象 getLLM()（第02章）"]
+  n_ccapstone_tracer_cost["Tracer 可观测与成本（第capstone章）"]
+  n_c16_observability -->|组成| n_c16_span_trace_tree
+  n_c16_decorator_tracer -->|应用| n_c16_observability
+  n_c16_decorator_tracer -->|应用| n_c16_span_trace_tree
+  n_c16_cost_estimation -->|前置| n_c16_price_table
+  n_c16_span_trace_tree -->|应用| n_c16_cost_estimation
+  n_c16_span_trace_tree -->|应用| n_c16_bottleneck_location
+  n_c16_decorator_tracer -->|对比| n_c16_production_tooling
+  n_c16_cost_estimation -->|深化| n_c02_usage_token
+  n_c16_decorator_tracer -->|应用| n_c02_get_llm_abstraction
+  n_ccapstone_tracer_cost -->|组成| n_c16_decorator_tracer
+  style n_c16_observability stroke:#ff9f0a,stroke-width:3px
+  style n_c16_span_trace_tree stroke:#ff9f0a,stroke-width:3px
+  style n_c16_decorator_tracer stroke:#ff9f0a,stroke-width:3px
+  style n_c16_cost_estimation stroke:#ff9f0a,stroke-width:3px
+  style n_c16_price_table stroke:#ff9f0a,stroke-width:3px
+  style n_c16_bottleneck_location stroke:#ff9f0a,stroke-width:3px
+  style n_c16_production_tooling stroke:#ff9f0a,stroke-width:3px
+```
+
+### 与其他章节的关系
+
+- `费用估算公式` —**深化**→ `usage 与 token 成本`（第 02 章）
+- `装饰器模式 Tracer` —**应用**→ `provider 无关抽象 getLLM()`（第 02 章）
+- `Tracer 可观测与成本` —**组成**→ `装饰器模式 Tracer`（第 capstone 章）
+
+### 延伸阅读
+
+- [Anthropic Pricing](https://www.anthropic.com/pricing) — Anthropic 官方价格页，价格表单价的权威来源 `doc`
+- [OpenAI API Pricing](https://openai.com/api/pricing) — OpenAI 官方价格页，对比厂商单价用 `doc`
+
+> 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
+
+<!-- KG:END -->
 
 ## 五、小结与延伸
 

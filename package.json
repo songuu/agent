@@ -11,7 +11,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "lesson": "tsx",
-    "capstone": "tsx capstone/deep-research-agent/src/cli.ts"
+    "capstone": "tsx capstone/deep-research-agent/src/cli.ts",
+    "kg": "tsx knowledge-graph/generate.ts"
   },
   "keywords": [
     "ai",

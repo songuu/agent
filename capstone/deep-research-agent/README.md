@@ -247,6 +247,17 @@ execute: async ({ query, k }) => {
 - **上报可观测数据**：把 Tracer 的 span 上报到 LangSmith / OpenTelemetry，做线上监控。
 - **流式全链路**：把进度与报告通过 SSE 推给前端，做成网页版研究助手。
 
+### 进阶 RAG 系统连接
+
+本项目里的 RAG 是研究型 agent 的一个 `search` 工具，重点是“让 agent 有可溯源的知识来源”。如果你的目标是单独打造知识库问答 / 文档检索 / RAG 平台，继续看 [RAG 系统实战项目](../../docs/rag-system-project.md)，并连接到 [songuu/rag-system](https://github.com/songuu/rag-system)。
+
+两者分工：
+
+| 项目 | 核心展示 |
+|------|----------|
+| Deep Research Agent | RAG 如何作为工具接进 agent loop,服务规划、研究、报告生成 |
+| songuu/rag-system | RAG 系统本身如何工程化: ingestion、chunk、retrieval、rerank、citation、eval、治理 |
+
 ---
 
 ## 六、练习
@@ -278,3 +289,66 @@ execute: async ({ query, k }) => {
 面试时这些都是很好的展开点：为什么先规划再执行、RAG 如何防幻觉、结构化输出怎么保证稳定、成本怎么算、为什么要做 provider 抽象。
 
 > 💡 **面试会问**：Plan-and-Execute 相比直接让 Agent 自由发挥有什么优劣？RAG 是如何减少幻觉的？你怎么保证 LLM 一定吐出合法 JSON？一次研究任务的成本是怎么估算出来的？
+
+<!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
+
+## 知识图谱与延伸阅读
+
+> 本节由 `npm run kg` 自动生成（数据源 `knowledge-graph/data/graph.ts`）。要增删请改数据源后重跑。
+
+### 本章概念图谱
+
+```mermaid
+graph LR
+  n_ccapstone_plan_and_execute["Plan-and-Execute 架构"]
+  n_ccapstone_research_pipeline["research() 研究主干"]
+  n_ccapstone_tool_registry["工具系统 (search/calc/saveNote)"]
+  n_ccapstone_rag_corpus["RAG 内置语料检索"]
+  n_ccapstone_structured_output["结构化输出 (zod 约束)"]
+  n_ccapstone_tracer_cost["Tracer 可观测与成本"]
+  n_ccapstone_dual_entrypoint["CLI / HTTP 双入口"]
+  n_c10_plan_and_execute["Plan-and-Execute (先规划再执行)（第10章）"]
+  n_c06_tool_registry["工具注册表 (ToolRegistry)（第06章）"]
+  n_c09_rag_pipeline["RAG 全流程（第09章）"]
+  n_c13_structured_output["结构化输出（第13章）"]
+  n_c16_decorator_tracer["装饰器模式 Tracer（第16章）"]
+  n_c18_agent_as_service["脚本到服务 (Agent as Service)（第18章）"]
+  n_ccapstone_plan_and_execute -->|组成| n_ccapstone_research_pipeline
+  n_ccapstone_research_pipeline -->|应用| n_ccapstone_tool_registry
+  n_ccapstone_tool_registry -->|组成| n_ccapstone_rag_corpus
+  n_ccapstone_research_pipeline -->|应用| n_ccapstone_structured_output
+  n_ccapstone_tracer_cost -->|应用| n_ccapstone_research_pipeline
+  n_ccapstone_research_pipeline -->|前置| n_ccapstone_dual_entrypoint
+  n_ccapstone_rag_corpus -->|深化| n_ccapstone_plan_and_execute
+  n_ccapstone_research_pipeline -->|深化| n_c10_plan_and_execute
+  n_ccapstone_tool_registry -->|组成| n_c06_tool_registry
+  n_ccapstone_rag_corpus -->|组成| n_c09_rag_pipeline
+  n_ccapstone_structured_output -->|组成| n_c13_structured_output
+  n_ccapstone_tracer_cost -->|组成| n_c16_decorator_tracer
+  n_ccapstone_dual_entrypoint -->|组成| n_c18_agent_as_service
+  style n_ccapstone_plan_and_execute stroke:#ff9f0a,stroke-width:3px
+  style n_ccapstone_research_pipeline stroke:#ff9f0a,stroke-width:3px
+  style n_ccapstone_tool_registry stroke:#ff9f0a,stroke-width:3px
+  style n_ccapstone_rag_corpus stroke:#ff9f0a,stroke-width:3px
+  style n_ccapstone_structured_output stroke:#ff9f0a,stroke-width:3px
+  style n_ccapstone_tracer_cost stroke:#ff9f0a,stroke-width:3px
+  style n_ccapstone_dual_entrypoint stroke:#ff9f0a,stroke-width:3px
+```
+
+### 与其他章节的关系
+
+- `research() 研究主干` —**深化**→ `Plan-and-Execute (先规划再执行)`（第 10 章）
+- `工具系统 (search/calc/saveNote)` —**组成**→ `工具注册表 (ToolRegistry)`（第 06 章）
+- `RAG 内置语料检索` —**组成**→ `RAG 全流程`（第 09 章）
+- `结构化输出 (zod 约束)` —**组成**→ `结构化输出`（第 13 章）
+- `Tracer 可观测与成本` —**组成**→ `装饰器模式 Tracer`（第 16 章）
+- `CLI / HTTP 双入口` —**组成**→ `脚本到服务 (Agent as Service)`（第 18 章）
+
+### 延伸阅读
+
+- [ReAct: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629) — ReAct 原始论文，本章「思考+行动交替」范式的来源 `paper`
+- [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401) — RAG 原始论文 (Lewis et al., 2020)，提出检索增强生成范式 `paper`
+
+> 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
+
+<!-- KG:END -->

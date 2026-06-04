@@ -65,7 +65,7 @@ async function main(): Promise<void> {
         // 见第 04 / 05 章；这里手写是为了把「循环」的机制暴露出来。
         "你是一个能借助外部工具的助手。" +
         "如果你需要知道当前时间才能回答，请【只】回复一个口令：NEED_TIME，不要附带其他文字。" +
-        "当我把时间作为一条 tool 消息提供给你后，再用自然语言正常回答用户。",
+        "当我把时间提供给你后，再用自然语言正常回答用户。",
     },
     { role: "user", content: question },
   ];
@@ -90,11 +90,14 @@ async function main(): Promise<void> {
       const now = getCurrentTime();
       logger.info(`模型请求工具 → 我们调用 getCurrentTime() → ${now}`);
 
-      // 【观察】：把工具结果作为一条 tool 消息塞回记忆，喂给下一步的模型。
+      // 【观察】：把工具结果作为一条普通消息塞回记忆，喂给下一步的模型。
+      // WHY 用 role:"user" 而不是 role:"tool"：本章是「文本协议」（口令 NEED_TIME），
+      // 并非真正的 function calling。role:"tool" 在底层必须与上一条 assistant 的工具调用
+      // (tool_use / tool_calls) 一一配对，否则 Anthropic / OpenAI 都会直接报 400。
+      // 真正的 tool 角色配对见第 04 / 05 章；这里把观察结果当作一条普通输入回灌即可。
       history.push({
-        role: "tool",
-        name: "getCurrentTime",
-        content: `当前时间是：${now}`,
+        role: "user",
+        content: `（工具返回）当前时间是：${now}`,
       });
       // 继续下一轮循环：模型这次「观察」到了真实时间，应当能给出正确答案。
       continue;

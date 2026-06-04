@@ -15,10 +15,45 @@
 
 ## 前置知识
 
-- 已读 [第 04 章 · ReAct 与工具调用](../04-react-and-tools/README.md)（本章 ReAct 是它的「调库」版）。
-- 已读 [第 06 章 · 从零构建工具系统](../06-tool-system/README.md)（理解 `defineTool` / `ToolRegistry`）。
+- 已读 [第 04 章 · Agent 循环](../04-the-agent-loop/README.md)（本章 ReAct 是它的「调库」版）。
+- 已读 [第 06 章 · 从零构建工具系统](../06-building-a-tool-system/README.md)（理解 `defineTool` / `ToolRegistry`）。
 - 已读 [第 09 章 · 从零实现 RAG](../09-rag-from-scratch/README.md)。
 - 已按 [环境搭建](../../docs/setup.md) 配好 `.env`（至少一个厂商的 key）。
+
+## 三层学习路线
+
+| 层级 | 学习目标 | 你要完成什么 |
+|------|----------|--------------|
+| 极简 | 能区分 ReAct、Plan-Execute、Reflection。 | 用同一个任务分别说明三种范式的执行顺序。 |
+| 进阶 | 理解推理范式的可靠性、成本和延迟权衡。 | 判断什么时候需要先规划、什么时候边做边想、什么时候让模型自检。 |
+| 真实实践 | 为真实任务选择合适控制流。 | 给研究、客服、代码修复、数据分析四类任务各选一种范式并说明原因。 |
+
+---
+
+## 图解学习地图
+
+> 读图顺序：先看本章主线,再回到代码走读。核心焦点：**比较 ReAct、Plan-and-Execute、Reflection 三种推理组织方式**。
+
+```mermaid
+flowchart LR
+  A["复杂任务"] --> B{"任务形态"}
+  B -->|"信息边找边做"| C["ReAct"]
+  B -->|"步骤清晰"| D["Plan and Execute"]
+  B -->|"质量需迭代"| E["Reflect"]
+  C --> F["行动和观察交替"]
+  D --> G["先拆计划再执行"]
+  E --> H["生成后自检修订"]
+```
+
+### 原理展开
+
+- 推理模式是控制流选择,不是模型能力本身。相同模型套不同控制流,会得到不同的可控性、成本和稳定性。
+- ReAct 适合探索型任务,因为它每一步都能根据观察改方向; Plan-and-Execute 适合目标清晰的任务,因为先拆解能减少迷路。
+- Reflection 提高质量但会增加成本和延迟。它更适合作为关键输出的复核环节,不适合每个小请求都默认开启。
+
+### 本章和整条路径的关系
+
+本章为后续多智能体和 capstone 提供任务编排策略。复杂研究 agent 通常会混合 plan、act、reflect。
 
 ---
 
@@ -205,7 +240,7 @@ LLM_PROVIDER=openai npx tsx lessons/10-reasoning-patterns/index.ts
 # PowerShell:  $env:DEBUG="1"; npx tsx lessons/10-reasoning-patterns/index.ts
 ```
 
-预期输出：三段分别标注「范式一/二/三」的执行日志（ReAct 的逐步工具调用、Plan 的步骤清单、Reflection 的初稿/批评/成稿），最后一张「LLM 调用次数与 token 成本」对比表。三种方式给出的人均金额应当一致（折后总价 162 元 ÷ 4 ≈ 40.5 元）。
+预期输出：三段分别标注「范式一/二/三」的执行日志（ReAct 的逐步工具调用、Plan 的步骤清单、Reflection 的初稿/批评/成稿），最后一张「LLM 调用次数与 token 成本」对比表。三种方式给出的人均金额应当一致（小计 2×58 + 3×12 = 152 元，满 100 打 9 折后 136.8 元 ÷ 4 = 34.2 元）。
 
 ---
 
@@ -218,6 +253,61 @@ LLM_PROVIDER=openai npx tsx lessons/10-reasoning-patterns/index.ts
 5. **组合范式**：先 Plan 出步骤，每步内部用一个 `runAgent`（ReAct）去执行，最后对汇总稿做一次 Reflection。对比组合版与单一范式的质量/成本。
 
 ---
+
+<!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
+
+## 知识图谱与延伸阅读
+
+> 本节由 `npm run kg` 自动生成（数据源 `knowledge-graph/data/graph.ts`）。要增删请改数据源后重跑。
+
+### 本章概念图谱
+
+```mermaid
+graph LR
+  n_c10_reasoning_pattern["推理范式 (控制流选择)"]
+  n_c10_react["ReAct (边想边做)"]
+  n_c10_plan_and_execute["Plan-and-Execute (先规划再执行)"]
+  n_c10_reflection["Reflection (自我反思修正)"]
+  n_c10_zod_plan_schema["zod 计划契约"]
+  n_c10_scratchpad["scratchpad 滚动上下文"]
+  n_c10_cost_tradeoff["步数/成本/可靠性权衡"]
+  n_c04_react["ReAct (Reasoning + Acting)（第04章）"]
+  n_c04_agent_loop["Agent 循环（第04章）"]
+  n_ccapstone_research_pipeline["research() 研究主干（第capstone章）"]
+  n_c10_reasoning_pattern -->|组成| n_c10_react
+  n_c10_reasoning_pattern -->|组成| n_c10_plan_and_execute
+  n_c10_reasoning_pattern -->|组成| n_c10_reflection
+  n_c10_react -->|对比| n_c10_plan_and_execute
+  n_c10_plan_and_execute -->|应用| n_c10_zod_plan_schema
+  n_c10_plan_and_execute -->|应用| n_c10_scratchpad
+  n_c10_reasoning_pattern -->|深化| n_c10_cost_tradeoff
+  n_c10_cost_tradeoff -->|应用| n_c10_reflection
+  n_c10_react -->|深化| n_c04_react
+  n_c10_reasoning_pattern -->|对比| n_c04_agent_loop
+  n_ccapstone_research_pipeline -->|深化| n_c10_plan_and_execute
+  style n_c10_reasoning_pattern stroke:#ff9f0a,stroke-width:3px
+  style n_c10_react stroke:#ff9f0a,stroke-width:3px
+  style n_c10_plan_and_execute stroke:#ff9f0a,stroke-width:3px
+  style n_c10_reflection stroke:#ff9f0a,stroke-width:3px
+  style n_c10_zod_plan_schema stroke:#ff9f0a,stroke-width:3px
+  style n_c10_scratchpad stroke:#ff9f0a,stroke-width:3px
+  style n_c10_cost_tradeoff stroke:#ff9f0a,stroke-width:3px
+```
+
+### 与其他章节的关系
+
+- `ReAct (边想边做)` —**深化**→ `ReAct (Reasoning + Acting)`（第 04 章）
+- `推理范式 (控制流选择)` —**对比**→ `Agent 循环`（第 04 章）
+- `research() 研究主干` —**深化**→ `Plan-and-Execute (先规划再执行)`（第 capstone 章）
+
+### 延伸阅读
+
+- [ReAct: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629) — ReAct 原始论文，本章「思考+行动交替」范式的来源 `paper`
+- [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366) — Reflection/自我反思修正的代表性论文 `paper`
+
+> 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
+
+<!-- KG:END -->
 
 ## 五、小结与延伸
 

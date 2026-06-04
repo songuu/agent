@@ -19,6 +19,42 @@
 - 已读 [第 12 章 · 框架入门](../12-intro-to-frameworks/README.md)（知道 AI SDK 大致长什么样）。
 - 对 zod 有基本印象（`z.object` / `z.infer` / `safeParse`），不熟也没关系，本章会带着用。
 
+## 三层学习路线
+
+| 层级 | 学习目标 | 你要完成什么 |
+|------|----------|--------------|
+| 极简 | 让模型稳定输出可解析 JSON。 | 用 zod 校验一次模型输出,并在失败时看到明确错误。 |
+| 进阶 | 理解 schema、retry-repair 和版本兼容。 | 解释为什么自然语言输出不能直接进数据库,以及 schema 变更如何影响调用方。 |
+| 真实实践 | 把模型输出变成可靠系统契约。 | 为 API、数据库、UI 三方共用的输出结构设计 schema、错误处理和回归样例。 |
+
+---
+
+## 图解学习地图
+
+> 读图顺序：先看本章主线,再回到代码走读。核心焦点：**让模型输出从散文变成可校验数据**。
+
+```mermaid
+flowchart LR
+  A["业务需要结构"] --> B["zod schema"]
+  B --> C["提示模型按 JSON 输出"]
+  C --> D["模型返回文本"]
+  D --> E["JSON parse"]
+  E --> F["schema validate"]
+  F --> G{"通过?"}
+  G -->|"是"| H["进入业务逻辑"]
+  G -->|"否"| I["重试/报错/降级"]
+```
+
+### 原理展开
+
+- 结构化输出的目标是让模型结果能被程序消费。只给人看的回答可以自由,进业务流程的数据必须有 schema。
+- schema 是运行时契约。TypeScript 类型只在编译期存在,模型返回的是字符串,必须 parse 和 validate 才可信。
+- 失败路径要设计清楚。JSON 坏了、字段缺失、枚举不合法时,系统应该重试、修复或降级,不能假装一定成功。
+
+### 本章和整条路径的关系
+
+本章让 agent 输出能接数据库、API 和 UI。capstone 的研究计划与报告结构化生成会复用这套模式。
+
 ---
 
 ## 一、原理：为什么需要「结构化输出」
@@ -152,6 +188,61 @@ LLM_PROVIDER=openai npx tsx lessons/13-structured-output/index.ts
 5. **进阶**：给 `generateStructured` 加一个 `array` 模式：要求模型从一段文本抽取**多条**记录（`z.array(resumeSchema)`），看提示与校验要怎么改。
 
 ---
+
+<!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
+
+## 知识图谱与延伸阅读
+
+> 本节由 `npm run kg` 自动生成（数据源 `knowledge-graph/data/graph.ts`）。要增删请改数据源后重跑。
+
+### 本章概念图谱
+
+```mermaid
+graph LR
+  n_c13_structured_output["结构化输出"]
+  n_c13_zod_schema["zod schema 单一事实来源"]
+  n_c13_strict_prompt["强约束提示"]
+  n_c13_retry_repair["retry-repair 自我修复重试"]
+  n_c13_extract_json["extractJson 解析容错"]
+  n_c13_runtime_validation["运行期校验"]
+  n_c13_generate_object["框架 generateObject"]
+  n_c03_constrained_output["约束输出格式 (JSON)（第03章）"]
+  n_c15_eval_dataset["离线评估数据集（第15章）"]
+  n_ccapstone_structured_output["结构化输出 (zod 约束)（第capstone章）"]
+  n_c13_structured_output -->|应用| n_c13_zod_schema
+  n_c13_zod_schema -->|应用| n_c13_strict_prompt
+  n_c13_zod_schema -->|应用| n_c13_runtime_validation
+  n_c13_strict_prompt -->|前置| n_c13_retry_repair
+  n_c13_runtime_validation -->|组成| n_c13_retry_repair
+  n_c13_extract_json -->|前置| n_c13_runtime_validation
+  n_c13_retry_repair -->|对比| n_c13_generate_object
+  n_c13_zod_schema -->|应用| n_c13_generate_object
+  n_c13_structured_output -->|深化| n_c03_constrained_output
+  n_c15_eval_dataset -->|应用| n_c13_structured_output
+  n_ccapstone_structured_output -->|组成| n_c13_structured_output
+  style n_c13_structured_output stroke:#ff9f0a,stroke-width:3px
+  style n_c13_zod_schema stroke:#ff9f0a,stroke-width:3px
+  style n_c13_strict_prompt stroke:#ff9f0a,stroke-width:3px
+  style n_c13_retry_repair stroke:#ff9f0a,stroke-width:3px
+  style n_c13_extract_json stroke:#ff9f0a,stroke-width:3px
+  style n_c13_runtime_validation stroke:#ff9f0a,stroke-width:3px
+  style n_c13_generate_object stroke:#ff9f0a,stroke-width:3px
+```
+
+### 与其他章节的关系
+
+- `结构化输出` —**深化**→ `约束输出格式 (JSON)`（第 03 章）
+- `离线评估数据集` —**应用**→ `结构化输出`（第 15 章）
+- `结构化输出 (zod 约束)` —**组成**→ `结构化输出`（第 capstone 章）
+
+### 延伸阅读
+
+- [Zod - TypeScript-first schema validation](https://zod.dev/) — z.object / z.infer / safeParse 官方文档 `doc`
+- [Vercel AI SDK - generateObject](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-object) — 框架内建结构化输出 API 参考 `doc`
+
+> 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
+
+<!-- KG:END -->
 
 ## 五、小结与延伸
 
