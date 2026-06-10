@@ -181,6 +181,23 @@ export default withMermaid(
 
     vite: {
       plugins: [serveKgHtmlPlugin()],
+      // srcDir 设为仓库根，Vite 的依赖扫描会顺带扫到课程源码（src/shared、lessons/**.ts）里
+      // 的 Node-only 依赖（dotenv→fs、openai 等）。它们并不在站点客户端图里（build 产物不含、
+      // preview 正常），但 dev 下被预打包会触发一次 "optimized deps changed → reloading" 抖动，
+      // 首次加载恰逢 reload 可能看到瞬时白屏。显式排除，去掉这次无谓扫描与抖动。
+      optimizeDeps: {
+        exclude: [
+          "dotenv",
+          "openai",
+          "@anthropic-ai/sdk",
+          "@ai-sdk/anthropic",
+          "ai",
+          "zod-to-json-schema",
+          "@langchain/langgraph",
+          "@langchain/core",
+          "@langchain/anthropic",
+        ],
+      },
     },
 
     /** build 结束后把交互式图谱原路径拷进 dist，保证线上链接与 dev 一致。 */

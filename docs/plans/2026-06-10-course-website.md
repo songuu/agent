@@ -114,9 +114,16 @@ deferred:
 - **外部改动并存自洽**：会话期间仓库另有人新增 `src/shared/llm/openaiCompatible.ts` 并改 embeddings/openai 走兼容端点（tsc 0 错，与本 sprint 正交，保留不动）。
 - 与 goal 无漂移：全部产出服务于「课程网页化总览 + 跳转 + 美观」。
 
+### P1（用户验证阶段发现并修复）— dev 整页白屏
+
+- 现象：用户访问 `localhost:5173/lessons/01-what-is-an-agent` 白屏。`site:build`+`site:preview` 对同一 URL（含无尾斜杠）返回完整 72KB 正文 → 问题在 **dev only**。
+- 根因：`site:dev` 启动日志 `Failed to resolve dependency: cytoscape/dayjs/@braintree/sanitize-url/d3/debug, present in 'optimizeDeps.include'`。`vitepress-plugin-mermaid` 把 mermaid 传递依赖塞进 Vite `optimizeDeps.include`，要求顶层 node_modules 可解析；**pnpm 默认不提升传递依赖** → 解析失败 → mermaid 加载失败 → 客户端 app 崩 → 每页白屏。build/preview 走 rollup 真实依赖树，不受影响。
+- 修复：① 新增 `.npmrc` `shamefully-hoist=true`（铺平传递依赖到顶层）；② `debug`（mermaid v11 已不依赖、插件仍 include）显式加为 devDependency；③ `config.mts` 加 `optimizeDeps.exclude` 课程 Node 依赖（dotenv/openai/... 防 srcDir=. 扫描抖动）。重装 `CI=true pnpm install --no-frozen-lockfile`。
+- 复验：清缓存后 `site:dev` 启动日志 `grep -iE "Failed to resolve|error"` **完全为空**；home/lesson01 均 200。导致崩溃的精确报错已根除。经验沉淀 [[pnpm-vitepress-mermaid-blank]]。
+
 ### 待人工目检（非阻塞）
 
-视觉美观需浏览器实看：`pnpm site:dev` 打开首页/任一课程，确认渐变 hero、卡片 hover、暗色、移动端、mermaid 渲染、本地搜索。功能正确性已由 build + 全站链接普查确定性验证。
+视觉美观与最终渲染需浏览器实看（本环境无 playwright/puppeteer，无法无头截图）：**硬刷新 `localhost:5173`** 确认不再白屏 + 渐变 hero、卡片 hover、暗色、移动端、mermaid 图渲染、本地搜索。功能正确性（构建、全站链接、依赖解析）已确定性验证。
 
 ## Phase 5: 复利记录（Compound）
 
