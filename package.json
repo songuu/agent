@@ -16,7 +16,11 @@
     "rag:smoke": "tsx rag-advanced/smoke.ts",
     "site:dev": "vitepress dev",
     "site:build": "vitepress build",
-    "site:preview": "vitepress preview"
+    "site:preview": "vitepress preview",
+    "demo:server": "tsx scripts/demo-runner/start.mts",
+    "demo:clear-token": "node scripts/demo-runner/clear-token.mjs",
+    "demo:wait-token": "node scripts/demo-runner/wait-token.mjs",
+    "site:live": "pnpm demo:clear-token && concurrently --kill-others --names runner,site \"pnpm demo:server\" \"pnpm demo:wait-token && pnpm site:dev\""
   },
   "keywords": [
     "ai",
@@ -42,6 +46,9 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/xterm": "^6.0.0",
+    "concurrently": "^10.0.3",
     "debug": "^4.4.0",
     "markdown-it-task-lists": "^2.1.1",
     "mermaid": "^11.4.0",

@@ -1,33 +1,40 @@
-/**
- * 课程站点配置（VitePress）。
- *
- * 设计原则（与仓库其他子系统一致）：
- *  1. 数据驱动：侧边栏课程目录直接 import knowledge-graph/data/graph.ts 的 CHAPTERS——
- *     新增章节只要进 CHAPTERS（跑 npm run kg 的同一份数据源），站点目录自动更新，零手改。
- *  2. 课程 Markdown 零改动：站点只“消费”现有 README/docs，不要求任何正文迁移。
- *  3. 干净 URL：rewrites 把 <dir>/README.md 映射成 <dir>/index.md，配 cleanUrls
- *     得到 /lessons/01-what-is-an-agent/ 这样的路径；VitePress 会按 rewrites 解析相对链接。
- *
- * 运行：pnpm site:dev（开发）/ pnpm site:build（构建到 .vitepress/dist）/ pnpm site:preview
- */
-import { defineConfig, type DefaultTheme } from "vitepress";
-import { withMermaid } from "vitepress-plugin-mermaid";
-// @ts-ignore 该插件无类型声明；config 由 VitePress 用 esbuild 打包，运行无碍
-import taskLists from "markdown-it-task-lists";
-import { readFileSync, existsSync, mkdirSync, copyFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { CHAPTERS } from "../knowledge-graph/data/graph";
+import { defineConfig, type DefaultTheme } from "vitepress";
+import { withMermaid } from "vitepress-plugin-mermaid";
+// @ts-ignore markdown-it-task-lists has no bundled types; VitePress loads this config through esbuild.
+import taskLists from "markdown-it-task-lists";
+import { CHAPTERS, type Chapter } from "../knowledge-graph/data/graph";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-/** 源码链接的跳转目标：站点不发布 .ts 文件，相对源码链接统一指向 GitHub。 */
 const GITHUB_REPO = "https://github.com/songuu/agent";
 const GITHUB_BLOB = `${GITHUB_REPO}/blob/master/`;
-/** 这些扩展名的相对链接会被转成 GitHub 链接（md 由站点自己渲染，不在此列）。 */
 const CODE_LINK_RE = /\.(ts|tsx|mts|cts|js|mjs|json|example|yml|yaml)$/i;
 
-/** 把「某 md 文件内的相对链接」解析成仓库内路径（posix 风格）。 */
+const KG_HTML_ROUTE = "/knowledge-graph/output/index.html";
+const KG_HTML_FILE = resolve(__dirname, "../knowledge-graph/output/index.html");
+const DEMO_RUNNER_CACHE_FILE = resolve(__dirname, "cache/demo-runner.json");
+const DEFAULT_DEMO_RUNNER_PORT = 5174;
+
+function normalizeBase(value: string | undefined): string {
+  if (!value || value.trim() === "" || value === "/") return "/";
+  const trimmed = value.trim();
+  return `/${trimmed.replace(/^\/+|\/+$/g, "")}/`;
+}
+
+interface DemoMarker {
+  id: string;
+  title: string;
+  needsKey: "none" | "llm" | "embedding";
+}
+
+interface DemoRunnerRuntime {
+  token: string;
+  port: number;
+}
+
 function resolveRepoPath(fromMdRelativePath: string, href: string): string {
   const segments = fromMdRelativePath.split("/").slice(0, -1);
   for (const part of href.split("/")) {
@@ -38,9 +45,6 @@ function resolveRepoPath(fromMdRelativePath: string, href: string): string {
   return segments.join("/");
 }
 
-// ── 侧边栏：由 CHAPTERS 数据驱动 ────────────────────────────────────────────
-
-/** 进阶 RAG 专题用 R1..R6 展示编号；lessons 用自身两位编号；毕设用 🎓。 */
 function chapterText(part: string, idxInPart: number, id: string, title: string): string {
   if (id === "capstone") return `🎓 ${title.replace(/^毕业项目 · /, "")}`;
   if (part === "进阶 RAG 专题") return `R${idxInPart + 1} ${title}`;
@@ -62,6 +66,73 @@ function buildCourseSidebar(): DefaultTheme.SidebarItem[] {
   });
 }
 
+function buildDemoMarkers(chapters: readonly Chapter[] = CHAPTERS): Map<string, DemoMarker> {
+  const markers = new Map<string, DemoMarker>();
+  for (const chapter of chapters) {
+    if (!chapter.demo) continue;
+    if (chapter.demo.interactive || chapter.demo.needsServer) continue;
+    const marker = {
+      id: chapter.id,
+      title: chapter.title,
+      needsKey: chapter.demo.needsKey ?? "llm",
+    };
+    markers.set(`${chapter.dir}/README.md`, marker);
+    markers.set(`${chapter.dir}/index.md`, marker);
+  }
+  return markers;
+}
+
+function escapeHtmlAttribute(value: string): string {
+  return value.replace(/[&<>"']/g, (char) => {
+    switch (char) {
+      case "&":
+        return "&amp;";
+      case "<":
+        return "&lt;";
+      case ">":
+        return "&gt;";
+      case "\"":
+        return "&quot;";
+      default:
+        return "&#39;";
+    }
+  });
+}
+
+function readDemoRunnerRuntime(): DemoRunnerRuntime {
+  if (!existsSync(DEMO_RUNNER_CACHE_FILE)) {
+    return { token: "", port: DEFAULT_DEMO_RUNNER_PORT };
+  }
+  try {
+    const payload = JSON.parse(readFileSync(DEMO_RUNNER_CACHE_FILE, "utf8")) as {
+      token?: unknown;
+      port?: unknown;
+    };
+    return {
+      token: typeof payload.token === "string" ? payload.token : "",
+      port: typeof payload.port === "number" ? payload.port : DEFAULT_DEMO_RUNNER_PORT,
+    };
+  } catch {
+    return { token: "", port: DEFAULT_DEMO_RUNNER_PORT };
+  }
+}
+
+function serveKgHtmlPlugin() {
+  return {
+    name: "serve-kg-interactive-html",
+    configureServer(server: any) {
+      server.middlewares.use(KG_HTML_ROUTE, (_req: unknown, res: any) => {
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.end(
+          existsSync(KG_HTML_FILE)
+            ? readFileSync(KG_HTML_FILE, "utf8")
+            : "请先运行 npm run kg 生成交互式图谱。",
+        );
+      });
+    },
+  };
+}
+
 const sidebar: DefaultTheme.SidebarItem[] = [
   {
     text: "开始",
@@ -78,7 +149,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
     collapsed: true,
     items: [
       { text: "全局知识图谱", link: "/docs/knowledge-graph" },
-      { text: "交互式图谱（动图）", link: "/knowledge-graph/output/index.html", target: "_blank" },
+      { text: "交互式图谱（动图）", link: KG_HTML_ROUTE, target: "_blank" },
       { text: "图谱扩展指南", link: "/knowledge-graph/" },
     ],
   },
@@ -93,35 +164,23 @@ const sidebar: DefaultTheme.SidebarItem[] = [
   },
 ];
 
-// ── 交互式知识图谱 HTML：dev 中间件直出 + build 后拷贝进 dist ────────────────
-
-const KG_HTML_ROUTE = "/knowledge-graph/output/index.html";
-const KG_HTML_FILE = resolve(__dirname, "../knowledge-graph/output/index.html");
-
-/** dev 下 srcDir 里的非 md 静态文件不会被自动伺服，这个小中间件补上交互图谱这一个。 */
-function serveKgHtmlPlugin() {
-  return {
-    name: "serve-kg-interactive-html",
-    configureServer(server: { middlewares: { use: (route: string, fn: (req: unknown, res: { setHeader: (k: string, v: string) => void; end: (s: string) => void }) => void) => void } }) {
-      server.middlewares.use(KG_HTML_ROUTE, (_req, res) => {
-        res.setHeader("Content-Type", "text/html; charset=utf-8");
-        res.end(existsSync(KG_HTML_FILE) ? readFileSync(KG_HTML_FILE, "utf8") : "请先运行 npm run kg 生成交互式图谱。");
-      });
-    },
-  };
-}
+const demoMarkers = buildDemoMarkers();
+const shouldInjectDemoRunnerToken = process.env.npm_lifecycle_event === "site:dev";
+const demoRunnerRuntime = shouldInjectDemoRunnerToken
+  ? readDemoRunnerRuntime()
+  : { token: "", port: DEFAULT_DEMO_RUNNER_PORT };
+const siteBase = normalizeBase(process.env.VITEPRESS_BASE);
 
 export default withMermaid(
   defineConfig({
+    base: siteBase,
     lang: "zh-CN",
     title: "Agent 从零到上框架",
     description: "面向初学者的 AI Agent 开发完整学习路径：纯 TypeScript 手写每个零件，再上框架，进阶 RAG，直到可部署服务。",
     srcDir: ".",
-    // 内部 sprint 文档不发布；根 README 与首页重复，也不发布。
     srcExclude: ["docs/plans/**", "README.md", "**/node_modules/**"],
     cleanUrls: true,
     lastUpdated: true,
-    // 少量链接指向 LICENSE 等非 md 资源，统一兜底（.ts 等代码链接已转 GitHub）。
     ignoreDeadLinks: true,
     rewrites: {
       "lessons/:lesson/README.md": "lessons/:lesson/index.md",
@@ -134,12 +193,7 @@ export default withMermaid(
       theme: { light: "github-light", dark: "github-dark" },
       config(md) {
         md.use(taskLists, { enabled: false });
-        // 渲染期重写正文相对链接，统一处理两类（footer 上/下一篇由 sidebar 生成不受影响）：
-        //  1. 源码链接（./index.ts、../../src/shared/...）→ GitHub blob，新开页。
-        //  2. 课程互链（../08-xxx/README.md、../../docs/setup.md）→ 干净 URL。
-        //     WHY 必须自己处理：站点用 rewrites 把 README.md 映射成 index.md + cleanUrls，
-        //     但 VitePress 对正文里指向 README.md 的相对链接只剥 .md，得到 .../README（404）。
-        //     这里把 `/README.md` 收敛成目录、其余 `.md` 去扩展，与 rewrites+cleanUrls 对齐。
+
         md.core.ruler.push("normalize-relative-links", (state) => {
           const rel = String((state.env as { relativePath?: string })?.relativePath ?? "");
           if (!rel) return;
@@ -148,14 +202,12 @@ export default withMermaid(
             for (const token of block.children) {
               if (token.type !== "link_open") continue;
               const href = token.attrGet("href");
-              // 跳过：空 / 带协议(http: mailto: 等) / 锚点 / 站内绝对路径
               if (!href || /^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith("#") || href.startsWith("/")) continue;
               const hashIdx = href.indexOf("#");
               const clean = hashIdx === -1 ? href : href.slice(0, hashIdx);
               const hash = hashIdx === -1 ? "" : href.slice(hashIdx);
-              if (clean === "") continue; // 纯锚点
+              if (clean === "") continue;
 
-              // 1) 源码等非 md 文件 → GitHub（站内自伺服的交互图谱除外）
               if (CODE_LINK_RE.test(clean)) {
                 const repoPath = resolveRepoPath(rel, clean);
                 if (repoPath.startsWith("knowledge-graph/output/")) continue;
@@ -164,28 +216,49 @@ export default withMermaid(
                 token.attrSet("rel", "noreferrer");
                 continue;
               }
-              // 2) README.md → 目录干净 URL（…/README.md → …/）
               if (/(^|\/)README\.md$/i.test(clean)) {
                 token.attrSet("href", clean.replace(/README\.md$/i, "") + hash);
                 continue;
               }
-              // 3) 其余 .md → 去扩展（与 cleanUrls 对齐）
               if (/\.md$/i.test(clean)) {
                 token.attrSet("href", clean.replace(/\.md$/i, "") + hash);
               }
             }
           }
         });
+
+        md.core.ruler.push("inject-demo-runner", (state) => {
+          const rel = String((state.env as { relativePath?: string })?.relativePath ?? "");
+          const marker = demoMarkers.get(rel);
+          if (!marker) return;
+          const fenceIndex = state.tokens.findIndex((token) => token.type === "fence");
+          if (fenceIndex === -1) return;
+
+          const html = [
+            "<div",
+            " data-demo-runner",
+            ` data-demo-id="${escapeHtmlAttribute(marker.id)}"`,
+            ` data-demo-title="${escapeHtmlAttribute(marker.title)}"`,
+            ` data-needs-key="${marker.needsKey}"`,
+            "></div>",
+          ].join("");
+          const token = new state.Token("html_block", "", 0);
+          token.content = `${html}\n`;
+          state.tokens.splice(fenceIndex + 1, 0, token);
+        });
       },
     },
 
     vite: {
+      define: {
+        __DEMO_RUNNER_TOKEN__: JSON.stringify(demoRunnerRuntime.token),
+        __DEMO_RUNNER_BASE_URL__: JSON.stringify(
+          `http://127.0.0.1:${demoRunnerRuntime.port}`,
+        ),
+      },
       plugins: [serveKgHtmlPlugin()],
-      // srcDir 设为仓库根，Vite 的依赖扫描会顺带扫到课程源码（src/shared、lessons/**.ts）里
-      // 的 Node-only 依赖（dotenv→fs、openai 等）。它们并不在站点客户端图里（build 产物不含、
-      // preview 正常），但 dev 下被预打包会触发一次 "optimized deps changed → reloading" 抖动，
-      // 首次加载恰逢 reload 可能看到瞬时白屏。显式排除，去掉这次无谓扫描与抖动。
       optimizeDeps: {
+        include: ["@xterm/xterm", "@xterm/addon-fit"],
         exclude: [
           "dotenv",
           "openai",
@@ -200,7 +273,6 @@ export default withMermaid(
       },
     },
 
-    /** build 结束后把交互式图谱原路径拷进 dist，保证线上链接与 dev 一致。 */
     async buildEnd(siteConfig) {
       if (!existsSync(KG_HTML_FILE)) return;
       const dest = resolve(siteConfig.outDir, "knowledge-graph/output/index.html");
@@ -217,7 +289,7 @@ export default withMermaid(
           text: "知识图谱",
           items: [
             { text: "全局知识图谱", link: "/docs/knowledge-graph" },
-            { text: "交互式图谱（动图）", link: "/knowledge-graph/output/index.html", target: "_blank" },
+            { text: "交互式图谱（动图）", link: KG_HTML_ROUTE, target: "_blank" },
           ],
         },
         {
@@ -257,7 +329,6 @@ export default withMermaid(
     },
 
     mermaid: {
-      // 中文标签常见，放宽文本与边数限制，避免大图（全局概念图 165 节点）被拒绝渲染
       maxTextSize: 200000,
       maxEdges: 1000,
     },

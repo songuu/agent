@@ -8,7 +8,10 @@
  */
 import OpenAI from "openai";
 import { getEnv } from "../util/env";
-import { createOpenAICompatibleClient } from "./openaiCompatible";
+import {
+  createOpenAICompatibleClient,
+  type OpenAICompatibleClientOptions,
+} from "./openaiCompatible";
 import type {
   ChatOptions,
   ChatResult,
@@ -20,6 +23,15 @@ import type {
 } from "./types";
 
 const DEFAULT_MODEL = "gpt-4o";
+const DEFAULT_OLLAMA_MODEL = "llama3.2";
+const DEFAULT_OLLAMA_BASE_URL = "http://127.0.0.1:11434/v1";
+
+interface OpenAIStyleClientOptions {
+  provider: "openai" | "ollama";
+  modelEnv: string;
+  defaultModel: string;
+  compatibleClient: OpenAICompatibleClientOptions;
+}
 
 /** 统一 Message[] → OpenAI ChatCompletionMessageParam[]。 */
 function toOpenAIMessages(
@@ -76,9 +88,9 @@ function safeParseArgs(json: string): Record<string, unknown> {
   }
 }
 
-export function createOpenAIClient(): LLMClient {
-  const client = createOpenAICompatibleClient();
-  const model = getEnv("OPENAI_MODEL", DEFAULT_MODEL)!;
+function createOpenAIStyleClient(options: OpenAIStyleClientOptions): LLMClient {
+  const client = createOpenAICompatibleClient(options.compatibleClient);
+  const model = getEnv(options.modelEnv, options.defaultModel)!;
 
   function buildParams(
     options: ChatOptions,
@@ -104,7 +116,7 @@ export function createOpenAIClient(): LLMClient {
   }
 
   return {
-    provider: "openai",
+    provider: options.provider,
     model,
 
     async chat(options) {
@@ -166,4 +178,27 @@ export function createOpenAIClient(): LLMClient {
       };
     },
   };
+}
+
+export function createOpenAIClient(): LLMClient {
+  return createOpenAIStyleClient({
+    provider: "openai",
+    modelEnv: "OPENAI_MODEL",
+    defaultModel: DEFAULT_MODEL,
+    compatibleClient: {},
+  });
+}
+
+export function createOllamaClient(): LLMClient {
+  return createOpenAIStyleClient({
+    provider: "ollama",
+    modelEnv: "OLLAMA_MODEL",
+    defaultModel: DEFAULT_OLLAMA_MODEL,
+    compatibleClient: {
+      apiKeyEnv: "OLLAMA_API_KEY",
+      apiKeyFallback: "ollama",
+      baseURLEnv: "OLLAMA_BASE_URL",
+      baseURL: getEnv("OLLAMA_BASE_URL", DEFAULT_OLLAMA_BASE_URL),
+    },
+  });
 }

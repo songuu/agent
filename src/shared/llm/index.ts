@@ -6,10 +6,10 @@
  */
 import { getEnv } from "../util/env";
 import { createAnthropicClient } from "./anthropic";
-import { createOpenAIClient } from "./openai";
+import { createOllamaClient, createOpenAIClient } from "./openai";
 import type { LLMClient } from "./types";
 
-export type ProviderName = "anthropic" | "openai";
+export type ProviderName = "anthropic" | "openai" | "ollama";
 
 /**
  * 取得一个 LLMClient。
@@ -22,13 +22,15 @@ export function getLLM(provider?: ProviderName): LLMClient {
       return createAnthropicClient();
     case "openai":
       return createOpenAIClient();
+    case "ollama":
+      return createOllamaClient();
     default:
       throw new Error(
-        `未知的 LLM_PROVIDER: "${name}"。支持的值：anthropic | openai。`,
+        `未知的 LLM_PROVIDER: "${name}"。支持的值：anthropic | openai | ollama。`,
       );
   }
 }
 
 export * from "./types";
 export { createAnthropicClient } from "./anthropic";
-export { createOpenAIClient } from "./openai";
+export { createOllamaClient, createOpenAIClient } from "./openai";

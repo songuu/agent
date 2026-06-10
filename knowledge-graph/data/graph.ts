@@ -9,6 +9,17 @@
  * 所有产物会自动重生成，无需手改任何 README。这就是「数据驱动 + 可持续扩展」。
  */
 
+export interface ChapterDemo {
+  /** 相对仓库根的 demo 入口；默认 `${dir}/index.ts`。 */
+  entry?: string;
+  /** 运行前需要的本地配置。`embedding` 表示还需要 OPENAI_API_KEY。 */
+  needsKey?: "none" | "llm" | "embedding";
+  /** 需要 stdin 的 demo 不进一键运行白名单。 */
+  interactive?: boolean;
+  /** 常驻 HTTP/server demo 不进一键运行白名单。 */
+  needsServer?: boolean;
+}
+
 /** 课程的一个单元（19 章 + 毕业项目）。 */
 export interface Chapter {
   /** 稳定 id：lesson 用两位编号 "01".."19"，毕设用 "capstone"。 */
@@ -20,6 +31,8 @@ export interface Chapter {
   part: string;
   /** 仓库内目录（含 README.md 的那层）。 */
   dir: string;
+  /** 网页内运行器元数据；缺省表示没有一键运行入口。 */
+  demo?: ChapterDemo;
 }
 
 /** 一个知识点 / 概念节点。 */
@@ -59,32 +72,32 @@ export interface Article {
 // 章节清单（与磁盘真实目录一致）
 // ────────────────────────────────────────────────────────────────────────────
 export const CHAPTERS: Chapter[] = [
-  { id: "01", slug: "01-what-is-an-agent", title: "什么是 Agent", part: "第一部分 · 基础概念", dir: "lessons/01-what-is-an-agent" },
-  { id: "02", slug: "02-first-llm-call", title: "你的第一次 LLM 调用", part: "第一部分 · 基础概念", dir: "lessons/02-first-llm-call" },
-  { id: "03", slug: "03-prompt-engineering", title: "提示工程", part: "第一部分 · 基础概念", dir: "lessons/03-prompt-engineering" },
-  { id: "04", slug: "04-the-agent-loop", title: "手写 Agent 循环 (ReAct)", part: "第二部分 · 从零手写核心", dir: "lessons/04-the-agent-loop" },
-  { id: "05", slug: "05-tool-use-basics", title: "工具调用基础", part: "第二部分 · 从零手写核心", dir: "lessons/05-tool-use-basics" },
-  { id: "06", slug: "06-building-a-tool-system", title: "从零构建工具系统", part: "第二部分 · 从零手写核心", dir: "lessons/06-building-a-tool-system" },
-  { id: "07", slug: "07-short-term-memory", title: "短期记忆与上下文", part: "第二部分 · 从零手写核心", dir: "lessons/07-short-term-memory" },
-  { id: "08", slug: "08-embeddings-and-vector-search", title: "Embedding 与向量检索", part: "第三部分 · 知识与检索", dir: "lessons/08-embeddings-and-vector-search" },
-  { id: "09", slug: "09-rag-from-scratch", title: "从零实现 RAG", part: "第三部分 · 知识与检索", dir: "lessons/09-rag-from-scratch" },
-  { id: "10", slug: "10-reasoning-patterns", title: "推理范式", part: "第四部分 · 进阶模式", dir: "lessons/10-reasoning-patterns" },
-  { id: "11", slug: "11-multi-agent-orchestration", title: "多智能体编排", part: "第四部分 · 进阶模式", dir: "lessons/11-multi-agent-orchestration" },
-  { id: "12", slug: "12-intro-to-frameworks", title: "上框架：LangGraph.js 与 Vercel AI SDK", part: "第五部分 · 工程化与框架", dir: "lessons/12-intro-to-frameworks" },
-  { id: "13", slug: "13-structured-output", title: "结构化输出与校验", part: "第五部分 · 工程化与框架", dir: "lessons/13-structured-output" },
-  { id: "14", slug: "14-streaming-and-ux", title: "流式输出与 UX", part: "第五部分 · 工程化与框架", dir: "lessons/14-streaming-and-ux" },
-  { id: "15", slug: "15-evaluation-and-testing", title: "评估与测试", part: "第六部分 · 生产化", dir: "lessons/15-evaluation-and-testing" },
-  { id: "16", slug: "16-observability-and-cost", title: "可观测性与成本", part: "第六部分 · 生产化", dir: "lessons/16-observability-and-cost" },
-  { id: "17", slug: "17-safety-and-guardrails", title: "安全与护栏", part: "第六部分 · 生产化", dir: "lessons/17-safety-and-guardrails" },
-  { id: "18", slug: "18-deployment", title: "部署：把 Agent 变成服务", part: "第六部分 · 生产化", dir: "lessons/18-deployment" },
-  { id: "19", slug: "19-agent-ecosystem-and-frontier", title: "Agent 前沿发展与生态拆解", part: "第七部分 · 前沿与生态", dir: "lessons/19-agent-ecosystem-and-frontier" },
-  { id: "capstone", slug: "deep-research-agent", title: "毕业项目 · Deep Research Agent", part: "毕业项目", dir: "capstone/deep-research-agent" },
-  { id: "rag-chunk", slug: "01-chunking-strategies", title: "进阶分块策略", part: "进阶 RAG 专题", dir: "rag-advanced/01-chunking-strategies" },
-  { id: "rag-hybrid", slug: "02-hybrid-search", title: "混合检索 (向量+BM25+RRF)", part: "进阶 RAG 专题", dir: "rag-advanced/02-hybrid-search" },
-  { id: "rag-rerank", slug: "03-reranking", title: "召回-精排两段式", part: "进阶 RAG 专题", dir: "rag-advanced/03-reranking" },
-  { id: "rag-query", slug: "04-query-transformation", title: "查询改写 (multi-query/HyDE)", part: "进阶 RAG 专题", dir: "rag-advanced/04-query-transformation" },
-  { id: "rag-eval", slug: "05-rag-evaluation", title: "RAG 评估三指标", part: "进阶 RAG 专题", dir: "rag-advanced/05-rag-evaluation" },
-  { id: "rag-prod", slug: "06-production-rag", title: "生产化 RAG 全链路", part: "进阶 RAG 专题", dir: "rag-advanced/06-production-rag" },
+  { id: "01", slug: "01-what-is-an-agent", title: "什么是 Agent", part: "第一部分 · 基础概念", dir: "lessons/01-what-is-an-agent", demo: { needsKey: "llm" } },
+  { id: "02", slug: "02-first-llm-call", title: "你的第一次 LLM 调用", part: "第一部分 · 基础概念", dir: "lessons/02-first-llm-call", demo: { needsKey: "llm" } },
+  { id: "03", slug: "03-prompt-engineering", title: "提示工程", part: "第一部分 · 基础概念", dir: "lessons/03-prompt-engineering", demo: { needsKey: "llm" } },
+  { id: "04", slug: "04-the-agent-loop", title: "手写 Agent 循环 (ReAct)", part: "第二部分 · 从零手写核心", dir: "lessons/04-the-agent-loop", demo: { needsKey: "llm" } },
+  { id: "05", slug: "05-tool-use-basics", title: "工具调用基础", part: "第二部分 · 从零手写核心", dir: "lessons/05-tool-use-basics", demo: { needsKey: "llm" } },
+  { id: "06", slug: "06-building-a-tool-system", title: "从零构建工具系统", part: "第二部分 · 从零手写核心", dir: "lessons/06-building-a-tool-system", demo: { needsKey: "llm" } },
+  { id: "07", slug: "07-short-term-memory", title: "短期记忆与上下文", part: "第二部分 · 从零手写核心", dir: "lessons/07-short-term-memory", demo: { needsKey: "llm" } },
+  { id: "08", slug: "08-embeddings-and-vector-search", title: "Embedding 与向量检索", part: "第三部分 · 知识与检索", dir: "lessons/08-embeddings-and-vector-search", demo: { needsKey: "embedding" } },
+  { id: "09", slug: "09-rag-from-scratch", title: "从零实现 RAG", part: "第三部分 · 知识与检索", dir: "lessons/09-rag-from-scratch", demo: { needsKey: "embedding" } },
+  { id: "10", slug: "10-reasoning-patterns", title: "推理范式", part: "第四部分 · 进阶模式", dir: "lessons/10-reasoning-patterns", demo: { needsKey: "llm" } },
+  { id: "11", slug: "11-multi-agent-orchestration", title: "多智能体编排", part: "第四部分 · 进阶模式", dir: "lessons/11-multi-agent-orchestration", demo: { needsKey: "llm" } },
+  { id: "12", slug: "12-intro-to-frameworks", title: "上框架：LangGraph.js 与 Vercel AI SDK", part: "第五部分 · 工程化与框架", dir: "lessons/12-intro-to-frameworks", demo: { needsKey: "llm" } },
+  { id: "13", slug: "13-structured-output", title: "结构化输出与校验", part: "第五部分 · 工程化与框架", dir: "lessons/13-structured-output", demo: { needsKey: "llm" } },
+  { id: "14", slug: "14-streaming-and-ux", title: "流式输出与 UX", part: "第五部分 · 工程化与框架", dir: "lessons/14-streaming-and-ux", demo: { needsKey: "llm" } },
+  { id: "15", slug: "15-evaluation-and-testing", title: "评估与测试", part: "第六部分 · 生产化", dir: "lessons/15-evaluation-and-testing", demo: { needsKey: "llm" } },
+  { id: "16", slug: "16-observability-and-cost", title: "可观测性与成本", part: "第六部分 · 生产化", dir: "lessons/16-observability-and-cost", demo: { needsKey: "llm" } },
+  { id: "17", slug: "17-safety-and-guardrails", title: "安全与护栏", part: "第六部分 · 生产化", dir: "lessons/17-safety-and-guardrails", demo: { needsKey: "llm" } },
+  { id: "18", slug: "18-deployment", title: "部署：把 Agent 变成服务", part: "第六部分 · 生产化", dir: "lessons/18-deployment", demo: { needsKey: "llm", needsServer: true } },
+  { id: "19", slug: "19-agent-ecosystem-and-frontier", title: "Agent 前沿发展与生态拆解", part: "第七部分 · 前沿与生态", dir: "lessons/19-agent-ecosystem-and-frontier", demo: { needsKey: "none" } },
+  { id: "capstone", slug: "deep-research-agent", title: "毕业项目 · Deep Research Agent", part: "毕业项目", dir: "capstone/deep-research-agent", demo: { entry: "capstone/deep-research-agent/src/cli.ts", needsKey: "embedding", interactive: true } },
+  { id: "rag-chunk", slug: "01-chunking-strategies", title: "进阶分块策略", part: "进阶 RAG 专题", dir: "rag-advanced/01-chunking-strategies", demo: { needsKey: "none" } },
+  { id: "rag-hybrid", slug: "02-hybrid-search", title: "混合检索 (向量+BM25+RRF)", part: "进阶 RAG 专题", dir: "rag-advanced/02-hybrid-search", demo: { needsKey: "embedding" } },
+  { id: "rag-rerank", slug: "03-reranking", title: "召回-精排两段式", part: "进阶 RAG 专题", dir: "rag-advanced/03-reranking", demo: { needsKey: "embedding" } },
+  { id: "rag-query", slug: "04-query-transformation", title: "查询改写 (multi-query/HyDE)", part: "进阶 RAG 专题", dir: "rag-advanced/04-query-transformation", demo: { needsKey: "embedding" } },
+  { id: "rag-eval", slug: "05-rag-evaluation", title: "RAG 评估三指标", part: "进阶 RAG 专题", dir: "rag-advanced/05-rag-evaluation", demo: { needsKey: "embedding" } },
+  { id: "rag-prod", slug: "06-production-rag", title: "生产化 RAG 全链路", part: "进阶 RAG 专题", dir: "rag-advanced/06-production-rag", demo: { needsKey: "embedding" } },
 ];
 
 // ────────────────────────────────────────────────────────────────────────────

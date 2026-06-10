@@ -58,6 +58,23 @@ pnpm site:preview   # 预览构建产物
 
 > 站点目录由 `knowledge-graph/data/graph.ts` 的 `CHAPTERS` 数据驱动——新增章节自动出现在侧边栏，无需改站点配置。
 
+### ▶️ 在网页里直接运行 demo
+
+开发时可以启动带本地运行器的站点，在课程页面的 demo 位置直接点「运行」，并在网页终端里实时查看 stdout/stderr 与 AI 流式输出：
+
+```bash
+pnpm site:live
+```
+
+它会同时启动：
+
+- VitePress 课程站点：`http://localhost:5173`
+- dev-only 本地运行器：`http://127.0.0.1:5174`
+
+运行器只读取本机 `.env` 配置，支持现有 Anthropic/OpenAI 配置，也支持 `LLM_PROVIDER=ollama` 的本地 Ollama 模式。它不会把 key 明文返回给浏览器。
+
+安全边界：这个运行器只能用于本地开发学习，默认只绑定 `127.0.0.1`，不要部署、反代或暴露到公网。普通 `pnpm site:build` 仍然生成可独立部署的静态站；没有启动 runner 时，页面只会显示友好的不可用提示。
+
 ---
 
 ## 全局导航
