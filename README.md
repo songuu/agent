@@ -46,6 +46,24 @@ npx tsx lessons/02-first-llm-call/index.ts
 
 详细步骤见 [**第 00 章 · 环境搭建**](./docs/setup.md)。
 
+### 📖 用网页方式学习（课程站点）
+
+整套课程内置了一个美观的网页站点（总览首页 + 全部课程 + 全文搜索 + 暗色模式 + Mermaid 图渲染）：
+
+```bash
+pnpm site:dev       # 本地开发：http://localhost:5173
+pnpm site:build     # 构建静态站点到 .vitepress/dist
+pnpm site:preview   # 预览构建产物
+```
+
+> 站点目录由 `knowledge-graph/data/graph.ts` 的 `CHAPTERS` 数据驱动——新增章节自动出现在侧边栏，无需改站点配置。
+
+---
+
+## 全局导航
+
+想直接跳到具体课程，走 [**全局课程导航**](./docs/navigation.md)。它按顺序、按主题同时整理了第 00–19 章、毕业项目和 RAG 系统实战项目。
+
 ---
 
 ## 学习路径
@@ -94,6 +112,9 @@ npx tsx lessons/02-first-llm-call/index.ts
 🎓 毕业项目 · Deep Research Agent（综合实战）
    │
    ▼
+🔬 进阶 RAG 专题 · rag-advanced（分块/混合/精排/改写/评估/生产化）
+   │
+   ▼
 📚 进阶项目 · songuu/rag-system（生产级 RAG 系统）
    │
    ▼
@@ -138,6 +159,13 @@ npx tsx lessons/02-first-llm-call/index.ts
 | **第七部分** | **前沿与生态** | | |
 | 19 | [Agent 前沿发展与生态拆解](./lessons/19-agent-ecosystem-and-frontier/) | ⭐⭐⭐ | MCP、A2A、Agents SDK、LangGraph、生态选型 |
 | 🎓 | [毕业项目 · Deep Research Agent](./capstone/deep-research-agent/) | ⭐⭐⭐⭐ | 综合所有能力的实战项目 |
+| **进阶专题** | **RAG 生产化（rag-advanced）** | | |
+| R1 | [进阶分块策略](./rag-advanced/01-chunking-strategies/) | ⭐⭐⭐ | 递归语义切分、Markdown 感知、按 token 控大小（纯函数，免 key 可跑） |
+| R2 | [混合检索](./rag-advanced/02-hybrid-search/) | ⭐⭐⭐ | 向量 + BM25 + RRF 融合 |
+| R3 | [召回-精排](./rag-advanced/03-reranking/) | ⭐⭐⭐ | 两段式检索、LLM 重排 |
+| R4 | [查询改写](./rag-advanced/04-query-transformation/) | ⭐⭐⭐ | multi-query、HyDE |
+| R5 | [RAG 评估](./rag-advanced/05-rag-evaluation/) | ⭐⭐⭐ | 上下文相关性 / 忠实度 / 答案相关性 |
+| R6 | [生产化 RAG](./rag-advanced/06-production-rag/) | ⭐⭐⭐⭐ | metadata 过滤、持久化、增量、全链路 |
 | 📚 | [RAG 系统实战项目](./docs/rag-system-project.md) | ⭐⭐⭐⭐ | 连接到 `songuu/rag-system`，从课程最小 RAG 走向生产级知识库系统 |
 
 ---
@@ -176,6 +204,7 @@ agent/
 
 - 💼 [**求职指南**](./docs/career-guide.md)：岗位画像、技能清单、用本项目写简历、高频面试题。
 - 🚀 [**创业指南**](./docs/startup-guide.md)：机会判断、MVP 裁剪、成本控制、上线 checklist。
+- 🔬 [**进阶 RAG 专题**](./rag-advanced/01-chunking-strategies/)：分块策略、混合检索、重排、查询改写、评估、生产化六章，把第 08/09 章的最小 RAG 补成生产级，能力沉淀在 `src/shared/rag/`。
 - 📚 [**RAG 系统实战项目**](./docs/rag-system-project.md)：连接到 [songuu/rag-system](https://github.com/songuu/rag-system)，把第 08/09 章的最小 RAG 扩展成独立知识库系统。
 
 ---

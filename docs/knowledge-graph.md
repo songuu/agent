@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **20** 个单元、**137** 个概念、**191** 条关系、**29** 篇关联文章。
+共 **26** 个单元、**165** 个概念、**235** 条关系、**36** 篇关联文章。
 
 ## 章节地图
 
@@ -46,6 +46,14 @@ flowchart LR
   subgraph P7["毕业项目"]
     C_capstone["capstone 毕业项目 · Deep Research Agent"]
   end
+  subgraph P8["进阶 RAG 专题"]
+    C_rag-chunk["rag-chunk 进阶分块策略"]
+    C_rag-hybrid["rag-hybrid 混合检索 (向量+BM25+RRF)"]
+    C_rag-rerank["rag-rerank 召回-精排两段式"]
+    C_rag-query["rag-query 查询改写 (multi-query/HyDE)"]
+    C_rag-eval["rag-eval RAG 评估三指标"]
+    C_rag-prod["rag-prod 生产化 RAG 全链路"]
+  end
   C_01 --> C_02
   C_02 --> C_03
   C_03 --> C_04
@@ -65,6 +73,12 @@ flowchart LR
   C_17 --> C_18
   C_18 --> C_19
   C_19 --> C_capstone
+  C_capstone --> C_rag-chunk
+  C_rag-chunk --> C_rag-hybrid
+  C_rag-hybrid --> C_rag-rerank
+  C_rag-rerank --> C_rag-query
+  C_rag-query --> C_rag-eval
+  C_rag-eval --> C_rag-prod
 ```
 
 ## 概念图谱
@@ -225,6 +239,36 @@ graph LR
     n_ccapstone_structured_output["结构化输出 (zod 约束)"]
     n_ccapstone_tracer_cost["Tracer 可观测与成本"]
     n_ccapstone_dual_entrypoint["CLI / HTTP 双入口"]
+  end
+  subgraph G8["进阶 RAG 专题"]
+    n_cragchunk_why_matters["切块决定检索上限"]
+    n_cragchunk_sliding_window["字符滑窗切分"]
+    n_cragchunk_recursive["递归语义切分"]
+    n_cragchunk_markdown_aware["Markdown 标题感知切分"]
+    n_cragchunk_token_budget["按 token 计长 (approxTokens)"]
+    n_craghybrid_sparse_vs_dense["稀疏 vs 稠密检索"]
+    n_craghybrid_bm25["BM25 关键词打分"]
+    n_craghybrid_vector_recall["向量语义召回"]
+    n_craghybrid_rrf["RRF 排名融合"]
+    n_craghybrid_retriever["混合检索器"]
+    n_cragrerank_recall_precision["召回-精排两段式"]
+    n_cragrerank_llm_rerank["LLM 重排"]
+    n_cragrerank_signal_to_noise["上下文信噪比"]
+    n_cragrerank_cross_encoder["cross-encoder 精排器"]
+    n_cragquery_mismatch["查询-资料措辞错配"]
+    n_cragquery_multi_query["多查询改写"]
+    n_cragquery_hyde["HyDE 假设答案检索"]
+    n_cragquery_recall_coverage["召回覆盖率"]
+    n_crageval_llm_judge_rag["RAG 的 LLM-as-judge"]
+    n_crageval_context_relevance["上下文相关性"]
+    n_crageval_faithfulness["忠实度"]
+    n_crageval_answer_relevance["答案相关性"]
+    n_crageval_stage_localization["按指标定位坏环"]
+    n_cragprod_metadata_filter["metadata 过滤"]
+    n_cragprod_persistence["向量库持久化"]
+    n_cragprod_incremental_upsert["增量 upsert"]
+    n_cragprod_pipeline_compose["端到端管线组合"]
+    n_cragprod_vectordb_migration["迁移到专用向量 DB"]
   end
   n_c01_llm_vs_agent -->|深化| n_c01_agent_formula
   n_c01_agent_formula -->|组成| n_c01_react_loop
@@ -417,6 +461,50 @@ graph LR
   n_ccapstone_structured_output -->|组成| n_c13_structured_output
   n_ccapstone_tracer_cost -->|组成| n_c16_decorator_tracer
   n_ccapstone_dual_entrypoint -->|组成| n_c18_agent_as_service
+  n_cragchunk_why_matters -->|深化| n_cragchunk_sliding_window
+  n_cragchunk_sliding_window -->|对比| n_cragchunk_recursive
+  n_cragchunk_recursive -->|深化| n_cragchunk_markdown_aware
+  n_cragchunk_token_budget -->|前置| n_cragchunk_recursive
+  n_craghybrid_sparse_vs_dense -->|组成| n_craghybrid_bm25
+  n_craghybrid_sparse_vs_dense -->|组成| n_craghybrid_vector_recall
+  n_craghybrid_bm25 -->|前置| n_craghybrid_rrf
+  n_craghybrid_vector_recall -->|前置| n_craghybrid_rrf
+  n_craghybrid_rrf -->|组成| n_craghybrid_retriever
+  n_cragrerank_recall_precision -->|组成| n_cragrerank_llm_rerank
+  n_cragrerank_recall_precision -->|应用| n_cragrerank_signal_to_noise
+  n_cragrerank_llm_rerank -->|对比| n_cragrerank_cross_encoder
+  n_cragrerank_recall_precision -->|应用| n_craghybrid_retriever
+  n_cragquery_mismatch -->|应用| n_cragquery_multi_query
+  n_cragquery_mismatch -->|应用| n_cragquery_hyde
+  n_cragquery_multi_query -->|深化| n_cragquery_recall_coverage
+  n_cragquery_hyde -->|深化| n_cragquery_recall_coverage
+  n_crageval_llm_judge_rag -->|组成| n_crageval_context_relevance
+  n_crageval_llm_judge_rag -->|组成| n_crageval_faithfulness
+  n_crageval_llm_judge_rag -->|组成| n_crageval_answer_relevance
+  n_crageval_stage_localization -->|应用| n_crageval_context_relevance
+  n_crageval_stage_localization -->|应用| n_crageval_faithfulness
+  n_cragprod_pipeline_compose -->|组成| n_cragprod_metadata_filter
+  n_cragprod_pipeline_compose -->|组成| n_cragprod_persistence
+  n_cragprod_pipeline_compose -->|组成| n_cragprod_incremental_upsert
+  n_cragprod_metadata_filter -->|前置| n_cragprod_vectordb_migration
+  n_cragprod_pipeline_compose -->|应用| n_cragrerank_recall_precision
+  n_cragchunk_why_matters -->|深化| n_c09_chunk_overlap
+  n_cragchunk_recursive -->|应用| n_c09_rag_pipeline
+  n_cragchunk_token_budget -->|应用| n_c07_context_window_budget
+  n_craghybrid_vector_recall -->|深化| n_c08_topk_retrieval
+  n_craghybrid_bm25 -->|深化| n_c08_semantic_vs_keyword
+  n_craghybrid_retriever -->|深化| n_c09_topk_retrieval
+  n_cragrerank_signal_to_noise -->|应用| n_c09_augment_prompt
+  n_cragrerank_llm_rerank -->|对比| n_c15_llm_judge
+  n_cragquery_hyde -->|应用| n_c08_embedding
+  n_cragquery_multi_query -->|应用| n_c09_topk_retrieval
+  n_crageval_llm_judge_rag -->|深化| n_c15_llm_judge
+  n_crageval_faithfulness -->|深化| n_c09_hallucination_reduction
+  n_crageval_stage_localization -->|应用| n_c15_eval_harness
+  n_cragprod_metadata_filter -->|应用| n_c17_human_in_the_loop
+  n_cragprod_persistence -->|深化| n_c08_vector_store
+  n_cragprod_pipeline_compose -->|应用| n_c18_agent_as_service
+  n_cragprod_vectordb_migration -->|对比| n_ccapstone_rag_corpus
 ```
 
 ## 概念索引
@@ -560,6 +648,34 @@ graph LR
 | 结构化输出 (zod 约束) | [capstone 毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md) | planSchema/reportSchema 把不确定模型输出收敛为类型安全产物 |
 | Tracer 可观测与成本 | [capstone 毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md) | 装饰器无侵入包裹 LLMClient，统计 tokens/调用并估算成本 |
 | CLI / HTTP 双入口 | [capstone 毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md) | 核心逻辑与展示层解耦，同一份能力暴露为命令行和 HTTP 服务 |
+| 切块决定检索上限 | [rag-chunk 进阶分块策略](../rag-advanced/01-chunking-strategies/README.md) | 检索质量的天花板很大程度由分块策略决定，太大太小都伤召回 |
+| 字符滑窗切分 | [rag-chunk 进阶分块策略](../rag-advanced/01-chunking-strategies/README.md) | 第09章基线：定长字符 + 重叠，简单但会盲切句子 |
+| 递归语义切分 | [rag-chunk 进阶分块策略](../rag-advanced/01-chunking-strategies/README.md) | 优先在段落/句子/词等语义边界下刀，按 token 控大小 |
+| Markdown 标题感知切分 | [rag-chunk 进阶分块策略](../rag-advanced/01-chunking-strategies/README.md) | 按标题分节并把标题路径前缀进块，让片段自带出处 |
+| 按 token 计长 (approxTokens) | [rag-chunk 进阶分块策略](../rag-advanced/01-chunking-strategies/README.md) | 用 token 而非字符控制块大小，贴合上下文预算 |
+| 稀疏 vs 稠密检索 | [rag-hybrid 混合检索 (向量+BM25+RRF)](../rag-advanced/02-hybrid-search/README.md) | BM25 关键词(稀疏) 与 向量语义(稠密) 各有盲区，互补 |
+| BM25 关键词打分 | [rag-hybrid 混合检索 (向量+BM25+RRF)](../rag-advanced/02-hybrid-search/README.md) | 经典词频检索，擅长精确词/专名/型号，对语义改写无能 |
+| 向量语义召回 | [rag-hybrid 混合检索 (向量+BM25+RRF)](../rag-advanced/02-hybrid-search/README.md) | 余弦相似度召回语义近似，对精确专名/罕见词不敏感 |
+| RRF 排名融合 | [rag-hybrid 混合检索 (向量+BM25+RRF)](../rag-advanced/02-hybrid-search/README.md) | 只看名次不看分值地融合多路结果，免归一化、抗异常分 |
+| 混合检索器 | [rag-hybrid 混合检索 (向量+BM25+RRF)](../rag-advanced/02-hybrid-search/README.md) | 同源建向量+BM25 双索引，各召回一批再 RRF 融合 top-k |
+| 召回-精排两段式 | [rag-rerank 召回-精排两段式](../rag-advanced/03-reranking/README.md) | 先廉价多召回(别漏)，再贵而准地精排到少数(排得准) |
+| LLM 重排 | [rag-rerank 召回-精排两段式](../rag-advanced/03-reranking/README.md) | 让模型同看 query 与候选给出相关性排序，教学用近似精排 |
+| 上下文信噪比 | [rag-rerank 召回-精排两段式](../rag-advanced/03-reranking/README.md) | 精排提升注入片段的相关密度，减少无关噪声干扰生成 |
+| cross-encoder 精排器 | [rag-rerank 召回-精排两段式](../rag-advanced/03-reranking/README.md) | 生产常用专用重排模型(bge-reranker/Cohere)，原理一致 |
+| 查询-资料措辞错配 | [rag-query 查询改写 (multi-query/HyDE)](../rag-advanced/04-query-transformation/README.md) | 用户问法与资料写法常对不上，检索前需先优化查询 |
+| 多查询改写 | [rag-query 查询改写 (multi-query/HyDE)](../rag-advanced/04-query-transformation/README.md) | 扩成多个措辞/角度的查询，多路召回取并集降低漏召回 |
+| HyDE 假设答案检索 | [rag-query 查询改写 (multi-query/HyDE)](../rag-advanced/04-query-transformation/README.md) | 先生成假设答案，用其向量检索，常比用问题本身更准 |
+| 召回覆盖率 | [rag-query 查询改写 (multi-query/HyDE)](../rag-advanced/04-query-transformation/README.md) | 查询改写优化的核心指标：相关片段是否被召回进候选集 |
+| RAG 的 LLM-as-judge | [rag-eval RAG 评估三指标](../rag-advanced/05-rag-evaluation/README.md) | 用裁判模型给一次 RAG 问答的多个质量维度打分 |
+| 上下文相关性 | [rag-eval RAG 评估三指标](../rag-advanced/05-rag-evaluation/README.md) | 检索到的资料是否相关，低分指向检索环出问题 |
+| 忠实度 | [rag-eval RAG 评估三指标](../rag-advanced/05-rag-evaluation/README.md) | 答案是否都有资料支撑、无臆造，低分说明模型在编 |
+| 答案相关性 | [rag-eval RAG 评估三指标](../rag-advanced/05-rag-evaluation/README.md) | 答案是否直接切题，低分指向提示或生成跑偏 |
+| 按指标定位坏环 | [rag-eval RAG 评估三指标](../rag-advanced/05-rag-evaluation/README.md) | 三分拆开看，定位是检索/生成/提示哪一环需要调 |
+| metadata 过滤 | [rag-prod 生产化 RAG 全链路](../rag-advanced/06-production-rag/README.md) | 按租户/权限/类别先筛子集再检索，最小权限的落地 |
+| 向量库持久化 | [rag-prod 生产化 RAG 全链路](../rag-advanced/06-production-rag/README.md) | toJSON/fromJSON 存载已算好的向量，重启免重新付费 embedding |
+| 增量 upsert | [rag-prod 生产化 RAG 全链路](../rag-advanced/06-production-rag/README.md) | 知识变动时按 id 只重嵌变更项，不整库重建 |
+| 端到端管线组合 | [rag-prod 生产化 RAG 全链路](../rag-advanced/06-production-rag/README.md) | 过滤+检索+精排+引用增强生成组装成可复用 answerWithRag |
+| 迁移到专用向量 DB | [rag-prod 生产化 RAG 全链路](../rag-advanced/06-production-rag/README.md) | 数据量/并发/持久化需求超内存库时迁 pgvector/Qdrant，接口对齐 |
 
 ## 关联文章
 
@@ -596,3 +712,10 @@ graph LR
 | [Node.js HTTP module documentation](https://nodejs.org/api/http.html) | doc | 18 | node:http 内置模块文档，本章无框架起服务的基础 |
 | [Model Context Protocol: What is MCP?](https://modelcontextprotocol.io/docs/getting-started/intro) | doc | 19 | MCP 官方入门，工具/数据连接标准化的一手来源 |
 | [LangGraph overview](https://docs.langchain.com/oss/javascript/langgraph/overview) | doc | 19 | 编排 runtime 代表，长任务持久化与 human-in-the-loop 官方文档 |
+| [Introducing Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) | blog | rag-chunk, rag-hybrid | Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读 |
+| [Okapi BM25 - Wikipedia](https://en.wikipedia.org/wiki/Okapi_BM25) | doc | rag-hybrid | BM25 打分公式与 k1/b 参数的权威说明，对应本章 BM25Index |
+| [Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods](https://dl.acm.org/doi/10.1145/1571941.1572114) | paper | rag-hybrid | RRF 原始论文 (Cormack et al., SIGIR 2009)，混合检索融合法的来源 |
+| [Precise Zero-Shot Dense Retrieval without Relevance Labels (HyDE)](https://arxiv.org/abs/2212.10496) | paper | rag-query | HyDE 原始论文：用假设性文档的向量做检索 |
+| [RAGAS: Automated Evaluation of Retrieval Augmented Generation](https://arxiv.org/abs/2309.15217) | paper | rag-eval | RAG 评估指标 (faithfulness / context & answer relevance) 的代表性论文，本章三指标的来源 |
+| [Cohere · Rerank documentation](https://docs.cohere.com/docs/rerank-overview) | doc | rag-rerank | 生产级 rerank API 与 cross-encoder 精排的官方说明，对照本章 llmRerank |
+| [pgvector — open-source vector similarity search for Postgres](https://github.com/pgvector/pgvector) | doc | rag-prod | 最常见的生产持久化向量库，迁移目标之一，对照本章 MemoryVectorStore 接口 |

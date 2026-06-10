@@ -43,6 +43,8 @@
 
 > 提示：全程用便宜模型（如 `gpt-4o-mini` / `claude-haiku`）跑完成本很低；第 16 章会专门教你怎么算账和省钱。
 
+想直接跳到任意课程，使用 [全局课程导航](./navigation.md)。它按顺序、按主题整理了第 00–19 章、毕业项目和 RAG 系统实战项目。
+
 ### 三层学习法
 
 | 层级 | 学习重点 | 适合的自检问题 |
@@ -78,7 +80,8 @@
 | 第六部分 · 生产化 | 15–18 | ~5 小时 |
 | 第七部分 · 前沿与生态 | 19 | ~1 小时 |
 | 🎓 毕业项目 · Deep Research Agent | 综合 | ~6–10 小时 |
-| **合计** | **19 章 + 毕业项目** | **约 31–36 小时**（不含动手扩展） |
+| 🔬 进阶 RAG 专题 | rag-advanced ×6 | ~4–5 小时 |
+| **合计** | **19 章 + 毕业项目 + RAG 专题** | **约 35–41 小时**（不含动手扩展） |
 
 > 按每天投入 1–1.5 小时算，大约 **3–4 周**可以完整走完一遍。建议分散学、多动手，比一口气刷完更扎实。
 
@@ -133,6 +136,11 @@
                   ┌──────────────────────────────────┐
                   │  🎓 毕业项目 · Deep Research Agent │
                   │     综合所有能力的实战            │
+                  └────────────────┬─────────────────┘
+                                   ▼
+                  ┌──────────────────────────────────┐
+                  │  🔬 进阶 RAG 专题 (rag-advanced)   │
+                  │  分块/混合/精排/改写/评估/生产化   │
                   └────────────────┬─────────────────┘
                                    ▼
                   ┌──────────────────────────────────┐
@@ -237,6 +245,19 @@
 |---|------|------|------|------------|------|
 | 📚 | songuu/rag-system | ⭐⭐⭐⭐ | 持续迭代 | 从课程最小 RAG 走向生产级知识库系统，重点看 ingestion、chunking、embedding、retrieval、rerank、citation、eval 与治理 | [./rag-system-project.md](./rag-system-project.md) |
 
+### 🔬 进阶 RAG 专题（rag-advanced）
+
+> 目标：把第 08/09 章的「最小可解释 RAG」补成**生产级 RAG**。六章各自可运行，沉淀进 `src/shared/rag/` 复用。建议学完第 09 章后按序深入；其中第 01 章为纯函数 demo，**无需任何 API key** 即可跑通。
+
+| # | 标题 | 难度 | 预计 | 一句话简介 | 链接 |
+|---|------|------|------|------------|------|
+| R1 | 进阶分块策略 | ⭐⭐⭐ | 45 分钟 | 字符滑窗 vs 递归语义切分 vs Markdown 标题感知，按 token 控大小 | [../rag-advanced/01-chunking-strategies/README.md](../rag-advanced/01-chunking-strategies/README.md) |
+| R2 | 混合检索 | ⭐⭐⭐ | 50 分钟 | 向量 + BM25 双路召回，用 RRF 融合，补齐单路检索的盲区 | [../rag-advanced/02-hybrid-search/README.md](../rag-advanced/02-hybrid-search/README.md) |
+| R3 | 召回-精排两段式 | ⭐⭐⭐ | 45 分钟 | 廉价多召回 + LLM 精排到少数最相关，提升上下文信噪比 | [../rag-advanced/03-reranking/README.md](../rag-advanced/03-reranking/README.md) |
+| R4 | 查询改写 | ⭐⭐⭐ | 45 分钟 | multi-query 多路改写与 HyDE 假设答案检索，提升召回覆盖 | [../rag-advanced/04-query-transformation/README.md](../rag-advanced/04-query-transformation/README.md) |
+| R5 | RAG 评估 | ⭐⭐⭐ | 50 分钟 | 上下文相关性 / 忠实度 / 答案相关性三指标，定位坏在哪一环 | [../rag-advanced/05-rag-evaluation/README.md](../rag-advanced/05-rag-evaluation/README.md) |
+| R6 | 生产化 RAG | ⭐⭐⭐⭐ | 60 分钟 | metadata 过滤、持久化、增量 upsert、端到端管线组合 | [../rag-advanced/06-production-rag/README.md](../rag-advanced/06-production-rag/README.md) |
+
 ---
 
 ## 学完之后的下一步
@@ -245,6 +266,7 @@
 
 - 💼 **找工作 / 转行** → 看 [求职指南](./career-guide.md)：岗位画像、技能清单、用本项目（尤其毕业项目）写简历、高频面试题拆解。
 - 🚀 **做产品 / 创业** → 看 [创业指南](./startup-guide.md)：怎么判断机会、如何把毕业项目裁剪成 MVP、成本控制、上线 checklist。
-- 📚 **深挖 RAG** → 看 [RAG 系统实战项目](./rag-system-project.md)：连接到 [songuu/rag-system](https://github.com/songuu/rag-system)，把课程里的 RAG 原理升级成独立系统。
+- 🔬 **进阶 RAG（仓库内）** → 看 [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md)：分块策略、混合检索、重排、查询改写、评估、生产化六章，把第 08/09 章的最小 RAG 补成生产级，能力沉淀在 `src/shared/rag/`。
+- 📚 **深挖 RAG（独立项目）** → 看 [RAG 系统实战项目](./rag-system-project.md)：连接到 [songuu/rag-system](https://github.com/songuu/rag-system)，把课程里的 RAG 原理升级成独立系统。
 
 > 不确定走哪条？建议两份都读一遍——求职和创业需要的底层能力是同一套，区别只在你把它用在哪。

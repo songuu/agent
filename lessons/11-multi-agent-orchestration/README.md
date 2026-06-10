@@ -2,6 +2,7 @@
 
 > 所属阶段：**第四部分 · 进阶模式**
 > 预计用时：55 分钟 | 难度：⭐⭐⭐⭐☆
+> 全局导航：[课程导航](../../docs/navigation.md) · [完整大纲](../../docs/curriculum.md) · [知识图谱](../../docs/knowledge-graph.md)
 
 ## 学习目标
 

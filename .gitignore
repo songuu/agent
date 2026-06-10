@@ -12,6 +12,10 @@ dist/
 build/
 *.tsbuildinfo
 
+# 课程站点（VitePress）构建产物与缓存
+.vitepress/dist/
+.vitepress/cache/
+
 # 日志
 *.log
 npm-debug.log*

@@ -12,7 +12,11 @@
     "typecheck": "tsc --noEmit",
     "lesson": "tsx",
     "capstone": "tsx capstone/deep-research-agent/src/cli.ts",
-    "kg": "tsx knowledge-graph/generate.ts"
+    "kg": "tsx knowledge-graph/generate.ts",
+    "rag:smoke": "tsx rag-advanced/smoke.ts",
+    "site:dev": "vitepress dev",
+    "site:build": "vitepress build",
+    "site:preview": "vitepress preview"
   },
   "keywords": [
     "ai",
@@ -38,7 +42,11 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "markdown-it-task-lists": "^2.1.1",
+    "mermaid": "^11.4.0",
     "tsx": "^4.19.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitepress": "^1.6.3",
+    "vitepress-plugin-mermaid": "^2.0.17"
   }
 }

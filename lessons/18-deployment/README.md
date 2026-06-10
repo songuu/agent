@@ -2,6 +2,7 @@
 
 > 所属阶段：**第六部分 · 生产化**
 > 预计用时：50 分钟 | 难度：⭐⭐⭐☆☆
+> 全局导航：[课程导航](../../docs/navigation.md) · [完整大纲](../../docs/curriculum.md) · [知识图谱](../../docs/knowledge-graph.md)
 
 ## 学习目标
 
@@ -392,6 +393,7 @@ graph LR
   n_c14_token_streaming["Token 流式输出 (typewriter)（第14章）"]
   n_c06_run_agent_loop["runAgent 循环（第06章）"]
   n_ccapstone_dual_entrypoint["CLI / HTTP 双入口（第capstone章）"]
+  n_cragprod_pipeline_compose["端到端管线组合（第rag-prod章）"]
   n_c18_agent_as_service -->|组成| n_c18_stateless
   n_c18_agent_as_service -->|组成| n_c18_request_timeout
   n_c18_agent_as_service -->|组成| n_c18_error_fallback
@@ -405,6 +407,7 @@ graph LR
   n_c18_sse_streaming -->|深化| n_c14_token_streaming
   n_c18_agent_as_service -->|应用| n_c06_run_agent_loop
   n_ccapstone_dual_entrypoint -->|组成| n_c18_agent_as_service
+  n_cragprod_pipeline_compose -->|应用| n_c18_agent_as_service
   style n_c18_agent_as_service stroke:#ff9f0a,stroke-width:3px
   style n_c18_stateless stroke:#ff9f0a,stroke-width:3px
   style n_c18_request_timeout stroke:#ff9f0a,stroke-width:3px
@@ -419,6 +422,7 @@ graph LR
 - `SSE 流式接口 (/chat/stream)` —**深化**→ `Token 流式输出 (typewriter)`（第 14 章）
 - `脚本到服务 (Agent as Service)` —**应用**→ `runAgent 循环`（第 06 章）
 - `CLI / HTTP 双入口` —**组成**→ `脚本到服务 (Agent as Service)`（第 capstone 章）
+- `端到端管线组合` —**应用**→ `脚本到服务 (Agent as Service)`（第 rag-prod 章）
 
 ### 延伸阅读
 

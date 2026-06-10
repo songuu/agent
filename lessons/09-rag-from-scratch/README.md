@@ -2,6 +2,7 @@
 
 > 所属阶段：**第三部分 · 知识与检索**
 > 预计用时：55 分钟 | 难度：⭐⭐⭐
+> 全局导航：[课程导航](../../docs/navigation.md) · [完整大纲](../../docs/curriculum.md) · [知识图谱](../../docs/knowledge-graph.md)
 
 ## 学习目标
 
@@ -219,6 +220,12 @@ graph LR
   n_c08_vector_store["内存向量库 (add/search)（第08章）"]
   n_c17_isolate_and_label["隔离 + 标注 (wrapUntrusted)（第17章）"]
   n_ccapstone_rag_corpus["RAG 内置语料检索（第capstone章）"]
+  n_cragchunk_why_matters["切块决定检索上限（第rag-chunk章）"]
+  n_cragchunk_recursive["递归语义切分（第rag-chunk章）"]
+  n_craghybrid_retriever["混合检索器（第rag-hybrid章）"]
+  n_cragrerank_signal_to_noise["上下文信噪比（第rag-rerank章）"]
+  n_cragquery_multi_query["多查询改写（第rag-query章）"]
+  n_crageval_faithfulness["忠实度（第rag-eval章）"]
   n_c09_chunk_overlap -->|组成| n_c09_rag_pipeline
   n_c09_topk_retrieval -->|组成| n_c09_rag_pipeline
   n_c09_augment_prompt -->|组成| n_c09_rag_pipeline
@@ -231,6 +238,12 @@ graph LR
   n_c09_rag_pipeline -->|组成| n_c08_vector_store
   n_c17_isolate_and_label -->|应用| n_c09_augment_prompt
   n_ccapstone_rag_corpus -->|组成| n_c09_rag_pipeline
+  n_cragchunk_why_matters -->|深化| n_c09_chunk_overlap
+  n_cragchunk_recursive -->|应用| n_c09_rag_pipeline
+  n_craghybrid_retriever -->|深化| n_c09_topk_retrieval
+  n_cragrerank_signal_to_noise -->|应用| n_c09_augment_prompt
+  n_cragquery_multi_query -->|应用| n_c09_topk_retrieval
+  n_crageval_faithfulness -->|深化| n_c09_hallucination_reduction
   style n_c09_rag_pipeline stroke:#ff9f0a,stroke-width:3px
   style n_c09_chunk_overlap stroke:#ff9f0a,stroke-width:3px
   style n_c09_topk_retrieval stroke:#ff9f0a,stroke-width:3px
@@ -245,6 +258,12 @@ graph LR
 - `RAG 全流程` —**组成**→ `内存向量库 (add/search)`（第 08 章）
 - `隔离 + 标注 (wrapUntrusted)` —**应用**→ `上下文增强 (augment)`（第 17 章）
 - `RAG 内置语料检索` —**组成**→ `RAG 全流程`（第 capstone 章）
+- `切块决定检索上限` —**深化**→ `分块与重叠 (chunk/overlap)`（第 rag-chunk 章）
+- `递归语义切分` —**应用**→ `RAG 全流程`（第 rag-chunk 章）
+- `混合检索器` —**深化**→ `top-k 检索`（第 rag-hybrid 章）
+- `上下文信噪比` —**应用**→ `上下文增强 (augment)`（第 rag-rerank 章）
+- `多查询改写` —**应用**→ `top-k 检索`（第 rag-query 章）
+- `忠实度` —**深化**→ `幻觉抑制与 A/B 对比`（第 rag-eval 章）
 
 ### 延伸阅读
 
@@ -260,9 +279,18 @@ graph LR
 - **分块 + 重叠** 决定召回质量；**「只许根据资料 + 标注编号」** 决定答案的可信与可溯源。
 - 上一章 [第 08 章 · Embedding 与向量检索](../08-embeddings-and-vector-search/README.md) 打好了向量基础；下一章 [第 10 章 · 推理模式](../10-reasoning-patterns/README.md) 学习如何让模型更好地「思考与决策」。
 
-### 进阶项目：songuu/rag-system
+### 下一步：进阶 RAG 专题（就在本仓库）
 
-本章是“最小可解释 RAG”。如果你要继续看生产级 RAG 系统如何演进，接着读 [RAG 系统实战项目](../../docs/rag-system-project.md)，它会把本章的分块、向量化、检索、引用，连接到独立项目 [songuu/rag-system](https://github.com/songuu/rag-system)。
+本章是“最小可解释 RAG”。想把它补成**生产级**、且每一步都能动手跑？直接进 [**进阶 RAG 专题（rag-advanced）**](../../rag-advanced/01-chunking-strategies/README.md)，六章承接本章：
+
+1. [进阶分块策略](../../rag-advanced/01-chunking-strategies/README.md)：递归语义切分 / Markdown 感知（纯函数，免 key 可跑）
+2. [混合检索](../../rag-advanced/02-hybrid-search/README.md)：向量 + BM25 + RRF
+3. [召回-精排](../../rag-advanced/03-reranking/README.md)：两段式 + LLM 重排
+4. [查询改写](../../rag-advanced/04-query-transformation/README.md)：multi-query / HyDE
+5. [RAG 评估](../../rag-advanced/05-rag-evaluation/README.md)：三指标定位坏在哪一环
+6. [生产化 RAG](../../rag-advanced/06-production-rag/README.md)：过滤 / 持久化 / 增量 / 全链路
+
+再往后，[RAG 系统实战项目](../../docs/rag-system-project.md) 会把这些能力连接到独立作品集项目 [songuu/rag-system](https://github.com/songuu/rag-system)。
 
 对照时重点看这些差异：
 

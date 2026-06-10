@@ -2,6 +2,7 @@
 
 > 所属阶段：**第二部分 · 从零手写核心**
 > 预计用时：40 分钟 | 难度：⭐⭐☆☆☆
+> 全局导航：[课程导航](../../docs/navigation.md) · [完整大纲](../../docs/curriculum.md) · [知识图谱](../../docs/knowledge-graph.md)
 
 ## 学习目标
 
@@ -244,6 +245,7 @@ graph LR
   n_c07_conversation_class["Conversation 类"]
   n_c01_message_memory["消息数组即记忆（第01章）"]
   n_c02_usage_token["usage 与 token 成本（第02章）"]
+  n_cragchunk_token_budget["按 token 计长 (approxTokens)（第rag-chunk章）"]
   n_c07_context_window_budget -->|前置| n_c07_conversation_as_array
   n_c07_sliding_window -->|应用| n_c07_context_window_budget
   n_c07_llm_summary_compression -->|应用| n_c07_context_window_budget
@@ -255,6 +257,7 @@ graph LR
   n_c07_conversation_class -->|组成| n_c07_summarize_threshold
   n_c07_conversation_as_array -->|深化| n_c01_message_memory
   n_c07_context_window_budget -->|应用| n_c02_usage_token
+  n_cragchunk_token_budget -->|应用| n_c07_context_window_budget
   style n_c07_conversation_as_array stroke:#ff9f0a,stroke-width:3px
   style n_c07_context_window_budget stroke:#ff9f0a,stroke-width:3px
   style n_c07_sliding_window stroke:#ff9f0a,stroke-width:3px
@@ -268,6 +271,7 @@ graph LR
 
 - `记忆即回灌 messages` —**深化**→ `消息数组即记忆`（第 01 章）
 - `上下文窗口预算` —**应用**→ `usage 与 token 成本`（第 02 章）
+- `按 token 计长 (approxTokens)` —**应用**→ `上下文窗口预算`（第 rag-chunk 章）
 
 ### 延伸阅读
 

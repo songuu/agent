@@ -79,6 +79,12 @@ export const CHAPTERS: Chapter[] = [
   { id: "18", slug: "18-deployment", title: "部署：把 Agent 变成服务", part: "第六部分 · 生产化", dir: "lessons/18-deployment" },
   { id: "19", slug: "19-agent-ecosystem-and-frontier", title: "Agent 前沿发展与生态拆解", part: "第七部分 · 前沿与生态", dir: "lessons/19-agent-ecosystem-and-frontier" },
   { id: "capstone", slug: "deep-research-agent", title: "毕业项目 · Deep Research Agent", part: "毕业项目", dir: "capstone/deep-research-agent" },
+  { id: "rag-chunk", slug: "01-chunking-strategies", title: "进阶分块策略", part: "进阶 RAG 专题", dir: "rag-advanced/01-chunking-strategies" },
+  { id: "rag-hybrid", slug: "02-hybrid-search", title: "混合检索 (向量+BM25+RRF)", part: "进阶 RAG 专题", dir: "rag-advanced/02-hybrid-search" },
+  { id: "rag-rerank", slug: "03-reranking", title: "召回-精排两段式", part: "进阶 RAG 专题", dir: "rag-advanced/03-reranking" },
+  { id: "rag-query", slug: "04-query-transformation", title: "查询改写 (multi-query/HyDE)", part: "进阶 RAG 专题", dir: "rag-advanced/04-query-transformation" },
+  { id: "rag-eval", slug: "05-rag-evaluation", title: "RAG 评估三指标", part: "进阶 RAG 专题", dir: "rag-advanced/05-rag-evaluation" },
+  { id: "rag-prod", slug: "06-production-rag", title: "生产化 RAG 全链路", part: "进阶 RAG 专题", dir: "rag-advanced/06-production-rag" },
 ];
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -223,6 +229,41 @@ export const CONCEPTS: Concept[] = [
   { id: "ccapstone-structured-output", label: "结构化输出 (zod 约束)", chapter: "capstone", summary: "planSchema/reportSchema 把不确定模型输出收敛为类型安全产物" },
   { id: "ccapstone-tracer-cost", label: "Tracer 可观测与成本", chapter: "capstone", summary: "装饰器无侵入包裹 LLMClient，统计 tokens/调用并估算成本" },
   { id: "ccapstone-dual-entrypoint", label: "CLI / HTTP 双入口", chapter: "capstone", summary: "核心逻辑与展示层解耦，同一份能力暴露为命令行和 HTTP 服务" },
+
+  // ── 进阶 RAG 专题 ──
+  { id: "cragchunk-why-matters", label: "切块决定检索上限", chapter: "rag-chunk", summary: "检索质量的天花板很大程度由分块策略决定，太大太小都伤召回" },
+  { id: "cragchunk-sliding-window", label: "字符滑窗切分", chapter: "rag-chunk", summary: "第09章基线：定长字符 + 重叠，简单但会盲切句子" },
+  { id: "cragchunk-recursive", label: "递归语义切分", chapter: "rag-chunk", summary: "优先在段落/句子/词等语义边界下刀，按 token 控大小" },
+  { id: "cragchunk-markdown-aware", label: "Markdown 标题感知切分", chapter: "rag-chunk", summary: "按标题分节并把标题路径前缀进块，让片段自带出处" },
+  { id: "cragchunk-token-budget", label: "按 token 计长 (approxTokens)", chapter: "rag-chunk", summary: "用 token 而非字符控制块大小，贴合上下文预算" },
+
+  { id: "craghybrid-sparse-vs-dense", label: "稀疏 vs 稠密检索", chapter: "rag-hybrid", summary: "BM25 关键词(稀疏) 与 向量语义(稠密) 各有盲区，互补" },
+  { id: "craghybrid-bm25", label: "BM25 关键词打分", chapter: "rag-hybrid", summary: "经典词频检索，擅长精确词/专名/型号，对语义改写无能" },
+  { id: "craghybrid-vector-recall", label: "向量语义召回", chapter: "rag-hybrid", summary: "余弦相似度召回语义近似，对精确专名/罕见词不敏感" },
+  { id: "craghybrid-rrf", label: "RRF 排名融合", chapter: "rag-hybrid", summary: "只看名次不看分值地融合多路结果，免归一化、抗异常分" },
+  { id: "craghybrid-retriever", label: "混合检索器", chapter: "rag-hybrid", summary: "同源建向量+BM25 双索引，各召回一批再 RRF 融合 top-k" },
+
+  { id: "cragrerank-recall-precision", label: "召回-精排两段式", chapter: "rag-rerank", summary: "先廉价多召回(别漏)，再贵而准地精排到少数(排得准)" },
+  { id: "cragrerank-llm-rerank", label: "LLM 重排", chapter: "rag-rerank", summary: "让模型同看 query 与候选给出相关性排序，教学用近似精排" },
+  { id: "cragrerank-signal-to-noise", label: "上下文信噪比", chapter: "rag-rerank", summary: "精排提升注入片段的相关密度，减少无关噪声干扰生成" },
+  { id: "cragrerank-cross-encoder", label: "cross-encoder 精排器", chapter: "rag-rerank", summary: "生产常用专用重排模型(bge-reranker/Cohere)，原理一致" },
+
+  { id: "cragquery-mismatch", label: "查询-资料措辞错配", chapter: "rag-query", summary: "用户问法与资料写法常对不上，检索前需先优化查询" },
+  { id: "cragquery-multi-query", label: "多查询改写", chapter: "rag-query", summary: "扩成多个措辞/角度的查询，多路召回取并集降低漏召回" },
+  { id: "cragquery-hyde", label: "HyDE 假设答案检索", chapter: "rag-query", summary: "先生成假设答案，用其向量检索，常比用问题本身更准" },
+  { id: "cragquery-recall-coverage", label: "召回覆盖率", chapter: "rag-query", summary: "查询改写优化的核心指标：相关片段是否被召回进候选集" },
+
+  { id: "crageval-llm-judge-rag", label: "RAG 的 LLM-as-judge", chapter: "rag-eval", summary: "用裁判模型给一次 RAG 问答的多个质量维度打分" },
+  { id: "crageval-context-relevance", label: "上下文相关性", chapter: "rag-eval", summary: "检索到的资料是否相关，低分指向检索环出问题" },
+  { id: "crageval-faithfulness", label: "忠实度", chapter: "rag-eval", summary: "答案是否都有资料支撑、无臆造，低分说明模型在编" },
+  { id: "crageval-answer-relevance", label: "答案相关性", chapter: "rag-eval", summary: "答案是否直接切题，低分指向提示或生成跑偏" },
+  { id: "crageval-stage-localization", label: "按指标定位坏环", chapter: "rag-eval", summary: "三分拆开看，定位是检索/生成/提示哪一环需要调" },
+
+  { id: "cragprod-metadata-filter", label: "metadata 过滤", chapter: "rag-prod", summary: "按租户/权限/类别先筛子集再检索，最小权限的落地" },
+  { id: "cragprod-persistence", label: "向量库持久化", chapter: "rag-prod", summary: "toJSON/fromJSON 存载已算好的向量，重启免重新付费 embedding" },
+  { id: "cragprod-incremental-upsert", label: "增量 upsert", chapter: "rag-prod", summary: "知识变动时按 id 只重嵌变更项，不整库重建" },
+  { id: "cragprod-pipeline-compose", label: "端到端管线组合", chapter: "rag-prod", summary: "过滤+检索+精排+引用增强生成组装成可复用 answerWithRag" },
+  { id: "cragprod-vectordb-migration", label: "迁移到专用向量 DB", chapter: "rag-prod", summary: "数据量/并发/持久化需求超内存库时迁 pgvector/Qdrant，接口对齐" },
 ];
 
 export const RELATIONS: Relation[] = [
@@ -417,6 +458,59 @@ export const RELATIONS: Relation[] = [
   { from: "ccapstone-structured-output", to: "c13-structured-output", type: "组成", note: "毕设复用结构化输出" },
   { from: "ccapstone-tracer-cost", to: "c16-decorator-tracer", type: "组成", note: "毕设复用 Tracer 可观测" },
   { from: "ccapstone-dual-entrypoint", to: "c18-agent-as-service", type: "组成", note: "毕设复用服务化部署" },
+
+  // ── 进阶 RAG 专题：章内关系 ──
+  { from: "cragchunk-why-matters", to: "cragchunk-sliding-window", type: "深化", note: "从最朴素的滑窗基线出发理解切块" },
+  { from: "cragchunk-sliding-window", to: "cragchunk-recursive", type: "对比", note: "盲按字符切 vs 在语义边界下刀" },
+  { from: "cragchunk-recursive", to: "cragchunk-markdown-aware", type: "深化", note: "进一步利用文档结构(标题)作边界" },
+  { from: "cragchunk-token-budget", to: "cragchunk-recursive", type: "前置", note: "按 token 计长是递归切分的度量基础" },
+
+  { from: "craghybrid-sparse-vs-dense", to: "craghybrid-bm25", type: "组成", note: "稀疏一侧由 BM25 承担" },
+  { from: "craghybrid-sparse-vs-dense", to: "craghybrid-vector-recall", type: "组成", note: "稠密一侧由向量召回承担" },
+  { from: "craghybrid-bm25", to: "craghybrid-rrf", type: "前置", note: "BM25 排序结果是融合的一路输入" },
+  { from: "craghybrid-vector-recall", to: "craghybrid-rrf", type: "前置", note: "向量排序结果是融合的另一路输入" },
+  { from: "craghybrid-rrf", to: "craghybrid-retriever", type: "组成", note: "混合检索器内部用 RRF 合并两路" },
+
+  { from: "cragrerank-recall-precision", to: "cragrerank-llm-rerank", type: "组成", note: "精排环节用 LLM 实现" },
+  { from: "cragrerank-recall-precision", to: "cragrerank-signal-to-noise", type: "应用", note: "两段式的收益是提升上下文信噪比" },
+  { from: "cragrerank-llm-rerank", to: "cragrerank-cross-encoder", type: "对比", note: "教学用 LLM 近似，生产用专用 reranker" },
+  { from: "cragrerank-recall-precision", to: "craghybrid-retriever", type: "应用", note: "用混合检索做召回，再接精排" },
+
+  { from: "cragquery-mismatch", to: "cragquery-multi-query", type: "应用", note: "用多查询缓解措辞错配" },
+  { from: "cragquery-mismatch", to: "cragquery-hyde", type: "应用", note: "用假设答案缓解问法与资料的差异" },
+  { from: "cragquery-multi-query", to: "cragquery-recall-coverage", type: "深化", note: "多路取并集提升召回覆盖" },
+  { from: "cragquery-hyde", to: "cragquery-recall-coverage", type: "深化", note: "答案向量更贴资料，提升召回覆盖" },
+
+  { from: "crageval-llm-judge-rag", to: "crageval-context-relevance", type: "组成", note: "三指标之一：检索环" },
+  { from: "crageval-llm-judge-rag", to: "crageval-faithfulness", type: "组成", note: "三指标之一：生成忠实度" },
+  { from: "crageval-llm-judge-rag", to: "crageval-answer-relevance", type: "组成", note: "三指标之一：切题度" },
+  { from: "crageval-stage-localization", to: "crageval-context-relevance", type: "应用", note: "context relevance 低 → 调分块/检索/重排" },
+  { from: "crageval-stage-localization", to: "crageval-faithfulness", type: "应用", note: "faithfulness 低 → 收紧生成约束" },
+
+  { from: "cragprod-pipeline-compose", to: "cragprod-metadata-filter", type: "组成", note: "管线的检索前置过滤层" },
+  { from: "cragprod-pipeline-compose", to: "cragprod-persistence", type: "组成", note: "管线的索引落盘/载入层" },
+  { from: "cragprod-pipeline-compose", to: "cragprod-incremental-upsert", type: "组成", note: "管线的知识更新层" },
+  { from: "cragprod-metadata-filter", to: "cragprod-vectordb-migration", type: "前置", note: "过滤与规模诉求推动迁移到专用库" },
+  { from: "cragprod-pipeline-compose", to: "cragrerank-recall-precision", type: "应用", note: "生产管线默认带召回-精排" },
+
+  // ── 进阶 RAG 专题：跨章关系（接回 08/09/15/17/18/capstone）──
+  { from: "cragchunk-why-matters", to: "c09-chunk-overlap", type: "深化", note: "把第09章的字符分块升级为多策略" },
+  { from: "cragchunk-recursive", to: "c09-rag-pipeline", type: "应用", note: "更好的切块直接提升 RAG 召回质量" },
+  { from: "cragchunk-token-budget", to: "c07-context-window-budget", type: "应用", note: "块大小受上下文窗口预算约束" },
+  { from: "craghybrid-vector-recall", to: "c08-topk-retrieval", type: "深化", note: "向量召回即第08章的 top-k 检索" },
+  { from: "craghybrid-bm25", to: "c08-semantic-vs-keyword", type: "深化", note: "把『关键词检索』做成可打分的 BM25" },
+  { from: "craghybrid-retriever", to: "c09-topk-retrieval", type: "深化", note: "用混合检索替换第09章的单路 top-k" },
+  { from: "cragrerank-signal-to-noise", to: "c09-augment-prompt", type: "应用", note: "更干净的上下文喂给增强生成" },
+  { from: "cragrerank-llm-rerank", to: "c15-llm-judge", type: "对比", note: "同是用模型评分：一个做排序、一个做评估" },
+  { from: "cragquery-hyde", to: "c08-embedding", type: "应用", note: "用假设答案的 embedding 去检索" },
+  { from: "cragquery-multi-query", to: "c09-topk-retrieval", type: "应用", note: "多路检索后对 top-k 结果取并集" },
+  { from: "crageval-llm-judge-rag", to: "c15-llm-judge", type: "深化", note: "把第15章 LLM-as-judge 落到 RAG 三指标" },
+  { from: "crageval-faithfulness", to: "c09-hallucination-reduction", type: "深化", note: "把『幻觉抑制』量化成可回归的分数" },
+  { from: "crageval-stage-localization", to: "c15-eval-harness", type: "应用", note: "三指标可纳入 eval 集做回归" },
+  { from: "cragprod-metadata-filter", to: "c17-human-in-the-loop", type: "应用", note: "权限/租户过滤是最小权限护栏的一环" },
+  { from: "cragprod-persistence", to: "c08-vector-store", type: "深化", note: "给内存向量库补上持久化能力" },
+  { from: "cragprod-pipeline-compose", to: "c18-agent-as-service", type: "应用", note: "RAG 管线可包成 HTTP 服务对外提供" },
+  { from: "cragprod-vectordb-migration", to: "ccapstone-rag-corpus", type: "对比", note: "毕设内存语料 vs 生产专用向量库" },
 ];
 
 export const ARTICLES: Article[] = [
@@ -449,4 +543,11 @@ export const ARTICLES: Article[] = [
   { title: "Node.js HTTP module documentation", url: "https://nodejs.org/api/http.html", kind: "doc", chapters: ["18"], note: "node:http 内置模块文档，本章无框架起服务的基础" },
   { title: "Model Context Protocol: What is MCP?", url: "https://modelcontextprotocol.io/docs/getting-started/intro", kind: "doc", chapters: ["19"], note: "MCP 官方入门，工具/数据连接标准化的一手来源" },
   { title: "LangGraph overview", url: "https://docs.langchain.com/oss/javascript/langgraph/overview", kind: "doc", chapters: ["19"], note: "编排 runtime 代表，长任务持久化与 human-in-the-loop 官方文档" },
+  { title: "Introducing Contextual Retrieval", url: "https://www.anthropic.com/news/contextual-retrieval", kind: "blog", chapters: ["rag-chunk", "rag-hybrid"], note: "Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读" },
+  { title: "Okapi BM25 - Wikipedia", url: "https://en.wikipedia.org/wiki/Okapi_BM25", kind: "doc", chapters: ["rag-hybrid"], note: "BM25 打分公式与 k1/b 参数的权威说明，对应本章 BM25Index" },
+  { title: "Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods", url: "https://dl.acm.org/doi/10.1145/1571941.1572114", kind: "paper", chapters: ["rag-hybrid"], note: "RRF 原始论文 (Cormack et al., SIGIR 2009)，混合检索融合法的来源" },
+  { title: "Precise Zero-Shot Dense Retrieval without Relevance Labels (HyDE)", url: "https://arxiv.org/abs/2212.10496", kind: "paper", chapters: ["rag-query"], note: "HyDE 原始论文：用假设性文档的向量做检索" },
+  { title: "RAGAS: Automated Evaluation of Retrieval Augmented Generation", url: "https://arxiv.org/abs/2309.15217", kind: "paper", chapters: ["rag-eval"], note: "RAG 评估指标 (faithfulness / context & answer relevance) 的代表性论文，本章三指标的来源" },
+  { title: "Cohere · Rerank documentation", url: "https://docs.cohere.com/docs/rerank-overview", kind: "doc", chapters: ["rag-rerank"], note: "生产级 rerank API 与 cross-encoder 精排的官方说明，对照本章 llmRerank" },
+  { title: "pgvector — open-source vector similarity search for Postgres", url: "https://github.com/pgvector/pgvector", kind: "doc", chapters: ["rag-prod"], note: "最常见的生产持久化向量库，迁移目标之一，对照本章 MemoryVectorStore 接口" },
 ];

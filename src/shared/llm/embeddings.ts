@@ -2,15 +2,16 @@
  * 文本向量化（embedding）与余弦相似度。供"向量检索 / RAG"章节与毕业项目使用。
  *
  * WHY: Anthropic 官方不提供 embedding 模型（推荐配合 Voyage AI）。为降低初学者门槛，
- * 默认走 OpenAI 的 text-embedding-3-small（便宜、够用）。换厂商在此集中处理。
+ * 默认走 OpenAI-compatible embeddings endpoint。换厂商在此集中处理。
  */
 import OpenAI from "openai";
-import { requireEnv, getEnv } from "../util/env";
+import { getEnv } from "../util/env";
+import { createOpenAICompatibleClient } from "./openaiCompatible";
 
 let cachedClient: OpenAI | null = null;
 
 function client(): OpenAI {
-  if (!cachedClient) cachedClient = new OpenAI({ apiKey: requireEnv("OPENAI_API_KEY") });
+  if (!cachedClient) cachedClient = createOpenAICompatibleClient();
   return cachedClient;
 }
 

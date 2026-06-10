@@ -2,6 +2,7 @@
 
 > 所属阶段：**毕业项目 · 综合实战**
 > 预计用时：3–4 小时 | 难度：⭐⭐⭐⭐☆
+> 全局导航：[课程导航](../../docs/navigation.md) · [完整大纲](../../docs/curriculum.md) · [知识图谱](../../docs/knowledge-graph.md)
 
 把整套课程学到的能力，组装成一个**可运行、可写进简历**的小产品：给它一个研究问题，它会自己**规划 → 多轮检索与推理 → 产出一份带「引用来源」的结构化报告**，并在结尾告诉你这次花了多少 token、多少钱。
 
@@ -313,6 +314,7 @@ graph LR
   n_c13_structured_output["结构化输出（第13章）"]
   n_c16_decorator_tracer["装饰器模式 Tracer（第16章）"]
   n_c18_agent_as_service["脚本到服务 (Agent as Service)（第18章）"]
+  n_cragprod_vectordb_migration["迁移到专用向量 DB（第rag-prod章）"]
   n_ccapstone_plan_and_execute -->|组成| n_ccapstone_research_pipeline
   n_ccapstone_research_pipeline -->|应用| n_ccapstone_tool_registry
   n_ccapstone_tool_registry -->|组成| n_ccapstone_rag_corpus
@@ -326,6 +328,7 @@ graph LR
   n_ccapstone_structured_output -->|组成| n_c13_structured_output
   n_ccapstone_tracer_cost -->|组成| n_c16_decorator_tracer
   n_ccapstone_dual_entrypoint -->|组成| n_c18_agent_as_service
+  n_cragprod_vectordb_migration -->|对比| n_ccapstone_rag_corpus
   style n_ccapstone_plan_and_execute stroke:#ff9f0a,stroke-width:3px
   style n_ccapstone_research_pipeline stroke:#ff9f0a,stroke-width:3px
   style n_ccapstone_tool_registry stroke:#ff9f0a,stroke-width:3px
@@ -343,6 +346,7 @@ graph LR
 - `结构化输出 (zod 约束)` —**组成**→ `结构化输出`（第 13 章）
 - `Tracer 可观测与成本` —**组成**→ `装饰器模式 Tracer`（第 16 章）
 - `CLI / HTTP 双入口` —**组成**→ `脚本到服务 (Agent as Service)`（第 18 章）
+- `迁移到专用向量 DB` —**对比**→ `RAG 内置语料检索`（第 rag-prod 章）
 
 ### 延伸阅读
 

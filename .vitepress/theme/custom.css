@@ -1,0 +1,70 @@
+/* ── 品牌色：靛蓝 → 紫 → 粉的渐变体系 ───────────────────────────────────── */
+:root {
+  --vp-c-brand-1: #6366f1;
+  --vp-c-brand-2: #7c7ff3;
+  --vp-c-brand-3: #8b8df6;
+  --vp-c-brand-soft: rgba(99, 102, 241, 0.14);
+
+  /* 首页 hero 渐变标题与光晕 */
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(120deg, #6366f1 20%, #a855f7 55%, #ec4899 90%);
+  --vp-home-hero-image-background-image: linear-gradient(-45deg, #6366f1 40%, #ec4899 60%);
+  --vp-home-hero-image-filter: blur(56px);
+
+  /* 中文字体栈 */
+  --vp-font-family-base: "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "Noto Sans SC", system-ui, -apple-system, sans-serif;
+}
+
+.dark {
+  --vp-c-brand-1: #818cf8;
+  --vp-c-brand-2: #8b8df6;
+  --vp-c-brand-3: #a5b4fc;
+  --vp-c-brand-soft: rgba(129, 140, 248, 0.16);
+}
+
+/* ── 首页 feature 卡片：圆角 + hover 抬升 ───────────────────────────────── */
+.VPFeature {
+  border-radius: 14px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.VPFeature:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(99, 102, 241, 0.16);
+  border-color: var(--vp-c-brand-2);
+}
+.VPFeature .icon {
+  border-radius: 10px;
+  background: var(--vp-c-brand-soft);
+}
+
+/* hero 按钮微调 */
+.VPHero .action .VPButton {
+  border-radius: 999px;
+  transition: transform 0.2s ease;
+}
+.VPHero .action .VPButton:hover {
+  transform: translateY(-2px);
+}
+
+/* ── 正文细节 ───────────────────────────────────────────────────────────── */
+/* 课程里大量表格，给一点呼吸感 */
+.vp-doc table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+.vp-doc th {
+  background: var(--vp-c-brand-soft);
+}
+
+/* mermaid 图居中且不溢出 */
+.vp-doc .mermaid {
+  display: flex;
+  justify-content: center;
+  overflow-x: auto;
+}
+
+/* 侧边栏当前项更醒目 */
+.VPSidebarItem.level-1.is-active > .item .text {
+  font-weight: 700;
+}

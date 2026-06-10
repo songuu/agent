@@ -2,6 +2,7 @@
 
 > 所属阶段：**第三部分 · 知识与检索**
 > 预计用时：40 分钟 | 难度：⭐⭐☆☆☆
+> 全局导航：[课程导航](../../docs/navigation.md) · [完整大纲](../../docs/curriculum.md) · [知识图谱](../../docs/knowledge-graph.md)
 
 ## 学习目标
 
@@ -91,9 +92,9 @@ flowchart LR
 
 它只看"方向"不看"长度"，所以长短不一的两段话也能公平比较。本章直接用 shared 里写好的 `cosineSimilarity(a, b)`，不必自己推公式。
 
-### 为什么 embedding 默认走 OpenAI？
+### 为什么 embedding 默认走 OpenAI-compatible endpoint？
 
-Anthropic（Claude）官方**不提供 embedding 模型**。为降低初学者门槛，课程把 embedding 统一封装在 `src/shared/llm/embeddings.ts`，默认调用 OpenAI 的 `text-embedding-3-small`（便宜、够用）。所以本章和 LLM 对话不同——**它只认 `OPENAI_API_KEY`**，没配会直接报错。
+Anthropic（Claude）官方**不提供 embedding 模型**。为降低初学者门槛，课程把 embedding 统一封装在 `src/shared/llm/embeddings.ts`，默认调用 OpenAI-compatible embeddings endpoint：官方 OpenAI 可用 `text-embedding-3-small`，SiliconFlow 可通过 `OPENAI_BASE_URL=https://api.siliconflow.cn/v1` 切到 `BAAI/bge-m3`。所以本章和 LLM 对话不同——**它只认 `OPENAI_API_KEY`**，没配会直接报错。
 
 ### 语义检索 vs 关键词检索
 
@@ -221,6 +222,10 @@ graph LR
   n_c08_semantic_vs_keyword["语义检索 vs 关键词检索"]
   n_c08_rag_foundation["RAG 检索地基"]
   n_c09_rag_pipeline["RAG 全流程（第09章）"]
+  n_craghybrid_vector_recall["向量语义召回（第rag-hybrid章）"]
+  n_craghybrid_bm25["BM25 关键词打分（第rag-hybrid章）"]
+  n_cragquery_hyde["HyDE 假设答案检索（第rag-query章）"]
+  n_cragprod_persistence["向量库持久化（第rag-prod章）"]
   n_c08_embedding -->|前置| n_c08_cosine_similarity
   n_c08_cosine_similarity -->|组成| n_c08_vector_store
   n_c08_embedding -->|组成| n_c08_vector_store
@@ -230,6 +235,10 @@ graph LR
   n_c08_semantic_vs_keyword -->|深化| n_c08_rag_foundation
   n_c09_rag_pipeline -->|深化| n_c08_rag_foundation
   n_c09_rag_pipeline -->|组成| n_c08_vector_store
+  n_craghybrid_vector_recall -->|深化| n_c08_topk_retrieval
+  n_craghybrid_bm25 -->|深化| n_c08_semantic_vs_keyword
+  n_cragquery_hyde -->|应用| n_c08_embedding
+  n_cragprod_persistence -->|深化| n_c08_vector_store
   style n_c08_embedding stroke:#ff9f0a,stroke-width:3px
   style n_c08_cosine_similarity stroke:#ff9f0a,stroke-width:3px
   style n_c08_vector_store stroke:#ff9f0a,stroke-width:3px
@@ -242,6 +251,10 @@ graph LR
 
 - `RAG 全流程` —**深化**→ `RAG 检索地基`（第 09 章）
 - `RAG 全流程` —**组成**→ `内存向量库 (add/search)`（第 09 章）
+- `向量语义召回` —**深化**→ `Top-k 检索`（第 rag-hybrid 章）
+- `BM25 关键词打分` —**深化**→ `语义检索 vs 关键词检索`（第 rag-hybrid 章）
+- `HyDE 假设答案检索` —**应用**→ `Embedding (语义向量)`（第 rag-query 章）
+- `向量库持久化` —**深化**→ `内存向量库 (add/search)`（第 rag-prod 章）
 
 ### 延伸阅读
 

@@ -7,7 +7,8 @@
  *  - system 就是一条 role:"system" 的普通消息。
  */
 import OpenAI from "openai";
-import { requireEnv, getEnv } from "../util/env";
+import { getEnv } from "../util/env";
+import { createOpenAICompatibleClient } from "./openaiCompatible";
 import type {
   ChatOptions,
   ChatResult,
@@ -76,7 +77,7 @@ function safeParseArgs(json: string): Record<string, unknown> {
 }
 
 export function createOpenAIClient(): LLMClient {
-  const client = new OpenAI({ apiKey: requireEnv("OPENAI_API_KEY") });
+  const client = createOpenAICompatibleClient();
   const model = getEnv("OPENAI_MODEL", DEFAULT_MODEL)!;
 
   function buildParams(

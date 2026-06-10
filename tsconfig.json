@@ -13,6 +13,6 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["src", "lessons", "capstone", "knowledge-graph"],
+  "include": ["src", "lessons", "capstone", "knowledge-graph", "rag-advanced"],
   "exclude": ["node_modules"]
 }

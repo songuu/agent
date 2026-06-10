@@ -2,6 +2,7 @@
 
 > 所属阶段：**第六部分 · 生产化**
 > 预计用时：50 分钟 | 难度：⭐⭐⭐☆☆
+> 全局导航：[课程导航](../../docs/navigation.md) · [完整大纲](../../docs/curriculum.md) · [知识图谱](../../docs/knowledge-graph.md)
 
 ## 学习目标
 
@@ -266,6 +267,9 @@ graph LR
   n_c15_regression_ci["回归测试与 CI 门槛"]
   n_c15_sut_separation["被测对象与评估分离"]
   n_c13_structured_output["结构化输出（第13章）"]
+  n_cragrerank_llm_rerank["LLM 重排（第rag-rerank章）"]
+  n_crageval_llm_judge_rag["RAG 的 LLM-as-judge（第rag-eval章）"]
+  n_crageval_stage_localization["按指标定位坏环（第rag-eval章）"]
   n_c15_nondeterminism -->|前置| n_c15_eval_dataset
   n_c15_eval_dataset -->|应用| n_c15_eval_harness
   n_c15_rule_scoring -->|组成| n_c15_eval_harness
@@ -274,6 +278,9 @@ graph LR
   n_c15_eval_harness -->|应用| n_c15_regression_ci
   n_c15_sut_separation -->|前置| n_c15_eval_harness
   n_c15_eval_dataset -->|应用| n_c13_structured_output
+  n_cragrerank_llm_rerank -->|对比| n_c15_llm_judge
+  n_crageval_llm_judge_rag -->|深化| n_c15_llm_judge
+  n_crageval_stage_localization -->|应用| n_c15_eval_harness
   style n_c15_nondeterminism stroke:#ff9f0a,stroke-width:3px
   style n_c15_eval_dataset stroke:#ff9f0a,stroke-width:3px
   style n_c15_eval_harness stroke:#ff9f0a,stroke-width:3px
@@ -286,6 +293,9 @@ graph LR
 ### 与其他章节的关系
 
 - `离线评估数据集` —**应用**→ `结构化输出`（第 13 章）
+- `LLM 重排` —**对比**→ `LLM-as-judge`（第 rag-rerank 章）
+- `RAG 的 LLM-as-judge` —**深化**→ `LLM-as-judge`（第 rag-eval 章）
+- `按指标定位坏环` —**应用**→ `评估框架 runEval`（第 rag-eval 章）
 
 ### 延伸阅读
 

@@ -2,6 +2,7 @@
 
 > 所属阶段：**第六部分 · 生产化**
 > 预计用时：50 分钟 | 难度：⭐⭐⭐☆☆
+> 全局导航：[课程导航](../../docs/navigation.md) · [完整大纲](../../docs/curriculum.md) · [知识图谱](../../docs/knowledge-graph.md)
 
 ## 学习目标
 
@@ -206,6 +207,7 @@ graph LR
   n_c17_human_in_the_loop["最小权限 + 人在回路"]
   n_c09_augment_prompt["上下文增强 (augment)（第09章）"]
   n_c06_tool_registry["工具注册表 (ToolRegistry)（第06章）"]
+  n_cragprod_metadata_filter["metadata 过滤（第rag-prod章）"]
   n_c17_prompt_injection -->|前置| n_c17_trust_boundary
   n_c17_trust_boundary -->|应用| n_c17_isolate_and_label
   n_c17_defense_in_depth -->|组成| n_c17_isolate_and_label
@@ -216,6 +218,7 @@ graph LR
   n_c17_prompt_injection -->|深化| n_c17_defense_in_depth
   n_c17_isolate_and_label -->|应用| n_c09_augment_prompt
   n_c17_human_in_the_loop -->|应用| n_c06_tool_registry
+  n_cragprod_metadata_filter -->|应用| n_c17_human_in_the_loop
   style n_c17_prompt_injection stroke:#ff9f0a,stroke-width:3px
   style n_c17_trust_boundary stroke:#ff9f0a,stroke-width:3px
   style n_c17_isolate_and_label stroke:#ff9f0a,stroke-width:3px
@@ -229,6 +232,7 @@ graph LR
 
 - `隔离 + 标注 (wrapUntrusted)` —**应用**→ `上下文增强 (augment)`（第 09 章）
 - `最小权限 + 人在回路` —**应用**→ `工具注册表 (ToolRegistry)`（第 06 章）
+- `metadata 过滤` —**应用**→ `最小权限 + 人在回路`（第 rag-prod 章）
 
 ### 延伸阅读
 

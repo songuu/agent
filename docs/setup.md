@@ -1,6 +1,7 @@
 # 环境搭建（第 00 章）
 
 > 目标：5–15 分钟内把环境配好，让任意一章 `npx tsx ...` 能跑起来。
+> 全局导航：[课程导航](./navigation.md) · [完整大纲](./curriculum.md) · [知识图谱](./knowledge-graph.md)
 
 ## 1. 安装运行时
 
@@ -47,13 +48,24 @@ Copy-Item .env.example .env
 |------|------|----------|
 | `ANTHROPIC_API_KEY` | Claude（课程默认主线） | https://console.anthropic.com/ |
 | `OPENAI_API_KEY` | OpenAI（对照实现 + **embedding 必需**） | https://platform.openai.com/api-keys |
+| `OPENAI_BASE_URL` | 可选，OpenAI-compatible 平台 API 地址（如 SiliconFlow） | https://docs.siliconflow.cn/ |
 
-> ⚠️ **第 08 章起的向量检索 / RAG 需要 embedding**，默认走 OpenAI 的 `text-embedding-3-small`，所以这些章节需要 `OPENAI_API_KEY`。其余章节有任一厂商 key 即可。
+> ⚠️ **第 08 章起的向量检索 / RAG 需要 embedding**，默认走 OpenAI-compatible embeddings endpoint。官方 OpenAI 默认模型是 `text-embedding-3-small`；SiliconFlow 可设为 `BAAI/bge-m3`。其余章节有任一厂商 key 即可。
 
 切换默认厂商只改一行：
 
 ```bash
 LLM_PROVIDER=anthropic   # 或 openai
+```
+
+SiliconFlow 示例：
+
+```bash
+LLM_PROVIDER=openai
+OPENAI_BASE_URL=https://api.siliconflow.cn/v1
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=deepseek-ai/DeepSeek-V4-Pro
+OPENAI_EMBEDDING_MODEL=BAAI/bge-m3
 ```
 
 `.env` 已被 `.gitignore` 忽略，**绝不会**被提交。

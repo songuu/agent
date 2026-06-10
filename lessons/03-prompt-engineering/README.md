@@ -2,6 +2,7 @@
 
 > 所属阶段：**第一部分 · 基础概念**
 > 预计用时：35 分钟 | 难度：⭐☆☆☆☆
+> 全局导航：[课程导航](../../docs/navigation.md) · [完整大纲](../../docs/curriculum.md) · [知识图谱](../../docs/knowledge-graph.md)
 
 ## 学习目标
 
