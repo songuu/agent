@@ -9,6 +9,7 @@
  */
 import Anthropic from "@anthropic-ai/sdk";
 import { requireEnv, getEnv } from "../util/env";
+import { emitDemoRunnerThinking } from "../util/demoRunnerProtocol";
 import type {
   ChatOptions,
   ChatResult,
@@ -110,6 +111,17 @@ function parseMessage(msg: Anthropic.Message): ChatResult {
   };
 }
 
+function readAnthropicThinkingDelta(event: unknown): string {
+  if (!event || typeof event !== "object") return "";
+  const record = event as Record<string, unknown>;
+  if (record.type !== "content_block_delta") return "";
+  const delta = record.delta;
+  if (!delta || typeof delta !== "object") return "";
+  const deltaRecord = delta as Record<string, unknown>;
+  if (deltaRecord.type !== "thinking_delta") return "";
+  return typeof deltaRecord.thinking === "string" ? deltaRecord.thinking : "";
+}
+
 export function createAnthropicClient(): LLMClient {
   const client = new Anthropic({ apiKey: requireEnv("ANTHROPIC_API_KEY") });
   const model = getEnv("ANTHROPIC_MODEL", DEFAULT_MODEL)!;
@@ -139,13 +151,20 @@ export function createAnthropicClient(): LLMClient {
     model,
 
     async chat(options) {
+      emitDemoRunnerThinking(`LLM chat 正在生成完整回复：${model}`);
       const msg = await client.messages.create(buildParams(options));
       return parseMessage(msg);
     },
 
     async *stream(options): AsyncIterable<StreamChunk> {
+      emitDemoRunnerThinking(`LLM stream 已连接，等待首个 token：${model}`);
       const stream = client.messages.stream(buildParams(options));
       for await (const event of stream) {
+        const thinking = readAnthropicThinkingDelta(event);
+        if (thinking) {
+          emitDemoRunnerThinking(thinking);
+          yield { type: "thinking", text: thinking };
+        }
         if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
           yield { type: "text", text: event.delta.text };
         }

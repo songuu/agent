@@ -144,8 +144,12 @@ npx tsx rag-advanced/03-reranking/index.ts
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
 graph LR
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_cragrerank_recall_precision["召回-精排两段式"]
   n_cragrerank_llm_rerank["LLM 重排"]
   n_cragrerank_signal_to_noise["上下文信噪比"]
@@ -161,10 +165,15 @@ graph LR
   n_cragprod_pipeline_compose -->|应用| n_cragrerank_recall_precision
   n_cragrerank_signal_to_noise -->|应用| n_c09_augment_prompt
   n_cragrerank_llm_rerank -->|对比| n_c15_llm_judge
-  style n_cragrerank_recall_precision stroke:#ff9f0a,stroke-width:3px
-  style n_cragrerank_llm_rerank stroke:#ff9f0a,stroke-width:3px
-  style n_cragrerank_signal_to_noise stroke:#ff9f0a,stroke-width:3px
-  style n_cragrerank_cross_encoder stroke:#ff9f0a,stroke-width:3px
+  class n_cragrerank_recall_precision,n_cragrerank_llm_rerank,n_cragrerank_signal_to_noise,n_cragrerank_cross_encoder own;
+  class n_craghybrid_retriever,n_cragprod_pipeline_compose,n_c09_augment_prompt,n_c15_llm_judge cross;
+  linkStyle 0 stroke:#d97706,stroke-width:2px;
+  linkStyle 1 stroke:#059669,stroke-width:2px;
+  linkStyle 2 stroke:#db2777,stroke-width:2px;
+  linkStyle 3 stroke:#059669,stroke-width:2px;
+  linkStyle 4 stroke:#059669,stroke-width:2px;
+  linkStyle 5 stroke:#059669,stroke-width:2px;
+  linkStyle 6 stroke:#db2777,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

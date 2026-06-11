@@ -199,8 +199,12 @@ LLM_PROVIDER=openai npx tsx lessons/03-prompt-engineering/index.ts
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
-graph LR
+graph TB
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_c03_system_vs_user["system 提示 vs user 提示"]
   n_c03_role_instruction["角色设定 + 明确指令"]
   n_c03_few_shot["few-shot 示例"]
@@ -220,13 +224,18 @@ graph LR
   n_c03_prompt_as_spec -->|组成| n_c03_temperature
   n_c04_text_protocol -->|应用| n_c03_system_vs_user
   n_c13_structured_output -->|深化| n_c03_constrained_output
-  style n_c03_system_vs_user stroke:#ff9f0a,stroke-width:3px
-  style n_c03_role_instruction stroke:#ff9f0a,stroke-width:3px
-  style n_c03_few_shot stroke:#ff9f0a,stroke-width:3px
-  style n_c03_cot stroke:#ff9f0a,stroke-width:3px
-  style n_c03_constrained_output stroke:#ff9f0a,stroke-width:3px
-  style n_c03_temperature stroke:#ff9f0a,stroke-width:3px
-  style n_c03_prompt_as_spec stroke:#ff9f0a,stroke-width:3px
+  class n_c03_system_vs_user,n_c03_role_instruction,n_c03_few_shot,n_c03_cot,n_c03_constrained_output,n_c03_temperature,n_c03_prompt_as_spec own;
+  class n_c04_text_protocol,n_c13_structured_output cross;
+  linkStyle 0 stroke:#d97706,stroke-width:2px;
+  linkStyle 1 stroke:#059669,stroke-width:2px;
+  linkStyle 2 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 3 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 4 stroke:#059669,stroke-width:2px;
+  linkStyle 5 stroke:#059669,stroke-width:2px;
+  linkStyle 6 stroke:#059669,stroke-width:2px;
+  linkStyle 7 stroke:#d97706,stroke-width:2px;
+  linkStyle 8 stroke:#059669,stroke-width:2px;
+  linkStyle 9 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

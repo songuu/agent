@@ -257,8 +257,12 @@ LLM_PROVIDER=openai npx tsx lessons/15-evaluation-and-testing/index.ts
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
-graph LR
+graph TB
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_c15_nondeterminism["LLM 输出非确定性"]
   n_c15_eval_dataset["离线评估数据集"]
   n_c15_eval_harness["评估框架 runEval"]
@@ -281,13 +285,19 @@ graph LR
   n_cragrerank_llm_rerank -->|对比| n_c15_llm_judge
   n_crageval_llm_judge_rag -->|深化| n_c15_llm_judge
   n_crageval_stage_localization -->|应用| n_c15_eval_harness
-  style n_c15_nondeterminism stroke:#ff9f0a,stroke-width:3px
-  style n_c15_eval_dataset stroke:#ff9f0a,stroke-width:3px
-  style n_c15_eval_harness stroke:#ff9f0a,stroke-width:3px
-  style n_c15_rule_scoring stroke:#ff9f0a,stroke-width:3px
-  style n_c15_llm_judge stroke:#ff9f0a,stroke-width:3px
-  style n_c15_regression_ci stroke:#ff9f0a,stroke-width:3px
-  style n_c15_sut_separation stroke:#ff9f0a,stroke-width:3px
+  class n_c15_nondeterminism,n_c15_eval_dataset,n_c15_eval_harness,n_c15_rule_scoring,n_c15_llm_judge,n_c15_regression_ci,n_c15_sut_separation own;
+  class n_c13_structured_output,n_cragrerank_llm_rerank,n_crageval_llm_judge_rag,n_crageval_stage_localization cross;
+  linkStyle 0 stroke:#2563eb,stroke-width:2px;
+  linkStyle 1 stroke:#059669,stroke-width:2px;
+  linkStyle 2 stroke:#d97706,stroke-width:2px;
+  linkStyle 3 stroke:#d97706,stroke-width:2px;
+  linkStyle 4 stroke:#db2777,stroke-width:2px;
+  linkStyle 5 stroke:#059669,stroke-width:2px;
+  linkStyle 6 stroke:#2563eb,stroke-width:2px;
+  linkStyle 7 stroke:#059669,stroke-width:2px;
+  linkStyle 8 stroke:#db2777,stroke-width:2px;
+  linkStyle 9 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 10 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

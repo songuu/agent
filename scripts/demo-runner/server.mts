@@ -3,6 +3,11 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import http from "node:http";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import {
+  normalizeSelectionChatRequest,
+  type SelectionChatFrame,
+  type SelectionChatHandler,
+} from "./selection-chat.mjs";
 
 export const DEFAULT_RUNNER_HOST = "127.0.0.1";
 export const DEFAULT_RUNNER_PORT = 5174;
@@ -38,7 +43,7 @@ export interface DemoRunnerConfig {
 }
 
 export interface DemoRunFrame {
-  type: "stdout" | "stderr" | "done" | "exit";
+  type: "stdout" | "stderr" | "thinking" | "done" | "exit";
   data: string | number | Record<string, unknown>;
 }
 
@@ -52,10 +57,13 @@ export type DemoRunHandler = (context: DemoRunContext) => Promise<void>;
 
 export interface DemoRunnerServerOptions {
   token?: string;
+  requireToken?: boolean;
+  allowMissingOrigin?: boolean;
   allowedHosts?: readonly string[];
   allowedOrigins?: readonly string[];
   env?: NodeJS.ProcessEnv;
   runDemo?: DemoRunHandler;
+  selectionChat?: SelectionChatHandler;
 }
 
 interface GateFailure {
@@ -104,11 +112,14 @@ export function createDemoRunnerServer(
   options: DemoRunnerServerOptions = {},
 ): http.Server {
   const token = options.token ?? createRunnerToken();
+  const requireToken = options.requireToken ?? true;
+  const allowMissingOrigin = options.allowMissingOrigin ?? false;
   const allowedHosts = new Set(options.allowedHosts ?? DEFAULT_ALLOWED_HOSTS);
   const allowedOrigins = new Set(options.allowedOrigins ?? DEFAULT_ALLOWED_ORIGINS);
   const env = options.env ?? process.env;
 
   let activeAbortController: AbortController | undefined;
+  let activeSelectionChatAbortController: AbortController | undefined;
 
   return http.createServer(async (req, res) => {
     try {
@@ -123,7 +134,13 @@ export function createDemoRunnerServer(
         return;
       }
 
-      const gate = validateGate(req, token, allowedHosts, allowedOrigins);
+      const gate = validateGate(req, {
+        token,
+        requireToken,
+        allowMissingOrigin,
+        allowedHosts,
+        allowedOrigins,
+      });
       if (!gate.ok) {
         sendJson(res, gate.statusCode, { ok: false, error: gate.code });
         return;
@@ -144,10 +161,65 @@ export function createDemoRunnerServer(
 
       if (requestUrl.pathname === "/api/stop") {
         if (!allowMethod(req, res, "POST")) return;
-        const stopped = Boolean(activeAbortController);
+        const stopped = Boolean(activeAbortController || activeSelectionChatAbortController);
         activeAbortController?.abort();
         activeAbortController = undefined;
+        activeSelectionChatAbortController?.abort();
+        activeSelectionChatAbortController = undefined;
         sendJson(res, 200, { ok: true, stopped });
+        return;
+      }
+
+      if (requestUrl.pathname === "/api/selection-chat") {
+        if (!allowMethod(req, res, "POST")) return;
+        if (activeSelectionChatAbortController) {
+          sendJson(res, 429, { ok: false, error: "selection_chat_busy" });
+          return;
+        }
+        if (!options.selectionChat) {
+          sendJson(res, 501, { ok: false, error: "selection_chat_not_implemented" });
+          return;
+        }
+
+        let chatRequest;
+        try {
+          chatRequest = normalizeSelectionChatRequest(await readJsonBody(req));
+        } catch (error) {
+          sendJson(res, 400, {
+            ok: false,
+            error: error instanceof Error ? error.message : "invalid_request",
+          });
+          return;
+        }
+
+        activeSelectionChatAbortController = new AbortController();
+        streamNdjson(res);
+        const abortController = activeSelectionChatAbortController;
+        const writeFrame = (frame: SelectionChatFrame) => {
+          res.write(`${JSON.stringify(frame)}\n`);
+        };
+
+        res.on("close", () => {
+          if (!res.writableEnded) abortController.abort();
+        });
+
+        try {
+          await options.selectionChat({
+            request: chatRequest,
+            signal: abortController.signal,
+            writeFrame,
+          });
+        } catch (error) {
+          writeFrame({
+            type: "error",
+            data: error instanceof Error ? error.message : "selection chat failed",
+          });
+        } finally {
+          if (activeSelectionChatAbortController === abortController) {
+            activeSelectionChatAbortController = undefined;
+          }
+          res.end();
+        }
         return;
       }
 
@@ -210,14 +282,28 @@ export async function startDemoRunnerServer(
     repoRoot?: string;
     port?: number;
     token?: string;
+    requireToken?: boolean;
+    allowMissingOrigin?: boolean;
+    allowedHosts?: readonly string[];
+    allowedOrigins?: readonly string[];
+    writeTokenFile?: boolean;
     runDemo?: DemoRunHandler;
+    selectionChat?: SelectionChatHandler;
   } = {},
 ): Promise<http.Server> {
   const repoRoot = options.repoRoot ?? resolve(dirname(fileURLToPath(import.meta.url)), "../..");
   const port = options.port ?? DEFAULT_RUNNER_PORT;
   const token = options.token ?? createRunnerToken();
 
-  const server = createDemoRunnerServer({ token, runDemo: options.runDemo });
+  const server = createDemoRunnerServer({
+    token,
+    requireToken: options.requireToken,
+    allowMissingOrigin: options.allowMissingOrigin,
+    allowedHosts: options.allowedHosts,
+    allowedOrigins: options.allowedOrigins,
+    runDemo: options.runDemo,
+    selectionChat: options.selectionChat,
+  });
 
   await new Promise<void>((resolveListen, rejectListen) => {
     server.once("error", rejectListen);
@@ -227,23 +313,29 @@ export async function startDemoRunnerServer(
     });
   });
 
-  writeRunnerTokenFile(repoRoot, token);
+  if (options.writeTokenFile ?? true) {
+    writeRunnerTokenFile(repoRoot, token);
+  }
   return server;
 }
 
 function validateGate(
   req: http.IncomingMessage,
-  token: string,
-  allowedHosts: Set<string>,
-  allowedOrigins: Set<string>,
+  options: {
+    token: string;
+    requireToken: boolean;
+    allowMissingOrigin: boolean;
+    allowedHosts: Set<string>;
+    allowedOrigins: Set<string>;
+  },
 ): GateResult {
   const host = req.headers.host ?? "";
-  if (!allowedHosts.has(host)) {
+  if (!options.allowedHosts.has(host)) {
     return { ok: false, statusCode: 403, code: "forbidden_host" };
   }
 
   const origin = req.headers.origin;
-  if (!origin || !allowedOrigins.has(origin)) {
+  if ((!origin && !options.allowMissingOrigin) || (origin && !options.allowedOrigins.has(origin))) {
     return { ok: false, statusCode: 403, code: "forbidden_origin" };
   }
 
@@ -251,7 +343,7 @@ function validateGate(
     return { ok: false, statusCode: 403, code: "missing_runner_header" };
   }
 
-  if (readSingleHeader(req, TOKEN_HEADER) !== token) {
+  if (options.requireToken && readSingleHeader(req, TOKEN_HEADER) !== options.token) {
     return { ok: false, statusCode: 403, code: "bad_runner_token" };
   }
 
@@ -333,6 +425,30 @@ function sendJson(res: http.ServerResponse, statusCode: number, body: unknown): 
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.setHeader("Cache-Control", "no-store");
   res.end(`${JSON.stringify(body)}\n`);
+}
+
+function readJsonBody(req: http.IncomingMessage, maxBytes = 32_768): Promise<unknown> {
+  return new Promise((resolveRead, rejectRead) => {
+    let body = "";
+    let tooLarge = false;
+    req.setEncoding("utf8");
+    req.on("data", (chunk) => {
+      body += chunk;
+      if (Buffer.byteLength(body) > maxBytes) tooLarge = true;
+    });
+    req.on("end", () => {
+      if (tooLarge) {
+        rejectRead(new Error("request body too large"));
+        return;
+      }
+      try {
+        resolveRead(body ? JSON.parse(body) : {});
+      } catch {
+        rejectRead(new Error("request body must be valid JSON"));
+      }
+    });
+    req.on("error", rejectRead);
+  });
 }
 
 function streamNdjson(res: http.ServerResponse): void {

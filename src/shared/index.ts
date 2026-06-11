@@ -45,3 +45,4 @@ export type { RagEvalScores, RagEvalInput } from "./rag/evaluate";
 export { getEnv, requireEnv } from "./util/env";
 export { logger, color } from "./util/logger";
 export { divider, printMessage, printStream, prompt } from "./util/ui";
+export { emitDemoRunnerThinking } from "./util/demoRunnerProtocol";

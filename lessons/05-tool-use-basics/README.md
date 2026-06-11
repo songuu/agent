@@ -219,8 +219,12 @@ LLM_PROVIDER=openai npx tsx lessons/05-tool-use-basics/index.ts
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
-graph LR
+graph TB
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_c05_native_tool_use["原生工具调用 (Function Calling)"]
   n_c05_request_execute_boundary["请求/执行职责边界"]
   n_c05_toolspec_schema["ToolSpec 与 JSON Schema"]
@@ -247,13 +251,21 @@ graph LR
   n_c06_run_agent_loop -->|深化| n_c05_roundtrip_loop
   n_c06_self_correction_loop -->|深化| n_c05_error_feedback
   n_c19_mcp -->|应用| n_c05_native_tool_use
-  style n_c05_native_tool_use stroke:#ff9f0a,stroke-width:3px
-  style n_c05_request_execute_boundary stroke:#ff9f0a,stroke-width:3px
-  style n_c05_toolspec_schema stroke:#ff9f0a,stroke-width:3px
-  style n_c05_roundtrip_loop stroke:#ff9f0a,stroke-width:3px
-  style n_c05_stop_reason stroke:#ff9f0a,stroke-width:3px
-  style n_c05_tool_call_id stroke:#ff9f0a,stroke-width:3px
-  style n_c05_error_feedback stroke:#ff9f0a,stroke-width:3px
+  class n_c05_native_tool_use,n_c05_request_execute_boundary,n_c05_toolspec_schema,n_c05_roundtrip_loop,n_c05_stop_reason,n_c05_tool_call_id,n_c05_error_feedback own;
+  class n_c04_text_protocol,n_c04_agent_loop,n_c06_define_tool,n_c06_run_agent_loop,n_c06_self_correction_loop,n_c19_mcp cross;
+  linkStyle 0 stroke:#d97706,stroke-width:2px;
+  linkStyle 1 stroke:#2563eb,stroke-width:2px;
+  linkStyle 2 stroke:#059669,stroke-width:2px;
+  linkStyle 3 stroke:#d97706,stroke-width:2px;
+  linkStyle 4 stroke:#d97706,stroke-width:2px;
+  linkStyle 5 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 6 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 7 stroke:#db2777,stroke-width:2px;
+  linkStyle 8 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 9 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 10 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 11 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 12 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

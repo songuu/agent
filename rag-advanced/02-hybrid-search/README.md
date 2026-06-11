@@ -134,8 +134,12 @@ npx tsx rag-advanced/02-hybrid-search/index.ts
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
-graph LR
+graph TB
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_craghybrid_sparse_vs_dense["稀疏 vs 稠密检索"]
   n_craghybrid_bm25["BM25 关键词打分"]
   n_craghybrid_vector_recall["向量语义召回"]
@@ -154,11 +158,17 @@ graph LR
   n_craghybrid_vector_recall -->|深化| n_c08_topk_retrieval
   n_craghybrid_bm25 -->|深化| n_c08_semantic_vs_keyword
   n_craghybrid_retriever -->|深化| n_c09_topk_retrieval
-  style n_craghybrid_sparse_vs_dense stroke:#ff9f0a,stroke-width:3px
-  style n_craghybrid_bm25 stroke:#ff9f0a,stroke-width:3px
-  style n_craghybrid_vector_recall stroke:#ff9f0a,stroke-width:3px
-  style n_craghybrid_rrf stroke:#ff9f0a,stroke-width:3px
-  style n_craghybrid_retriever stroke:#ff9f0a,stroke-width:3px
+  class n_craghybrid_sparse_vs_dense,n_craghybrid_bm25,n_craghybrid_vector_recall,n_craghybrid_rrf,n_craghybrid_retriever own;
+  class n_cragrerank_recall_precision,n_c08_topk_retrieval,n_c08_semantic_vs_keyword,n_c09_topk_retrieval cross;
+  linkStyle 0 stroke:#d97706,stroke-width:2px;
+  linkStyle 1 stroke:#d97706,stroke-width:2px;
+  linkStyle 2 stroke:#2563eb,stroke-width:2px;
+  linkStyle 3 stroke:#2563eb,stroke-width:2px;
+  linkStyle 4 stroke:#d97706,stroke-width:2px;
+  linkStyle 5 stroke:#059669,stroke-width:2px;
+  linkStyle 6 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 7 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 8 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

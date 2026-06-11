@@ -55,7 +55,115 @@
 .vp-doc .mermaid {
   display: flex;
   justify-content: center;
-  overflow-x: auto;
+  transform-origin: 0 0;
+  transition: transform 0.12s ease;
+}
+
+/* 字号下限：不依赖 mermaid 主题，保证流程图/思维导图默认就清晰可读。 */
+.vp-doc .mermaid svg {
+  font-size: 15px;
+}
+
+.vp-doc .mermaid .nodeLabel,
+.vp-doc .mermaid .edgeLabel,
+.vp-doc .mermaid .cluster-label,
+.vp-doc .mermaid span.nodeLabel,
+.vp-doc .mermaid p {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* 节点描边略加粗 + 标签留白，密图也能分清边界。 */
+.vp-doc .mermaid .node rect,
+.vp-doc .mermaid .node circle,
+.vp-doc .mermaid .node polygon,
+.vp-doc .mermaid .node path {
+  stroke-width: 1.6px;
+}
+
+/* 边标签底色，避免连线穿过文字看不清（暗色尤甚）。 */
+.vp-doc .mermaid .edgeLabel,
+.vp-doc .mermaid .edgeLabel p {
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--vp-c-bg) 88%, transparent);
+}
+
+.diagram-zoom-viewport {
+  position: relative;
+  margin: 18px 0;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--vp-c-brand-1) 8%, transparent), transparent 36%),
+    var(--vp-c-bg-soft);
+}
+
+.diagram-zoom-toolbar {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  z-index: 2;
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--vp-c-bg) 92%, transparent);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.1);
+}
+
+.diagram-zoom-button {
+  min-width: 34px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--vp-c-text-1);
+  background: transparent;
+  cursor: pointer;
+}
+
+.diagram-zoom-button:hover,
+.diagram-zoom-button:focus-visible {
+  border-color: var(--vp-c-brand-2);
+  outline: none;
+  background: var(--vp-c-brand-soft);
+}
+
+.diagram-zoom-surface {
+  position: relative;
+  display: grid;
+  height: clamp(180px, 40vw, 460px);
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+  place-items: center;
+  cursor: grab;
+  touch-action: none;
+}
+
+.diagram-zoom-surface.is-dragging {
+  cursor: grabbing;
+}
+
+.diagram-zoom-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: max-content;
+  min-width: 0;
+  max-width: none;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.diagram-zoom-content svg {
+  display: block;
+  max-width: none;
 }
 
 .VPSidebarItem.level-1.is-active > .item .text {
@@ -172,6 +280,793 @@
   color: var(--vp-c-text-2);
 }
 
+.selection-chat-popover {
+  position: fixed;
+  z-index: 80;
+  display: inline-flex;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--vp-c-bg) 96%, transparent);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+}
+
+.selection-chat-popover[hidden] {
+  display: none;
+}
+
+.selection-chat-popover button,
+.selection-chat-actions button,
+.selection-chat-icon-button {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
+  color: var(--vp-c-text-1);
+  background: var(--vp-c-bg);
+  cursor: pointer;
+}
+
+.selection-chat-popover button {
+  min-width: 64px;
+  height: 30px;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.selection-chat-popover button:hover,
+.selection-chat-actions button:hover:not(:disabled),
+.selection-chat-icon-button:hover {
+  border-color: var(--vp-c-brand-2);
+  background: var(--vp-c-brand-soft);
+}
+
+.selection-chat-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 79;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  width: min(430px, calc(100vw - 24px));
+  height: 100vh;
+  border-left: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg);
+  box-shadow: -18px 0 42px rgba(15, 23, 42, 0.18);
+  transform: translateX(102%);
+  transition: transform 0.2s ease;
+}
+
+.selection-chat-drawer[data-open="true"] {
+  transform: translateX(0);
+}
+
+.selection-chat-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+
+.selection-chat-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--vp-c-text-1);
+}
+
+.selection-chat-icon-button {
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.selection-chat-excerpt {
+  max-height: 124px;
+  margin: 0;
+  padding: 14px 18px;
+  overflow: auto;
+  border-bottom: 1px solid var(--vp-c-divider);
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--vp-c-text-2);
+  background: var(--vp-c-bg-soft);
+}
+
+.selection-chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  padding: 16px 18px;
+  overflow: auto;
+}
+
+.selection-chat-message {
+  max-width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.selection-chat-message-user {
+  align-self: flex-end;
+  max-width: 86%;
+  border-color: color-mix(in srgb, var(--vp-c-brand-1) 42%, var(--vp-c-divider));
+  background: var(--vp-c-brand-soft);
+}
+
+.selection-chat-message-assistant {
+  align-self: stretch;
+  background: var(--vp-c-bg-soft);
+}
+
+.selection-chat-thinking {
+  max-height: 160px;
+  margin: 0 0 10px;
+  padding: 10px;
+  overflow: auto;
+  border: 1px dashed color-mix(in srgb, var(--vp-c-brand-1) 42%, var(--vp-c-divider));
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--vp-c-text-2);
+  background: color-mix(in srgb, var(--vp-c-brand-soft) 58%, transparent);
+}
+
+.selection-chat-answer {
+  color: var(--vp-c-text-1);
+}
+
+.selection-chat-status {
+  margin: 0;
+  padding: 0 18px 12px;
+  font-size: 13px;
+  color: var(--vp-c-text-2);
+}
+
+.selection-chat-form {
+  padding: 14px 18px 18px;
+  border-top: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg);
+}
+
+.selection-chat-form textarea {
+  display: block;
+  width: 100%;
+  min-height: 86px;
+  max-height: 180px;
+  padding: 10px 12px;
+  resize: vertical;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  font: inherit;
+  line-height: 1.5;
+  color: var(--vp-c-text-1);
+  background: var(--vp-c-bg-soft);
+}
+
+.selection-chat-form textarea:focus {
+  border-color: var(--vp-c-brand-2);
+  outline: none;
+}
+
+.selection-chat-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.selection-chat-actions button {
+  min-width: 70px;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.selection-chat-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.concept-visual {
+  --concept-accent: #0f766e;
+  --concept-accent-2: #d97706;
+  --concept-accent-3: #be123c;
+  margin: 28px 0;
+  padding: 22px 0;
+  border-top: 1px solid var(--vp-c-divider);
+  border-bottom: 1px solid var(--vp-c-divider);
+  background:
+    linear-gradient(90deg, rgba(15, 118, 110, 0.08), transparent 36%),
+    linear-gradient(270deg, rgba(217, 119, 6, 0.07), transparent 42%);
+}
+
+.concept-visual-copy {
+  max-width: 760px;
+}
+
+.concept-visual-eyebrow {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--concept-accent);
+}
+
+.vp-doc .concept-visual h3 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+.concept-visual-copy p:not(.concept-visual-eyebrow) {
+  margin: 8px 0 0;
+  color: var(--vp-c-text-2);
+}
+
+.concept-visual-art {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  margin-top: 18px;
+  padding: 12px;
+  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--vp-c-bg) 88%, var(--vp-c-bg-soft));
+}
+
+.concept-visual-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 1;
+  overflow: visible;
+}
+
+.concept-svg-bg {
+  fill: url("#conceptGradient");
+  stroke: color-mix(in srgb, var(--concept-accent) 18%, var(--vp-c-divider));
+}
+
+.concept-svg-frame {
+  fill: color-mix(in srgb, var(--vp-c-bg) 68%, transparent);
+  stroke: color-mix(in srgb, var(--concept-accent) 26%, var(--vp-c-divider));
+  stroke-width: 2;
+}
+
+.concept-svg-ribbon {
+  fill: none;
+  stroke: color-mix(in srgb, var(--concept-accent-2) 42%, var(--vp-c-divider));
+  stroke-width: 10;
+  stroke-linecap: round;
+  opacity: 0.24;
+}
+
+.concept-svg-link,
+.concept-svg-stream-path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--concept-accent) 58%, var(--vp-c-divider));
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 320;
+  animation: conceptDraw 3.6s ease-in-out infinite;
+}
+
+.concept-svg-node circle,
+.concept-svg-node rect,
+.concept-svg-layer rect,
+.concept-svg-card rect,
+.concept-svg-token rect {
+  fill: var(--vp-c-bg);
+  stroke: color-mix(in srgb, var(--concept-accent) 46%, var(--vp-c-divider));
+  stroke-width: 2;
+  filter: drop-shadow(0 10px 16px rgba(15, 23, 42, 0.12));
+  animation: conceptNodePulse 3.2s ease-in-out infinite;
+  animation-delay: calc(var(--node-index, 0) * 0.18s);
+}
+
+/* loop 场景：椭圆环用方向性虚线流动，中心一个旋转箭头符号。 */
+.concept-svg-ring {
+  fill: none;
+  stroke: color-mix(in srgb, var(--concept-accent) 55%, var(--vp-c-divider));
+  stroke-width: 3.5;
+  stroke-dasharray: 12 9;
+  stroke-linecap: round;
+  animation: conceptLoopFlow 9s linear infinite;
+}
+
+.concept-svg-loop-center {
+  font-size: 30px;
+  font-weight: 800;
+  text-anchor: middle;
+  fill: color-mix(in srgb, var(--concept-accent) 68%, var(--vp-c-text-2));
+}
+
+/* pipeline 场景：底部传送带 + 单向箭头。 */
+.concept-svg-belt {
+  fill: color-mix(in srgb, var(--concept-accent-2) 32%, var(--vp-c-divider));
+  opacity: 0.55;
+}
+
+.concept-svg-flowarrow {
+  fill: none;
+  stroke: color-mix(in srgb, var(--concept-accent) 60%, var(--vp-c-divider));
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+/* 箭头 marker（pipeline / fusion 出口）跟随强调色，明暗主题都可见。 */
+.concept-visual-canvas marker path {
+  fill: color-mix(in srgb, var(--concept-accent) 72%, var(--vp-c-text-2));
+}
+
+.concept-svg-card--b rect,
+.concept-svg-token rect {
+  stroke: color-mix(in srgb, var(--concept-accent-2) 54%, var(--vp-c-divider));
+}
+
+.concept-svg-card--c rect {
+  stroke: color-mix(in srgb, var(--concept-accent-3) 44%, var(--vp-c-divider));
+}
+
+.concept-svg-layer rect {
+  fill: color-mix(in srgb, var(--vp-c-bg) 86%, var(--concept-accent) 14%);
+}
+
+.concept-svg-node text,
+.concept-svg-layer text,
+.concept-svg-card text,
+.concept-svg-token text,
+.concept-svg-caption,
+.concept-svg-cluster text {
+  font-size: 14px;
+  font-weight: 800;
+  text-anchor: middle;
+  fill: var(--vp-c-text-1);
+}
+
+.concept-svg-token text {
+  font-size: 12px;
+}
+
+.concept-svg-node text,
+.concept-svg-card text {
+  font-size: 13px;
+}
+
+.concept-svg-caption,
+.concept-svg-cluster text {
+  font-size: 13px;
+  fill: var(--vp-c-text-2);
+}
+
+.concept-svg-pulse,
+.concept-svg-dot {
+  fill: var(--concept-accent-2);
+  animation: conceptSvgTravel 4.6s linear infinite;
+}
+
+.concept-svg-axis,
+.concept-svg-vector {
+  fill: none;
+  stroke: color-mix(in srgb, var(--concept-accent) 64%, var(--vp-c-text-2));
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.concept-svg-vector {
+  stroke-dasharray: 260;
+  animation: conceptDraw 3.6s ease-in-out infinite;
+}
+
+.concept-svg-vector.muted {
+  stroke: color-mix(in srgb, var(--concept-accent-2) 58%, var(--vp-c-text-2));
+  animation-delay: 0.4s;
+}
+
+.concept-svg-cluster circle {
+  fill: var(--concept-accent);
+  animation: conceptNodePulse 3.2s ease-in-out infinite;
+}
+
+.concept-svg-cluster--b circle {
+  fill: var(--concept-accent-2);
+}
+
+.concept-svg-accent {
+  stroke: var(--concept-accent-2);
+  stroke-width: 5;
+  stroke-linecap: round;
+  opacity: 0.5;
+}
+
+.concept-visual-track {
+  position: absolute;
+  inset: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.concept-visual-node,
+.concept-visual-stack span,
+.concept-visual-columns span,
+.concept-visual-stream span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 86px;
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--concept-accent) 45%, var(--vp-c-divider));
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  color: var(--vp-c-text-1);
+  background: var(--vp-c-bg);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+  animation: conceptNodePulse 3.2s ease-in-out infinite;
+  animation-delay: calc(var(--node-index, 0) * 0.18s);
+}
+
+.concept-visual-arrow {
+  width: 28px;
+  height: 2px;
+  flex: 0 0 auto;
+  background: color-mix(in srgb, var(--concept-accent) 58%, var(--vp-c-divider));
+}
+
+.concept-visual-arrow::after {
+  display: block;
+  width: 8px;
+  height: 8px;
+  margin-top: -3px;
+  margin-left: 22px;
+  border-top: 2px solid color-mix(in srgb, var(--concept-accent) 62%, var(--vp-c-divider));
+  border-right: 2px solid color-mix(in srgb, var(--concept-accent) 62%, var(--vp-c-divider));
+  transform: rotate(45deg);
+  content: "";
+}
+
+.concept-visual-signal {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background: var(--concept-accent-2);
+  transform: translateY(-50%);
+  animation: conceptSignal 4.8s linear infinite;
+}
+
+.concept-visual--loop .concept-visual-track {
+  flex-wrap: wrap;
+}
+
+.concept-visual--loop .concept-visual-track::before {
+  position: absolute;
+  inset: 20px 44px;
+  border: 2px dashed color-mix(in srgb, var(--concept-accent) 42%, var(--vp-c-divider));
+  border-radius: 999px;
+  content: "";
+}
+
+.concept-visual-stack,
+.concept-visual-columns,
+.concept-visual-stream {
+  position: absolute;
+  inset: 22px;
+}
+
+.concept-visual-stack {
+  display: grid;
+  gap: 10px;
+  align-content: center;
+}
+
+.concept-visual-stack span {
+  justify-content: flex-start;
+  width: min(100%, 560px);
+  min-height: 34px;
+  margin-inline: auto;
+  border-color: color-mix(in srgb, var(--concept-accent-2) 48%, var(--vp-c-divider));
+}
+
+.concept-visual--shield .concept-visual-stack span {
+  border-color: color-mix(in srgb, var(--concept-accent-3) 42%, var(--vp-c-divider));
+}
+
+.concept-visual-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+
+.concept-visual-columns span {
+  min-width: 0;
+  min-height: 122px;
+  border-color: color-mix(in srgb, var(--concept-accent-2) 52%, var(--vp-c-divider));
+}
+
+.concept-visual-stream {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.concept-visual-stream span {
+  min-width: 94px;
+  border-color: color-mix(in srgb, var(--concept-accent) 42%, var(--vp-c-divider));
+}
+
+.concept-visual-stream i {
+  position: absolute;
+  left: 24px;
+  bottom: 30px;
+  width: 54px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--concept-accent-2);
+  animation: conceptStream 3.4s linear infinite;
+}
+
+.concept-visual-space {
+  display: block;
+  width: min(100%, 540px);
+  height: 190px;
+  margin: 0 auto;
+}
+
+.concept-visual-space .axis,
+.concept-visual-space .concept-visual-vector {
+  fill: none;
+  stroke: color-mix(in srgb, var(--concept-accent) 65%, var(--vp-c-text-2));
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.concept-visual-space .concept-visual-vector {
+  stroke-dasharray: 240;
+  animation: conceptDraw 3.6s ease-in-out infinite;
+}
+
+.concept-visual-space .concept-visual-vector.muted {
+  stroke: color-mix(in srgb, var(--concept-accent-2) 58%, var(--vp-c-text-2));
+  animation-delay: 0.4s;
+}
+
+.concept-visual-space circle {
+  fill: var(--concept-accent);
+  animation: conceptNodePulse 3.2s ease-in-out infinite;
+}
+
+.concept-visual-space .cluster-b circle {
+  fill: var(--concept-accent-2);
+}
+
+.concept-visual-space text {
+  font-size: 13px;
+  font-weight: 700;
+  fill: var(--vp-c-text-2);
+}
+
+.concept-visual-flow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.concept-visual-flow li {
+  min-height: 38px;
+  padding: 8px 10px;
+  border-left: 3px solid var(--concept-accent);
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--vp-c-text-2);
+  background: var(--vp-c-bg-soft);
+}
+
+.concept-visual-takeaway {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-left: 4px solid var(--concept-accent-2);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--vp-c-text-1);
+  background: color-mix(in srgb, var(--vp-c-bg-soft) 82%, transparent);
+}
+
+.concept-support {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.concept-highlight-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.concept-highlight {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--vp-c-divider);
+  border-left-width: 5px;
+  border-radius: 8px;
+  line-height: 1.55;
+  background: var(--vp-c-bg);
+}
+
+.concept-highlight--core {
+  border-left-color: var(--concept-accent);
+  background: color-mix(in srgb, var(--concept-accent) 9%, var(--vp-c-bg));
+}
+
+.concept-highlight--warning {
+  border-left-color: var(--concept-accent-2);
+  background: color-mix(in srgb, var(--concept-accent-2) 10%, var(--vp-c-bg));
+}
+
+.concept-highlight span,
+.concept-references-title {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.4;
+  color: var(--concept-accent);
+}
+
+.concept-highlight--warning span {
+  color: var(--concept-accent-2);
+}
+
+.concept-highlight strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--vp-c-text-1);
+}
+
+.concept-references {
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--concept-accent) 32%, var(--vp-c-divider));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--concept-accent) 7%, var(--vp-c-bg));
+}
+
+.concept-references-title {
+  margin: 0 0 8px;
+}
+
+.concept-references ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.concept-references li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 8px;
+  align-items: center;
+}
+
+.concept-references a {
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.concept-references span {
+  padding: 2px 7px;
+  border: 1px solid color-mix(in srgb, var(--concept-accent) 38%, var(--vp-c-divider));
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.4;
+  color: var(--concept-accent);
+  background: var(--vp-c-bg);
+}
+
+.concept-references small {
+  grid-column: 1 / -1;
+  line-height: 1.5;
+  color: var(--vp-c-text-2);
+}
+
+@keyframes conceptNodePulse {
+  0%,
+  100% {
+    transform: translateY(0);
+    border-color: color-mix(in srgb, var(--concept-accent) 38%, var(--vp-c-divider));
+  }
+  50% {
+    transform: translateY(-3px);
+    border-color: var(--concept-accent);
+  }
+}
+
+@keyframes conceptSignal {
+  0% {
+    transform: translate(0, -50%);
+    opacity: 0;
+  }
+  12%,
+  86% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(100vw - 190px), -50%);
+    opacity: 0;
+  }
+}
+
+@keyframes conceptStream {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(520px);
+  }
+}
+
+@keyframes conceptSvgTravel {
+  0% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  14%,
+  86% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(600px);
+    opacity: 0;
+  }
+}
+
+@keyframes conceptDraw {
+  0% {
+    stroke-dashoffset: 240;
+  }
+  45%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes conceptLoopFlow {
+  to {
+    stroke-dashoffset: -210;
+  }
+}
+
 @media (max-width: 640px) {
   .demo-runner-header {
     flex-direction: column;
@@ -183,5 +1078,109 @@
 
   .demo-runner-button {
     min-width: 64px;
+  }
+
+  .selection-chat-drawer {
+    width: 100vw;
+  }
+
+  .selection-chat-message-user {
+    max-width: 92%;
+  }
+
+  .selection-chat-popover {
+    max-width: calc(100vw - 24px);
+  }
+
+  .concept-visual {
+    padding: 18px 0;
+  }
+
+  .vp-doc .concept-visual h3 {
+    font-size: 19px;
+  }
+
+  .concept-visual-art {
+    padding: 8px;
+  }
+
+  .concept-visual-canvas {
+    aspect-ratio: 2.6 / 1;
+  }
+
+  .concept-visual-track,
+  .concept-visual-stream {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .concept-visual-arrow {
+    width: 2px;
+    height: 18px;
+    margin-inline: auto;
+  }
+
+  .concept-visual-arrow::after {
+    margin-top: 12px;
+    margin-left: -3px;
+    transform: rotate(135deg);
+  }
+
+  .concept-visual-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .concept-visual-columns span {
+    min-height: 50px;
+  }
+
+  .concept-highlight-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .diagram-zoom-toolbar {
+    right: 8px;
+    top: 8px;
+  }
+
+  .diagram-zoom-surface {
+    height: clamp(180px, 56vw, 320px);
+  }
+
+  .concept-references li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .concept-references span {
+    width: fit-content;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .selection-chat-drawer {
+    transition: none;
+  }
+
+  .concept-visual-node,
+  .concept-visual-stack span,
+  .concept-visual-columns span,
+  .concept-visual-stream span,
+  .concept-visual-signal,
+  .concept-visual-stream i,
+  .concept-visual-space .concept-visual-vector,
+  .concept-visual-space circle,
+  .concept-svg-link,
+  .concept-svg-stream-path,
+  .concept-svg-node circle,
+  .concept-svg-node rect,
+  .concept-svg-layer rect,
+  .concept-svg-card rect,
+  .concept-svg-token rect,
+  .concept-svg-vector,
+  .concept-svg-cluster circle,
+  .concept-svg-pulse,
+  .concept-svg-dot,
+  .concept-svg-ring {
+    animation: none;
   }
 }

@@ -221,8 +221,12 @@ DEBUG=1 npx tsx lessons/11-multi-agent-orchestration/index.ts
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
 graph LR
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_c11_supervisor_worker["Supervisor + Worker 模式"]
   n_c11_supervisor_routing["Supervisor 路由决策"]
   n_c11_worker_specialist["Worker 专才"]
@@ -239,13 +243,16 @@ graph LR
   n_c11_scratchpad -->|应用| n_c11_worker_specialist
   n_c11_cost_tradeoff -->|前置| n_c11_supervisor_worker
   n_c11_orchestration_loop -->|应用| n_c06_run_agent_loop
-  style n_c11_supervisor_worker stroke:#ff9f0a,stroke-width:3px
-  style n_c11_supervisor_routing stroke:#ff9f0a,stroke-width:3px
-  style n_c11_worker_specialist stroke:#ff9f0a,stroke-width:3px
-  style n_c11_scratchpad stroke:#ff9f0a,stroke-width:3px
-  style n_c11_orchestration_loop stroke:#ff9f0a,stroke-width:3px
-  style n_c11_cost_tradeoff stroke:#ff9f0a,stroke-width:3px
-  style n_c11_decision_validation stroke:#ff9f0a,stroke-width:3px
+  class n_c11_supervisor_worker,n_c11_supervisor_routing,n_c11_worker_specialist,n_c11_scratchpad,n_c11_orchestration_loop,n_c11_cost_tradeoff,n_c11_decision_validation own;
+  class n_c06_run_agent_loop cross;
+  linkStyle 0 stroke:#d97706,stroke-width:2px;
+  linkStyle 1 stroke:#d97706,stroke-width:2px;
+  linkStyle 2 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 3 stroke:#059669,stroke-width:2px;
+  linkStyle 4 stroke:#059669,stroke-width:2px;
+  linkStyle 5 stroke:#059669,stroke-width:2px;
+  linkStyle 6 stroke:#2563eb,stroke-width:2px;
+  linkStyle 7 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

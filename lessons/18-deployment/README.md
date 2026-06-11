@@ -381,8 +381,12 @@ CMD ["npx", "tsx", "lessons/18-deployment/index.ts"]
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
-graph LR
+graph TB
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_c18_agent_as_service["脚本到服务 (Agent as Service)"]
   n_c18_stateless["无状态服务 (Stateless)"]
   n_c18_request_timeout["请求超时 (Timeout)"]
@@ -408,13 +412,22 @@ graph LR
   n_c18_agent_as_service -->|应用| n_c06_run_agent_loop
   n_ccapstone_dual_entrypoint -->|组成| n_c18_agent_as_service
   n_cragprod_pipeline_compose -->|应用| n_c18_agent_as_service
-  style n_c18_agent_as_service stroke:#ff9f0a,stroke-width:3px
-  style n_c18_stateless stroke:#ff9f0a,stroke-width:3px
-  style n_c18_request_timeout stroke:#ff9f0a,stroke-width:3px
-  style n_c18_error_fallback stroke:#ff9f0a,stroke-width:3px
-  style n_c18_secret_safety stroke:#ff9f0a,stroke-width:3px
-  style n_c18_sse_streaming stroke:#ff9f0a,stroke-width:3px
-  style n_c18_deploy_checklist stroke:#ff9f0a,stroke-width:3px
+  class n_c18_agent_as_service,n_c18_stateless,n_c18_request_timeout,n_c18_error_fallback,n_c18_secret_safety,n_c18_sse_streaming,n_c18_deploy_checklist own;
+  class n_c14_token_streaming,n_c06_run_agent_loop,n_ccapstone_dual_entrypoint,n_cragprod_pipeline_compose cross;
+  linkStyle 0 stroke:#d97706,stroke-width:2px;
+  linkStyle 1 stroke:#d97706,stroke-width:2px;
+  linkStyle 2 stroke:#d97706,stroke-width:2px;
+  linkStyle 3 stroke:#d97706,stroke-width:2px;
+  linkStyle 4 stroke:#d97706,stroke-width:2px;
+  linkStyle 5 stroke:#2563eb,stroke-width:2px;
+  linkStyle 6 stroke:#d97706,stroke-width:2px;
+  linkStyle 7 stroke:#059669,stroke-width:2px;
+  linkStyle 8 stroke:#059669,stroke-width:2px;
+  linkStyle 9 stroke:#d97706,stroke-width:2px;
+  linkStyle 10 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 11 stroke:#059669,stroke-width:2px;
+  linkStyle 12 stroke:#d97706,stroke-width:2px;
+  linkStyle 13 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

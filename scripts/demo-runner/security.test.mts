@@ -6,6 +6,8 @@ import { createDemoRunnerServer } from "./server.mjs";
 const TOKEN = "test-token";
 const ALLOWED_HOST = "127.0.0.1:5174";
 const ALLOWED_ORIGIN = "http://localhost:5173";
+const PRODUCTION_HOST = "songuu.top";
+const PRODUCTION_ORIGIN = "https://songuu.top";
 
 interface RequestOptions {
   path?: string;
@@ -28,6 +30,27 @@ async function withServer<T>(fn: (port: number) => Promise<T>): Promise<T> {
     token: TOKEN,
     allowedHosts: [ALLOWED_HOST],
     allowedOrigins: [ALLOWED_ORIGIN],
+  });
+
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const port = (server.address() as AddressInfo).port;
+
+  try {
+    return await fn(port);
+  } finally {
+    await new Promise<void>((resolve, reject) => {
+      server.close((error) => (error ? reject(error) : resolve()));
+    });
+  }
+}
+
+async function withProductionServer<T>(fn: (port: number) => Promise<T>): Promise<T> {
+  const server = createDemoRunnerServer({
+    token: TOKEN,
+    requireToken: false,
+    allowMissingOrigin: true,
+    allowedHosts: [PRODUCTION_HOST],
+    allowedOrigins: [PRODUCTION_ORIGIN],
   });
 
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -150,6 +173,46 @@ await withServer(async (port) => {
     path: "/api/run?demo=01",
   });
   assert.equal(runViaGet.statusCode, 405, "run must reject GET");
+});
+
+await withProductionServer(async (port) => {
+  const sameOriginConfig = await request(port, {
+    host: PRODUCTION_HOST,
+    runnerHeader: "1",
+  });
+  assert.equal(sameOriginConfig.statusCode, 200, "production same-origin config can omit Origin and token");
+
+  const sameOriginHealth = await request(port, {
+    host: PRODUCTION_HOST,
+    runnerHeader: "1",
+    path: "/api/health",
+  });
+  assert.equal(sameOriginHealth.statusCode, 200, "production health can omit Origin and token");
+
+  const productionOrigin = await request(port, {
+    host: PRODUCTION_HOST,
+    origin: PRODUCTION_ORIGIN,
+    runnerHeader: "1",
+  });
+  assert.equal(productionOrigin.statusCode, 200, "production allowed Origin should pass");
+
+  const badProductionOrigin = await request(port, {
+    host: PRODUCTION_HOST,
+    origin: "https://evil.example",
+    runnerHeader: "1",
+  });
+  assert.equal(badProductionOrigin.statusCode, 403, "production foreign Origin must be rejected");
+
+  const badProductionHost = await request(port, {
+    host: "evil.example",
+    runnerHeader: "1",
+  });
+  assert.equal(badProductionHost.statusCode, 403, "production foreign Host must be rejected");
+
+  const missingProductionHeader = await request(port, {
+    host: PRODUCTION_HOST,
+  });
+  assert.equal(missingProductionHeader.statusCode, 403, "production custom header is still required");
 });
 
 console.log("security.test.mts: ok");

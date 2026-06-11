@@ -3,6 +3,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildDemoRegistry } from "./registry.mjs";
 import { runDemoProcess } from "./runner.mjs";
+import { createSelectionChatHandler } from "./selection-chat.mjs";
 import {
   DEFAULT_RUNNER_HOST,
   DEFAULT_RUNNER_PORT,
@@ -32,6 +33,7 @@ const server = await startDemoRunnerServer({
       writeFrame,
     });
   },
+  selectionChat: createSelectionChatHandler(),
 });
 
 function shutdown(): void {

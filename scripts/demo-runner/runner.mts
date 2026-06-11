@@ -2,7 +2,7 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { isAbsolute } from "node:path";
 
 export interface DemoProcessFrame {
-  type: "stdout" | "stderr" | "exit";
+  type: "stdout" | "stderr" | "thinking" | "exit";
   data: string | number;
 }
 
@@ -23,6 +23,7 @@ export interface DemoProcessOptions {
 }
 
 const DEFAULT_TIMEOUT_MS = 120_000;
+const RUNNER_FRAME_PREFIX = "__DEMO_RUNNER_FRAME__";
 
 const ENV_ALLOWLIST = [
   "ALLUSERSPROFILE",
@@ -51,6 +52,7 @@ const ENV_ALLOWLIST = [
   "OLLAMA_BASE_URL",
   "OLLAMA_MODEL",
   "LLM_PROVIDER",
+  "DEMO_RUNNER_FRAME_PROTOCOL",
 ] as const;
 
 export async function runDemoProcess(
@@ -73,8 +75,9 @@ export async function runDemoProcess(
   child.stdout.on("data", (chunk: string) => {
     options.writeFrame({ type: "stdout", data: chunk });
   });
+  const stderrFrames = createChildFrameDecoder(options.writeFrame);
   child.stderr.on("data", (chunk: string) => {
-    options.writeFrame({ type: "stderr", data: chunk });
+    stderrFrames.push(chunk);
   });
 
   let timedOut = false;
@@ -102,6 +105,7 @@ export async function runDemoProcess(
         if (settled) return;
         settled = true;
         clearTimeout(timeout);
+        stderrFrames.flush();
         options.writeFrame({
           type: "stderr",
           data: `failed to start demo "${options.demoId}": ${error.message}\n`,
@@ -114,6 +118,7 @@ export async function runDemoProcess(
         if (settled) return;
         settled = true;
         clearTimeout(timeout);
+        stderrFrames.flush();
         const exitFrame = timedOut ? "timeout" : exitCode ?? signal ?? "unknown";
         options.writeFrame({ type: "exit", data: exitFrame });
         resolve({ exitCode: timedOut ? null : exitCode, signal: signal ?? null, timedOut });
@@ -132,7 +137,59 @@ export function buildChildEnv(source: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
     if (value !== undefined) childEnv[key] = value;
   }
   childEnv.FORCE_COLOR = "1";
+  childEnv.DEMO_RUNNER_FRAME_PROTOCOL = "1";
   return childEnv;
+}
+
+function createChildFrameDecoder(
+  writeFrame: (frame: DemoProcessFrame) => void,
+): { push(chunk: string): void; flush(): void } {
+  let buffer = "";
+
+  function readLine(line: string): void {
+    if (!line.startsWith(RUNNER_FRAME_PREFIX)) {
+      writeFrame({ type: "stderr", data: `${line}\n` });
+      return;
+    }
+
+    const rawFrame = line.slice(RUNNER_FRAME_PREFIX.length);
+    try {
+      const frame = JSON.parse(rawFrame) as DemoProcessFrame;
+      if (isChildFrame(frame)) {
+        writeFrame(frame);
+        return;
+      }
+    } catch {
+      // Fall through and preserve malformed protocol output for debugging.
+    }
+    writeFrame({ type: "stderr", data: `${line}\n` });
+  }
+
+  return {
+    push(chunk) {
+      buffer += chunk;
+      while (true) {
+        const newlineIndex = buffer.indexOf("\n");
+        if (newlineIndex === -1) break;
+        const line = buffer.slice(0, newlineIndex).replace(/\r$/, "");
+        buffer = buffer.slice(newlineIndex + 1);
+        readLine(line);
+      }
+    },
+    flush() {
+      if (!buffer) return;
+      const line = buffer.replace(/\r$/, "");
+      buffer = "";
+      readLine(line);
+    },
+  };
+}
+
+function isChildFrame(value: unknown): value is DemoProcessFrame {
+  if (!value || typeof value !== "object") return false;
+  const frame = value as { type?: unknown; data?: unknown };
+  if (frame.type !== "thinking") return false;
+  return typeof frame.data === "string";
 }
 
 export function killTree(child: ChildProcess): void {

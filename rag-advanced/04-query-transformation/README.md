@@ -207,8 +207,12 @@ LLM_PROVIDER=openai npx tsx rag-advanced/04-query-transformation/index.ts
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
 graph LR
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_cragquery_mismatch["查询-资料措辞错配"]
   n_cragquery_multi_query["多查询改写"]
   n_cragquery_hyde["HyDE 假设答案检索"]
@@ -221,10 +225,14 @@ graph LR
   n_cragquery_hyde -->|深化| n_cragquery_recall_coverage
   n_cragquery_hyde -->|应用| n_c08_embedding
   n_cragquery_multi_query -->|应用| n_c09_topk_retrieval
-  style n_cragquery_mismatch stroke:#ff9f0a,stroke-width:3px
-  style n_cragquery_multi_query stroke:#ff9f0a,stroke-width:3px
-  style n_cragquery_hyde stroke:#ff9f0a,stroke-width:3px
-  style n_cragquery_recall_coverage stroke:#ff9f0a,stroke-width:3px
+  class n_cragquery_mismatch,n_cragquery_multi_query,n_cragquery_hyde,n_cragquery_recall_coverage own;
+  class n_c08_embedding,n_c09_topk_retrieval cross;
+  linkStyle 0 stroke:#059669,stroke-width:2px;
+  linkStyle 1 stroke:#059669,stroke-width:2px;
+  linkStyle 2 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 3 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 4 stroke:#059669,stroke-width:2px;
+  linkStyle 5 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

@@ -253,8 +253,12 @@ LLM_PROVIDER=openai npx tsx lessons/16-observability-and-cost/index.ts
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
-graph LR
+graph TB
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_c16_observability["可观测性 (Observability)"]
   n_c16_span_trace_tree["Span 与 Trace 树"]
   n_c16_decorator_tracer["装饰器模式 Tracer"]
@@ -275,13 +279,18 @@ graph LR
   n_c16_cost_estimation -->|深化| n_c02_usage_token
   n_c16_decorator_tracer -->|应用| n_c02_get_llm_abstraction
   n_ccapstone_tracer_cost -->|组成| n_c16_decorator_tracer
-  style n_c16_observability stroke:#ff9f0a,stroke-width:3px
-  style n_c16_span_trace_tree stroke:#ff9f0a,stroke-width:3px
-  style n_c16_decorator_tracer stroke:#ff9f0a,stroke-width:3px
-  style n_c16_cost_estimation stroke:#ff9f0a,stroke-width:3px
-  style n_c16_price_table stroke:#ff9f0a,stroke-width:3px
-  style n_c16_bottleneck_location stroke:#ff9f0a,stroke-width:3px
-  style n_c16_production_tooling stroke:#ff9f0a,stroke-width:3px
+  class n_c16_observability,n_c16_span_trace_tree,n_c16_decorator_tracer,n_c16_cost_estimation,n_c16_price_table,n_c16_bottleneck_location,n_c16_production_tooling own;
+  class n_c02_usage_token,n_c02_get_llm_abstraction,n_ccapstone_tracer_cost cross;
+  linkStyle 0 stroke:#d97706,stroke-width:2px;
+  linkStyle 1 stroke:#059669,stroke-width:2px;
+  linkStyle 2 stroke:#059669,stroke-width:2px;
+  linkStyle 3 stroke:#2563eb,stroke-width:2px;
+  linkStyle 4 stroke:#059669,stroke-width:2px;
+  linkStyle 5 stroke:#059669,stroke-width:2px;
+  linkStyle 6 stroke:#db2777,stroke-width:2px;
+  linkStyle 7 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 8 stroke:#059669,stroke-width:2px;
+  linkStyle 9 stroke:#d97706,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

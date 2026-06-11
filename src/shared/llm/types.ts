@@ -72,7 +72,7 @@ export interface ChatResult {
 
 /** 流式输出的一个增量块。 */
 export interface StreamChunk {
-  type: "text" | "done";
+  type: "text" | "thinking" | "done";
   /** type==="text" 时的文本增量。 */
   text?: string;
   /** type==="done" 时给出本次完整结果。 */

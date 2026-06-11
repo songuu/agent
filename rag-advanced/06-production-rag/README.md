@@ -162,8 +162,12 @@ npx tsx rag-advanced/06-production-rag/index.ts
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
-graph LR
+graph TB
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_cragprod_metadata_filter["metadata 过滤"]
   n_cragprod_persistence["向量库持久化"]
   n_cragprod_incremental_upsert["增量 upsert"]
@@ -183,11 +187,17 @@ graph LR
   n_cragprod_persistence -->|深化| n_c08_vector_store
   n_cragprod_pipeline_compose -->|应用| n_c18_agent_as_service
   n_cragprod_vectordb_migration -->|对比| n_ccapstone_rag_corpus
-  style n_cragprod_metadata_filter stroke:#ff9f0a,stroke-width:3px
-  style n_cragprod_persistence stroke:#ff9f0a,stroke-width:3px
-  style n_cragprod_incremental_upsert stroke:#ff9f0a,stroke-width:3px
-  style n_cragprod_pipeline_compose stroke:#ff9f0a,stroke-width:3px
-  style n_cragprod_vectordb_migration stroke:#ff9f0a,stroke-width:3px
+  class n_cragprod_metadata_filter,n_cragprod_persistence,n_cragprod_incremental_upsert,n_cragprod_pipeline_compose,n_cragprod_vectordb_migration own;
+  class n_cragrerank_recall_precision,n_c17_human_in_the_loop,n_c08_vector_store,n_c18_agent_as_service,n_ccapstone_rag_corpus cross;
+  linkStyle 0 stroke:#d97706,stroke-width:2px;
+  linkStyle 1 stroke:#d97706,stroke-width:2px;
+  linkStyle 2 stroke:#d97706,stroke-width:2px;
+  linkStyle 3 stroke:#2563eb,stroke-width:2px;
+  linkStyle 4 stroke:#059669,stroke-width:2px;
+  linkStyle 5 stroke:#059669,stroke-width:2px;
+  linkStyle 6 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 7 stroke:#059669,stroke-width:2px;
+  linkStyle 8 stroke:#db2777,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

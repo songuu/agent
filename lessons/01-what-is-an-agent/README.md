@@ -222,8 +222,12 @@ LLM_PROVIDER=openai npx tsx lessons/01-what-is-an-agent/index.ts
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
-graph LR
+graph TB
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_c01_llm_vs_agent["LLM 与 Agent 的区别"]
   n_c01_agent_formula["Agent 公式"]
   n_c01_react_loop["感知-决策-行动-观察循环"]
@@ -245,13 +249,19 @@ graph LR
   n_c02_llm_call_pure_function -->|深化| n_c01_llm_vs_agent
   n_c04_agent_loop -->|深化| n_c01_react_loop
   n_c07_conversation_as_array -->|深化| n_c01_message_memory
-  style n_c01_llm_vs_agent stroke:#ff9f0a,stroke-width:3px
-  style n_c01_agent_formula stroke:#ff9f0a,stroke-width:3px
-  style n_c01_react_loop stroke:#ff9f0a,stroke-width:3px
-  style n_c01_tool_as_capability stroke:#ff9f0a,stroke-width:3px
-  style n_c01_message_memory stroke:#ff9f0a,stroke-width:3px
-  style n_c01_max_steps stroke:#ff9f0a,stroke-width:3px
-  style n_c01_yagni_when_not_agent stroke:#ff9f0a,stroke-width:3px
+  class n_c01_llm_vs_agent,n_c01_agent_formula,n_c01_react_loop,n_c01_tool_as_capability,n_c01_message_memory,n_c01_max_steps,n_c01_yagni_when_not_agent own;
+  class n_c02_llm_call_pure_function,n_c04_agent_loop,n_c07_conversation_as_array cross;
+  linkStyle 0 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 1 stroke:#d97706,stroke-width:2px;
+  linkStyle 2 stroke:#d97706,stroke-width:2px;
+  linkStyle 3 stroke:#d97706,stroke-width:2px;
+  linkStyle 4 stroke:#059669,stroke-width:2px;
+  linkStyle 5 stroke:#059669,stroke-width:2px;
+  linkStyle 6 stroke:#2563eb,stroke-width:2px;
+  linkStyle 7 stroke:#059669,stroke-width:2px;
+  linkStyle 8 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 9 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 10 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

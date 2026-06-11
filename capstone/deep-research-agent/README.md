@@ -299,8 +299,12 @@ execute: async ({ query, k }) => {
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
-graph LR
+graph TB
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_ccapstone_plan_and_execute["Plan-and-Execute 架构"]
   n_ccapstone_research_pipeline["research() 研究主干"]
   n_ccapstone_tool_registry["工具系统 (search/calc/saveNote)"]
@@ -329,13 +333,22 @@ graph LR
   n_ccapstone_tracer_cost -->|组成| n_c16_decorator_tracer
   n_ccapstone_dual_entrypoint -->|组成| n_c18_agent_as_service
   n_cragprod_vectordb_migration -->|对比| n_ccapstone_rag_corpus
-  style n_ccapstone_plan_and_execute stroke:#ff9f0a,stroke-width:3px
-  style n_ccapstone_research_pipeline stroke:#ff9f0a,stroke-width:3px
-  style n_ccapstone_tool_registry stroke:#ff9f0a,stroke-width:3px
-  style n_ccapstone_rag_corpus stroke:#ff9f0a,stroke-width:3px
-  style n_ccapstone_structured_output stroke:#ff9f0a,stroke-width:3px
-  style n_ccapstone_tracer_cost stroke:#ff9f0a,stroke-width:3px
-  style n_ccapstone_dual_entrypoint stroke:#ff9f0a,stroke-width:3px
+  class n_ccapstone_plan_and_execute,n_ccapstone_research_pipeline,n_ccapstone_tool_registry,n_ccapstone_rag_corpus,n_ccapstone_structured_output,n_ccapstone_tracer_cost,n_ccapstone_dual_entrypoint own;
+  class n_c10_plan_and_execute,n_c06_tool_registry,n_c09_rag_pipeline,n_c13_structured_output,n_c16_decorator_tracer,n_c18_agent_as_service,n_cragprod_vectordb_migration cross;
+  linkStyle 0 stroke:#d97706,stroke-width:2px;
+  linkStyle 1 stroke:#059669,stroke-width:2px;
+  linkStyle 2 stroke:#d97706,stroke-width:2px;
+  linkStyle 3 stroke:#059669,stroke-width:2px;
+  linkStyle 4 stroke:#059669,stroke-width:2px;
+  linkStyle 5 stroke:#2563eb,stroke-width:2px;
+  linkStyle 6 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 7 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 8 stroke:#d97706,stroke-width:2px;
+  linkStyle 9 stroke:#d97706,stroke-width:2px;
+  linkStyle 10 stroke:#d97706,stroke-width:2px;
+  linkStyle 11 stroke:#d97706,stroke-width:2px;
+  linkStyle 12 stroke:#d97706,stroke-width:2px;
+  linkStyle 13 stroke:#db2777,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

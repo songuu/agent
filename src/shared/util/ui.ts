@@ -36,6 +36,10 @@ export async function printStream(
   let full = "";
   process.stdout.write(color("[AI] ", "green"));
   for await (const chunk of stream) {
+    if (chunk.type === "thinking" && chunk.text) {
+      process.stdout.write(color(`\n[思考] ${chunk.text}\n`, "gray"));
+      process.stdout.write(color("[AI] ", "green"));
+    }
     if (chunk.type === "text" && chunk.text) {
       process.stdout.write(chunk.text);
       full += chunk.text;

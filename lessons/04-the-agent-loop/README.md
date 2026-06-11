@@ -241,8 +241,12 @@ LLM_PROVIDER=openai npx tsx lessons/04-the-agent-loop/index.ts
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
-graph LR
+graph TB
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_c04_react["ReAct (Reasoning + Acting)"]
   n_c04_agent_loop["Agent 循环"]
   n_c04_text_protocol["文本协议 + 正则解析"]
@@ -275,13 +279,24 @@ graph LR
   n_c10_reasoning_pattern -->|对比| n_c04_agent_loop
   n_c12_langgraph -->|对比| n_c04_agent_loop
   n_c12_react_agent -->|应用| n_c04_react
-  style n_c04_react stroke:#ff9f0a,stroke-width:3px
-  style n_c04_agent_loop stroke:#ff9f0a,stroke-width:3px
-  style n_c04_text_protocol stroke:#ff9f0a,stroke-width:3px
-  style n_c04_max_steps stroke:#ff9f0a,stroke-width:3px
-  style n_c04_scratchpad stroke:#ff9f0a,stroke-width:3px
-  style n_c04_tool_table stroke:#ff9f0a,stroke-width:3px
-  style n_c04_native_fc stroke:#ff9f0a,stroke-width:3px
+  class n_c04_react,n_c04_agent_loop,n_c04_text_protocol,n_c04_max_steps,n_c04_scratchpad,n_c04_tool_table,n_c04_native_fc own;
+  class n_c01_react_loop,n_c02_chat,n_c03_system_vs_user,n_c05_native_tool_use,n_c05_roundtrip_loop,n_c10_react,n_c10_reasoning_pattern,n_c12_langgraph,n_c12_react_agent cross;
+  linkStyle 0 stroke:#d97706,stroke-width:2px;
+  linkStyle 1 stroke:#d97706,stroke-width:2px;
+  linkStyle 2 stroke:#d97706,stroke-width:2px;
+  linkStyle 3 stroke:#d97706,stroke-width:2px;
+  linkStyle 4 stroke:#059669,stroke-width:2px;
+  linkStyle 5 stroke:#059669,stroke-width:2px;
+  linkStyle 6 stroke:#db2777,stroke-width:2px;
+  linkStyle 7 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 8 stroke:#059669,stroke-width:2px;
+  linkStyle 9 stroke:#059669,stroke-width:2px;
+  linkStyle 10 stroke:#db2777,stroke-width:2px;
+  linkStyle 11 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 12 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 13 stroke:#db2777,stroke-width:2px;
+  linkStyle 14 stroke:#db2777,stroke-width:2px;
+  linkStyle 15 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

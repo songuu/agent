@@ -18,6 +18,7 @@
     "site:build": "vitepress build",
     "site:preview": "vitepress preview",
     "demo:server": "tsx scripts/demo-runner/start.mts",
+    "demo:server:prod": "tsx scripts/demo-runner/start-production.mts",
     "demo:clear-token": "node scripts/demo-runner/clear-token.mjs",
     "demo:wait-token": "node scripts/demo-runner/wait-token.mjs",
     "site:live": "pnpm demo:clear-token && concurrently --kill-others --names runner,site \"pnpm demo:server\" \"pnpm demo:wait-token && pnpm site:dev\""

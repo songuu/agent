@@ -161,8 +161,12 @@ npx tsx rag-advanced/05-rag-evaluation/index.ts
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
 graph LR
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_crageval_llm_judge_rag["RAG 的 LLM-as-judge"]
   n_crageval_context_relevance["上下文相关性"]
   n_crageval_faithfulness["忠实度"]
@@ -179,11 +183,16 @@ graph LR
   n_crageval_llm_judge_rag -->|深化| n_c15_llm_judge
   n_crageval_faithfulness -->|深化| n_c09_hallucination_reduction
   n_crageval_stage_localization -->|应用| n_c15_eval_harness
-  style n_crageval_llm_judge_rag stroke:#ff9f0a,stroke-width:3px
-  style n_crageval_context_relevance stroke:#ff9f0a,stroke-width:3px
-  style n_crageval_faithfulness stroke:#ff9f0a,stroke-width:3px
-  style n_crageval_answer_relevance stroke:#ff9f0a,stroke-width:3px
-  style n_crageval_stage_localization stroke:#ff9f0a,stroke-width:3px
+  class n_crageval_llm_judge_rag,n_crageval_context_relevance,n_crageval_faithfulness,n_crageval_answer_relevance,n_crageval_stage_localization own;
+  class n_c15_llm_judge,n_c09_hallucination_reduction,n_c15_eval_harness cross;
+  linkStyle 0 stroke:#d97706,stroke-width:2px;
+  linkStyle 1 stroke:#d97706,stroke-width:2px;
+  linkStyle 2 stroke:#d97706,stroke-width:2px;
+  linkStyle 3 stroke:#059669,stroke-width:2px;
+  linkStyle 4 stroke:#059669,stroke-width:2px;
+  linkStyle 5 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 6 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 7 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

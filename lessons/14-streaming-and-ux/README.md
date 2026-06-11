@@ -219,8 +219,12 @@ LLM_PROVIDER=openai npx tsx lessons/14-streaming-and-ux/index.ts
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
-graph LR
+graph TB
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_c14_token_streaming["Token 流式输出 (typewriter)"]
   n_c14_perceived_latency["首字延迟与体感"]
   n_c14_progress_streaming["进度流 (onStep)"]
@@ -238,12 +242,16 @@ graph LR
   n_c14_token_streaming -->|深化| n_c02_stream
   n_c14_progress_streaming -->|应用| n_c06_run_agent_loop
   n_c18_sse_streaming -->|深化| n_c14_token_streaming
-  style n_c14_token_streaming stroke:#ff9f0a,stroke-width:3px
-  style n_c14_perceived_latency stroke:#ff9f0a,stroke-width:3px
-  style n_c14_progress_streaming stroke:#ff9f0a,stroke-width:3px
-  style n_c14_abort_controller stroke:#ff9f0a,stroke-width:3px
-  style n_c14_consumer_side_cancel stroke:#ff9f0a,stroke-width:3px
-  style n_c14_graceful_cleanup stroke:#ff9f0a,stroke-width:3px
+  class n_c14_token_streaming,n_c14_perceived_latency,n_c14_progress_streaming,n_c14_abort_controller,n_c14_consumer_side_cancel,n_c14_graceful_cleanup own;
+  class n_c02_stream,n_c06_run_agent_loop,n_c18_sse_streaming cross;
+  linkStyle 0 stroke:#059669,stroke-width:2px;
+  linkStyle 1 stroke:#db2777,stroke-width:2px;
+  linkStyle 2 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 3 stroke:#d97706,stroke-width:2px;
+  linkStyle 4 stroke:#059669,stroke-width:2px;
+  linkStyle 5 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 6 stroke:#059669,stroke-width:2px;
+  linkStyle 7 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

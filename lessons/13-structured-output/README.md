@@ -198,8 +198,12 @@ LLM_PROVIDER=openai npx tsx lessons/13-structured-output/index.ts
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
-graph LR
+graph TB
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_c13_structured_output["结构化输出"]
   n_c13_zod_schema["zod schema 单一事实来源"]
   n_c13_strict_prompt["强约束提示"]
@@ -221,13 +225,19 @@ graph LR
   n_c13_structured_output -->|深化| n_c03_constrained_output
   n_c15_eval_dataset -->|应用| n_c13_structured_output
   n_ccapstone_structured_output -->|组成| n_c13_structured_output
-  style n_c13_structured_output stroke:#ff9f0a,stroke-width:3px
-  style n_c13_zod_schema stroke:#ff9f0a,stroke-width:3px
-  style n_c13_strict_prompt stroke:#ff9f0a,stroke-width:3px
-  style n_c13_retry_repair stroke:#ff9f0a,stroke-width:3px
-  style n_c13_extract_json stroke:#ff9f0a,stroke-width:3px
-  style n_c13_runtime_validation stroke:#ff9f0a,stroke-width:3px
-  style n_c13_generate_object stroke:#ff9f0a,stroke-width:3px
+  class n_c13_structured_output,n_c13_zod_schema,n_c13_strict_prompt,n_c13_retry_repair,n_c13_extract_json,n_c13_runtime_validation,n_c13_generate_object own;
+  class n_c03_constrained_output,n_c15_eval_dataset,n_ccapstone_structured_output cross;
+  linkStyle 0 stroke:#059669,stroke-width:2px;
+  linkStyle 1 stroke:#059669,stroke-width:2px;
+  linkStyle 2 stroke:#059669,stroke-width:2px;
+  linkStyle 3 stroke:#2563eb,stroke-width:2px;
+  linkStyle 4 stroke:#d97706,stroke-width:2px;
+  linkStyle 5 stroke:#2563eb,stroke-width:2px;
+  linkStyle 6 stroke:#db2777,stroke-width:2px;
+  linkStyle 7 stroke:#059669,stroke-width:2px;
+  linkStyle 8 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 9 stroke:#059669,stroke-width:2px;
+  linkStyle 10 stroke:#d97706,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

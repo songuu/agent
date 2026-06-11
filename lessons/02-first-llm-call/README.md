@@ -153,8 +153,12 @@ LLM_PROVIDER=openai npx tsx lessons/02-first-llm-call/index.ts
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
-graph LR
+graph TB
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_c02_llm_call_pure_function["LLM 调用本质 (无状态纯函数)"]
   n_c02_get_llm_abstraction["provider 无关抽象 getLLM()"]
   n_c02_chat["chat() 一次性调用"]
@@ -179,12 +183,20 @@ graph LR
   n_c14_token_streaming -->|深化| n_c02_stream
   n_c16_cost_estimation -->|深化| n_c02_usage_token
   n_c16_decorator_tracer -->|应用| n_c02_get_llm_abstraction
-  style n_c02_llm_call_pure_function stroke:#ff9f0a,stroke-width:3px
-  style n_c02_get_llm_abstraction stroke:#ff9f0a,stroke-width:3px
-  style n_c02_chat stroke:#ff9f0a,stroke-width:3px
-  style n_c02_stream stroke:#ff9f0a,stroke-width:3px
-  style n_c02_usage_token stroke:#ff9f0a,stroke-width:3px
-  style n_c02_stop_reason stroke:#ff9f0a,stroke-width:3px
+  class n_c02_llm_call_pure_function,n_c02_get_llm_abstraction,n_c02_chat,n_c02_stream,n_c02_usage_token,n_c02_stop_reason own;
+  class n_c01_llm_vs_agent,n_c04_agent_loop,n_c07_context_window_budget,n_c14_token_streaming,n_c16_cost_estimation,n_c16_decorator_tracer cross;
+  linkStyle 0 stroke:#059669,stroke-width:2px;
+  linkStyle 1 stroke:#d97706,stroke-width:2px;
+  linkStyle 2 stroke:#d97706,stroke-width:2px;
+  linkStyle 3 stroke:#db2777,stroke-width:2px;
+  linkStyle 4 stroke:#059669,stroke-width:2px;
+  linkStyle 5 stroke:#059669,stroke-width:2px;
+  linkStyle 6 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 7 stroke:#059669,stroke-width:2px;
+  linkStyle 8 stroke:#059669,stroke-width:2px;
+  linkStyle 9 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 10 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 11 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

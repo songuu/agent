@@ -409,8 +409,12 @@ npx tsx lessons/19-agent-ecosystem-and-frontier/index.ts
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
-graph LR
+graph TB
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_c19_ecosystem_layers["Agent 生态分层"]
   n_c19_mcp["MCP (模型上下文协议)"]
   n_c19_a2a["A2A (Agent2Agent)"]
@@ -433,14 +437,20 @@ graph LR
   n_c19_governance -->|应用| n_c19_orchestration_runtime
   n_c19_ecosystem_layers -->|深化| n_c12_framework_choice
   n_c19_mcp -->|应用| n_c05_native_tool_use
-  style n_c19_ecosystem_layers stroke:#ff9f0a,stroke-width:3px
-  style n_c19_mcp stroke:#ff9f0a,stroke-width:3px
-  style n_c19_a2a stroke:#ff9f0a,stroke-width:3px
-  style n_c19_agent_sdk stroke:#ff9f0a,stroke-width:3px
-  style n_c19_orchestration_runtime stroke:#ff9f0a,stroke-width:3px
-  style n_c19_hosted_tools stroke:#ff9f0a,stroke-width:3px
-  style n_c19_stack_selection stroke:#ff9f0a,stroke-width:3px
-  style n_c19_governance stroke:#ff9f0a,stroke-width:3px
+  class n_c19_ecosystem_layers,n_c19_mcp,n_c19_a2a,n_c19_agent_sdk,n_c19_orchestration_runtime,n_c19_hosted_tools,n_c19_stack_selection,n_c19_governance own;
+  class n_c12_framework_choice,n_c05_native_tool_use cross;
+  linkStyle 0 stroke:#d97706,stroke-width:2px;
+  linkStyle 1 stroke:#d97706,stroke-width:2px;
+  linkStyle 2 stroke:#d97706,stroke-width:2px;
+  linkStyle 3 stroke:#d97706,stroke-width:2px;
+  linkStyle 4 stroke:#db2777,stroke-width:2px;
+  linkStyle 5 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 6 stroke:#db2777,stroke-width:2px;
+  linkStyle 7 stroke:#059669,stroke-width:2px;
+  linkStyle 8 stroke:#059669,stroke-width:2px;
+  linkStyle 9 stroke:#059669,stroke-width:2px;
+  linkStyle 10 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 11 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

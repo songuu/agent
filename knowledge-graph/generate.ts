@@ -11,6 +11,7 @@
  */
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join, relative, dirname } from "node:path";
+import { pathToFileURL } from "node:url";
 import {
   CHAPTERS,
   CONCEPTS,
@@ -37,6 +38,23 @@ function safeId(id: string): string {
 function safeLabel(label: string): string {
   return label.replace(/"/g, "'").replace(/\[/g, "【").replace(/\]/g, "】");
 }
+
+/**
+ * 概念图谱关系类型 → 连线配色。
+ * WHY 固定 hex 而非主题变量：Mermaid linkStyle 不读 CSS 变量；这些中间饱和度色
+ * 在明暗双主题的图表画布上都清晰，相当于一张内嵌图例。
+ */
+const RELATION_COLOR: Record<string, string> = {
+  前置: "#2563eb", // 蓝：学它前要先会
+  深化: "#7c3aed", // 紫：更深一层
+  对比: "#db2777", // 玫红：同类对照
+  应用: "#059669", // 绿：落地用法
+  组成: "#d97706", // 橙：构成部件
+};
+const RELATION_COLOR_FALLBACK = "#64748b";
+
+/** 概念图谱节点数超过该值时，从 LR 切到 TB（思维导图式自上而下），降低横向拥挤。 */
+const CONCEPT_GRAPH_DENSE_NODES = 8;
 
 /** 从某章目录指向仓库内某目标文件的相对链接（统一正斜杠）。 */
 function relLink(fromChapterDir: string, toRepoPath: string): string {
@@ -187,20 +205,67 @@ function buildHtmlData(): HtmlData {
 
 // ── 每章注入段 ──────────────────────────────────────────────────────────────
 
+/**
+ * 构建某章「本章概念图谱」的 Mermaid 代码块（纯函数，可单测）。
+ * - 本章概念用 `own` classDef 高亮（橙框），关联的他章概念用 `cross`（蓝框弱化）。
+ * - 连线按关系类型 linkStyle 配色。
+ * - 节点数超过 CONCEPT_GRAPH_DENSE_NODES 时切到 TB，降低密集章节的横向拥挤。
+ * 本章无概念时返回空串。
+ */
+export function buildChapterConceptGraph(ch: Chapter): string {
+  const own = CONCEPTS.filter((c) => c.chapter === ch.id);
+  if (own.length === 0) return "";
+
+  const conceptById = new Map(CONCEPTS.map((c) => [c.id, c]));
+  const ownIds = new Set(own.map((c) => c.id));
+  const edges = RELATIONS.filter((r) => ownIds.has(r.from) || ownIds.has(r.to));
+  const shownIds = new Set<string>(ownIds);
+  for (const e of edges) {
+    shownIds.add(e.from);
+    shownIds.add(e.to);
+  }
+
+  const direction = shownIds.size > CONCEPT_GRAPH_DENSE_NODES ? "TB" : "LR";
+  const lines: string[] = [];
+  lines.push("```mermaid");
+  lines.push(`graph ${direction}`);
+  lines.push("  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;");
+  lines.push("  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;");
+
+  const crossIds: string[] = [];
+  for (const id of shownIds) {
+    const c = conceptById.get(id);
+    if (!c) continue;
+    const isOwn = ownIds.has(id);
+    const label = isOwn ? c.label : `${c.label}（第${c.chapter}章）`;
+    lines.push(`  ${safeId(id)}["${safeLabel(label)}"]`);
+    if (!isOwn) crossIds.push(safeId(id));
+  }
+
+  // 连线 + 按关系类型着色（linkStyle 序号必须与边的生成顺序严格对齐）。
+  const linkStyles: string[] = [];
+  edges.forEach((e, index) => {
+    lines.push(`  ${safeId(e.from)} -->|${e.type}| ${safeId(e.to)}`);
+    const color = RELATION_COLOR[e.type] ?? RELATION_COLOR_FALLBACK;
+    linkStyles.push(`  linkStyle ${index} stroke:${color},stroke-width:2px;`);
+  });
+
+  lines.push(`  class ${own.map((c) => safeId(c.id)).join(",")} own;`);
+  if (crossIds.length) lines.push(`  class ${crossIds.join(",")} cross;`);
+  lines.push(...linkStyles);
+  lines.push("```");
+  return lines.join("\n");
+}
+
 function buildChapterSection(ch: Chapter): string {
   const own = CONCEPTS.filter((c) => c.chapter === ch.id);
   const conceptById = new Map(CONCEPTS.map((c) => [c.id, c]));
   const chapterById = new Map(CHAPTERS.map((c) => [c.id, c]));
   const ownIds = new Set(own.map((c) => c.id));
 
-  // 与本章概念相关的边（任一端在本章）
+  // 与本章概念相关的边（任一端在本章），供下方「跨章关系列表」使用。
+  // 图谱本体（节点/方向/配色）已下放到 buildChapterConceptGraph 纯函数。
   const edges = RELATIONS.filter((r) => ownIds.has(r.from) || ownIds.has(r.to));
-  // 需要展示的节点 = 本章概念 + 边触及的他章概念
-  const shownIds = new Set<string>(ownIds);
-  for (const e of edges) {
-    shownIds.add(e.from);
-    shownIds.add(e.to);
-  }
 
   const lines: string[] = [];
   lines.push(MARK_START);
@@ -216,24 +281,11 @@ function buildChapterSection(ch: Chapter): string {
   } else {
     lines.push("### 本章概念图谱");
     lines.push("");
-    lines.push("```mermaid");
-    lines.push("graph LR");
-    for (const id of shownIds) {
-      const c = conceptById.get(id);
-      if (!c) continue;
-      const isOwn = ownIds.has(id);
-      const label = isOwn ? c.label : `${c.label}（第${c.chapter}章）`;
-      const node = `${safeId(id)}["${safeLabel(label)}"]`;
-      lines.push(`  ${node}`);
-    }
-    for (const e of edges) {
-      lines.push(`  ${safeId(e.from)} -->|${e.type}| ${safeId(e.to)}`);
-    }
-    // 本章概念高亮（加粗描边）
-    for (const c of own) {
-      lines.push(`  style ${safeId(c.id)} stroke:#ff9f0a,stroke-width:3px`);
-    }
-    lines.push("```");
+    lines.push(
+      "> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。",
+    );
+    lines.push("");
+    lines.push(buildChapterConceptGraph(ch));
     lines.push("");
   }
 
@@ -342,4 +394,7 @@ function main(): void {
   );
 }
 
-main();
+// 仅作为入口脚本（npm run kg）时执行；被测试 import 时不触发文件写入。
+const invokedDirectly =
+  Boolean(process.argv[1]) && import.meta.url === pathToFileURL(process.argv[1]!).href;
+if (invokedDirectly) main();

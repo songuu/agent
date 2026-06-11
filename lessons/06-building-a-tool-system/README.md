@@ -232,8 +232,12 @@ LLM_PROVIDER=openai npx tsx lessons/06-building-a-tool-system/index.ts
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
-graph LR
+graph TB
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_c06_single_zod_schema["单一 zod schema"]
   n_c06_define_tool["defineTool / defineMiniTool"]
   n_c06_tool_registry["工具注册表 (ToolRegistry)"]
@@ -267,13 +271,25 @@ graph LR
   n_c17_human_in_the_loop -->|应用| n_c06_tool_registry
   n_c18_agent_as_service -->|应用| n_c06_run_agent_loop
   n_ccapstone_tool_registry -->|组成| n_c06_tool_registry
-  style n_c06_single_zod_schema stroke:#ff9f0a,stroke-width:3px
-  style n_c06_define_tool stroke:#ff9f0a,stroke-width:3px
-  style n_c06_tool_registry stroke:#ff9f0a,stroke-width:3px
-  style n_c06_safe_execution stroke:#ff9f0a,stroke-width:3px
-  style n_c06_type_erasure stroke:#ff9f0a,stroke-width:3px
-  style n_c06_self_correction_loop stroke:#ff9f0a,stroke-width:3px
-  style n_c06_run_agent_loop stroke:#ff9f0a,stroke-width:3px
+  class n_c06_single_zod_schema,n_c06_define_tool,n_c06_tool_registry,n_c06_safe_execution,n_c06_type_erasure,n_c06_self_correction_loop,n_c06_run_agent_loop own;
+  class n_c05_toolspec_schema,n_c05_roundtrip_loop,n_c05_error_feedback,n_c11_orchestration_loop,n_c12_vercel_ai_sdk,n_c14_progress_streaming,n_c17_human_in_the_loop,n_c18_agent_as_service,n_ccapstone_tool_registry cross;
+  linkStyle 0 stroke:#d97706,stroke-width:2px;
+  linkStyle 1 stroke:#d97706,stroke-width:2px;
+  linkStyle 2 stroke:#d97706,stroke-width:2px;
+  linkStyle 3 stroke:#059669,stroke-width:2px;
+  linkStyle 4 stroke:#2563eb,stroke-width:2px;
+  linkStyle 5 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 6 stroke:#059669,stroke-width:2px;
+  linkStyle 7 stroke:#059669,stroke-width:2px;
+  linkStyle 8 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 9 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 10 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 11 stroke:#059669,stroke-width:2px;
+  linkStyle 12 stroke:#db2777,stroke-width:2px;
+  linkStyle 13 stroke:#059669,stroke-width:2px;
+  linkStyle 14 stroke:#059669,stroke-width:2px;
+  linkStyle 15 stroke:#059669,stroke-width:2px;
+  linkStyle 16 stroke:#d97706,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

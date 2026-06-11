@@ -8,6 +8,7 @@
  */
 import OpenAI from "openai";
 import { getEnv } from "../util/env";
+import { emitDemoRunnerThinking } from "../util/demoRunnerProtocol";
 import {
   createOpenAICompatibleClient,
   type OpenAICompatibleClientOptions,
@@ -88,6 +89,18 @@ function safeParseArgs(json: string): Record<string, unknown> {
   }
 }
 
+function readReasoningText(value: unknown): string {
+  if (!value || typeof value !== "object") return "";
+  const record = value as Record<string, unknown>;
+  const candidates = [
+    record.reasoning_content,
+    record.reasoning,
+    record.reasoning_text,
+    record.thinking,
+  ];
+  return candidates.find((candidate): candidate is string => typeof candidate === "string") ?? "";
+}
+
 function createOpenAIStyleClient(options: OpenAIStyleClientOptions): LLMClient {
   const client = createOpenAICompatibleClient(options.compatibleClient);
   const model = getEnv(options.modelEnv, options.defaultModel)!;
@@ -120,10 +133,13 @@ function createOpenAIStyleClient(options: OpenAIStyleClientOptions): LLMClient {
     model,
 
     async chat(options) {
+      emitDemoRunnerThinking(`LLM chat 正在生成完整回复：${model}`);
       const res = await client.chat.completions.create(buildParams(options));
       const choice = res.choices[0];
       if (!choice) throw new Error("OpenAI 返回了空的 choices");
       const message = choice.message;
+      const reasoningText = readReasoningText(message);
+      if (reasoningText) emitDemoRunnerThinking(reasoningText);
       const toolCalls: ToolCall[] = (message.tool_calls ?? [])
         .filter((c) => c.type === "function")
         .map((c) => ({
@@ -144,6 +160,7 @@ function createOpenAIStyleClient(options: OpenAIStyleClientOptions): LLMClient {
     },
 
     async *stream(options): AsyncIterable<StreamChunk> {
+      emitDemoRunnerThinking(`LLM stream 已连接，等待首个 token：${model}`);
       const stream = await client.chat.completions.create({
         ...buildParams(options),
         stream: true,
@@ -154,6 +171,11 @@ function createOpenAIStyleClient(options: OpenAIStyleClientOptions): LLMClient {
       let finishReason: string | null = null;
       for await (const chunk of stream) {
         const choice = chunk.choices[0];
+        const reasoningDelta = readReasoningText(choice?.delta);
+        if (reasoningDelta) {
+          emitDemoRunnerThinking(reasoningDelta);
+          yield { type: "thinking", text: reasoningDelta };
+        }
         const delta = choice?.delta?.content;
         if (delta) {
           text += delta;

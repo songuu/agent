@@ -231,8 +231,12 @@ ANTHROPIC_API_KEY=sk-ant-... npx tsx lessons/12-intro-to-frameworks/index.ts
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
-graph LR
+graph TB
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_c12_why_frameworks["为什么生产要上框架"]
   n_c12_vercel_ai_sdk["Vercel AI SDK"]
   n_c12_max_steps["maxSteps 自动工具循环"]
@@ -257,13 +261,21 @@ graph LR
   n_c12_langgraph -->|对比| n_c04_agent_loop
   n_c12_react_agent -->|应用| n_c04_react
   n_c19_ecosystem_layers -->|深化| n_c12_framework_choice
-  style n_c12_why_frameworks stroke:#ff9f0a,stroke-width:3px
-  style n_c12_vercel_ai_sdk stroke:#ff9f0a,stroke-width:3px
-  style n_c12_max_steps stroke:#ff9f0a,stroke-width:3px
-  style n_c12_langgraph stroke:#ff9f0a,stroke-width:3px
-  style n_c12_react_agent stroke:#ff9f0a,stroke-width:3px
-  style n_c12_state_graph stroke:#ff9f0a,stroke-width:3px
-  style n_c12_framework_choice stroke:#ff9f0a,stroke-width:3px
+  class n_c12_why_frameworks,n_c12_vercel_ai_sdk,n_c12_max_steps,n_c12_langgraph,n_c12_react_agent,n_c12_state_graph,n_c12_framework_choice own;
+  class n_c06_run_agent_loop,n_c04_agent_loop,n_c04_react,n_c19_ecosystem_layers cross;
+  linkStyle 0 stroke:#059669,stroke-width:2px;
+  linkStyle 1 stroke:#059669,stroke-width:2px;
+  linkStyle 2 stroke:#d97706,stroke-width:2px;
+  linkStyle 3 stroke:#d97706,stroke-width:2px;
+  linkStyle 4 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 5 stroke:#059669,stroke-width:2px;
+  linkStyle 6 stroke:#db2777,stroke-width:2px;
+  linkStyle 7 stroke:#2563eb,stroke-width:2px;
+  linkStyle 8 stroke:#2563eb,stroke-width:2px;
+  linkStyle 9 stroke:#db2777,stroke-width:2px;
+  linkStyle 10 stroke:#db2777,stroke-width:2px;
+  linkStyle 11 stroke:#059669,stroke-width:2px;
+  linkStyle 12 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

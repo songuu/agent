@@ -213,8 +213,12 @@ OPENAI_API_KEY=sk-... npx tsx lessons/08-embeddings-and-vector-search/index.ts
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
-graph LR
+graph TB
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_c08_embedding["Embedding (语义向量)"]
   n_c08_cosine_similarity["余弦相似度"]
   n_c08_vector_store["内存向量库 (add/search)"]
@@ -239,12 +243,21 @@ graph LR
   n_craghybrid_bm25 -->|深化| n_c08_semantic_vs_keyword
   n_cragquery_hyde -->|应用| n_c08_embedding
   n_cragprod_persistence -->|深化| n_c08_vector_store
-  style n_c08_embedding stroke:#ff9f0a,stroke-width:3px
-  style n_c08_cosine_similarity stroke:#ff9f0a,stroke-width:3px
-  style n_c08_vector_store stroke:#ff9f0a,stroke-width:3px
-  style n_c08_topk_retrieval stroke:#ff9f0a,stroke-width:3px
-  style n_c08_semantic_vs_keyword stroke:#ff9f0a,stroke-width:3px
-  style n_c08_rag_foundation stroke:#ff9f0a,stroke-width:3px
+  class n_c08_embedding,n_c08_cosine_similarity,n_c08_vector_store,n_c08_topk_retrieval,n_c08_semantic_vs_keyword,n_c08_rag_foundation own;
+  class n_c09_rag_pipeline,n_craghybrid_vector_recall,n_craghybrid_bm25,n_cragquery_hyde,n_cragprod_persistence cross;
+  linkStyle 0 stroke:#2563eb,stroke-width:2px;
+  linkStyle 1 stroke:#d97706,stroke-width:2px;
+  linkStyle 2 stroke:#d97706,stroke-width:2px;
+  linkStyle 3 stroke:#059669,stroke-width:2px;
+  linkStyle 4 stroke:#059669,stroke-width:2px;
+  linkStyle 5 stroke:#2563eb,stroke-width:2px;
+  linkStyle 6 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 7 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 8 stroke:#d97706,stroke-width:2px;
+  linkStyle 9 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 10 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 11 stroke:#059669,stroke-width:2px;
+  linkStyle 12 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系

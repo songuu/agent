@@ -2,6 +2,7 @@ import { createDemoFrameParser, type DemoFrame } from "./stream";
 
 declare const __DEMO_RUNNER_TOKEN__: string | undefined;
 declare const __DEMO_RUNNER_BASE_URL__: string | undefined;
+declare const __DEMO_RUNNER_CLIENT_ENABLED__: boolean | undefined;
 
 type NeedsKey = "none" | "llm" | "embedding";
 type BadgeTone = "ok" | "warn" | "bad" | "";
@@ -22,6 +23,12 @@ interface RunnerState {
   running: boolean;
   message: string;
   config?: RunnerConfig;
+}
+
+class RunnerHttpError extends Error {
+  constructor(readonly statusCode: number) {
+    super(`runner request failed: ${statusCode}`);
+  }
 }
 
 interface PanelElements {
@@ -57,12 +64,19 @@ function scanDemoRunnerPanels(): void {
 }
 
 function createPanel(root: HTMLElement): void {
+  const token = readBuildConstant("__DEMO_RUNNER_TOKEN__", __DEMO_RUNNER_TOKEN__);
+  if (!shouldInstallDemoRunnerPanel(__DEMO_RUNNER_CLIENT_ENABLED__, token)) {
+    root.hidden = true;
+    root.replaceChildren();
+    return;
+  }
+
   const demoId = root.dataset.demoId?.trim() ?? "";
   const demoTitle = root.dataset.demoTitle?.trim() || `Demo ${demoId}`;
   const needsKey = (root.dataset.needsKey as NeedsKey | undefined) ?? "llm";
   const state: RunnerState = {
     baseURL: readBuildConstant("__DEMO_RUNNER_BASE_URL__", __DEMO_RUNNER_BASE_URL__) || "http://127.0.0.1:5174",
-    token: readBuildConstant("__DEMO_RUNNER_TOKEN__", __DEMO_RUNNER_TOKEN__),
+    token,
     available: false,
     canRun: false,
     running: false,
@@ -123,11 +137,13 @@ function createPanel(root: HTMLElement): void {
   renderState(elements, state, needsKey);
 
   let terminalState: Awaited<ReturnType<typeof ensureTerminal>> | undefined;
+  let terminalWriter: ReturnType<typeof createBufferedTerminalWriter> | undefined;
   let abortController: AbortController | undefined;
 
   runButton.addEventListener("click", async () => {
     if (!demoId || !state.canRun || state.running) return;
     terminalState ??= await ensureTerminal(terminalMount);
+    terminalWriter ??= createBufferedTerminalWriter(terminalState.term);
     terminalState.term.clear();
     terminalState.term.writeln(`$ pnpm lesson ${demoId}`);
     terminalState.term.writeln("");
@@ -143,11 +159,13 @@ function createPanel(root: HTMLElement): void {
         demoId,
         signal: abortController.signal,
         onFrame(frame) {
-          writeFrame(terminalState!.term, frame);
+          terminalWriter!.writeFrame(frame);
         },
       });
+      terminalWriter.flush();
       state.message = "运行结束。";
     } catch (error) {
+      terminalWriter?.flush();
       const detail = error instanceof Error ? error.message : "unknown error";
       terminalState.term.writeln(`\x1b[31m${detail}\x1b[0m`);
       state.message = "运行失败。";
@@ -176,20 +194,12 @@ async function probeConfig(
   elements: PanelElements,
   needsKey: NeedsKey,
 ): Promise<void> {
-  if (!state.token) {
-    state.available = false;
-    state.canRun = false;
-    state.message = "未找到 runner token。请使用 pnpm site:live 启动课程站点。";
-    renderState(elements, state, needsKey);
-    return;
-  }
-
   try {
     const response = await fetch(`${state.baseURL}/api/config`, {
       method: "GET",
       headers: runnerHeaders(state.token),
     });
-    if (!response.ok) throw new Error(`runner config failed: ${response.status}`);
+    if (!response.ok) throw new RunnerHttpError(response.status);
     const payload = (await response.json()) as { ok?: boolean; config?: RunnerConfig };
     if (!payload.ok || !payload.config) throw new Error("runner config payload is invalid");
     state.config = payload.config;
@@ -198,10 +208,10 @@ async function probeConfig(
     state.message = state.canRun
       ? "本地 runner 已就绪。"
       : missingKeyMessage(payload.config, needsKey);
-  } catch {
+  } catch (error) {
     state.available = false;
     state.canRun = false;
-    state.message = "本地 runner 未启动或无法连接。请使用 pnpm site:live。";
+    state.message = configErrorMessage(error);
   }
   renderState(elements, state, needsKey);
 }
@@ -271,19 +281,95 @@ async function ensureTerminal(mount: HTMLElement) {
   return state;
 }
 
-function writeFrame(term: { write: (value: string) => void; writeln: (value: string) => void }, frame: DemoFrame): void {
+export function createBufferedTerminalWriter(
+  term: { write: (value: string) => void; writeln: (value: string) => void },
+  schedule: (flush: () => void) => void = scheduleTerminalFlush,
+): { writeFrame(frame: DemoFrame): void; flush(): void } {
+  let queue: DemoFrame[] = [];
+  let scheduled = false;
+  let activeSegment: DemoFrame["type"] | undefined;
+
+  const flush = () => {
+    scheduled = false;
+    const frames = queue;
+    queue = [];
+    for (const frame of frames) {
+      writeFrameNow(term, frame, activeSegment);
+      activeSegment = nextSegment(activeSegment, frame);
+    }
+  };
+
+  return {
+    writeFrame(frame) {
+      queue.push(frame);
+      if (scheduled) return;
+      scheduled = true;
+      schedule(flush);
+    },
+    flush,
+  };
+}
+
+function writeFrameNow(
+  term: { write: (value: string) => void; writeln: (value: string) => void },
+  frame: DemoFrame,
+  activeSegment: DemoFrame["type"] | undefined,
+): void {
   if (frame.type === "stdout") {
+    closeDecoratedSegment(term, activeSegment);
     term.write(String(frame.data));
     return;
   }
   if (frame.type === "stderr") {
+    if (activeSegment !== "stderr") {
+      closeDecoratedSegment(term, activeSegment);
+      term.write(`\x1b[33m[stderr]\x1b[0m \x1b[33m${String(frame.data)}\x1b[0m`);
+      return;
+    }
     term.write(`\x1b[33m${String(frame.data)}\x1b[0m`);
     return;
   }
+  if (frame.type === "thinking") {
+    if (activeSegment !== "thinking") {
+      closeDecoratedSegment(term, activeSegment);
+      term.write(`\x1b[36m[thinking]\x1b[0m \x1b[2m${String(frame.data)}`);
+      return;
+    }
+    term.write(String(frame.data));
+    return;
+  }
   if (frame.type === "exit") {
+    closeDecoratedSegment(term, activeSegment);
     term.writeln("");
     term.writeln(`exit: ${String(frame.data)}`);
   }
+}
+
+function closeDecoratedSegment(
+  term: { write: (value: string) => void },
+  activeSegment: DemoFrame["type"] | undefined,
+): void {
+  if (activeSegment === "thinking" || activeSegment === "stderr") {
+    term.write("\x1b[0m\n");
+  }
+}
+
+function nextSegment(
+  activeSegment: DemoFrame["type"] | undefined,
+  frame: DemoFrame,
+): DemoFrame["type"] | undefined {
+  if (frame.type === "thinking" || frame.type === "stderr") return frame.type;
+  if (frame.type === "stdout") return "stdout";
+  if (frame.type === "exit") return undefined;
+  return activeSegment;
+}
+
+function scheduleTerminalFlush(flush: () => void): void {
+  if (typeof window !== "undefined" && typeof window.requestAnimationFrame === "function") {
+    window.requestAnimationFrame(flush);
+    return;
+  }
+  setTimeout(flush, 16);
 }
 
 function renderState(elements: PanelElements, state: RunnerState, needsKey: NeedsKey): void {
@@ -327,10 +413,21 @@ function missingKeyMessage(config: RunnerConfig, needsKey: NeedsKey): string {
 }
 
 function runnerHeaders(token: string): HeadersInit {
-  return {
+  const headers: Record<string, string> = {
     "X-Demo-Runner": "1",
-    "X-Demo-Runner-Token": token,
   };
+  if (token) headers["X-Demo-Runner-Token"] = token;
+  return headers;
+}
+
+function configErrorMessage(error: unknown): string {
+  if (error instanceof RunnerHttpError && error.statusCode === 401) {
+    return "生产 runner 需要先登录 songuu.top。";
+  }
+  if (error instanceof RunnerHttpError && error.statusCode === 403) {
+    return "生产 runner 拒绝当前请求。请确认登录状态与访问域名。";
+  }
+  return "runner 未启动或无法连接。";
 }
 
 function createButton(label: string): HTMLButtonElement {
@@ -356,4 +453,8 @@ function setBadge(badge: HTMLElement, label: string, tone: BadgeTone): void {
 
 function readBuildConstant(_name: string, value: string | undefined): string {
   return typeof value === "string" ? value : "";
+}
+
+export function shouldInstallDemoRunnerPanel(clientEnabled: boolean | undefined, token: string | undefined): boolean {
+  return clientEnabled === true || Boolean(token);
 }

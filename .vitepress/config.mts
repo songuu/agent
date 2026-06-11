@@ -6,6 +6,11 @@ import { withMermaid } from "vitepress-plugin-mermaid";
 // @ts-ignore markdown-it-task-lists has no bundled types; VitePress loads this config through esbuild.
 import taskLists from "markdown-it-task-lists";
 import { CHAPTERS, type Chapter } from "../knowledge-graph/data/graph";
+import {
+  CONCEPT_VISUALS,
+  renderConceptVisualHtml,
+  type ConceptVisual,
+} from "../knowledge-graph/data/visuals";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -78,6 +83,21 @@ function buildDemoMarkers(chapters: readonly Chapter[] = CHAPTERS): Map<string, 
     };
     markers.set(`${chapter.dir}/README.md`, marker);
     markers.set(`${chapter.dir}/index.md`, marker);
+  }
+  return markers;
+}
+
+function buildConceptVisualMarkers(
+  chapters: readonly Chapter[] = CHAPTERS,
+  visuals: readonly ConceptVisual[] = CONCEPT_VISUALS,
+): Map<string, ConceptVisual> {
+  const chaptersById = new Map(chapters.map((chapter) => [chapter.id, chapter]));
+  const markers = new Map<string, ConceptVisual>();
+  for (const visual of visuals) {
+    const chapter = chaptersById.get(visual.chapter);
+    if (!chapter) continue;
+    markers.set(`${chapter.dir}/README.md`, visual);
+    markers.set(`${chapter.dir}/index.md`, visual);
   }
   return markers;
 }
@@ -165,10 +185,16 @@ const sidebar: DefaultTheme.SidebarItem[] = [
 ];
 
 const demoMarkers = buildDemoMarkers();
+const conceptVisualMarkers = buildConceptVisualMarkers();
 const shouldInjectDemoRunnerToken = process.env.npm_lifecycle_event === "site:dev";
+const shouldEnableProductionDemoRunner = process.env.DEMO_RUNNER_CLIENT_ENABLED === "1";
 const demoRunnerRuntime = shouldInjectDemoRunnerToken
   ? readDemoRunnerRuntime()
   : { token: "", port: DEFAULT_DEMO_RUNNER_PORT };
+const demoRunnerBaseUrl =
+  process.env.DEMO_RUNNER_BASE_URL?.trim() ||
+  `http://127.0.0.1:${demoRunnerRuntime.port}`;
+const demoRunnerClientEnabled = shouldInjectDemoRunnerToken || shouldEnableProductionDemoRunner;
 const siteBase = normalizeBase(process.env.VITEPRESS_BASE);
 
 export default withMermaid(
@@ -246,15 +272,26 @@ export default withMermaid(
           token.content = `${html}\n`;
           state.tokens.splice(fenceIndex + 1, 0, token);
         });
+
+        md.core.ruler.push("inject-concept-visual", (state) => {
+          const rel = String((state.env as { relativePath?: string })?.relativePath ?? "");
+          const visual = conceptVisualMarkers.get(rel);
+          if (!visual) return;
+          const fenceIndex = state.tokens.findIndex((token) => token.type === "fence");
+          if (fenceIndex === -1) return;
+
+          const token = new state.Token("html_block", "", 0);
+          token.content = `${renderConceptVisualHtml(visual)}\n`;
+          state.tokens.splice(fenceIndex + 1, 0, token);
+        });
       },
     },
 
     vite: {
       define: {
         __DEMO_RUNNER_TOKEN__: JSON.stringify(demoRunnerRuntime.token),
-        __DEMO_RUNNER_BASE_URL__: JSON.stringify(
-          `http://127.0.0.1:${demoRunnerRuntime.port}`,
-        ),
+        __DEMO_RUNNER_BASE_URL__: JSON.stringify(demoRunnerBaseUrl),
+        __DEMO_RUNNER_CLIENT_ENABLED__: JSON.stringify(demoRunnerClientEnabled),
       },
       plugins: [serveKgHtmlPlugin()],
       optimizeDeps: {
@@ -331,6 +368,22 @@ export default withMermaid(
     mermaid: {
       maxTextSize: 200000,
       maxEdges: 1000,
+      // 不设 theme：让 vitepress-plugin-mermaid 按明暗模式自适应（写死会破坏暗色）。
+      // 只调字号/字体/间距，配合 diagram-zoom 的适配，保证默认视图文字可读。
+      fontFamily:
+        '"Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif',
+      themeVariables: {
+        fontSize: "16px",
+      },
+      flowchart: {
+        // 本征尺寸渲染：交给 diagram-zoom 适配，避免 useMaxWidth 把整图（含文字）压扁。
+        useMaxWidth: false,
+        htmlLabels: true,
+        nodeSpacing: 44,
+        rankSpacing: 62,
+        padding: 14,
+        curve: "basis",
+      },
     },
   }),
 );

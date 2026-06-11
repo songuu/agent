@@ -1,4 +1,4 @@
-export type DemoFrameType = "stdout" | "stderr" | "done" | "exit";
+export type DemoFrameType = "stdout" | "stderr" | "thinking" | "done" | "exit";
 
 export interface DemoFrame {
   type: DemoFrameType;
@@ -49,5 +49,11 @@ export function createDemoFrameParser(onFrame: (frame: DemoFrame) => void): Demo
 function isDemoFrame(value: unknown): value is DemoFrame {
   if (!value || typeof value !== "object") return false;
   const type = (value as { type?: unknown }).type;
-  return type === "stdout" || type === "stderr" || type === "done" || type === "exit";
+  return (
+    type === "stdout" ||
+    type === "stderr" ||
+    type === "thinking" ||
+    type === "done" ||
+    type === "exit"
+  );
 }

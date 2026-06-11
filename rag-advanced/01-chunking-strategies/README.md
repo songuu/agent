@@ -173,8 +173,12 @@ npx tsx rag-advanced/01-chunking-strategies/index.ts
 
 ### 本章概念图谱
 
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
 ```mermaid
 graph LR
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_cragchunk_why_matters["切块决定检索上限"]
   n_cragchunk_sliding_window["字符滑窗切分"]
   n_cragchunk_recursive["递归语义切分"]
@@ -190,11 +194,15 @@ graph LR
   n_cragchunk_why_matters -->|深化| n_c09_chunk_overlap
   n_cragchunk_recursive -->|应用| n_c09_rag_pipeline
   n_cragchunk_token_budget -->|应用| n_c07_context_window_budget
-  style n_cragchunk_why_matters stroke:#ff9f0a,stroke-width:3px
-  style n_cragchunk_sliding_window stroke:#ff9f0a,stroke-width:3px
-  style n_cragchunk_recursive stroke:#ff9f0a,stroke-width:3px
-  style n_cragchunk_markdown_aware stroke:#ff9f0a,stroke-width:3px
-  style n_cragchunk_token_budget stroke:#ff9f0a,stroke-width:3px
+  class n_cragchunk_why_matters,n_cragchunk_sliding_window,n_cragchunk_recursive,n_cragchunk_markdown_aware,n_cragchunk_token_budget own;
+  class n_c09_chunk_overlap,n_c09_rag_pipeline,n_c07_context_window_budget cross;
+  linkStyle 0 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 1 stroke:#db2777,stroke-width:2px;
+  linkStyle 2 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 3 stroke:#2563eb,stroke-width:2px;
+  linkStyle 4 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 5 stroke:#059669,stroke-width:2px;
+  linkStyle 6 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
