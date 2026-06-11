@@ -152,13 +152,19 @@ export function createAnthropicClient(): LLMClient {
 
     async chat(options) {
       emitDemoRunnerThinking(`LLM chat 正在生成完整回复：${model}`);
-      const msg = await client.messages.create(buildParams(options));
+      const msg = await client.messages.create(
+        buildParams(options),
+        options.signal ? { signal: options.signal } : undefined,
+      );
       return parseMessage(msg);
     },
 
     async *stream(options): AsyncIterable<StreamChunk> {
       emitDemoRunnerThinking(`LLM stream 已连接，等待首个 token：${model}`);
-      const stream = client.messages.stream(buildParams(options));
+      const stream = client.messages.stream(
+        buildParams(options),
+        options.signal ? { signal: options.signal } : undefined,
+      );
       for await (const event of stream) {
         const thinking = readAnthropicThinkingDelta(event);
         if (thinking) {

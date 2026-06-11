@@ -1,5 +1,6 @@
 declare const __DEMO_RUNNER_TOKEN__: string | undefined;
 declare const __DEMO_RUNNER_BASE_URL__: string | undefined;
+declare const __DEMO_RUNNER_CLIENT_ENABLED__: boolean | undefined;
 
 type SelectionChatFrameType = "thinking" | "text" | "done" | "error";
 type SelectionChatRole = "user" | "assistant";
@@ -71,8 +72,18 @@ let popover: HTMLElement | undefined;
 let drawer: DrawerElements | undefined;
 let selectionTimer: number | undefined;
 
-if (typeof window !== "undefined") {
+if (typeof window !== "undefined" && isSelectionChatEnabled()) {
   installSelectionChat();
+}
+
+// Mirror the demo-runner client's enablement contract (shouldInstallDemoRunnerPanel):
+// only mount when the runner client is enabled at build time or a dev token exists.
+// Otherwise a runner-less build would still show the popover/drawer and every send
+// would fetch a dead 127.0.0.1:5174 endpoint, surfacing a confusing "对话失败".
+function isSelectionChatEnabled(): boolean {
+  const enabled =
+    typeof __DEMO_RUNNER_CLIENT_ENABLED__ === "boolean" ? __DEMO_RUNNER_CLIENT_ENABLED__ : false;
+  return enabled || Boolean(readBuildConstant(__DEMO_RUNNER_TOKEN__));
 }
 
 export function normalizeSelectedText(text: string, maxLength = MAX_SELECTED_TEXT_LENGTH): string {
@@ -283,7 +294,11 @@ function closeDrawer(): void {
 async function submitQuestion(): Promise<void> {
   const elements = ensureDrawer();
   const question = normalizeSelectedText(elements.textarea.value, MAX_QUESTION_LENGTH);
-  if (!question || !state.selectedText) return;
+  // The pinned excerpt the drawer shows is the source of truth, NOT the live page
+  // selection: while the drawer is open the user can select other body text, which
+  // updates state.selectedText. Sending that would silently answer the wrong passage.
+  const selectedText = state.drawerSelectedText ?? "";
+  if (!question || !selectedText) return;
 
   elements.textarea.value = "";
   state.messages.push({ role: "user", content: question });
@@ -293,11 +308,15 @@ async function submitQuestion(): Promise<void> {
 
   const abortController = new AbortController();
   state.abortController = abortController;
+  // Capture the streamed answer BEFORE any error string is appended below, so a
+  // partial answer survives into multi-turn history while the error text stays out.
+  let answerForHistory = "";
   try {
-    await streamSelectionChat(question, assistantTurn, abortController.signal);
-    state.messages.push({ role: "assistant", content: assistantTurn.answer.textContent ?? "" });
+    await streamSelectionChat(question, selectedText, assistantTurn, abortController.signal);
+    answerForHistory = assistantTurn.answer.textContent ?? "";
     setRunningState(false, "回答完成。");
   } catch (error) {
+    answerForHistory = assistantTurn.answer.textContent ?? "";
     if (isAbortError(error)) {
       setRunningState(false, "已停止。");
       return;
@@ -306,12 +325,18 @@ async function submitQuestion(): Promise<void> {
     assistantTurn.answer.textContent += `\n${detail}`;
     setRunningState(false, "对话失败。");
   } finally {
+    // Record the assistant turn even on abort/error so follow-up questions keep
+    // the partial reply in context. Skip empty turns (immediate failure).
+    if (answerForHistory) {
+      state.messages.push({ role: "assistant", content: answerForHistory });
+    }
     if (state.abortController === abortController) state.abortController = undefined;
   }
 }
 
 async function streamSelectionChat(
   question: string,
+  selectedText: string,
   turn: ChatTurnElements,
   signal: AbortSignal,
 ): Promise<void> {
@@ -319,7 +344,7 @@ async function streamSelectionChat(
     method: "POST",
     headers: selectionChatHeaders(),
     body: JSON.stringify(createSelectionChatPayload({
-      selectedText: state.selectedText,
+      selectedText,
       question,
       pageTitle: document.title,
       pagePath: window.location.pathname,
@@ -342,12 +367,18 @@ async function streamSelectionChat(
     }
   });
   const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    parser.push(value);
+  // try/finally so an error/malformed frame (which throws out of parser.push)
+  // still releases the reader and tears down the underlying fetch connection.
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      parser.push(value);
+    }
+    parser.flush();
+  } finally {
+    await reader.cancel().catch(() => undefined);
   }
-  parser.flush();
 }
 
 function renderUserMessage(content: string): void {
@@ -381,14 +412,14 @@ function setRunningState(running: boolean, status: string): void {
 }
 
 function stopCurrentChat(): void {
+  // Aborting the fetch closes the connection; the server's `res.on("close")`
+  // handler then aborts the in-flight selection chat. We deliberately do NOT POST
+  // /api/stop here — that endpoint ALSO aborts any in-flight demo run, and the
+  // local abort already tears this stream down end to end.
   state.abortController?.abort();
   state.abortController = undefined;
   const elements = ensureDrawer();
   setRunningState(false, "已停止。");
-  void fetch(`${readBaseUrl()}/api/stop`, {
-    method: "POST",
-    headers: selectionChatHeaders(),
-  }).catch(() => undefined);
   elements.textarea.disabled = false;
 }
 

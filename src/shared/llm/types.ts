@@ -49,6 +49,11 @@ export interface ChatOptions {
   tools?: ToolSpec[];
   temperature?: number;
   maxTokens?: number;
+  /**
+   * 可选中止信号。传入后转发给底层 SDK 的请求选项，abort 时会真正取消上游 HTTP 请求
+   * （而不仅仅停止消费流），避免 stop 后模型仍在后台继续生成/计费。
+   */
+  signal?: AbortSignal;
 }
 
 export interface Usage {

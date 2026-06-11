@@ -181,10 +181,19 @@ export function createDemoRunnerServer(
           return;
         }
 
+        // Claim the single-flight slot synchronously BEFORE the first await,
+        // mirroring /api/run. Otherwise two near-simultaneous POSTs both pass the
+        // busy check while suspended on readJsonBody, then start concurrent streams.
+        const abortController = new AbortController();
+        activeSelectionChatAbortController = abortController;
+
         let chatRequest;
         try {
           chatRequest = normalizeSelectionChatRequest(await readJsonBody(req));
         } catch (error) {
+          if (activeSelectionChatAbortController === abortController) {
+            activeSelectionChatAbortController = undefined;
+          }
           sendJson(res, 400, {
             ok: false,
             error: error instanceof Error ? error.message : "invalid_request",
@@ -192,9 +201,7 @@ export function createDemoRunnerServer(
           return;
         }
 
-        activeSelectionChatAbortController = new AbortController();
         streamNdjson(res);
-        const abortController = activeSelectionChatAbortController;
         const writeFrame = (frame: SelectionChatFrame) => {
           res.write(`${JSON.stringify(frame)}\n`);
         };

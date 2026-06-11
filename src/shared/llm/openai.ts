@@ -134,7 +134,10 @@ function createOpenAIStyleClient(options: OpenAIStyleClientOptions): LLMClient {
 
     async chat(options) {
       emitDemoRunnerThinking(`LLM chat 正在生成完整回复：${model}`);
-      const res = await client.chat.completions.create(buildParams(options));
+      const res = await client.chat.completions.create(
+        buildParams(options),
+        options.signal ? { signal: options.signal } : undefined,
+      );
       const choice = res.choices[0];
       if (!choice) throw new Error("OpenAI 返回了空的 choices");
       const message = choice.message;
@@ -161,11 +164,14 @@ function createOpenAIStyleClient(options: OpenAIStyleClientOptions): LLMClient {
 
     async *stream(options): AsyncIterable<StreamChunk> {
       emitDemoRunnerThinking(`LLM stream 已连接，等待首个 token：${model}`);
-      const stream = await client.chat.completions.create({
-        ...buildParams(options),
-        stream: true,
-        stream_options: { include_usage: true },
-      });
+      const stream = await client.chat.completions.create(
+        {
+          ...buildParams(options),
+          stream: true,
+          stream_options: { include_usage: true },
+        },
+        options.signal ? { signal: options.signal } : undefined,
+      );
       let text = "";
       let usage = { inputTokens: 0, outputTokens: 0 };
       let finishReason: string | null = null;

@@ -37,4 +37,16 @@ tags: [solution, selection-chat, streaming, vitepress, no-vue]
 # Gotchas
 
 - Runner tsconfig uses NodeNext. Do not directly static-import `src/shared/llm/index.js` from `scripts/demo-runner/*`, or TypeScript pulls shared source into runner config and hits extension-check errors. Use runtime variable dynamic import behind a local `LLMClientLike` boundary.
-- Browser automation in the in-app browser may not synthesize native text Selection via drag. Keep DOM Selection behavior covered by targeted unit tests.
+- Browser automation in the in-app browser may not synthesize native text Selection via drag. Keep DOM Selection behavior covered by targeted unit tests; Playwright `selectText()`/mouse-drag CAN synthesize a real Selection if you opt into the dependency.
+
+# Gotchas found in pre-commit review (hardened 2026-06-11)
+
+A pre-commit adversarial multi-lens review found 1 P1 + 5 P2 real bugs that happy-path manual E2E + pure-function unit tests all missed. Patterns worth remembering:
+
+- **Drawer must pin its excerpt as source of truth.** Global `selectionchange`/`mouseup`/`keyup` listeners keep firing while the drawer is open, so the live page selection (`state.selectedText`) drifts away from the excerpt the user sees. Send the pinned `drawerSelectedText`, not the live selection, or you silently answer the wrong passage. Fixed by threading `selectedText` explicitly into `streamSelectionChat`.
+- **Release the stream reader in `finally`.** An `error`/malformed frame throws out of `parser.push`; without try/finally the `ReadableStream` reader + fetch connection dangle until GC.
+- **Record the assistant turn in `finally`, snapshot before appending error text.** On abort/error the success-path history push is skipped, dropping the partial answer from multi-turn context.
+- **Claim single-flight locks synchronously before the first `await`.** Checking a busy flag and then `await readJsonBody` before assigning the lock is a TOCTOU race — two POSTs both pass the check and start concurrent streams. Mirror `/api/run`, which parses the URL synchronously and claims before any await.
+- **A shared global `/api/stop` cross-kills unrelated streams.** `/api/stop` aborts both the demo-run and selection-chat controllers. The selection-chat client doesn't need to POST it at all: the local `AbortController.abort()` closes the fetch, and the server's `res.on("close")` aborts server-side. Drop the redundant POST.
+- **New clients must honor the same enablement gate.** `selection-chat.ts` installed unconditionally while the demo-runner client gated on `__DEMO_RUNNER_CLIENT_ENABLED__`; on a runner-less build the popover still showed and every send hit a dead `127.0.0.1:5174`. Reuse the same `enabled || Boolean(token)` contract.
+- **Cross-subsystem (fixed in the same pass):** `stop` originally only halted the frame loop. We plumbed an optional `signal?: AbortSignal` into `src/shared/llm` `ChatOptions`, forwarded it to the OpenAI/Anthropic SDK request options (`create(body, { signal })` / `messages.stream(body, { signal })`), passed it from the selection-chat handler, and swallow the resulting abort error on intentional stop (re-throw otherwise). `stop` now cancels the upstream LLM request, not just frame consumption. Backward-compatible: `signal` is optional, so every other lesson's `getLLM().stream(...)` call is unaffected.

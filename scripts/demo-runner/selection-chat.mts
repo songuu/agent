@@ -61,6 +61,7 @@ interface LLMClientLike {
     messages: LLMMessage[];
     temperature?: number;
     maxTokens?: number;
+    signal?: AbortSignal;
   }): AsyncIterable<LLMStreamChunk>;
 }
 
@@ -121,24 +122,33 @@ export function createSelectionChatHandler(
     let finalUsage: { inputTokens: number; outputTokens: number } | undefined;
     let stopReason = "other";
 
-    for await (const chunk of llm.stream({
-      messages: buildSelectionChatMessages(request),
-      temperature: 0.2,
-      maxTokens: 1_200,
-    })) {
+    try {
+      for await (const chunk of llm.stream({
+        messages: buildSelectionChatMessages(request),
+        temperature: 0.2,
+        maxTokens: 1_200,
+        signal,
+      })) {
+        if (signal.aborted) return;
+        if (chunk.type === "thinking" && chunk.text) {
+          writeFrame({ type: "thinking", data: chunk.text });
+          continue;
+        }
+        if (chunk.type === "text" && chunk.text) {
+          writeFrame({ type: "text", data: chunk.text });
+          continue;
+        }
+        if (chunk.type === "done") {
+          finalUsage = chunk.result?.usage;
+          stopReason = chunk.result?.stopReason ?? "other";
+        }
+      }
+    } catch (error) {
+      // Intentional abort cancels the upstream SDK request, which surfaces here as
+      // an abort error. Swallow it (the connection is already closing); re-throw
+      // anything else so the server emits an error frame to the client.
       if (signal.aborted) return;
-      if (chunk.type === "thinking" && chunk.text) {
-        writeFrame({ type: "thinking", data: chunk.text });
-        continue;
-      }
-      if (chunk.type === "text" && chunk.text) {
-        writeFrame({ type: "text", data: chunk.text });
-        continue;
-      }
-      if (chunk.type === "done") {
-        finalUsage = chunk.result?.usage;
-        stopReason = chunk.result?.stopReason ?? "other";
-      }
+      throw error;
     }
 
     writeFrame({

@@ -142,6 +142,45 @@ deadcode_until: []
 - `VITEPRESS_BASE=/agent-build/ DEMO_RUNNER_CLIENT_ENABLED=1 DEMO_RUNNER_BASE_URL=/agent-build/api/demo-runner pnpm site:build` → pass；仅 chunk-size warning。
 - Browser mount check：`http://127.0.0.1:5173/lessons/06-building-a-tool-system/` 中 `.selection-chat-drawer` 与 `.selection-chat-popover` 均已挂载，无 console error。内置浏览器自动化无法产生真实文本 Selection；交互细节由 DOM/stream 单测覆盖。
 
+# Phase 4.1: 提交前对抗式复核 + 手动 E2E（2026-06-11 复核）
+
+## 手动真浏览器 E2E（闭合原缺口）
+
+`pnpm site:live`（runner:5174 + dev:5173 + token 握手），人工在 `localhost:5173` 真实拖选正文：
+
+- ✅ 选区 → popover「对话」浮现；点击 → 右侧 drawer 打开（引用选区 + 输入框 + 发送/停止）。
+- ✅ 输入问题 → 真实 SiliconFlow 流式逐字渲染 → `回答完成。`。
+- ✅ 选代码块不触发 popover；SPA 路由切章后再选仍正常（不漏绑/不残留）。
+- ✅ 监控期间 runner 无报错。
+
+原 Phase 4 遗留的「真实文本 Selection 交互未端到端验证」缺口由此闭合。
+
+## 对抗式多视角复核（4 视角并行 → 每条 finding 验真）
+
+P0=0。确认 1×P1 + 5×P2，驳回 1（生产 gate 退化为 Host+header——既有设计、非本功能引入、security.test 已固化）。
+
+| # | 等级 | 文件 | 问题 | 处置 |
+|---|------|------|------|------|
+| 1 | P1 | selection-chat.ts | drawer 打开后改选正文，提交发的是新选区而非钉住摘要→静默答错段落 | ✅ 修：`drawerSelectedText` 作 SoT，`streamSelectionChat` 显式收 `selectedText` 参 |
+| 2 | P2 | selection-chat.ts | error/坏帧抛错时 reader 泄漏（无 try/finally） | ✅ 修：读循环 try/finally + `reader.cancel()` |
+| 3 | P2 | selection-chat.ts | error/abort 时已流式部分回答丢出历史 | ✅ 修：finally 内按非空回答补录 assistant turn（在追加错误文案前快照） |
+| 4 | P2 | server.mts | 单飞守卫 TOCTOU：`await readJsonBody` 前未抢锁→并发双流 | ✅ 修：await 前同步抢 AbortController（镜像 /api/run），校验失败释放 |
+| 5 | P2 | selection-chat.mts + src/shared/llm/* | abort 未把 signal 传给 SDK→上游 LLM 请求不取消 | ✅ 修（用户拍板当轮做）：`ChatOptions` 加 `signal?: AbortSignal`，openai/anthropic 转发给 SDK 请求选项；handler 传 `signal` 并吞掉 intentional abort，re-throw 其余 |
+| 6 | P2 | selection-chat.ts | `/api/stop` 跨杀 demo run 与 selection chat | ✅ 修：删 stopCurrentChat 里冗余 `/api/stop` POST（本地 abort 经 server `res.on("close")` 已端到端拆流） |
+| 7 | P2 | selection-chat.ts | client 无视 `__DEMO_RUNNER_CLIENT_ENABLED__` gate 无条件挂载 | ✅ 修：`isSelectionChatEnabled()` 对齐 demo-runner client 启用契约 |
+
+## 复核后回归
+
+- no-Vue 扫描：clean。
+- `node node_modules/tsx/dist/cli.mjs .vitepress/theme/selection-chat.test.mts` → ok。
+- `node node_modules/tsx/dist/cli.mjs scripts/demo-runner/selection-chat.test.mts` → ok。
+- `node node_modules/tsx/dist/cli.mjs scripts/demo-runner/security.test.mts` → ok。
+- `node node_modules/tsx/dist/cli.mjs .vitepress/theme/demo-runner/client.test.mts` → ok。
+- `node node_modules/typescript/bin/tsc -p scripts/demo-runner/tsconfig.json` → ok。
+- `pnpm typecheck` → ok（覆盖 #5 的 `src/shared/llm/*` SDK 签名改动）。
+- `pnpm site:build`（`/agent-build/` base + runner client enabled）→ ok。
+- 注：#1/#2/#3/#6 为纯 DOM 行为，单测未覆盖（无 jsdom/Playwright，用户选择不装依赖）；由代码复核 + 手动 E2E 兜底。#5 的 abort 取消上游路径由 typecheck 守签名，运行期取消行为属 SDK 契约。
+
 # Phase 5: Compound
 
 ## Knowledge
