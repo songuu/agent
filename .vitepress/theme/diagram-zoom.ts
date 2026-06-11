@@ -45,7 +45,23 @@ const initializedDiagrams = new WeakSet<HTMLElement>();
 const pendingDiagrams = new WeakMap<HTMLElement, number>();
 
 if (typeof window !== "undefined") {
-  installZoomableDiagrams();
+  scheduleZoomableDiagramsInstall();
+}
+
+function scheduleZoomableDiagramsInstall(): void {
+  // VitePress hydrates the SSR document after theme imports; mutating Mermaid before that
+  // makes Vue reconcile away the toolbar/surface and leaves only a raw SVG wrapper.
+  const installAfterHydration = () => {
+    window.setTimeout(() => {
+      window.requestAnimationFrame(() => installZoomableDiagrams());
+    }, 0);
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", installAfterHydration, { once: true });
+    return;
+  }
+  installAfterHydration();
 }
 
 function installZoomableDiagrams(): void {
@@ -100,33 +116,56 @@ function upgradeMermaidDiagram(diagram: HTMLElement): void {
   const zoomInButton = createZoomButton("+", "放大");
   const expandButton = createZoomButton("⤢", "全屏查看");
   expandButton.classList.add("diagram-zoom-expand");
-  expandButton.addEventListener("click", () => openDiagramOverlay(diagram));
   toolbar.append(zoomOutButton, resetButton, zoomInButton, expandButton);
+
+  const content = document.createElement("div");
+  content.className = "diagram-zoom-content";
 
   const parent = diagram.parentElement;
   if (!parent) return;
   parent.insertBefore(viewport, diagram);
   viewport.append(toolbar, surface);
-  surface.append(diagram);
-  diagram.classList.add("diagram-zoom-content");
-  normalizeDiagramSvgSize(diagram);
+  surface.append(content);
+  diagram.hidden = true;
+  diagram.setAttribute("aria-hidden", "true");
+
+  const syncDiagramContent = () => {
+    const sourceSvg = diagram.querySelector<SVGSVGElement>("svg");
+    if (!sourceSvg) return false;
+    content.replaceChildren(sourceSvg.cloneNode(true));
+    normalizeDiagramSvgSize(content);
+    return true;
+  };
+  if (!syncDiagramContent()) return;
+  expandButton.addEventListener("click", () => openDiagramOverlay(content));
 
   const state: ZoomState = { scale: 1, x: 0, y: 0 };
   let dragStart: { pointerId: number; clientX: number; clientY: number; x: number; y: number } | undefined;
   let hasUserTransform = false;
+  let syncFrame: number | undefined;
   // 最近一次测得的（未变换）内容边界，供 apply() 实时判定是否溢出、刷新「可拖动看更多」提示。
   let lastBounds: DiagramBounds | undefined;
 
   const apply = () => {
-    diagram.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+    content.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
     resetButton.textContent = `${Math.round(state.scale * 100)}%`;
     updateOverflowAffordance(surface, state, lastBounds);
   };
 
   const fitToSurface = (contentRect?: DOMRectReadOnly) => {
-    lastBounds = fitDiagramToSurface(surface, diagram, state, contentRect);
+    lastBounds = fitDiagramToSurface(surface, content, state, contentRect);
     apply();
   };
+
+  const sourceObserver = new MutationObserver(() => {
+    if (syncFrame !== undefined) return;
+    syncFrame = window.requestAnimationFrame(() => {
+      syncFrame = undefined;
+      if (!syncDiagramContent() || hasUserTransform) return;
+      fitToSurface();
+    });
+  });
+  sourceObserver.observe(diagram, { childList: true, subtree: true });
 
   const zoomBy = (delta: number, origin?: { x: number; y: number }) => {
     const nextScale = clamp(state.scale + delta, MIN_SCALE, MAX_SCALE);

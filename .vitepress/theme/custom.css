@@ -60,7 +60,8 @@
 }
 
 /* 字号下限：不依赖 mermaid 主题，保证流程图/思维导图默认就清晰可读。 */
-.vp-doc .mermaid svg {
+.vp-doc .mermaid svg,
+.diagram-zoom-content svg {
   font-size: 15px;
 }
 
@@ -68,7 +69,12 @@
 .vp-doc .mermaid .edgeLabel,
 .vp-doc .mermaid .cluster-label,
 .vp-doc .mermaid span.nodeLabel,
-.vp-doc .mermaid p {
+.vp-doc .mermaid p,
+.diagram-zoom-content .nodeLabel,
+.diagram-zoom-content .edgeLabel,
+.diagram-zoom-content .cluster-label,
+.diagram-zoom-content span.nodeLabel,
+.diagram-zoom-content p {
   font-size: 15px;
   font-weight: 600;
   line-height: 1.4;
@@ -78,13 +84,19 @@
 .vp-doc .mermaid .node rect,
 .vp-doc .mermaid .node circle,
 .vp-doc .mermaid .node polygon,
-.vp-doc .mermaid .node path {
+.vp-doc .mermaid .node path,
+.diagram-zoom-content .node rect,
+.diagram-zoom-content .node circle,
+.diagram-zoom-content .node polygon,
+.diagram-zoom-content .node path {
   stroke-width: 1.6px;
 }
 
 /* 边标签底色，避免连线穿过文字看不清（暗色尤甚）。 */
 .vp-doc .mermaid .edgeLabel,
-.vp-doc .mermaid .edgeLabel p {
+.vp-doc .mermaid .edgeLabel p,
+.diagram-zoom-content .edgeLabel,
+.diagram-zoom-content .edgeLabel p {
   padding: 1px 4px;
   border-radius: 4px;
   background: color-mix(in srgb, var(--vp-c-bg) 88%, transparent);
@@ -115,6 +127,21 @@
   border-radius: 8px;
   background: color-mix(in srgb, var(--vp-c-bg) 92%, transparent);
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.1);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.diagram-zoom-viewport:has(.diagram-zoom-content:hover) > .diagram-zoom-toolbar,
+.diagram-zoom-viewport:has(.diagram-zoom-toolbar:hover) > .diagram-zoom-toolbar,
+.diagram-zoom-viewport:focus-within > .diagram-zoom-toolbar,
+.diagram-zoom-overlay-panel:has(.diagram-zoom-content:hover) > .diagram-zoom-toolbar,
+.diagram-zoom-overlay-panel:has(.diagram-zoom-toolbar:hover) > .diagram-zoom-toolbar,
+.diagram-zoom-overlay-panel:focus-within > .diagram-zoom-toolbar {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
 }
 
 .diagram-zoom-button {
