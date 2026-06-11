@@ -179,6 +179,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
     items: [
       { text: "💼 求职指南", link: "/docs/career-guide" },
       { text: "🚀 创业指南", link: "/docs/startup-guide" },
+      { text: "🧭 RAG 完整架构蓝图", link: "/docs/rag-architecture" },
       { text: "📚 RAG 系统实战项目", link: "/docs/rag-system-project" },
     ],
   },
@@ -334,6 +335,7 @@ export default withMermaid(
           items: [
             { text: "💼 求职指南", link: "/docs/career-guide" },
             { text: "🚀 创业指南", link: "/docs/startup-guide" },
+            { text: "🧭 RAG 完整架构", link: "/docs/rag-architecture" },
             { text: "📚 RAG 系统实战", link: "/docs/rag-system-project" },
           ],
         },

@@ -32,3 +32,10 @@
 - `/api/selection-chat` must stay behind the same Host, Origin, `X-Demo-Runner`, and optional token gate as `/api/run`.
 - Selection chat streams `thinking`, `text`, `done`, and `error` frames over NDJSON. The UI may show upstream-provided thinking, but must not invent hidden chain-of-thought.
 - Runner-side chat code should not static-import `src/shared/llm/index.js` from the runner tsconfig boundary; use a narrow runtime import to avoid pulling shared source into NodeNext runner compilation.
+
+## 2026-06-11 diagram zoom: contain-fit + fullscreen overlay (no column breakout)
+
+- Initial diagram view uses a `contain` fit (`calculateDiagramFit`: fit both axes, centered, legibility floor 0.5) — chosen over the earlier "open at 100% and overflow" policy after the user asked to maximize visible content. Detail reading is delegated to toolbar zoom/pan and the fullscreen overlay, not to a large inline default scale.
+- "Make wide diagrams bigger" is solved by a **fullscreen overlay** (`openDiagramOverlay`: clone the SVG into a viewport-covering modal with isolated zoom/pan, `calculateContainedFit`), NOT by breaking the diagram out of the prose column. Rationale: VitePress 1.6.4 default layout puts the content column left-aligned against the sidebar (`.content { margin: 0 }` at ≥1280px) with the TOC `.aside` fixed immediately to its right — there is no safe horizontal whitespace beside the column, so any negative-margin breakout overlaps the sidebar or TOC. The overlay touches only the diagram and has zero layout-collision surface.
+- The overlay is deliberately isolated from the inline zoom code (separate state, no shared `ResizeObserver`) to avoid DOM state races; it is a short-lived modal with explicit listener teardown, scroll lock, focus trap, and an idempotent `close()`.
+- `calculateDiagramFit` (inline, auto-resizes panel height) and `calculateContainedFit` (overlay, fixed box) are both pure and unit-tested in `diagram-zoom.test.mts`; keep fit math pure/deterministic and keep DOM glue thin.

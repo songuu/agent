@@ -1,11 +1,11 @@
 # RAG 系统实战项目 · songuu/rag-system
 
 > 项目链接：[songuu/rag-system](https://github.com/songuu/rag-system)
-> 全局导航：[课程导航](./navigation.md) · [完整大纲](./curriculum.md) · [知识图谱](./knowledge-graph.md)
+> 全局导航：[课程导航](./navigation.md) · [完整大纲](./curriculum.md) · [RAG 完整架构蓝图](./rag-architecture.md) · [知识图谱](./knowledge-graph.md)
 
 本课程的第 08/09 章先用最小代码讲清 RAG 原理；**仓库内的 [进阶 RAG 专题（rag-advanced）](../rag-advanced/01-chunking-strategies/README.md)** 再把它补成生产级（分块策略、混合检索、重排、查询改写、评估、生产化六章，能力沉淀在 `src/shared/rag/`）；毕业项目把 RAG 放进一个 Deep Research Agent 里。在此之上，`songuu/rag-system` 是更适合作为**独立作品集项目**和**生产化 RAG 系统样板**的下一站。
 
-> 简言之：**第 08/09 章理解 RAG → 进阶 RAG 专题在本仓库内做到生产级 → `songuu/rag-system` 沉淀为独立作品集项目。**
+> 简言之：**第 08/09 章理解 RAG → 进阶 RAG 专题在本仓库内做到生产级 → [RAG 完整架构蓝图](./rag-architecture.md) 建系统边界 → `songuu/rag-system` 沉淀为独立作品集项目。**
 
 ## 它在课程里的位置
 
@@ -13,11 +13,16 @@
 flowchart LR
   A["08 Embedding 与向量检索"] --> B["09 从零实现 RAG"]
   B --> R["进阶 RAG 专题 (rag-advanced)"]
-  R --> C["毕业项目: Deep Research Agent"]
-  R --> D["songuu/rag-system"]
+  R --> X["RAG 完整架构蓝图"]
+  X --> C["毕业项目: Deep Research Agent"]
+  X --> D["songuu/rag-system"]
   C --> D
   D --> E["生产级知识库 / 文档问答 / RAG 产品"]
 ```
+
+## 先看哪份架构
+
+如果你只是想补齐课程知识，按 `rag-advanced` 六章走完即可；如果你要把 RAG 做成作品集或产品，先读 [RAG 完整架构蓝图](./rag-architecture.md)。它把系统拆成写入路径、查询路径、数据模型、API 边界、安全治理、评估闭环和部署拓扑，作用是把“能跑 demo”变成“能长期维护的系统”。
 
 ## 为什么需要单独接入这个项目
 
@@ -47,8 +52,9 @@ flowchart LR
 1. 先读 [第 08 章 · Embedding 与向量检索](../lessons/08-embeddings-and-vector-search/README.md)。
 2. 再读 [第 09 章 · 从零实现 RAG](../lessons/09-rag-from-scratch/README.md)。
 3. 走一遍 [进阶 RAG 专题（rag-advanced）](../rag-advanced/01-chunking-strategies/README.md) 六章：分块策略 → 混合检索 → 召回-精排 → 查询改写 → 评估 → 生产化，把最小 RAG 升到生产级。
-4. 跑通 [毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md)，看 RAG 如何作为工具接入 agent。
-5. 打开 [songuu/rag-system](https://github.com/songuu/rag-system)，重点对照这些模块:
+4. 阅读 [RAG 完整架构蓝图](./rag-architecture.md)，把 ingestion、retrieval、rerank、context builder、generation、eval、governance 和 deployment 的边界画清楚。
+5. 跑通 [毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md)，看 RAG 如何作为工具接入 agent。
+6. 打开 [songuu/rag-system](https://github.com/songuu/rag-system)，重点对照这些模块:
    - 文档导入与解析；
    - chunk 策略；
    - embedding 与向量存储；
