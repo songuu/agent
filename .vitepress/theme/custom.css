@@ -137,7 +137,7 @@
 .diagram-zoom-surface {
   position: relative;
   display: grid;
-  height: clamp(180px, 40vw, 460px);
+  height: clamp(200px, 44vw, 520px);
   min-height: 0;
   overflow: hidden;
   padding: 0;
@@ -164,6 +164,76 @@
 .diagram-zoom-content svg {
   display: block;
   max-width: none;
+}
+
+/* 溢出渐隐提示：内容在某轴超出画布时，对应边缘淡出，提示「可拖动看更多」，不静默裁切。
+   绝对定位脱离 surface 的 grid 居中；pointer-events:none 保证不挡拖动；z-index 低于工具栏。 */
+.diagram-zoom-surface::before,
+.diagram-zoom-surface::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.diagram-zoom-surface::before {
+  inset: 0 0 0 auto;
+  width: 56px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--vp-c-bg) 80%, transparent));
+}
+
+.diagram-zoom-surface::after {
+  inset: auto 0 0 0;
+  height: 46px;
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--vp-c-bg) 80%, transparent));
+}
+
+.diagram-zoom-surface.has-overflow-x::before {
+  opacity: 1;
+}
+
+.diagram-zoom-surface.has-overflow-y::after {
+  opacity: 1;
+}
+
+/* 全屏弹层：覆盖全视口的遮罩 + 居中大面板，图表在里面 contain 到最大、可缩放拖拽。
+   仅放大图表本身，不动正文列布局，不与侧边栏/TOC 冲突。z-index 高于导航栏。 */
+.diagram-zoom-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: clamp(16px, 4vw, 48px);
+  background: color-mix(in srgb, var(--vp-c-bg) 68%, rgba(0, 0, 0, 0.74));
+}
+
+.diagram-zoom-overlay-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(1400px, 96vw);
+  height: min(900px, 90vh);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  background: var(--vp-c-bg-soft);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+/* 复用 .diagram-zoom-surface 的 grid 居中/overflow/拖拽，但高度改为铺满面板（盖掉 clamp 高度）。
+   选择器用两层类提高优先级，盖过移动端 @media 里同名单类的 .diagram-zoom-surface 高度（否则手机上
+   弹层面板被压成 ≤320px 带状，失去全屏意义）。 */
+.diagram-zoom-overlay-panel .diagram-zoom-overlay-surface {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+}
+
+.diagram-zoom-close {
+  font-weight: 700;
 }
 
 .VPSidebarItem.level-1.is-active > .item .text {
@@ -1158,6 +1228,11 @@
 
 @media (prefers-reduced-motion: reduce) {
   .selection-chat-drawer {
+    transition: none;
+  }
+
+  .diagram-zoom-surface::before,
+  .diagram-zoom-surface::after {
     transition: none;
   }
 
