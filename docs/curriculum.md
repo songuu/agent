@@ -206,7 +206,7 @@
 | # | 标题 | 难度 | 预计 | 一句话简介 | 链接 |
 |---|------|------|------|------------|------|
 | 10 | 推理范式 | ⭐⭐⭐ | 90 分钟 | ReAct / Plan-Execute / Reflection 三种范式对比，知道何时该用哪一种 | [../lessons/10-reasoning-patterns/README.md](../lessons/10-reasoning-patterns/README.md) |
-| 11 | 多智能体编排 | ⭐⭐⭐⭐ | 120 分钟 | supervisor + worker 协作模式，让多个 agent 分工完成复杂任务 | [../lessons/11-multi-agent-orchestration/README.md](../lessons/11-multi-agent-orchestration/README.md) |
+| 11 | 多智能体编排 | ⭐⭐⭐⭐ | 120 分钟 | 从手写 supervisor-worker 到 Claude Code / Codex / Agents SDK 的现代多 agent 编排实践 | [../lessons/11-multi-agent-orchestration/README.md](../lessons/11-multi-agent-orchestration/README.md) |
 
 ### 第五部分 · 工程化与框架
 

@@ -92,7 +92,10 @@
 
 .diagram-zoom-viewport {
   position: relative;
+  width: 100%;
+  max-width: 100%;
   margin: 18px 0;
+  overflow: hidden;
   border: 1px solid var(--vp-c-divider);
   border-radius: 8px;
   background:
@@ -137,6 +140,8 @@
 .diagram-zoom-surface {
   position: relative;
   display: grid;
+  width: 100%;
+  max-width: 100%;
   height: clamp(200px, 44vw, 520px);
   min-height: 0;
   overflow: hidden;
@@ -164,6 +169,7 @@
 .diagram-zoom-content svg {
   display: block;
   max-width: none;
+  overflow: hidden;
 }
 
 /* 溢出渐隐提示：内容在某轴超出画布时，对应边缘淡出，提示「可拖动看更多」，不静默裁切。

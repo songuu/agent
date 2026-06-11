@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **26** 个单元、**165** 个概念、**235** 条关系、**36** 篇关联文章。
+共 **26** 个单元、**171** 个概念、**243** 条关系、**43** 篇关联文章。
 
 ## 章节地图
 
@@ -162,12 +162,18 @@ graph LR
     n_c10_scratchpad["scratchpad 滚动上下文"]
     n_c10_cost_tradeoff["步数/成本/可靠性权衡"]
     n_c11_supervisor_worker["Supervisor + Worker 模式"]
+    n_c11_topology_choice["编排拓扑选择"]
     n_c11_supervisor_routing["Supervisor 路由决策"]
     n_c11_worker_specialist["Worker 专才"]
     n_c11_scratchpad["Scratchpad 共享工作台"]
     n_c11_orchestration_loop["编排主循环"]
     n_c11_cost_tradeoff["多 agent 取舍"]
     n_c11_decision_validation["决策容错校验"]
+    n_c11_subagent_workflow["Subagent workflow"]
+    n_c11_agent_team["Agent team"]
+    n_c11_worktree_isolation["Worktree 隔离写入"]
+    n_c11_handoff_agent_tool["Handoff vs Agent-as-tool"]
+    n_c11_approval_observability["审批与可观测"]
   end
   subgraph G4["第五部分 · 工程化与框架"]
     n_c12_why_frameworks["为什么生产要上框架"]
@@ -348,11 +354,19 @@ graph LR
   n_c10_cost_tradeoff -->|应用| n_c10_reflection
   n_c11_supervisor_worker -->|组成| n_c11_supervisor_routing
   n_c11_supervisor_worker -->|组成| n_c11_worker_specialist
+  n_c11_topology_choice -->|前置| n_c11_supervisor_worker
+  n_c11_topology_choice -->|组成| n_c11_subagent_workflow
+  n_c11_topology_choice -->|组成| n_c11_agent_team
+  n_c11_topology_choice -->|组成| n_c11_worktree_isolation
+  n_c11_topology_choice -->|组成| n_c11_handoff_agent_tool
   n_c11_supervisor_routing -->|深化| n_c11_decision_validation
   n_c11_orchestration_loop -->|应用| n_c11_supervisor_routing
   n_c11_orchestration_loop -->|应用| n_c11_scratchpad
   n_c11_scratchpad -->|应用| n_c11_worker_specialist
-  n_c11_cost_tradeoff -->|前置| n_c11_supervisor_worker
+  n_c11_cost_tradeoff -->|前置| n_c11_topology_choice
+  n_c11_approval_observability -->|应用| n_c11_subagent_workflow
+  n_c11_approval_observability -->|应用| n_c11_agent_team
+  n_c11_approval_observability -->|应用| n_c11_handoff_agent_tool
   n_c12_why_frameworks -->|应用| n_c12_vercel_ai_sdk
   n_c12_why_frameworks -->|应用| n_c12_langgraph
   n_c12_vercel_ai_sdk -->|组成| n_c12_max_steps
@@ -578,13 +592,19 @@ graph LR
 | zod 计划契约 | [10 推理范式](../lessons/10-reasoning-patterns/README.md) | 用 schema 强校验把 LLM 计划固化为可程序消费的数据 |
 | scratchpad 滚动上下文 | [10 推理范式](../lessons/10-reasoning-patterns/README.md) | 每步结论喂给下一步，让后续步骤站在前面的肩膀上 |
 | 步数/成本/可靠性权衡 | [10 推理范式](../lessons/10-reasoning-patterns/README.md) | 按调用次数与稳定性三轴为任务选范式，三者可组合 |
-| Supervisor + Worker 模式 | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 协调者只决策派活/结束，worker 是按职责裁剪的专才 |
-| Supervisor 路由决策 | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 一次结构化 JSON 的 LLM 调用，决定派给谁或 done |
+| Supervisor + Worker 模式 | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 协调者只决策派活/结束，worker 是按职责裁剪上下文、工具和权限的专才 |
+| 编排拓扑选择 | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 按单 agent、subagent、agent team、worktree、handoff、agent-as-tool 选择最小可控拓扑 |
+| Supervisor 路由决策 | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 一次结构化 JSON 的 LLM 调用，决定派给谁、是否并行或 done |
 | Worker 专才 | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 独立 system prompt 与按职责裁剪的工具，输入子任务输出文本 |
 | Scratchpad 共享工作台 | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 累积各 worker 产出，让结果在 agent 间流动 |
 | 编排主循环 | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 决策→派活→回写→再决策，maxRounds 防死循环 |
 | 多 agent 取舍 | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 聚焦/可维护 vs token/复杂度，过载且边界清晰才拆 |
 | 决策容错校验 | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 宽容提取 JSON + zod 校验，失败退化为安全默认值 |
+| Subagent workflow | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 把读多写少的探索、日志、测试、审查移出主线程，再回传摘要 |
+| Agent team | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 多个独立会话通过 lead、task list、mailbox 协作，适合需要互相质询的任务 |
+| Worktree 隔离写入 | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 写代码并行前先隔离分支、目录和文件边界，降低冲突成本 |
+| Handoff vs Agent-as-tool | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | handoff 让 specialist 接管对话，agent-as-tool 让 manager 保持最终控制 |
+| 审批与可观测 | [11 多智能体编排](../lessons/11-multi-agent-orchestration/README.md) | 用 sandbox、approval、guardrails、traces、evals 控制副作用和回归风险 |
 | 为什么生产要上框架 | [12 上框架：LangGraph.js 与 Vercel AI SDK](../lessons/12-intro-to-frameworks/README.md) | 手写够学原理，生产需状态/持久化/恢复/流式/可观测等重活标准化 |
 | Vercel AI SDK | [12 上框架：LangGraph.js 与 Vercel AI SDK](../lessons/12-intro-to-frameworks/README.md) | 把 agent 看作一次带工具的文本生成，轻量、流式、贴近前端 |
 | maxSteps 自动工具循环 | [12 上框架：LangGraph.js 与 Vercel AI SDK](../lessons/12-intro-to-frameworks/README.md) | generateText 一个参数替代第06章整段手写工具 for 循环 |
@@ -683,7 +703,7 @@ graph LR
 
 | 文章 | 类型 | 关联章节 | 说明 |
 | --- | --- | --- | --- |
-| [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) | doc | 01, 11, 19 | Anthropic 官方工程博客，系统讲解 Agent 的循环、工具与何时该用 Agent，与本章心智模型高度对应 |
+| [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) | doc | 01, 19 | Anthropic 官方工程博客，系统讲解 Agent 的循环、工具与何时该用 Agent，与本章心智模型高度对应 |
 | [Anthropic Messages API 文档](https://docs.anthropic.com/en/api/messages) | doc | 02 | Claude 的 messages.create 接口，对应本章 chat() 的底层 |
 | [OpenAI Chat Completions API 文档](https://platform.openai.com/docs/api-reference/chat) | doc | 02 | OpenAI 的 chat.completions.create 接口，本章 provider 抽象的另一实现 |
 | [Chain-of-Thought Prompting Elicits Reasoning in Large Language Models](https://arxiv.org/abs/2201.11903) | paper | 03 | 思维链 (CoT) 的奠基论文，对应本章实验三 |
@@ -697,6 +717,13 @@ graph LR
 | [Vector embeddings - OpenAI API documentation](https://platform.openai.com/docs/guides/embeddings) | doc | 08 | 本章 embedding 默认调用 OpenAI text-embedding-3-small，官方指南 |
 | [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401) | paper | 09, capstone | RAG 原始论文 (Lewis et al., 2020)，提出检索增强生成范式 |
 | [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366) | paper | 10 | Reflection/自我反思修正的代表性论文 |
+| [Claude Code Docs · Orchestrate teams of Claude Code sessions](https://code.claude.com/docs/en/agent-teams) | doc | 11 | Claude Code 官方 agent teams 文档：team lead、teammates、共享任务列表、mailbox、hooks 与限制 |
+| [Codex Docs · Subagents](https://developers.openai.com/codex/subagents) | doc | 11 | OpenAI Codex 官方 subagent workflows 文档：显式 spawn、线程管理、sandbox/approval 继承与 custom agents |
+| [OpenAI Agents SDK · Orchestration and handoffs](https://developers.openai.com/api/docs/guides/agents/orchestration) | doc | 11 | OpenAI 官方 Agents SDK 编排文档：handoff 与 agent-as-tool 的选择边界 |
+| [Claude Code Docs · Create custom subagents](https://code.claude.com/docs/en/sub-agents) | doc | 11 | Claude Code 官方 subagents 文档：独立上下文、工具权限、自动/显式委派与上下文隔离 |
+| [Codex Docs · Custom instructions with AGENTS.md](https://developers.openai.com/codex/guides/agents-md) | doc | 11 | OpenAI Codex 官方 AGENTS.md 文档：全局、项目、子目录指令链与覆盖规则 |
+| [OpenAI Agents SDK · Guardrails and human review](https://developers.openai.com/api/docs/guides/agents/guardrails-approvals) | doc | 11 | OpenAI 官方：guardrails 与 human-in-the-loop approvals 控制敏感工具和副作用 |
+| [OpenAI Agents SDK · Integrations and observability](https://developers.openai.com/api/docs/guides/agents/integrations-observability) | doc | 11 | OpenAI 官方：tracing 记录 model calls、tool calls、handoffs、guardrails 与 custom spans |
 | [Vercel AI SDK 官方文档](https://sdk.vercel.ai/docs) | doc | 12 | generateText / streamText / tool / maxSteps 的权威参考 |
 | [LangGraph.js 官方文档](https://langchain-ai.github.io/langgraphjs/) | doc | 12 | StateGraph / createReactAgent / checkpointer 的权威参考 |
 | [Zod - TypeScript-first schema validation](https://zod.dev/) | doc | 13 | z.object / z.infer / safeParse 官方文档 |

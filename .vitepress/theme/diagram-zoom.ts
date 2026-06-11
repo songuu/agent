@@ -15,6 +15,7 @@ const MIN_CONTAIN_SCALE = 0.5;
 // 全屏弹层：盒子很大，下限放到 MIN_SCALE（优先「整图都装下」），上限 2.5 让小图也能铺满。
 const OVERLAY_MIN_SCALE = MIN_SCALE;
 const OVERLAY_MAX_SCALE = 2.5;
+const SVG_BOUNDS_PADDING = 8;
 
 interface ZoomState {
   scale: number;
@@ -381,9 +382,49 @@ function normalizeDiagramSvgSize(diagram: HTMLElement): void {
   const viewBox = svg?.viewBox.baseVal;
   if (!svg || !viewBox || viewBox.width <= 0 || viewBox.height <= 0) return;
 
-  svg.style.width = `${Math.ceil(viewBox.width)}px`;
-  svg.style.height = `${Math.ceil(viewBox.height)}px`;
+  const bounds = expandSvgViewBoxToVisibleBounds(svg, viewBox) ?? {
+    x: viewBox.x,
+    y: viewBox.y,
+    width: viewBox.width,
+    height: viewBox.height,
+  };
+
+  svg.style.width = `${Math.ceil(bounds.width)}px`;
+  svg.style.height = `${Math.ceil(bounds.height)}px`;
   svg.style.maxWidth = "none";
+  svg.style.overflow = "hidden";
+}
+
+function expandSvgViewBoxToVisibleBounds(
+  svg: SVGSVGElement,
+  viewBox: SVGAnimatedRect["baseVal"],
+): DiagramBounds | undefined {
+  try {
+    const box = svg.getBBox();
+    if (!box || box.width <= 0 || box.height <= 0) return undefined;
+
+    const minX = Math.min(viewBox.x, box.x) - SVG_BOUNDS_PADDING;
+    const minY = Math.min(viewBox.y, box.y) - SVG_BOUNDS_PADDING;
+    const maxX = Math.max(viewBox.x + viewBox.width, box.x + box.width) + SVG_BOUNDS_PADDING;
+    const maxY = Math.max(viewBox.y + viewBox.height, box.y + box.height) + SVG_BOUNDS_PADDING;
+    const bounds = { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+
+    const viewBoxValue = [
+      roundSvgNumber(bounds.x),
+      roundSvgNumber(bounds.y),
+      roundSvgNumber(bounds.width),
+      roundSvgNumber(bounds.height),
+    ].join(" ");
+    svg.setAttribute("viewBox", viewBoxValue);
+    return bounds;
+  } catch {
+    // Mermaid may finish SVG insertion before layout exposes a bbox; viewBox fallback still renders.
+    return undefined;
+  }
+}
+
+function roundSvgNumber(value: number): string {
+  return Number(value.toFixed(3)).toString();
 }
 
 function fitDiagramToSurface(

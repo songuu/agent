@@ -118,10 +118,10 @@ export const CONCEPT_VISUALS: ConceptVisual[] = [
   {
     chapter: "11",
     kind: "loop",
-    title: "多 Agent 编排的核心是路由，而不是人数",
-    summary: "Supervisor 每轮只决定派给谁、带什么上下文、何时结束；Worker 专注做一类子任务。",
-    steps: ["Supervisor 读任务", "选择 Worker", "Worker 产出", "Scratchpad 汇总", "继续或结束"],
-    takeaway: "拆 agent 前先画路由边界，职责不清只会增加噪声。",
+    title: "现代多 Agent 编排先选拓扑，再派 worker",
+    summary: "主线程保留目标、约束和最终判断；subagent、agent team、worktree、handoff 或 agent-as-tool 只在边界清晰时加入。",
+    steps: ["目标与约束", "选择拓扑", "隔离权限", "Worker 产出", "汇总验证", "审批/合并"],
+    takeaway: "拆 agent 前先切任务、上下文、权限、产物和验证边界。",
   },
   {
     chapter: "12",
@@ -287,8 +287,8 @@ const CONCEPT_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> =
     { tone: "warning", label: "易错边界", body: "不要因为范式看起来高级就套用；按成本、可控性和任务不确定性选择。" },
   ],
   "11": [
-    { tone: "core", label: "核心判断", body: "多 Agent 的关键不是人数，而是 supervisor 如何路由任务和收敛上下文。" },
-    { tone: "warning", label: "易错边界", body: "职责不清时拆更多 agent 只会放大噪声、token 成本和调试难度。" },
+    { tone: "core", label: "核心判断", body: "多 Agent 的关键不是人数，而是拓扑、权限、上下文和验证边界是否切清楚。" },
+    { tone: "warning", label: "易错边界", body: "读任务可并行，写任务先隔离；职责不清时拆更多 agent 只会放大噪声和合并成本。" },
   ],
   "12": [
     { tone: "core", label: "核心判断", body: "框架选型先看运行时需求：轻量流式交互选 AI SDK，长流程状态恢复选 LangGraph。" },
