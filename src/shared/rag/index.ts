@@ -58,3 +58,61 @@ export {
   retrievalMetricsAtK,
 } from "./metrics";
 export type { RelevanceSet, RetrievalMetrics } from "./metrics";
+
+// 安全护栏（纯函数：注入检测 / PII 脱敏 / 引用核验）
+export {
+  detectInjection,
+  quarantineInjectedChunks,
+  redactPii,
+  verifyCitations,
+} from "./security";
+export type {
+  InjectionPattern,
+  InjectionFinding,
+  InjectionScanResult,
+  ScannableChunk,
+  QuarantineResult,
+  PiiType,
+  PiiMatch,
+  RedactionResult,
+  CitationCheck,
+} from "./security";
+
+// 向量索引内部机制（纯函数：合成确定向量 / 暴力精确 vs IVF 分桶 ANN / 比较次数计量）
+export {
+  makeSyntheticCorpus,
+  jitterVector,
+  bruteForceSearch,
+  buildIvfIndex,
+  ivfSearch,
+} from "./annIndex";
+export type {
+  IndexedVector,
+  SyntheticVector,
+  SyntheticCorpusOptions,
+  SyntheticCorpus,
+  SearchResult,
+  IvfIndex,
+  BuildIvfOptions,
+} from "./annIndex";
+
+// 检索后上下文工程（纯函数：近重复去重 / 抽取式压缩 / 预算内打包 / 位置注意力重排，全离线确定）
+export {
+  makeContextCorpus,
+  dedupeChunks,
+  jaccardSimilarity,
+  compressChunk,
+  positionalWeights,
+  effectiveRelevance,
+  reorderForAttention,
+  packWithinBudget,
+} from "./contextAssembly";
+export type {
+  ContextChunk,
+  DedupeOptions,
+  DroppedDuplicate,
+  DedupeResult,
+  CompressResult,
+  PackOptions,
+  PackResult,
+} from "./contextAssembly";

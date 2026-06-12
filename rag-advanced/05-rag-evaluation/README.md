@@ -164,7 +164,7 @@ npx tsx rag-advanced/05-rag-evaluation/index.ts
 > 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
 
 ```mermaid
-graph LR
+graph TB
   classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
   classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_crageval_llm_judge_rag["RAG 的 LLM-as-judge"]
@@ -175,6 +175,8 @@ graph LR
   n_c15_llm_judge["LLM-as-judge（第15章）"]
   n_c09_hallucination_reduction["幻觉抑制与 A/B 对比（第09章）"]
   n_c15_eval_harness["评估框架 runEval（第15章）"]
+  n_cragidx_recall_at_scale["近似召回度量（第rag-index章）"]
+  n_cragctx_lost_in_middle["中间遗忘 (lost-in-the-middle)（第rag-context章）"]
   n_crageval_llm_judge_rag -->|组成| n_crageval_context_relevance
   n_crageval_llm_judge_rag -->|组成| n_crageval_faithfulness
   n_crageval_llm_judge_rag -->|组成| n_crageval_answer_relevance
@@ -183,8 +185,10 @@ graph LR
   n_crageval_llm_judge_rag -->|深化| n_c15_llm_judge
   n_crageval_faithfulness -->|深化| n_c09_hallucination_reduction
   n_crageval_stage_localization -->|应用| n_c15_eval_harness
+  n_cragidx_recall_at_scale -->|应用| n_crageval_context_relevance
+  n_cragctx_lost_in_middle -->|应用| n_crageval_answer_relevance
   class n_crageval_llm_judge_rag,n_crageval_context_relevance,n_crageval_faithfulness,n_crageval_answer_relevance,n_crageval_stage_localization own;
-  class n_c15_llm_judge,n_c09_hallucination_reduction,n_c15_eval_harness cross;
+  class n_c15_llm_judge,n_c09_hallucination_reduction,n_c15_eval_harness,n_cragidx_recall_at_scale,n_cragctx_lost_in_middle cross;
   linkStyle 0 stroke:#d97706,stroke-width:2px;
   linkStyle 1 stroke:#d97706,stroke-width:2px;
   linkStyle 2 stroke:#d97706,stroke-width:2px;
@@ -193,6 +197,8 @@ graph LR
   linkStyle 5 stroke:#7c3aed,stroke-width:2px;
   linkStyle 6 stroke:#7c3aed,stroke-width:2px;
   linkStyle 7 stroke:#059669,stroke-width:2px;
+  linkStyle 8 stroke:#059669,stroke-width:2px;
+  linkStyle 9 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -200,6 +206,8 @@ graph LR
 - `RAG 的 LLM-as-judge` —**深化**→ `LLM-as-judge`（第 15 章）
 - `忠实度` —**深化**→ `幻觉抑制与 A/B 对比`（第 09 章）
 - `按指标定位坏环` —**应用**→ `评估框架 runEval`（第 15 章）
+- `近似召回度量` —**应用**→ `上下文相关性`（第 rag-index 章）
+- `中间遗忘 (lost-in-the-middle)` —**应用**→ `答案相关性`（第 rag-context 章）
 
 ### 延伸阅读
 

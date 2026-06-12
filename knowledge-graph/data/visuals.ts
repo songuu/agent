@@ -243,6 +243,30 @@ export const CONCEPT_VISUALS: ConceptVisual[] = [
     steps: ["Ingest", "Parse", "Index", "Permission filter", "Retrieve", "Observe"],
     takeaway: "生产 RAG 的难点不是一次问答，而是长期更新和边界隔离。",
   },
+  {
+    chapter: "rag-security",
+    kind: "shield",
+    title: "RAG 安全是套在检索面上的三道确定性防线",
+    summary: "检索来的外部内容默认不可信：先检测注入指令并隔离，再脱敏 PII，最后核验引用是否真有来源，三道纯函数防线层层收口。",
+    steps: ["检索片段(不可信)", "注入检测/隔离", "PII 出口脱敏", "引用可核验", "安全上下文"],
+    takeaway: "RAG 的攻击面在「检索内容」；先上确定性护栏，再谈模型对齐。",
+  },
+  {
+    chapter: "rag-index",
+    kind: "pipeline",
+    title: "索引的本质：把全库扫描换成只看几个桶",
+    summary: "暴力检索逐条比全库（O(N)）；IVF 先把向量按邻近分桶，查询只比最近的几个桶——用一点点召回换数量级的比较次数下降。",
+    steps: ["全库聚类分桶", "查询比质心", "只钻 nprobe 桶", "桶内取 top-k", "金标算 recall"],
+    takeaway: "ANN 不是更聪明的精确，而是用可控召回损失换速度；nprobe 就是那个旋钮。",
+  },
+  {
+    chapter: "rag-context",
+    kind: "pipeline",
+    title: "上下文工程：把检索结果装配成最省、最好读的提示",
+    summary: "检索到 ≠ 用得上：先去重删整片冗余、压缩裁超长、按 token 预算挑子集，再把最该读的片段放到首尾——对抗模型「中间遗忘」(lost-in-the-middle)。",
+    steps: ["多路检索片段", "近重复去重", "超长片段压缩", "预算内打包", "按注意力重排", "装配最终上下文"],
+    takeaway: "上下文工程是确定性纯函数：去重/压缩/预算/重排各司其职，把召回结果装配成最省、最好读的提示。",
+  },
 ];
 
 const CONCEPT_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> = {
@@ -349,6 +373,18 @@ const CONCEPT_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> =
   "rag-prod": [
     { tone: "core", label: "核心判断", body: "生产化 RAG 是持续入库、权限过滤、检索精排、评估观测的长期系统。" },
     { tone: "warning", label: "易错边界", body: "一次 demo 问答不代表生产可用；更新、权限、失败恢复和监控才是主战场。" },
+  ],
+  "rag-security": [
+    { tone: "core", label: "核心判断", body: "RAG 把外部文档塞进提示，等于把不可信数据递到模型嘴边；检测注入、脱敏 PII、核验引用都该是确定性纯函数。" },
+    { tone: "warning", label: "易错边界", body: "别指望模型自觉拒绝投毒内容或不泄露 PII；护栏要在进出检索的边界上代码强制，且可审计。" },
+  ],
+  "rag-index": [
+    { tone: "core", label: "核心判断", body: "索引的本质是缩小比较集合：与其和全库每条算相似度，不如先用分桶/图把候选缩到一小撮，再精确排序。" },
+    { tone: "warning", label: "易错边界", body: "ANN 是近似——nprobe/efSearch 太小会漏掉真正的最近邻；上线前必须拿暴力结果当金标量召回，别只看延迟。" },
+  ],
+  "rag-context": [
+    { tone: "core", label: "核心判断", body: "检索到 ≠ 用得上：上下文要在 token 预算内去重、压缩、挑子集，再按位置注意力把最该读的放到首尾——这些都是确定性纯函数，不是玄学。" },
+    { tone: "warning", label: "易错边界", body: "别无脑塞满窗口：塞满 ≠ 读懂。高分重复会挤掉唯一信息、长文吃光预算、关键证据埋中部被「中间遗忘」忽略；每多塞一段都付 token 成本。" },
   ],
 };
 

@@ -230,6 +230,8 @@ graph TB
   n_craghybrid_bm25["BM25 关键词打分（第rag-hybrid章）"]
   n_cragquery_hyde["HyDE 假设答案检索（第rag-query章）"]
   n_cragprod_persistence["向量库持久化（第rag-prod章）"]
+  n_cragidx_brute_force["暴力精确检索（第rag-index章）"]
+  n_cragidx_recall_at_scale["近似召回度量（第rag-index章）"]
   n_c08_embedding -->|前置| n_c08_cosine_similarity
   n_c08_cosine_similarity -->|组成| n_c08_vector_store
   n_c08_embedding -->|组成| n_c08_vector_store
@@ -243,8 +245,11 @@ graph TB
   n_craghybrid_bm25 -->|深化| n_c08_semantic_vs_keyword
   n_cragquery_hyde -->|应用| n_c08_embedding
   n_cragprod_persistence -->|深化| n_c08_vector_store
+  n_cragidx_brute_force -->|深化| n_c08_vector_store
+  n_cragidx_brute_force -->|深化| n_c08_cosine_similarity
+  n_cragidx_recall_at_scale -->|深化| n_c08_topk_retrieval
   class n_c08_embedding,n_c08_cosine_similarity,n_c08_vector_store,n_c08_topk_retrieval,n_c08_semantic_vs_keyword,n_c08_rag_foundation own;
-  class n_c09_rag_pipeline,n_craghybrid_vector_recall,n_craghybrid_bm25,n_cragquery_hyde,n_cragprod_persistence cross;
+  class n_c09_rag_pipeline,n_craghybrid_vector_recall,n_craghybrid_bm25,n_cragquery_hyde,n_cragprod_persistence,n_cragidx_brute_force,n_cragidx_recall_at_scale cross;
   linkStyle 0 stroke:#2563eb,stroke-width:2px;
   linkStyle 1 stroke:#d97706,stroke-width:2px;
   linkStyle 2 stroke:#d97706,stroke-width:2px;
@@ -258,6 +263,9 @@ graph TB
   linkStyle 10 stroke:#7c3aed,stroke-width:2px;
   linkStyle 11 stroke:#059669,stroke-width:2px;
   linkStyle 12 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 13 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 14 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 15 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -268,6 +276,9 @@ graph TB
 - `BM25 关键词打分` —**深化**→ `语义检索 vs 关键词检索`（第 rag-hybrid 章）
 - `HyDE 假设答案检索` —**应用**→ `Embedding (语义向量)`（第 rag-query 章）
 - `向量库持久化` —**深化**→ `内存向量库 (add/search)`（第 rag-prod 章）
+- `暴力精确检索` —**深化**→ `内存向量库 (add/search)`（第 rag-index 章）
+- `暴力精确检索` —**深化**→ `余弦相似度`（第 rag-index 章）
+- `近似召回度量` —**深化**→ `Top-k 检索`（第 rag-index 章）
 
 ### 延伸阅读
 

@@ -98,6 +98,9 @@ export const CHAPTERS: Chapter[] = [
   { id: "rag-query", slug: "04-query-transformation", title: "查询改写 (multi-query/HyDE)", part: "进阶 RAG 专题", dir: "rag-advanced/04-query-transformation", demo: { needsKey: "embedding" } },
   { id: "rag-eval", slug: "05-rag-evaluation", title: "RAG 评估三指标", part: "进阶 RAG 专题", dir: "rag-advanced/05-rag-evaluation", demo: { needsKey: "embedding" } },
   { id: "rag-prod", slug: "06-production-rag", title: "生产化 RAG 全链路", part: "进阶 RAG 专题", dir: "rag-advanced/06-production-rag", demo: { needsKey: "embedding" } },
+  { id: "rag-security", slug: "09-rag-security", title: "RAG 安全护栏", part: "进阶 RAG 专题", dir: "rag-advanced/09-rag-security", demo: { needsKey: "none" } },
+  { id: "rag-index", slug: "10-index-internals", title: "向量索引内部机制", part: "进阶 RAG 专题", dir: "rag-advanced/10-index-internals", demo: { needsKey: "none" } },
+  { id: "rag-context", slug: "11-context-engineering", title: "检索后上下文工程", part: "进阶 RAG 专题", dir: "rag-advanced/11-context-engineering", demo: { needsKey: "none" } },
 ];
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -283,6 +286,25 @@ export const CONCEPTS: Concept[] = [
   { id: "cragprod-incremental-upsert", label: "增量 upsert", chapter: "rag-prod", summary: "知识变动时按 id 只重嵌变更项，不整库重建" },
   { id: "cragprod-pipeline-compose", label: "端到端管线组合", chapter: "rag-prod", summary: "过滤+检索+精排+引用增强生成组装成可复用 answerWithRag" },
   { id: "cragprod-vectordb-migration", label: "迁移到专用向量 DB", chapter: "rag-prod", summary: "数据量/并发/持久化需求超内存库时迁 pgvector/Qdrant，接口对齐" },
+
+  { id: "cragsec-untrusted-retrieval", label: "检索内容即不可信数据", chapter: "rag-security", summary: "RAG 把外部文档塞进提示词，等于把不可信数据递给模型，是间接注入的攻击面" },
+  { id: "cragsec-injection-detection", label: "注入检测与隔离", chapter: "rag-security", summary: "用确定性规则扫描检索片段里的指令式文本，命中即隔离，不让投毒文档当指令执行" },
+  { id: "cragsec-pii-redaction", label: "PII 出口脱敏", chapter: "rag-security", summary: "片段/答案落地前在边界用正则脱敏邮箱/手机/身份证/卡号，并留审计命中" },
+  { id: "cragsec-citation-verification", label: "引用可核验", chapter: "rag-security", summary: "校验答案声称的引用编号是否真落在检索来源范围内，把幻觉引用变成可量化信号" },
+  { id: "cragsec-defense-in-depth", label: "RAG 纵深防御", chapter: "rag-security", summary: "检测+脱敏+引用核验分层叠加；确定性纯函数是模型对齐前最便宜的第一层" },
+
+  { id: "cragidx-brute-force", label: "暴力精确检索", chapter: "rag-index", summary: "第08章 search 的真面目：查询和全库每条算余弦，比较次数=N，精确但随库线性变慢" },
+  { id: "cragidx-ann-tradeoff", label: "ANN 近似最近邻的交易", chapter: "rag-index", summary: "用可控的召回损失换数量级的比较次数下降；不是更聪明的精确，是只和可能的答案比" },
+  { id: "cragidx-ivf-bucketing", label: "IVF 倒排分桶", chapter: "rag-index", summary: "先把向量聚类成 nlist 个桶，查询只在最近的几个桶里精确比较，缩小候选集合" },
+  { id: "cragidx-nprobe-knob", label: "nprobe 旋钮", chapter: "rag-index", summary: "探桶数：小=快但可能漏，大=准但接近全扫，=nlist 退化为暴力且更贵" },
+  { id: "cragidx-recall-at-scale", label: "近似召回度量", chapter: "rag-index", summary: "拿暴力结果当金标、recall@k 当尺子，把『近似漏了多少』从感觉变成可回归的实测" },
+
+  // 进阶 RAG · 第 11 章 检索后上下文工程
+  { id: "cragctx-context-budget", label: "上下文 token 预算", chapter: "rag-context", summary: "窗口有 token 上限，检索回来的片段塞不下全部，要在预算内挑价值最高的子集" },
+  { id: "cragctx-dedup", label: "近重复去重", chapter: "rag-context", summary: "多路召回/块重叠带来近重复片段，按 Jaccard 删整片冗余，把预算让给唯一信息" },
+  { id: "cragctx-compression", label: "抽取式压缩", chapter: "rag-context", summary: "超长片段按句抽取裁到预算内，保留高信息前缀；纯抽取是原文子串，无幻觉风险" },
+  { id: "cragctx-lost-in-middle", label: "中间遗忘 (lost-in-the-middle)", chapter: "rag-context", summary: "模型对上下文首尾注意力强、中间弱，埋在中部的关键证据容易被忽略" },
+  { id: "cragctx-reorder", label: "注意力感知重排", chapter: "rag-context", summary: "按位置注意力权重把高相关片段放到首尾，依重排不等式最大化有效相关性" },
 ];
 
 export const RELATIONS: Relation[] = [
@@ -538,6 +560,51 @@ export const RELATIONS: Relation[] = [
   { from: "cragprod-persistence", to: "c08-vector-store", type: "深化", note: "给内存向量库补上持久化能力" },
   { from: "cragprod-pipeline-compose", to: "c18-agent-as-service", type: "应用", note: "RAG 管线可包成 HTTP 服务对外提供" },
   { from: "cragprod-vectordb-migration", to: "ccapstone-rag-corpus", type: "对比", note: "毕设内存语料 vs 生产专用向量库" },
+
+  // ── 进阶 RAG 专题：RAG 安全护栏 章内关系 ──
+  { from: "cragsec-untrusted-retrieval", to: "cragsec-injection-detection", type: "应用", note: "正因检索内容不可信，才要对片段做注入检测" },
+  { from: "cragsec-untrusted-retrieval", to: "cragsec-pii-redaction", type: "应用", note: "不可信内容落地前必须在出口脱敏 PII" },
+  { from: "cragsec-injection-detection", to: "cragsec-defense-in-depth", type: "组成", note: "注入检测是纵深防御的第一层" },
+  { from: "cragsec-pii-redaction", to: "cragsec-defense-in-depth", type: "组成", note: "出口脱敏是纵深防御的一层" },
+  { from: "cragsec-citation-verification", to: "cragsec-defense-in-depth", type: "组成", note: "引用核验是生成侧纵深防御的一层" },
+
+  // ── 进阶 RAG 专题：RAG 安全护栏 跨章关系（接回 09/17）──
+  { from: "cragsec-untrusted-retrieval", to: "c17-trust-boundary", type: "应用", note: "检索内容落在信任边界的『数据』侧，不是命令" },
+  { from: "cragsec-injection-detection", to: "c17-prompt-injection", type: "深化", note: "把第17章通用提示注入落到 RAG 检索面（间接注入）" },
+  { from: "cragsec-injection-detection", to: "c17-isolate-and-label", type: "应用", note: "命中后用隔离/标注处理可疑片段" },
+  { from: "cragsec-pii-redaction", to: "c17-pii-redaction", type: "深化", note: "把第17章 PII 脱敏落到 RAG 检索/生成出口" },
+  { from: "cragsec-citation-verification", to: "c09-citation", type: "深化", note: "把第09章引用溯源升级为可核验、可量化幻觉引用" },
+  { from: "cragsec-defense-in-depth", to: "c17-defense-in-depth", type: "深化", note: "把通用纵深防御具体化为 RAG 检索面的三道确定性防线" },
+
+  // ── 进阶 RAG 专题：向量索引内部机制 章内关系 ──
+  { from: "cragidx-brute-force", to: "cragidx-ann-tradeoff", type: "对比", note: "精确全扫 O(N) vs 近似省算，引出 ANN 的交易" },
+  { from: "cragidx-ann-tradeoff", to: "cragidx-ivf-bucketing", type: "组成", note: "IVF 分桶是 ANN 的一种典型落地" },
+  { from: "cragidx-ivf-bucketing", to: "cragidx-nprobe-knob", type: "组成", note: "nprobe 是 IVF 控制『探几个桶』的旋钮" },
+  { from: "cragidx-nprobe-knob", to: "cragidx-recall-at-scale", type: "应用", note: "调 nprobe 观察召回如何随之变化" },
+  { from: "cragidx-brute-force", to: "cragidx-recall-at-scale", type: "前置", note: "暴力精确结果是衡量近似召回的金标" },
+
+  // ── 进阶 RAG 专题：向量索引内部机制 跨章关系（接回 08/rag-eval/rag-rerank/rag-prod）──
+  { from: "cragidx-brute-force", to: "c08-vector-store", type: "深化", note: "第08章 MemoryVectorStore.search 正是对全库逐条算余弦的暴力精确检索" },
+  { from: "cragidx-brute-force", to: "c08-cosine-similarity", type: "深化", note: "暴力检索的内核是逐条余弦相似度比较" },
+  { from: "cragidx-recall-at-scale", to: "c08-topk-retrieval", type: "深化", note: "把 top-k 检索在大规模下『会漏多少』量化成 recall@k" },
+  { from: "cragidx-recall-at-scale", to: "crageval-context-relevance", type: "应用", note: "近似召回是检索环质量的一部分，可纳入评估" },
+  { from: "cragidx-ann-tradeoff", to: "cragprod-vectordb-migration", type: "应用", note: "迁移到专用向量库的根本动因，就是用 ANN 索引扛规模" },
+  { from: "cragidx-ivf-bucketing", to: "cragprod-vectordb-migration", type: "深化", note: "pgvector 的 IVFFlat、FAISS 的 IVF/HNSW 即此分桶思想的工业实现" },
+
+  // ── 进阶 RAG 专题：检索后上下文工程 章内关系 ──
+  { from: "cragctx-lost-in-middle", to: "cragctx-reorder", type: "前置", note: "中间遗忘是注意力重排要解决的问题" },
+  { from: "cragctx-context-budget", to: "cragctx-dedup", type: "组成", note: "去重是预算装配的第一招：删整片冗余腾出名额" },
+  { from: "cragctx-context-budget", to: "cragctx-compression", type: "组成", note: "压缩是预算装配的另一招：把超长片段裁进预算" },
+  { from: "cragctx-dedup", to: "cragctx-compression", type: "对比", note: "去重删的是整片重复，压缩裁的是单片内的冗长，二者互补" },
+  { from: "cragctx-context-budget", to: "cragctx-reorder", type: "前置", note: "先按预算选定子集，再对选中片段重排顺序" },
+
+  // ── 检索后上下文工程 跨章关系（接回 07/09/rag-rerank/rag-eval）──
+  { from: "cragctx-context-budget", to: "c07-context-window-budget", type: "深化", note: "把第07章会话历史的 token 预算延伸到检索片段的预算分配" },
+  { from: "cragctx-context-budget", to: "c09-augment-prompt", type: "应用", note: "第09章把片段拼进 system 提示；本章决定拼哪些、各占多少预算" },
+  { from: "cragctx-dedup", to: "cragrerank-signal-to-noise", type: "应用", note: "去重和精排一样提升上下文信噪比，只是去掉的是重复而非低相关" },
+  { from: "cragctx-reorder", to: "cragrerank-recall-precision", type: "对比", note: "精排把最相关排最前；重排却把次相关也放首尾——因位置注意力不均，排第一≠被最好利用" },
+  { from: "cragctx-compression", to: "c07-llm-summary-compression", type: "对比", note: "第07章用 LLM 摘要压历史（生成式、需 key）vs 本章抽取式压片段（纯函数、离线）" },
+  { from: "cragctx-lost-in-middle", to: "crageval-answer-relevance", type: "应用", note: "关键证据埋中部被忽略会拉低答案相关性，可由评估指标观测" },
 ];
 
 export const ARTICLES: Article[] = [
@@ -584,4 +651,10 @@ export const ARTICLES: Article[] = [
   { title: "RAGAS: Automated Evaluation of Retrieval Augmented Generation", url: "https://arxiv.org/abs/2309.15217", kind: "paper", chapters: ["rag-eval"], note: "RAG 评估指标 (faithfulness / context & answer relevance) 的代表性论文，本章三指标的来源" },
   { title: "Cohere · Rerank documentation", url: "https://docs.cohere.com/docs/rerank-overview", kind: "doc", chapters: ["rag-rerank"], note: "生产级 rerank API 与 cross-encoder 精排的官方说明，对照本章 llmRerank" },
   { title: "pgvector — open-source vector similarity search for Postgres", url: "https://github.com/pgvector/pgvector", kind: "doc", chapters: ["rag-prod"], note: "最常见的生产持久化向量库，迁移目标之一，对照本章 MemoryVectorStore 接口" },
+  { title: "OWASP Top 10 for LLM Applications", url: "https://owasp.org/www-project-top-10-for-large-language-model-applications/", kind: "doc", chapters: ["rag-security"], note: "LLM01 提示注入位列榜首；RAG 检索内容是典型的间接注入攻击面，本章三道防线的威胁模型来源" },
+  { title: "Prompt injection: What's the worst that can happen? (Simon Willison)", url: "https://simonwillison.net/2023/Apr/14/worst-that-can-happen/", kind: "blog", chapters: ["rag-security"], note: "讲透『把不可信数据喂进 LLM』为何危险，对应本章『检索内容即不可信数据』" },
+  { title: "Faiss: A library for efficient similarity search (Meta Engineering)", url: "https://engineering.fb.com/2017/03/29/data-infrastructure/faiss-a-library-for-efficient-similarity-search/", kind: "blog", chapters: ["rag-index"], note: "FAISS 官方工程博客，讲清暴力检索为何扛不住规模、IVF 等索引如何用分桶换速度，本章 IVF 直觉的来源" },
+  { title: "Efficient and robust approximate nearest neighbor search using HNSW graphs", url: "https://arxiv.org/abs/1603.09320", kind: "paper", chapters: ["rag-index"], note: "HNSW 原始论文 (Malkov & Yashunin)：另一类主流 ANN 索引，efSearch 与本章 nprobe 同属『查多准 vs 查多快』旋钮" },
+  { title: "Lost in the Middle: How Language Models Use Long Contexts", url: "https://arxiv.org/abs/2307.03172", kind: "paper", chapters: ["rag-context"], note: "Liu 等 (2023)：实证模型对长上下文『首尾强、中间弱』的 U 形利用曲线，本章注意力重排的直接依据" },
+  { title: "LangChain · How to reorder retrieved results for long context", url: "https://python.langchain.com/docs/how_to/long_context_reorder/", kind: "doc", chapters: ["rag-context"], note: "把最相关文档放到上下文首尾、次相关压中间的工程实现，正是本章 reorderForAttention 的现成对应" },
 ];

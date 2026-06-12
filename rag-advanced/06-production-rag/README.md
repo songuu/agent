@@ -178,6 +178,8 @@ graph TB
   n_c08_vector_store["内存向量库 (add/search)（第08章）"]
   n_c18_agent_as_service["脚本到服务 (Agent as Service)（第18章）"]
   n_ccapstone_rag_corpus["RAG 内置语料检索（第capstone章）"]
+  n_cragidx_ann_tradeoff["ANN 近似最近邻的交易（第rag-index章）"]
+  n_cragidx_ivf_bucketing["IVF 倒排分桶（第rag-index章）"]
   n_cragprod_pipeline_compose -->|组成| n_cragprod_metadata_filter
   n_cragprod_pipeline_compose -->|组成| n_cragprod_persistence
   n_cragprod_pipeline_compose -->|组成| n_cragprod_incremental_upsert
@@ -187,8 +189,10 @@ graph TB
   n_cragprod_persistence -->|深化| n_c08_vector_store
   n_cragprod_pipeline_compose -->|应用| n_c18_agent_as_service
   n_cragprod_vectordb_migration -->|对比| n_ccapstone_rag_corpus
+  n_cragidx_ann_tradeoff -->|应用| n_cragprod_vectordb_migration
+  n_cragidx_ivf_bucketing -->|深化| n_cragprod_vectordb_migration
   class n_cragprod_metadata_filter,n_cragprod_persistence,n_cragprod_incremental_upsert,n_cragprod_pipeline_compose,n_cragprod_vectordb_migration own;
-  class n_cragrerank_recall_precision,n_c17_human_in_the_loop,n_c08_vector_store,n_c18_agent_as_service,n_ccapstone_rag_corpus cross;
+  class n_cragrerank_recall_precision,n_c17_human_in_the_loop,n_c08_vector_store,n_c18_agent_as_service,n_ccapstone_rag_corpus,n_cragidx_ann_tradeoff,n_cragidx_ivf_bucketing cross;
   linkStyle 0 stroke:#d97706,stroke-width:2px;
   linkStyle 1 stroke:#d97706,stroke-width:2px;
   linkStyle 2 stroke:#d97706,stroke-width:2px;
@@ -198,6 +202,8 @@ graph TB
   linkStyle 6 stroke:#7c3aed,stroke-width:2px;
   linkStyle 7 stroke:#059669,stroke-width:2px;
   linkStyle 8 stroke:#db2777,stroke-width:2px;
+  linkStyle 9 stroke:#059669,stroke-width:2px;
+  linkStyle 10 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -207,6 +213,8 @@ graph TB
 - `向量库持久化` —**深化**→ `内存向量库 (add/search)`（第 08 章）
 - `端到端管线组合` —**应用**→ `脚本到服务 (Agent as Service)`（第 18 章）
 - `迁移到专用向量 DB` —**对比**→ `RAG 内置语料检索`（第 capstone 章）
+- `ANN 近似最近邻的交易` —**应用**→ `迁移到专用向量 DB`（第 rag-index 章）
+- `IVF 倒排分桶` —**深化**→ `迁移到专用向量 DB`（第 rag-index 章）
 
 ### 延伸阅读
 

@@ -230,6 +230,8 @@ graph TB
   n_cragrerank_signal_to_noise["上下文信噪比（第rag-rerank章）"]
   n_cragquery_multi_query["多查询改写（第rag-query章）"]
   n_crageval_faithfulness["忠实度（第rag-eval章）"]
+  n_cragsec_citation_verification["引用可核验（第rag-security章）"]
+  n_cragctx_context_budget["上下文 token 预算（第rag-context章）"]
   n_c09_chunk_overlap -->|组成| n_c09_rag_pipeline
   n_c09_topk_retrieval -->|组成| n_c09_rag_pipeline
   n_c09_augment_prompt -->|组成| n_c09_rag_pipeline
@@ -248,8 +250,10 @@ graph TB
   n_cragrerank_signal_to_noise -->|应用| n_c09_augment_prompt
   n_cragquery_multi_query -->|应用| n_c09_topk_retrieval
   n_crageval_faithfulness -->|深化| n_c09_hallucination_reduction
+  n_cragsec_citation_verification -->|深化| n_c09_citation
+  n_cragctx_context_budget -->|应用| n_c09_augment_prompt
   class n_c09_rag_pipeline,n_c09_chunk_overlap,n_c09_topk_retrieval,n_c09_augment_prompt,n_c09_citation,n_c09_hallucination_reduction own;
-  class n_c08_rag_foundation,n_c08_vector_store,n_c17_isolate_and_label,n_ccapstone_rag_corpus,n_cragchunk_why_matters,n_cragchunk_recursive,n_craghybrid_retriever,n_cragrerank_signal_to_noise,n_cragquery_multi_query,n_crageval_faithfulness cross;
+  class n_c08_rag_foundation,n_c08_vector_store,n_c17_isolate_and_label,n_ccapstone_rag_corpus,n_cragchunk_why_matters,n_cragchunk_recursive,n_craghybrid_retriever,n_cragrerank_signal_to_noise,n_cragquery_multi_query,n_crageval_faithfulness,n_cragsec_citation_verification,n_cragctx_context_budget cross;
   linkStyle 0 stroke:#d97706,stroke-width:2px;
   linkStyle 1 stroke:#d97706,stroke-width:2px;
   linkStyle 2 stroke:#d97706,stroke-width:2px;
@@ -268,6 +272,8 @@ graph TB
   linkStyle 15 stroke:#059669,stroke-width:2px;
   linkStyle 16 stroke:#059669,stroke-width:2px;
   linkStyle 17 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 18 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 19 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -282,6 +288,8 @@ graph TB
 - `上下文信噪比` —**应用**→ `上下文增强 (augment)`（第 rag-rerank 章）
 - `多查询改写` —**应用**→ `top-k 检索`（第 rag-query 章）
 - `忠实度` —**深化**→ `幻觉抑制与 A/B 对比`（第 rag-eval 章）
+- `引用可核验` —**深化**→ `引用溯源`（第 rag-security 章）
+- `上下文 token 预算` —**应用**→ `上下文增强 (augment)`（第 rag-context 章）
 
 ### 延伸阅读
 

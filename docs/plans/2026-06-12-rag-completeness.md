@@ -1,12 +1,12 @@
 ---
 title: "RAG 系统最完整补充"
 type: sprint
-status: checkpoint-1
+status: checkpoint-4
 created: "2026-06-12"
 updated: "2026-06-12"
-checkpoints: 1
+checkpoints: 4
 tasks_total: 11
-tasks_completed: 1
+tasks_completed: 4
 tags: [sprint, rag, curriculum, documentation, code]
 aliases: ["RAG 补全", "rag-completeness"]
 
@@ -107,14 +107,14 @@ deadcode_until: []
 - [ ] T3 (M) 严谨化既有章：02 overlap 收益实测、03 加 NDCG/MRR、recall@k；06 持久化条数核对；`evaluate.ts` 容错解析加固。
 - [ ] T4 (M) 新 07-contextual-retrieval（六件套，Anthropic 配方：嵌入/BM25 前给每块补 LLM 上下文）。
 - [ ] T5 (L) 新 08-agentic-rag（六件套，gated retrieve→grade→re-retrieve loop）。
-- [ ] T6 (M) 新 09-rag-security（六件套，注入防御 wrapUntrusted + 引用核验 + PII 脱敏；复用第17章概念）。
+- [x] T6 (M) 新 09-rag-security（六件套，注入检测+隔离 / PII 出口脱敏 / 引用核验；复用第17章概念）。✅ smoke 41→54/0 + tsc/visuals/generate/site:build 全绿 + demo exit 0 + 对抗复核 0 P0/P1。
 - [ ] T7 (M) 深化 05-eval：recall/precision@k + golden-set + CI 阈值门 + 拒答正确性。
 
 **SHOULD 块（→ 完成后 checkpoint #2 / Review / Compound）**
 
 - [ ] T8 (M) 深化 04-query-transformation：routing + decomposition + step-back。
-- [ ] T9 (M) 新 10-index-internals（六件套，brute-force vs ANN/分桶直觉，纯函数可离线对比召回/速度）。
-- [ ] T10 (M) 新 11-context-engineering（六件套，片段排序/去重/压缩/lost-in-the-middle/预算分配）。
+- [x] T9 (M) 新 10-index-internals（六件套，brute-force vs ANN/分桶直觉，纯函数可离线对比召回/速度）。✅ smoke 54→62/0 + tsc/visuals/generate/site:build 全绿 + demo exit 0（默认/NLIST=32/JITTER=0.6 三场景）+ 对抗复核 8→4 confirmed 全修。
+- [x] T10 (M) 新 11-context-engineering（六件套，去重/压缩/预算/lost-in-the-middle 重排，纯逻辑离线）。✅ smoke 62→86/0（+24 断言）+ tsc/visuals/generate/registry/site:build 全绿 + demo exit 0（默认+极端旋钮四连）+ 对抗复核 3→2 confirmed 全修。
 - [ ] T11 (M) capstone 仓库内 checkpoint：消除"跳外部 repo"断崖（rag-system-project.md + 可选 `capstone/rag-system/` 最小骨架/checklist）。
 
 > 任务数 11 > 8 且含 2 个 L → 人工 gate 保留（无 --auto）。Task 5 后自动评估 checkpoint。
@@ -133,10 +133,64 @@ deadcode_until: []
   - 新增 `src/shared/rag/metrics.ts`：`recallAtK/precisionAtK/f1AtK/hitRateAtK/reciprocalRank/ndcgAtK/retrievalMetricsAtK`，纯函数、离线确定。
   - 接入 barrel `src/shared/rag/index.ts`；smoke 加 12 条手算断言（含 nDCG=0.9197 折损、理想序=1、全漏=0）。
 
+### 2026-06-12 T6 · 09-rag-security 新章（离线真 payoff，六件套原子完成）
+
+- **T6 新 09-rag-security** ✅（smoke 41→54/0，+13 安全断言；tsc 0；visuals/generate ok；site:build ok；demo exit 0）
+  - 新增 `src/shared/rag/security.ts`：三道**确定性纯函数**防线——
+    - `detectInjection`/`quarantineInjectedChunks`：内置 6 条中英文注入规则（覆盖既有指令/角色劫持/诱导泄密），命中即隔离，可疑片段不进提示拼装。
+    - `redactPii`：脱敏邮箱/手机/身份证/银行卡，「规则优先级 + 区间去重」解决 18 位身份证 vs 银行卡的重叠歧义；返回审计命中清单。
+    - `verifyCitations`：引用编号越界=幻觉引用，未引用来源=unused，确定性可进 CI。
+  - 接入 barrel `src/shared/rag/index.ts`（4 值 + 9 类型导出）。
+  - 新增 `rag-advanced/09-rag-security/index.ts`：构造 s1正常/s2投毒/s3含PII + 引用越界答案，每段结论 `invariant()` 运行时核对（不写死）。
+  - 新增 `rag-advanced/09-rag-security/README.md`（手写 mermaid flowchart + `npm run kg` 注入 KG 段）。
+  - `rag-advanced/smoke.ts` 加「RAG 安全护栏」13 条断言（注入检出/不误报/隔离/三类 PII/身份证优先/引用越界）。
+  - 数据源：`graph.ts` 加 CHAPTERS(rag-security, needsKey:"none") + CONCEPTS(cragsec-* 5) + RELATIONS(章内5+跨章6，接回 c17-*/c09-citation) + ARTICLES(OWASP LLM Top10 + Simon Willison)；`visuals.ts` 加 CONCEPT_VISUALS(kind:shield) + 高亮(core+warning)。
+  - 跨章边使 `lessons/09`、`lessons/17` README 由 `npm run kg` 幂等回链（数据驱动设计预期行为）。
+  - **对抗复核**（workflow `wf_5ce60756-15a`，3 视角并行+逐条验证）：4 raw → 1 confirmed P2（练习3 `[-1]` 预期落空，`\d+` 不匹配负号），已改为对照式练习讲清「引用抽取边界由正则决定」；0 P0/P1。
+  - 编号说明：07-contextual / 08-agentic 需 key 暂缺，09 先行占号位（课程逻辑序，避免日后 URL churn）。
+
 ### 执行序调整（按 key 约束，2026-06-12）
 
 > 发现：embedding fixture 只解决「向量」离线；03/04/05 章还调 **LLM-chat**（rerank/multiQuery/hyde/judge/answer），用假 LLM stub 会造**假结论**（违反教学确定性本能）。
 > 决策：先做**离线真 payoff** 的纯函数任务（指标 ✅、09-security、10-index 合成向量、11-context-eng 纯逻辑、T3/T7 指标层）；把 **02 翻 needsKey / 07-contextual / 03/04/05 端到端 / 08 grading** 推到 key 可用时一并实现+验证（不半做、不假证）。原 11 task 范围不变，仅执行顺序按可验证性重排。
+
+### 2026-06-12 T9 · 10-index-internals 新章（离线真 payoff，六件套原子完成）
+
+- **T9 新 10-index-internals** ✅（smoke 54→62/0，+8 索引断言；tsc 0；visuals/generate ok；site:build ok；demo exit 0）
+  - 新增 `src/shared/rag/annIndex.ts`：纯函数、确定性、离线——
+    - `mulberry32` 带种子 PRNG（Math.imul/位运算，跨平台一致）+ `makeSyntheticCorpus`（带簇结构的合成确定向量 + 确定性 Fisher-Yates 打乱，防 IVF 初始化按簇作弊）。
+    - `bruteForceSearch`：暴力精确，比较次数恒=N，作召回金标。
+    - `buildIvfIndex`：确定性 k-means（均匀间隔初始化 + 空簇保留旧质心）分 nlist 桶；`ivfSearch`：只比最近 nprobe 桶，诚实计量「质心扫描 + 桶内」比较次数。
+  - 接入 barrel `src/shared/rag/index.ts`（5 值 + 7 类型导出）。
+  - 新增 `rag-advanced/10-index-internals/index.ts`：构造合成语料，暴力金标 vs IVF 多档 nprobe；结论 ①~④ 由构造保证用 `invariant()` 运行时核对（nprobe=1 省算 / 比较数单调 / 召回单调 / nprobe=nlist 退化为暴力且更贵），⑤ 甜点为**软结论 + else 诊断**（数据依赖，不硬断言）。
+  - 新增 `rag-advanced/10-index-internals/README.md`（手写 mermaid flowchart + `npm run kg` 注入 KG 段）。
+  - `rag-advanced/smoke.ts` 加「向量索引」8 条断言（确定可复现/分桶覆盖全集/暴力=N/nprobe=1 省算/nprobe=nlist 退化精确且更贵/召回单调）。
+  - 数据源：`graph.ts` 加 CHAPTERS(rag-index, needsKey:"none") + CONCEPTS(cragidx-* 5) + RELATIONS(章内5+跨章6，接回 c08-*/crageval/cragprod) + ARTICLES(FAISS 工程博客 + HNSW 论文)；`visuals.ts` 加 CONCEPT_VISUALS(kind:pipeline) + 高亮(core+warning)。
+  - 教学 payoff（固定种子 seed=42, NLIST=16, N=192）：nprobe 1→16 比较数 35→208、recall@10 0.838→1.0 单调升；nprobe=nlist 退化为暴力但更贵(208>192)；甜点 nprobe=1 省 5.6×。
+  - **对抗复核**（workflow `wf_ad3a04b5-259`，3 视角并行+逐条对抗验证）：8 raw → 4 confirmed 全修：
+    - P1 练习1 改 NLIST=32 时写死 `NPROBE_SWEEP` 末档不再=nlist → invariant④ 误报崩 → 改为**派生 sweep**（末档恒=NLIST，对任意 NLIST 成立）；NLIST=32 实测 exit 0。
+    - P2a 练习4 改 JITTER=0.6 簇坍缩 → 无甜点 → invariant⑤ 抛错 → 降为**软结论 + else 诊断**；JITTER=0.6 实测 exit 0 打印「无甜点」（正是 ANN 需簇结构的教学点）。
+    - P2b rag-index 用 kind:"space" → 章节页注入 ch08 写死的 Embedding 插画（主题串味）→ 改 **kind:"pipeline"**（steps 驱动、主题中性）。
+    - P3 demo `rows.comparisons` 死字段 + 误导注释 → 删除。
+  - 编号说明：07-contextual / 08-agentic 需 key 暂缺，09→10 先行占号位（保持课程逻辑序，避免 URL churn）。
+
+### 2026-06-12 T10 · 11-context-engineering 新章（离线真 payoff，六件套原子完成）
+
+- **T10 新 11-context-engineering** ✅（smoke 62→86/0，+24 断言；tsc 0；visuals/generate/registry ok；site:build ok 新章入站无死链；demo exit 0）
+  - 新增 `src/shared/rag/contextAssembly.ts`：纯函数、零随机、离线——
+    - `dedupeChunks`：按 Jaccard（复用 BM25 `tokenize`，仅取长度≥2 词元）删近重复整片冗余，保留先出现者；返回 kept/dropped 分区。
+    - `compressChunk`：抽取式压缩——按句末标点贪心保留整句到预算内，结果恒 ≤ maxTokens 且为原文前缀（单句超预算时字符级硬截断兜底）。
+    - `positionalWeights`/`effectiveRelevance`/`reorderForAttention`：U 形位置权重（首尾=1、正中最低）建模 lost-in-the-middle；按**重排不等式**把高相关配高权重位，保证有效相关性 ≥ 原序。
+    - `packWithinBudget`：token 预算内贪心打包（relevance / density 两策略），恒不超预算；`makeContextCorpus` 固定合成语料（含 2 近重复 + 1 超长 + 1 噪声）。
+  - 接入 barrel `src/shared/rag/index.ts`（8 值 + 7 类型导出）。
+  - 新增 `rag-advanced/11-context-engineering/index.ts`：去重→压缩→预算→重排全流程；结论分两类——**构造保证腿** ①②③④⑤ 用 `invariant()` 硬核对（去重分区 / 打包不超预算 / 压缩≤预算且前缀 / 重排是排列且有效相关性不降 / 位置权重 U 形对称），**数据依赖腿** ⑥⑦ 用软结论 + else 诊断（去重是否腾名额 / 重排是否有正增益）。
+  - 新增 `rag-advanced/11-context-engineering/README.md`（手写 mermaid flowchart + `npm run kg` 注入 KG 段）。
+  - `rag-advanced/smoke.ts` 加「上下文工程」24 条断言（Jaccard 间隙 / 去重分区+幂等+阈值健壮 / 压缩≤预算+前缀 / 权重对称 / 重排排列+不降+退化 / 打包不超预算×预算网格×双策略 / 端到端去重压缩 payoff）。
+  - 数据源：`graph.ts` 加 CHAPTERS(rag-context, needsKey:"none") + CONCEPTS(cragctx-* 5) + RELATIONS(章内5+跨章6，接回 c07/c09/cragrerank/crageval) + ARTICLES(Lost-in-the-Middle 论文 + LangChain LongContextReorder 文档)；`visuals.ts` 加 CONCEPT_VISUALS(kind:pipeline，避开 space/compare 硬编码文案) + 高亮(core+warning)。
+  - 教学 payoff（默认 DEDUP_THRESHOLD=0.6, COMPRESS_CAP=40, BUDGET=130, MIDDLE_WEIGHT=0.4）：去重丢 dup1/dup2；long1 压缩 91→28；同预算工程打包覆盖 4 条唯一信息(rel 3.56) vs 朴素 2 条(1.88，朴素相关性之和 2.78 虚高含重复)；重排有效相关性 3.938→4.296(+0.358)。
+  - **对抗复核**（workflow `wf_dec1b47a-ec9`，3 视角并行 + 逐条对抗验证）：3 raw → 2 confirmed 全修 + 复验（1 正确驳回「第05章指代」）：
+    - P2 README 练习①「调小到 70 看朴素被高分重复吃名额」与实跑相反——70 预算下 dup1(49tok) 在 u1+u2=69 后挤不进、永远落选，⑥ 反走 else「未腾出名额」；「重复吃名额」只在 BUDGET∈[118,~370]、默认 130 本就在窗口内 → 改写练习①对齐默认工作点（实跑 110/120/400 核对 ⑥ 分支后定稿）。
+    - P3 `makeContextCorpus` 注释称 dup 为 u 的「逐字超集副本」，实则句末「。→，」改写非字符前缀 → 改注释为「近重复副本，去重靠 Jaccard 词元集不依赖前缀」。
 
 ## Phase 4: 审查结果
 

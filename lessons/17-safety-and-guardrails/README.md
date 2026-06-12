@@ -212,6 +212,10 @@ graph TB
   n_c09_augment_prompt["上下文增强 (augment)（第09章）"]
   n_c06_tool_registry["工具注册表 (ToolRegistry)（第06章）"]
   n_cragprod_metadata_filter["metadata 过滤（第rag-prod章）"]
+  n_cragsec_untrusted_retrieval["检索内容即不可信数据（第rag-security章）"]
+  n_cragsec_injection_detection["注入检测与隔离（第rag-security章）"]
+  n_cragsec_pii_redaction["PII 出口脱敏（第rag-security章）"]
+  n_cragsec_defense_in_depth["RAG 纵深防御（第rag-security章）"]
   n_c17_prompt_injection -->|前置| n_c17_trust_boundary
   n_c17_trust_boundary -->|应用| n_c17_isolate_and_label
   n_c17_defense_in_depth -->|组成| n_c17_isolate_and_label
@@ -223,8 +227,13 @@ graph TB
   n_c17_isolate_and_label -->|应用| n_c09_augment_prompt
   n_c17_human_in_the_loop -->|应用| n_c06_tool_registry
   n_cragprod_metadata_filter -->|应用| n_c17_human_in_the_loop
+  n_cragsec_untrusted_retrieval -->|应用| n_c17_trust_boundary
+  n_cragsec_injection_detection -->|深化| n_c17_prompt_injection
+  n_cragsec_injection_detection -->|应用| n_c17_isolate_and_label
+  n_cragsec_pii_redaction -->|深化| n_c17_pii_redaction
+  n_cragsec_defense_in_depth -->|深化| n_c17_defense_in_depth
   class n_c17_prompt_injection,n_c17_trust_boundary,n_c17_isolate_and_label,n_c17_defense_in_depth,n_c17_output_validation,n_c17_pii_redaction,n_c17_human_in_the_loop own;
-  class n_c09_augment_prompt,n_c06_tool_registry,n_cragprod_metadata_filter cross;
+  class n_c09_augment_prompt,n_c06_tool_registry,n_cragprod_metadata_filter,n_cragsec_untrusted_retrieval,n_cragsec_injection_detection,n_cragsec_pii_redaction,n_cragsec_defense_in_depth cross;
   linkStyle 0 stroke:#2563eb,stroke-width:2px;
   linkStyle 1 stroke:#059669,stroke-width:2px;
   linkStyle 2 stroke:#d97706,stroke-width:2px;
@@ -236,6 +245,11 @@ graph TB
   linkStyle 8 stroke:#059669,stroke-width:2px;
   linkStyle 9 stroke:#059669,stroke-width:2px;
   linkStyle 10 stroke:#059669,stroke-width:2px;
+  linkStyle 11 stroke:#059669,stroke-width:2px;
+  linkStyle 12 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 13 stroke:#059669,stroke-width:2px;
+  linkStyle 14 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 15 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -243,6 +257,11 @@ graph TB
 - `隔离 + 标注 (wrapUntrusted)` —**应用**→ `上下文增强 (augment)`（第 09 章）
 - `最小权限 + 人在回路` —**应用**→ `工具注册表 (ToolRegistry)`（第 06 章）
 - `metadata 过滤` —**应用**→ `最小权限 + 人在回路`（第 rag-prod 章）
+- `检索内容即不可信数据` —**应用**→ `信任边界`（第 rag-security 章）
+- `注入检测与隔离` —**深化**→ `提示注入 (Prompt Injection)`（第 rag-security 章）
+- `注入检测与隔离` —**应用**→ `隔离 + 标注 (wrapUntrusted)`（第 rag-security 章）
+- `PII 出口脱敏` —**深化**→ `PII 脱敏`（第 rag-security 章）
+- `RAG 纵深防御` —**深化**→ `纵深防御`（第 rag-security 章）
 
 ### 延伸阅读
 

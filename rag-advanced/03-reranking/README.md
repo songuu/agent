@@ -147,7 +147,7 @@ npx tsx rag-advanced/03-reranking/index.ts
 > 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
 
 ```mermaid
-graph LR
+graph TB
   classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
   classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_cragrerank_recall_precision["召回-精排两段式"]
@@ -158,6 +158,8 @@ graph LR
   n_cragprod_pipeline_compose["端到端管线组合（第rag-prod章）"]
   n_c09_augment_prompt["上下文增强 (augment)（第09章）"]
   n_c15_llm_judge["LLM-as-judge（第15章）"]
+  n_cragctx_dedup["近重复去重（第rag-context章）"]
+  n_cragctx_reorder["注意力感知重排（第rag-context章）"]
   n_cragrerank_recall_precision -->|组成| n_cragrerank_llm_rerank
   n_cragrerank_recall_precision -->|应用| n_cragrerank_signal_to_noise
   n_cragrerank_llm_rerank -->|对比| n_cragrerank_cross_encoder
@@ -165,8 +167,10 @@ graph LR
   n_cragprod_pipeline_compose -->|应用| n_cragrerank_recall_precision
   n_cragrerank_signal_to_noise -->|应用| n_c09_augment_prompt
   n_cragrerank_llm_rerank -->|对比| n_c15_llm_judge
+  n_cragctx_dedup -->|应用| n_cragrerank_signal_to_noise
+  n_cragctx_reorder -->|对比| n_cragrerank_recall_precision
   class n_cragrerank_recall_precision,n_cragrerank_llm_rerank,n_cragrerank_signal_to_noise,n_cragrerank_cross_encoder own;
-  class n_craghybrid_retriever,n_cragprod_pipeline_compose,n_c09_augment_prompt,n_c15_llm_judge cross;
+  class n_craghybrid_retriever,n_cragprod_pipeline_compose,n_c09_augment_prompt,n_c15_llm_judge,n_cragctx_dedup,n_cragctx_reorder cross;
   linkStyle 0 stroke:#d97706,stroke-width:2px;
   linkStyle 1 stroke:#059669,stroke-width:2px;
   linkStyle 2 stroke:#db2777,stroke-width:2px;
@@ -174,6 +178,8 @@ graph LR
   linkStyle 4 stroke:#059669,stroke-width:2px;
   linkStyle 5 stroke:#059669,stroke-width:2px;
   linkStyle 6 stroke:#db2777,stroke-width:2px;
+  linkStyle 7 stroke:#059669,stroke-width:2px;
+  linkStyle 8 stroke:#db2777,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -182,6 +188,8 @@ graph LR
 - `端到端管线组合` —**应用**→ `召回-精排两段式`（第 rag-prod 章）
 - `上下文信噪比` —**应用**→ `上下文增强 (augment)`（第 09 章）
 - `LLM 重排` —**对比**→ `LLM-as-judge`（第 15 章）
+- `近重复去重` —**应用**→ `上下文信噪比`（第 rag-context 章）
+- `注意力感知重排` —**对比**→ `召回-精排两段式`（第 rag-context 章）
 
 ### 延伸阅读
 

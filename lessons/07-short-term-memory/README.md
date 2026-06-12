@@ -250,6 +250,8 @@ graph TB
   n_c01_message_memory["消息数组即记忆（第01章）"]
   n_c02_usage_token["usage 与 token 成本（第02章）"]
   n_cragchunk_token_budget["按 token 计长 (approxTokens)（第rag-chunk章）"]
+  n_cragctx_context_budget["上下文 token 预算（第rag-context章）"]
+  n_cragctx_compression["抽取式压缩（第rag-context章）"]
   n_c07_context_window_budget -->|前置| n_c07_conversation_as_array
   n_c07_sliding_window -->|应用| n_c07_context_window_budget
   n_c07_llm_summary_compression -->|应用| n_c07_context_window_budget
@@ -262,8 +264,10 @@ graph TB
   n_c07_conversation_as_array -->|深化| n_c01_message_memory
   n_c07_context_window_budget -->|应用| n_c02_usage_token
   n_cragchunk_token_budget -->|应用| n_c07_context_window_budget
+  n_cragctx_context_budget -->|深化| n_c07_context_window_budget
+  n_cragctx_compression -->|对比| n_c07_llm_summary_compression
   class n_c07_conversation_as_array,n_c07_context_window_budget,n_c07_sliding_window,n_c07_llm_summary_compression,n_c07_message_layout,n_c07_summarize_threshold,n_c07_conversation_class own;
-  class n_c01_message_memory,n_c02_usage_token,n_cragchunk_token_budget cross;
+  class n_c01_message_memory,n_c02_usage_token,n_cragchunk_token_budget,n_cragctx_context_budget,n_cragctx_compression cross;
   linkStyle 0 stroke:#2563eb,stroke-width:2px;
   linkStyle 1 stroke:#059669,stroke-width:2px;
   linkStyle 2 stroke:#059669,stroke-width:2px;
@@ -276,6 +280,8 @@ graph TB
   linkStyle 9 stroke:#7c3aed,stroke-width:2px;
   linkStyle 10 stroke:#059669,stroke-width:2px;
   linkStyle 11 stroke:#059669,stroke-width:2px;
+  linkStyle 12 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 13 stroke:#db2777,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -283,6 +289,8 @@ graph TB
 - `记忆即回灌 messages` —**深化**→ `消息数组即记忆`（第 01 章）
 - `上下文窗口预算` —**应用**→ `usage 与 token 成本`（第 02 章）
 - `按 token 计长 (approxTokens)` —**应用**→ `上下文窗口预算`（第 rag-chunk 章）
+- `上下文 token 预算` —**深化**→ `上下文窗口预算`（第 rag-context 章）
+- `抽取式压缩` —**对比**→ `LLM 摘要压缩`（第 rag-context 章）
 
 ### 延伸阅读
 

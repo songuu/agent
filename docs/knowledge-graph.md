@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **26** 个单元、**171** 个概念、**243** 条关系、**43** 篇关联文章。
+共 **29** 个单元、**186** 个概念、**276** 条关系、**49** 篇关联文章。
 
 ## 章节地图
 
@@ -53,6 +53,9 @@ flowchart LR
     C_rag-query["rag-query 查询改写 (multi-query/HyDE)"]
     C_rag-eval["rag-eval RAG 评估三指标"]
     C_rag-prod["rag-prod 生产化 RAG 全链路"]
+    C_rag-security["rag-security RAG 安全护栏"]
+    C_rag-index["rag-index 向量索引内部机制"]
+    C_rag-context["rag-context 检索后上下文工程"]
   end
   C_01 --> C_02
   C_02 --> C_03
@@ -79,6 +82,9 @@ flowchart LR
   C_rag-rerank --> C_rag-query
   C_rag-query --> C_rag-eval
   C_rag-eval --> C_rag-prod
+  C_rag-prod --> C_rag-security
+  C_rag-security --> C_rag-index
+  C_rag-index --> C_rag-context
 ```
 
 ## 概念图谱
@@ -275,6 +281,21 @@ graph LR
     n_cragprod_incremental_upsert["增量 upsert"]
     n_cragprod_pipeline_compose["端到端管线组合"]
     n_cragprod_vectordb_migration["迁移到专用向量 DB"]
+    n_cragsec_untrusted_retrieval["检索内容即不可信数据"]
+    n_cragsec_injection_detection["注入检测与隔离"]
+    n_cragsec_pii_redaction["PII 出口脱敏"]
+    n_cragsec_citation_verification["引用可核验"]
+    n_cragsec_defense_in_depth["RAG 纵深防御"]
+    n_cragidx_brute_force["暴力精确检索"]
+    n_cragidx_ann_tradeoff["ANN 近似最近邻的交易"]
+    n_cragidx_ivf_bucketing["IVF 倒排分桶"]
+    n_cragidx_nprobe_knob["nprobe 旋钮"]
+    n_cragidx_recall_at_scale["近似召回度量"]
+    n_cragctx_context_budget["上下文 token 预算"]
+    n_cragctx_dedup["近重复去重"]
+    n_cragctx_compression["抽取式压缩"]
+    n_cragctx_lost_in_middle["中间遗忘 (lost-in-the-middle)"]
+    n_cragctx_reorder["注意力感知重排"]
   end
   n_c01_llm_vs_agent -->|深化| n_c01_agent_formula
   n_c01_agent_formula -->|组成| n_c01_react_loop
@@ -519,6 +540,39 @@ graph LR
   n_cragprod_persistence -->|深化| n_c08_vector_store
   n_cragprod_pipeline_compose -->|应用| n_c18_agent_as_service
   n_cragprod_vectordb_migration -->|对比| n_ccapstone_rag_corpus
+  n_cragsec_untrusted_retrieval -->|应用| n_cragsec_injection_detection
+  n_cragsec_untrusted_retrieval -->|应用| n_cragsec_pii_redaction
+  n_cragsec_injection_detection -->|组成| n_cragsec_defense_in_depth
+  n_cragsec_pii_redaction -->|组成| n_cragsec_defense_in_depth
+  n_cragsec_citation_verification -->|组成| n_cragsec_defense_in_depth
+  n_cragsec_untrusted_retrieval -->|应用| n_c17_trust_boundary
+  n_cragsec_injection_detection -->|深化| n_c17_prompt_injection
+  n_cragsec_injection_detection -->|应用| n_c17_isolate_and_label
+  n_cragsec_pii_redaction -->|深化| n_c17_pii_redaction
+  n_cragsec_citation_verification -->|深化| n_c09_citation
+  n_cragsec_defense_in_depth -->|深化| n_c17_defense_in_depth
+  n_cragidx_brute_force -->|对比| n_cragidx_ann_tradeoff
+  n_cragidx_ann_tradeoff -->|组成| n_cragidx_ivf_bucketing
+  n_cragidx_ivf_bucketing -->|组成| n_cragidx_nprobe_knob
+  n_cragidx_nprobe_knob -->|应用| n_cragidx_recall_at_scale
+  n_cragidx_brute_force -->|前置| n_cragidx_recall_at_scale
+  n_cragidx_brute_force -->|深化| n_c08_vector_store
+  n_cragidx_brute_force -->|深化| n_c08_cosine_similarity
+  n_cragidx_recall_at_scale -->|深化| n_c08_topk_retrieval
+  n_cragidx_recall_at_scale -->|应用| n_crageval_context_relevance
+  n_cragidx_ann_tradeoff -->|应用| n_cragprod_vectordb_migration
+  n_cragidx_ivf_bucketing -->|深化| n_cragprod_vectordb_migration
+  n_cragctx_lost_in_middle -->|前置| n_cragctx_reorder
+  n_cragctx_context_budget -->|组成| n_cragctx_dedup
+  n_cragctx_context_budget -->|组成| n_cragctx_compression
+  n_cragctx_dedup -->|对比| n_cragctx_compression
+  n_cragctx_context_budget -->|前置| n_cragctx_reorder
+  n_cragctx_context_budget -->|深化| n_c07_context_window_budget
+  n_cragctx_context_budget -->|应用| n_c09_augment_prompt
+  n_cragctx_dedup -->|应用| n_cragrerank_signal_to_noise
+  n_cragctx_reorder -->|对比| n_cragrerank_recall_precision
+  n_cragctx_compression -->|对比| n_c07_llm_summary_compression
+  n_cragctx_lost_in_middle -->|应用| n_crageval_answer_relevance
 ```
 
 ## 概念索引
@@ -696,6 +750,21 @@ graph LR
 | 增量 upsert | [rag-prod 生产化 RAG 全链路](../rag-advanced/06-production-rag/README.md) | 知识变动时按 id 只重嵌变更项，不整库重建 |
 | 端到端管线组合 | [rag-prod 生产化 RAG 全链路](../rag-advanced/06-production-rag/README.md) | 过滤+检索+精排+引用增强生成组装成可复用 answerWithRag |
 | 迁移到专用向量 DB | [rag-prod 生产化 RAG 全链路](../rag-advanced/06-production-rag/README.md) | 数据量/并发/持久化需求超内存库时迁 pgvector/Qdrant，接口对齐 |
+| 检索内容即不可信数据 | [rag-security RAG 安全护栏](../rag-advanced/09-rag-security/README.md) | RAG 把外部文档塞进提示词，等于把不可信数据递给模型，是间接注入的攻击面 |
+| 注入检测与隔离 | [rag-security RAG 安全护栏](../rag-advanced/09-rag-security/README.md) | 用确定性规则扫描检索片段里的指令式文本，命中即隔离，不让投毒文档当指令执行 |
+| PII 出口脱敏 | [rag-security RAG 安全护栏](../rag-advanced/09-rag-security/README.md) | 片段/答案落地前在边界用正则脱敏邮箱/手机/身份证/卡号，并留审计命中 |
+| 引用可核验 | [rag-security RAG 安全护栏](../rag-advanced/09-rag-security/README.md) | 校验答案声称的引用编号是否真落在检索来源范围内，把幻觉引用变成可量化信号 |
+| RAG 纵深防御 | [rag-security RAG 安全护栏](../rag-advanced/09-rag-security/README.md) | 检测+脱敏+引用核验分层叠加；确定性纯函数是模型对齐前最便宜的第一层 |
+| 暴力精确检索 | [rag-index 向量索引内部机制](../rag-advanced/10-index-internals/README.md) | 第08章 search 的真面目：查询和全库每条算余弦，比较次数=N，精确但随库线性变慢 |
+| ANN 近似最近邻的交易 | [rag-index 向量索引内部机制](../rag-advanced/10-index-internals/README.md) | 用可控的召回损失换数量级的比较次数下降；不是更聪明的精确，是只和可能的答案比 |
+| IVF 倒排分桶 | [rag-index 向量索引内部机制](../rag-advanced/10-index-internals/README.md) | 先把向量聚类成 nlist 个桶，查询只在最近的几个桶里精确比较，缩小候选集合 |
+| nprobe 旋钮 | [rag-index 向量索引内部机制](../rag-advanced/10-index-internals/README.md) | 探桶数：小=快但可能漏，大=准但接近全扫，=nlist 退化为暴力且更贵 |
+| 近似召回度量 | [rag-index 向量索引内部机制](../rag-advanced/10-index-internals/README.md) | 拿暴力结果当金标、recall@k 当尺子，把『近似漏了多少』从感觉变成可回归的实测 |
+| 上下文 token 预算 | [rag-context 检索后上下文工程](../rag-advanced/11-context-engineering/README.md) | 窗口有 token 上限，检索回来的片段塞不下全部，要在预算内挑价值最高的子集 |
+| 近重复去重 | [rag-context 检索后上下文工程](../rag-advanced/11-context-engineering/README.md) | 多路召回/块重叠带来近重复片段，按 Jaccard 删整片冗余，把预算让给唯一信息 |
+| 抽取式压缩 | [rag-context 检索后上下文工程](../rag-advanced/11-context-engineering/README.md) | 超长片段按句抽取裁到预算内，保留高信息前缀；纯抽取是原文子串，无幻觉风险 |
+| 中间遗忘 (lost-in-the-middle) | [rag-context 检索后上下文工程](../rag-advanced/11-context-engineering/README.md) | 模型对上下文首尾注意力强、中间弱，埋在中部的关键证据容易被忽略 |
+| 注意力感知重排 | [rag-context 检索后上下文工程](../rag-advanced/11-context-engineering/README.md) | 按位置注意力权重把高相关片段放到首尾，依重排不等式最大化有效相关性 |
 
 ## 关联文章
 
@@ -746,3 +815,9 @@ graph LR
 | [RAGAS: Automated Evaluation of Retrieval Augmented Generation](https://arxiv.org/abs/2309.15217) | paper | rag-eval | RAG 评估指标 (faithfulness / context & answer relevance) 的代表性论文，本章三指标的来源 |
 | [Cohere · Rerank documentation](https://docs.cohere.com/docs/rerank-overview) | doc | rag-rerank | 生产级 rerank API 与 cross-encoder 精排的官方说明，对照本章 llmRerank |
 | [pgvector — open-source vector similarity search for Postgres](https://github.com/pgvector/pgvector) | doc | rag-prod | 最常见的生产持久化向量库，迁移目标之一，对照本章 MemoryVectorStore 接口 |
+| [OWASP Top 10 for LLM Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/) | doc | rag-security | LLM01 提示注入位列榜首；RAG 检索内容是典型的间接注入攻击面，本章三道防线的威胁模型来源 |
+| [Prompt injection: What's the worst that can happen? (Simon Willison)](https://simonwillison.net/2023/Apr/14/worst-that-can-happen/) | blog | rag-security | 讲透『把不可信数据喂进 LLM』为何危险，对应本章『检索内容即不可信数据』 |
+| [Faiss: A library for efficient similarity search (Meta Engineering)](https://engineering.fb.com/2017/03/29/data-infrastructure/faiss-a-library-for-efficient-similarity-search/) | blog | rag-index | FAISS 官方工程博客，讲清暴力检索为何扛不住规模、IVF 等索引如何用分桶换速度，本章 IVF 直觉的来源 |
+| [Efficient and robust approximate nearest neighbor search using HNSW graphs](https://arxiv.org/abs/1603.09320) | paper | rag-index | HNSW 原始论文 (Malkov & Yashunin)：另一类主流 ANN 索引，efSearch 与本章 nprobe 同属『查多准 vs 查多快』旋钮 |
+| [Lost in the Middle: How Language Models Use Long Contexts](https://arxiv.org/abs/2307.03172) | paper | rag-context | Liu 等 (2023)：实证模型对长上下文『首尾强、中间弱』的 U 形利用曲线，本章注意力重排的直接依据 |
+| [LangChain · How to reorder retrieved results for long context](https://python.langchain.com/docs/how_to/long_context_reorder/) | doc | rag-context | 把最相关文档放到上下文首尾、次相关压中间的工程实现，正是本章 reorderForAttention 的现成对应 |
