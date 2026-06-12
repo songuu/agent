@@ -15,8 +15,20 @@ import {
   tokenize,
   BM25Index,
   reciprocalRankFusion,
+  recallAtK,
+  precisionAtK,
+  f1AtK,
+  hitRateAtK,
+  reciprocalRank,
+  ndcgAtK,
 } from "../src/shared/rag";
 import { cosineSimilarity } from "../src/shared/llm/embeddings";
+import {
+  fixtureKey,
+  lookupInFixture,
+  loadEmbeddingFixture,
+  type EmbeddingFixture,
+} from "../src/shared/llm/embeddingFixture";
 
 let passed = 0;
 let failed = 0;
@@ -109,6 +121,54 @@ console.log("== cosineSimilarity ==");
   check("相同向量≈1", Math.abs(cosineSimilarity([1, 2, 3], [1, 2, 3]) - 1) < 1e-9);
   check("正交向量≈0", Math.abs(cosineSimilarity([1, 0], [0, 1])) < 1e-9);
   check("反向向量≈-1", Math.abs(cosineSimilarity([1, 0], [-1, 0]) + 1) < 1e-9);
+}
+
+console.log("== 检索质量指标（纯 IR 指标，离线确定）==");
+{
+  // retrieved 按相关性降序；relevant 是标注的相关集（golden）。
+  const retrieved = ["a", "b", "c", "d"];
+  const relevant = ["a", "c"]; // a 在第1名、c 在第3名
+  const approx = (x: number, y: number) => Math.abs(x - y) < 1e-4;
+
+  check("recall@2 = 0.5（top2 只命中 a）", approx(recallAtK(retrieved, relevant, 2), 0.5));
+  check("recall@4 = 1（a、c 都进 top4）", approx(recallAtK(retrieved, relevant, 4), 1));
+  check("precision@2 = 0.5（2 条里 1 条相关）", approx(precisionAtK(retrieved, relevant, 2), 0.5));
+  check("precision@4 = 0.5（4 条里 2 条相关）", approx(precisionAtK(retrieved, relevant, 4), 0.5));
+  check("f1@4 = 0.6667（recall1 与 precision0.5 的调和平均）", approx(f1AtK(retrieved, relevant, 4), 2 / 3));
+  check("hitRate@1 = 1（第1名即相关）", hitRateAtK(retrieved, relevant, 1) === 1);
+  check("MRR = 1（第一个相关项排第1）", approx(reciprocalRank(retrieved, relevant), 1));
+  check("MRR = 0.5（相关项排第2时）", approx(reciprocalRank(["b", "a", "c"], relevant), 0.5));
+  // nDCG@4：DCG = 1/log2(2) + 1/log2(4) = 1.5；IDCG = 1/log2(2)+1/log2(3) ≈ 1.63093；nDCG ≈ 0.91972。
+  check("nDCG@4 ≈ 0.9197（命中但 c 排第3有折损）", approx(ndcgAtK(retrieved, relevant, 4), 0.91972));
+  check("理想排序 nDCG = 1（相关项全排最前）", approx(ndcgAtK(["a", "c", "b", "d"], relevant, 4), 1));
+  check("全漏时各指标为 0", recallAtK(["x", "y"], relevant, 2) === 0 && reciprocalRank(["x", "y"], relevant) === 0);
+  check("relevant 为空时 recall 约定为 1", recallAtK(retrieved, [], 2) === 1);
+}
+
+console.log("== 离线 embedding fixture（真向量查表逻辑）==");
+{
+  // 用一个合成 fixture（含真·确定向量）验证查表/缺失/模型隔离逻辑——无需磁盘、无需 key。
+  const model = "text-embedding-3-small";
+  const fx: EmbeddingFixture = {
+    model,
+    dim: 3,
+    vectors: {
+      [fixtureKey(model, "甲")]: [1, 0, 0],
+      [fixtureKey(model, "乙")]: [0, 1, 0],
+    },
+  };
+  const r = lookupInFixture(fx, model, ["甲", "丙", "乙"]);
+  check("命中项原样返回真向量", JSON.stringify(r.vectors[0]) === "[1,0,0]");
+  check("未命中项为 undefined（顺序对齐）", r.vectors[1] === undefined && JSON.stringify(r.vectors[2]) === "[0,1,0]");
+  check("missing 去重列出未覆盖文本", r.missing.length === 1 && r.missing[0] === "丙");
+  check("换模型不串向量（model 入 key）", lookupInFixture(fx, "other-model", ["甲"]).missing.length === 1);
+
+  // 磁盘 fixture（可能为空）至少能被无异常加载且结构合法。
+  const disk = loadEmbeddingFixture();
+  check(
+    "磁盘 fixture 结构合法可加载",
+    typeof disk.model === "string" && typeof disk.dim === "number" && typeof disk.vectors === "object",
+  );
 }
 
 console.log(`\n结果：${passed} 通过 / ${failed} 失败`);

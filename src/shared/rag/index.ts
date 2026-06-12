@@ -46,3 +46,15 @@ export type { RagAnswer, AnswerWithRagOptions } from "./ragPipeline";
 // 评估
 export { evaluateRag } from "./evaluate";
 export type { RagEvalScores, RagEvalInput } from "./evaluate";
+
+// 检索质量指标（纯函数：recall/precision/F1/hitRate/MRR/nDCG）
+export {
+  recallAtK,
+  precisionAtK,
+  f1AtK,
+  hitRateAtK,
+  reciprocalRank,
+  ndcgAtK,
+  retrievalMetricsAtK,
+} from "./metrics";
+export type { RelevanceSet, RetrievalMetrics } from "./metrics";
