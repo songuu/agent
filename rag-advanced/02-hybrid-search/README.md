@@ -149,6 +149,7 @@ graph TB
   n_c08_topk_retrieval["Top-k 检索（第08章）"]
   n_c08_semantic_vs_keyword["语义检索 vs 关键词检索（第08章）"]
   n_c09_topk_retrieval["top-k 检索（第09章）"]
+  n_cragcontextual_pre_index["入索引前补上下文（第rag-contextual章）"]
   n_craghybrid_sparse_vs_dense -->|组成| n_craghybrid_bm25
   n_craghybrid_sparse_vs_dense -->|组成| n_craghybrid_vector_recall
   n_craghybrid_bm25 -->|前置| n_craghybrid_rrf
@@ -158,8 +159,9 @@ graph TB
   n_craghybrid_vector_recall -->|深化| n_c08_topk_retrieval
   n_craghybrid_bm25 -->|深化| n_c08_semantic_vs_keyword
   n_craghybrid_retriever -->|深化| n_c09_topk_retrieval
+  n_cragcontextual_pre_index -->|应用| n_craghybrid_retriever
   class n_craghybrid_sparse_vs_dense,n_craghybrid_bm25,n_craghybrid_vector_recall,n_craghybrid_rrf,n_craghybrid_retriever own;
-  class n_cragrerank_recall_precision,n_c08_topk_retrieval,n_c08_semantic_vs_keyword,n_c09_topk_retrieval cross;
+  class n_cragrerank_recall_precision,n_c08_topk_retrieval,n_c08_semantic_vs_keyword,n_c09_topk_retrieval,n_cragcontextual_pre_index cross;
   linkStyle 0 stroke:#d97706,stroke-width:2px;
   linkStyle 1 stroke:#d97706,stroke-width:2px;
   linkStyle 2 stroke:#2563eb,stroke-width:2px;
@@ -169,6 +171,7 @@ graph TB
   linkStyle 6 stroke:#7c3aed,stroke-width:2px;
   linkStyle 7 stroke:#7c3aed,stroke-width:2px;
   linkStyle 8 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 9 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -177,6 +180,7 @@ graph TB
 - `向量语义召回` —**深化**→ `Top-k 检索`（第 08 章）
 - `BM25 关键词打分` —**深化**→ `语义检索 vs 关键词检索`（第 08 章）
 - `混合检索器` —**深化**→ `top-k 检索`（第 09 章）
+- `入索引前补上下文` —**应用**→ `混合检索器`（第 rag-contextual 章）
 
 ### 延伸阅读
 

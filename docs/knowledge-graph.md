@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **29** 个单元、**186** 个概念、**276** 条关系、**49** 篇关联文章。
+共 **36** 个单元、**221** 个概念、**351** 条关系、**61** 篇关联文章。
 
 ## 章节地图
 
@@ -53,9 +53,18 @@ flowchart LR
     C_rag-query["rag-query 查询改写 (multi-query/HyDE)"]
     C_rag-eval["rag-eval RAG 评估三指标"]
     C_rag-prod["rag-prod 生产化 RAG 全链路"]
+    C_rag-contextual["rag-contextual Contextual Retrieval"]
+    C_rag-agentic["rag-agentic Agentic RAG"]
     C_rag-security["rag-security RAG 安全护栏"]
     C_rag-index["rag-index 向量索引内部机制"]
     C_rag-context["rag-context 检索后上下文工程"]
+  end
+  subgraph P9["进阶 LangGraph 专题"]
+    C_lg-stategraph["lg-stategraph 手写 StateGraph"]
+    C_lg-routing["lg-routing 条件边与路由"]
+    C_lg-checkpoint["lg-checkpoint Checkpointer 持久化与时间旅行"]
+    C_lg-hitl["lg-hitl Human-in-the-Loop（interrupt 审批门）"]
+    C_lg-multiagent["lg-multiagent 多 Agent 编排（supervisor / 并行 team）"]
   end
   C_01 --> C_02
   C_02 --> C_03
@@ -82,9 +91,16 @@ flowchart LR
   C_rag-rerank --> C_rag-query
   C_rag-query --> C_rag-eval
   C_rag-eval --> C_rag-prod
-  C_rag-prod --> C_rag-security
+  C_rag-prod --> C_rag-contextual
+  C_rag-contextual --> C_rag-agentic
+  C_rag-agentic --> C_rag-security
   C_rag-security --> C_rag-index
   C_rag-index --> C_rag-context
+  C_rag-context --> C_lg-stategraph
+  C_lg-stategraph --> C_lg-routing
+  C_lg-routing --> C_lg-checkpoint
+  C_lg-checkpoint --> C_lg-hitl
+  C_lg-hitl --> C_lg-multiagent
 ```
 
 ## 概念图谱
@@ -281,6 +297,16 @@ graph LR
     n_cragprod_incremental_upsert["增量 upsert"]
     n_cragprod_pipeline_compose["端到端管线组合"]
     n_cragprod_vectordb_migration["迁移到专用向量 DB"]
+    n_cragcontextual_document_context["文档级上下文"]
+    n_cragcontextual_pre_index["入索引前补上下文"]
+    n_cragcontextual_title_recall["标题词召回恢复"]
+    n_cragcontextual_raw_preserved["原文可审计"]
+    n_cragcontextual_hybrid_friendly["同时服务 BM25 与向量"]
+    n_cragagentic_gated_retrieve["gated retrieve"]
+    n_cragagentic_grade["证据打分器"]
+    n_cragagentic_rewrite_loop["改写重试循环"]
+    n_cragagentic_refuse["无答案拒答"]
+    n_cragagentic_state_machine["RAG 状态机"]
     n_cragsec_untrusted_retrieval["检索内容即不可信数据"]
     n_cragsec_injection_detection["注入检测与隔离"]
     n_cragsec_pii_redaction["PII 出口脱敏"]
@@ -296,6 +322,33 @@ graph LR
     n_cragctx_compression["抽取式压缩"]
     n_cragctx_lost_in_middle["中间遗忘 (lost-in-the-middle)"]
     n_cragctx_reorder["注意力感知重排"]
+  end
+  subgraph G9["进阶 LangGraph 专题"]
+    n_lgsg_state_channels["State 与 channels"]
+    n_lgsg_reducer["channel reducer"]
+    n_lgsg_node_partial["节点返回 partial 更新"]
+    n_lgsg_edges_compile["边与 compile/invoke"]
+    n_lgsg_vs_prebuilt["揭开 createReactAgent"]
+    n_lgrt_conditional_edge["条件边 (addConditionalEdges)"]
+    n_lgrt_branch["分支路由"]
+    n_lgrt_loop["循环边"]
+    n_lgrt_recursion_limit["recursionLimit 安全阀"]
+    n_lgrt_send_fanout["Send 扇出 (map-reduce)"]
+    n_lgcp_checkpointer["Checkpointer 与 thread_id"]
+    n_lgcp_persist_accumulate["跨 invoke 持久化累积"]
+    n_lgcp_getstate["getState 状态快照"]
+    n_lgcp_history["getStateHistory 执行时间线"]
+    n_lgcp_time_travel["updateState 改写与时间旅行"]
+    n_lghitl_interrupt["interrupt 节点中途暂停"]
+    n_lghitl_read_payload["读取 interrupt payload"]
+    n_lghitl_command_resume["Command(resume) 续跑"]
+    n_lghitl_approval_gate["审批门：放行 / 拦截"]
+    n_lghitl_plain_invoke_pitfall["易错：普通 invoke 不 resume"]
+    n_lgma_multi_agent["多 Agent = 多专职节点编排"]
+    n_lgma_supervisor["supervisor 中心化调度"]
+    n_lgma_worker_routing["按类型路由到 worker"]
+    n_lgma_parallel_team["并行异构 team（fork/join）"]
+    n_lgma_order_independent_join["join 顺序无关聚合"]
   end
   n_c01_llm_vs_agent -->|深化| n_c01_agent_formula
   n_c01_agent_formula -->|组成| n_c01_react_loop
@@ -540,6 +593,26 @@ graph LR
   n_cragprod_persistence -->|深化| n_c08_vector_store
   n_cragprod_pipeline_compose -->|应用| n_c18_agent_as_service
   n_cragprod_vectordb_migration -->|对比| n_ccapstone_rag_corpus
+  n_cragcontextual_document_context -->|前置| n_cragcontextual_pre_index
+  n_cragcontextual_pre_index -->|应用| n_cragcontextual_title_recall
+  n_cragcontextual_pre_index -->|组成| n_cragcontextual_raw_preserved
+  n_cragcontextual_pre_index -->|应用| n_cragcontextual_hybrid_friendly
+  n_cragcontextual_title_recall -->|深化| n_cragcontextual_hybrid_friendly
+  n_cragcontextual_document_context -->|深化| n_cragchunk_markdown_aware
+  n_cragcontextual_pre_index -->|应用| n_craghybrid_retriever
+  n_cragcontextual_title_recall -->|应用| n_c09_topk_retrieval
+  n_cragcontextual_raw_preserved -->|应用| n_c09_citation
+  n_cragcontextual_hybrid_friendly -->|前置| n_cragctx_context_budget
+  n_cragagentic_state_machine -->|组成| n_cragagentic_gated_retrieve
+  n_cragagentic_gated_retrieve -->|组成| n_cragagentic_grade
+  n_cragagentic_grade -->|应用| n_cragagentic_rewrite_loop
+  n_cragagentic_grade -->|应用| n_cragagentic_refuse
+  n_cragagentic_rewrite_loop -->|应用| n_cragagentic_gated_retrieve
+  n_cragagentic_rewrite_loop -->|应用| n_cragquery_multi_query
+  n_cragagentic_grade -->|应用| n_crageval_context_relevance
+  n_cragagentic_refuse -->|应用| n_cragsec_defense_in_depth
+  n_cragagentic_state_machine -->|深化| n_c04_agent_loop
+  n_cragagentic_state_machine -->|应用| n_c16_decorator_tracer
   n_cragsec_untrusted_retrieval -->|应用| n_cragsec_injection_detection
   n_cragsec_untrusted_retrieval -->|应用| n_cragsec_pii_redaction
   n_cragsec_injection_detection -->|组成| n_cragsec_defense_in_depth
@@ -573,6 +646,61 @@ graph LR
   n_cragctx_reorder -->|对比| n_cragrerank_recall_precision
   n_cragctx_compression -->|对比| n_c07_llm_summary_compression
   n_cragctx_lost_in_middle -->|应用| n_crageval_answer_relevance
+  n_lgsg_state_channels -->|组成| n_lgsg_reducer
+  n_lgsg_state_channels -->|前置| n_lgsg_node_partial
+  n_lgsg_node_partial -->|应用| n_lgsg_reducer
+  n_lgsg_node_partial -->|组成| n_lgsg_edges_compile
+  n_lgsg_reducer -->|应用| n_lgsg_vs_prebuilt
+  n_lgsg_vs_prebuilt -->|深化| n_c12_react_agent
+  n_lgsg_state_channels -->|深化| n_c12_state_graph
+  n_lgsg_edges_compile -->|深化| n_c12_langgraph
+  n_lgsg_node_partial -->|对比| n_c06_run_agent_loop
+  n_lgsg_reducer -->|应用| n_c07_conversation_as_array
+  n_lgsg_vs_prebuilt -->|前置| n_c12_framework_choice
+  n_lgrt_conditional_edge -->|组成| n_lgrt_branch
+  n_lgrt_conditional_edge -->|组成| n_lgrt_loop
+  n_lgrt_loop -->|应用| n_lgrt_recursion_limit
+  n_lgrt_conditional_edge -->|组成| n_lgrt_send_fanout
+  n_lgrt_branch -->|对比| n_lgrt_send_fanout
+  n_lgrt_conditional_edge -->|深化| n_lgsg_edges_compile
+  n_lgrt_loop -->|深化| n_lgsg_vs_prebuilt
+  n_lgrt_loop -->|应用| n_c04_react
+  n_lgrt_recursion_limit -->|对比| n_c01_max_steps
+  n_lgrt_send_fanout -->|应用| n_lgsg_reducer
+  n_lgrt_conditional_edge -->|应用| n_c12_react_agent
+  n_lgcp_checkpointer -->|前置| n_lgcp_persist_accumulate
+  n_lgcp_persist_accumulate -->|应用| n_lgcp_getstate
+  n_lgcp_getstate -->|组成| n_lgcp_history
+  n_lgcp_history -->|前置| n_lgcp_time_travel
+  n_lgcp_checkpointer -->|应用| n_lgcp_time_travel
+  n_lgcp_checkpointer -->|深化| n_lgsg_edges_compile
+  n_lgcp_persist_accumulate -->|应用| n_lgsg_reducer
+  n_lgcp_persist_accumulate -->|深化| n_c07_conversation_as_array
+  n_lgcp_time_travel -->|对比| n_c06_run_agent_loop
+  n_lgcp_time_travel -->|应用| n_lgrt_loop
+  n_lgcp_checkpointer -->|深化| n_c12_langgraph
+  n_lghitl_interrupt -->|前置| n_lghitl_read_payload
+  n_lghitl_interrupt -->|应用| n_lghitl_command_resume
+  n_lghitl_read_payload -->|应用| n_lghitl_approval_gate
+  n_lghitl_command_resume -->|组成| n_lghitl_approval_gate
+  n_lghitl_command_resume -->|对比| n_lghitl_plain_invoke_pitfall
+  n_lghitl_interrupt -->|前置| n_lgcp_checkpointer
+  n_lghitl_read_payload -->|应用| n_lgcp_getstate
+  n_lghitl_approval_gate -->|应用| n_lgrt_conditional_edge
+  n_lghitl_command_resume -->|对比| n_lgcp_time_travel
+  n_lghitl_interrupt -->|应用| n_c04_agent_loop
+  n_lghitl_plain_invoke_pitfall -->|深化| n_lgcp_persist_accumulate
+  n_lgma_multi_agent -->|组成| n_lgma_supervisor
+  n_lgma_multi_agent -->|组成| n_lgma_parallel_team
+  n_lgma_supervisor -->|组成| n_lgma_worker_routing
+  n_lgma_parallel_team -->|组成| n_lgma_order_independent_join
+  n_lgma_supervisor -->|对比| n_lgma_parallel_team
+  n_lgma_supervisor -->|深化| n_c11_supervisor_worker
+  n_lgma_worker_routing -->|对比| n_c11_supervisor_routing
+  n_lgma_order_independent_join -->|深化| n_c11_scratchpad
+  n_lgma_supervisor -->|应用| n_lgrt_loop
+  n_lgma_parallel_team -->|对比| n_lgrt_send_fanout
+  n_lgma_order_independent_join -->|应用| n_lgsg_reducer
 ```
 
 ## 概念索引
@@ -750,6 +878,16 @@ graph LR
 | 增量 upsert | [rag-prod 生产化 RAG 全链路](../rag-advanced/06-production-rag/README.md) | 知识变动时按 id 只重嵌变更项，不整库重建 |
 | 端到端管线组合 | [rag-prod 生产化 RAG 全链路](../rag-advanced/06-production-rag/README.md) | 过滤+检索+精排+引用增强生成组装成可复用 answerWithRag |
 | 迁移到专用向量 DB | [rag-prod 生产化 RAG 全链路](../rag-advanced/06-production-rag/README.md) | 数据量/并发/持久化需求超内存库时迁 pgvector/Qdrant，接口对齐 |
+| 文档级上下文 | [rag-contextual Contextual Retrieval](../rag-advanced/07-contextual-retrieval/README.md) | 标题、章节路径、metadata 等 chunk 被切出来后容易丢掉的语境 |
+| 入索引前补上下文 | [rag-contextual Contextual Retrieval](../rag-advanced/07-contextual-retrieval/README.md) | 在 embedding/BM25 前把上下文与原文拼成 contextualized chunk |
+| 标题词召回恢复 | [rag-contextual Contextual Retrieval](../rag-advanced/07-contextual-retrieval/README.md) | 用户查询命中标题/章节词时，补上下文能让孤立片段重新被召回 |
+| 原文可审计 | [rag-contextual Contextual Retrieval](../rag-advanced/07-contextual-retrieval/README.md) | 上下文前缀与原文正文分层保存，确保不改写原始事实 |
+| 同时服务 BM25 与向量 | [rag-contextual Contextual Retrieval](../rag-advanced/07-contextual-retrieval/README.md) | 补上下文后的文本可同时增强关键词匹配与语义 embedding 输入 |
+| gated retrieve | [rag-agentic Agentic RAG](../rag-advanced/08-agentic-rag/README.md) | 检索后先判断证据是否足够，够才进入回答，不够则重试 |
+| 证据打分器 | [rag-agentic Agentic RAG](../rag-advanced/08-agentic-rag/README.md) | 把候选片段评成 answer/retry/refuse，控制后续路径 |
+| 改写重试循环 | [rag-agentic Agentic RAG](../rag-advanced/08-agentic-rag/README.md) | 证据不足时把口语 query 改写成更贴资料的检索词再召回 |
+| 无答案拒答 | [rag-agentic Agentic RAG](../rag-advanced/08-agentic-rag/README.md) | 资料没有答案时停止并拒答，而不是强行生成 |
+| RAG 状态机 | [rag-agentic Agentic RAG](../rag-advanced/08-agentic-rag/README.md) | retrieve、grade、rewrite、answer/refuse 显式成状态，便于测试和观测 |
 | 检索内容即不可信数据 | [rag-security RAG 安全护栏](../rag-advanced/09-rag-security/README.md) | RAG 把外部文档塞进提示词，等于把不可信数据递给模型，是间接注入的攻击面 |
 | 注入检测与隔离 | [rag-security RAG 安全护栏](../rag-advanced/09-rag-security/README.md) | 用确定性规则扫描检索片段里的指令式文本，命中即隔离，不让投毒文档当指令执行 |
 | PII 出口脱敏 | [rag-security RAG 安全护栏](../rag-advanced/09-rag-security/README.md) | 片段/答案落地前在边界用正则脱敏邮箱/手机/身份证/卡号，并留审计命中 |
@@ -765,6 +903,31 @@ graph LR
 | 抽取式压缩 | [rag-context 检索后上下文工程](../rag-advanced/11-context-engineering/README.md) | 超长片段按句抽取裁到预算内，保留高信息前缀；纯抽取是原文子串，无幻觉风险 |
 | 中间遗忘 (lost-in-the-middle) | [rag-context 检索后上下文工程](../rag-advanced/11-context-engineering/README.md) | 模型对上下文首尾注意力强、中间弱，埋在中部的关键证据容易被忽略 |
 | 注意力感知重排 | [rag-context 检索后上下文工程](../rag-advanced/11-context-engineering/README.md) | 按位置注意力权重把高相关片段放到首尾，依重排不等式最大化有效相关性 |
+| State 与 channels | [lg-stategraph 手写 StateGraph](../langgraph-advanced/01-stategraph-basics/README.md) | 图的共享状态由若干带类型的 channel 组成，在节点间流动；State 是 StateGraph 的中枢 |
+| channel reducer | [lg-stategraph 手写 StateGraph](../langgraph-advanced/01-stategraph-basics/README.md) | 每个 channel 配一个 reducer 决定多次写入如何合并：append 累积 / replace 覆盖（默认） |
+| 节点返回 partial 更新 | [lg-stategraph 手写 StateGraph](../langgraph-advanced/01-stategraph-basics/README.md) | 节点是普通函数，只返回它要改的 channel；没碰的 channel 由上一状态自动保留 |
+| 边与 compile/invoke | [lg-stategraph 手写 StateGraph](../langgraph-advanced/01-stategraph-basics/README.md) | START/END + addEdge 连成流程，compile 成可执行图，invoke 给初始 state 跑到终态 |
+| 揭开 createReactAgent | [lg-stategraph 手写 StateGraph](../langgraph-advanced/01-stategraph-basics/README.md) | 预制 agent = StateGraph + messages channel(append reducer) + 模型节点 + 工具节点 + 循环边 |
+| 条件边 (addConditionalEdges) | [lg-routing 条件边与路由](../langgraph-advanced/02-conditional-routing/README.md) | router 函数读 State 返回下一个节点名，图在运行时自己决定走向——分支/循环/扇出的共同基础 |
+| 分支路由 | [lg-routing 条件边与路由](../langgraph-advanced/02-conditional-routing/README.md) | router 按 State 返回不同节点名，把流程导向不同 handler |
+| 循环边 | [lg-routing 条件边与路由](../langgraph-advanced/02-conditional-routing/README.md) | 条件边指回更早的节点形成循环，必须有终止条件；这正是 ReAct「反复行动直到完成」的骨架 |
+| recursionLimit 安全阀 | [lg-routing 条件边与路由](../langgraph-advanced/02-conditional-routing/README.md) | 循环不收敛跑到上限抛 GraphRecursionError，图版的 maxSteps，防无限循环烧资源 |
+| Send 扇出 (map-reduce) | [lg-routing 条件边与路由](../langgraph-advanced/02-conditional-routing/README.md) | 从一条边返回一组 Send 动态生成多个并行节点实例，结果经 reducer 合并、与完成顺序无关 |
+| Checkpointer 与 thread_id | [lg-checkpoint Checkpointer 持久化与时间旅行](../langgraph-advanced/03-checkpointing/README.md) | 给图 compile 时挂 MemorySaver，invoke 带 {configurable:{thread_id}}，每个 super-step 的状态即按 thread 持久化 |
+| 跨 invoke 持久化累积 | [lg-checkpoint Checkpointer 持久化与时间旅行](../langgraph-advanced/03-checkpointing/README.md) | 同一 thread 多次 invoke，状态经 reducer 自动续上（append 累积/sum 累加），无需手动回传历史；不同 thread 完全隔离 |
+| getState 状态快照 | [lg-checkpoint Checkpointer 持久化与时间旅行](../langgraph-advanced/03-checkpointing/README.md) | getState 取某 thread 的当前快照：values（各 channel 值）+ next（待执行节点，空=已到 END）+ checkpoint_id |
+| getStateHistory 执行时间线 | [lg-checkpoint Checkpointer 持久化与时间旅行](../langgraph-advanced/03-checkpointing/README.md) | getStateHistory 倒序（newest-first）遍历每个 super-step 的快照，构成可回溯的执行时间线 |
+| updateState 改写与时间旅行 | [lg-checkpoint Checkpointer 持久化与时间旅行](../langgraph-advanced/03-checkpointing/README.md) | updateState 人工改写某个 channel（经 reducer 合并）；invoke(null, 历史 checkpoint 的 config) 从过去某点重放，纯函数节点下结果可复现 |
+| interrupt 节点中途暂停 | [lg-hitl Human-in-the-Loop（interrupt 审批门）](../langgraph-advanced/04-human-in-the-loop/README.md) | 节点内调用 interrupt(payload) 把 payload 交给人、就地暂停整张图；必须配 checkpointer 才能持久化暂停点 |
+| 读取 interrupt payload | [lg-hitl Human-in-the-Loop（interrupt 审批门）](../langgraph-advanced/04-human-in-the-loop/README.md) | 暂停时 payload 不在 invoke 返回值顶层，要从 getState(cfg).tasks[].interrupts[].value 取（0.2.x 实证暴露位置） |
+| Command(resume) 续跑 | [lg-hitl Human-in-the-Loop（interrupt 审批门）](../langgraph-advanced/04-human-in-the-loop/README.md) | invoke(new Command({resume:val}), cfg) 续跑，被暂停的 interrupt() 就地返回 val；这是唯一能 resume 的方式 |
+| 审批门：放行 / 拦截 | [lg-hitl Human-in-the-Loop（interrupt 审批门）](../langgraph-advanced/04-human-in-the-loop/README.md) | humanReview 后用条件边按人给的决定路由——批准走 apply 放行，否则走 cancel 拦截；终态完全由人决定 |
+| 易错：普通 invoke 不 resume | [lg-hitl Human-in-the-Loop（interrupt 审批门）](../langgraph-advanced/04-human-in-the-loop/README.md) | 暂停时用普通 invoke(input)（非 Command）不会续跑，会带新输入从头重跑并再次暂停——resume 必须用 Command |
+| 多 Agent = 多专职节点编排 | [lg-multiagent 多 Agent 编排（supervisor / 并行 team）](../langgraph-advanced/05-multi-agent-graph/README.md) | 把多个专职 agent 编排进一张图协作；agent 就是节点，拓扑由边决定——两种基本拓扑是 supervisor 与并行 team |
+| supervisor 中心化调度 | [lg-multiagent 多 Agent 编排（supervisor / 并行 team）](../langgraph-advanced/05-multi-agent-graph/README.md) | 一个调度节点用条件边按任务类型把每条任务分给对应 worker，worker 干完回到 supervisor，循环到队列空——串行、顺序可控 |
+| 按类型路由到 worker | [lg-multiagent 多 Agent 编排（supervisor / 并行 team）](../langgraph-advanced/05-multi-agent-graph/README.md) | supervisor 的条件边读队首任务类型，返回对应 worker 节点名（math/upper/echo）；队列空则返回 END 收工 |
+| 并行异构 team（fork/join） | [lg-multiagent 多 Agent 编排（supervisor / 并行 team）](../langgraph-advanced/05-multi-agent-graph/README.md) | 从 fork 点一次连出多条边，多个不同角色 agent 在同一 super-step 并行执行，结果汇入 join——并行、靠 reducer 合并 |
+| join 顺序无关聚合 | [lg-multiagent 多 Agent 编排（supervisor / 并行 team）](../langgraph-advanced/05-multi-agent-graph/README.md) | 并行产出的原始顺序不保证，append reducer 汇集后 join 先排序再聚合，使最终报告与各 agent 完成顺序无关、确定可回归 |
 
 ## 关联文章
 
@@ -808,11 +971,13 @@ graph LR
 | [Node.js HTTP module documentation](https://nodejs.org/api/http.html) | doc | 18 | node:http 内置模块文档，本章无框架起服务的基础 |
 | [Model Context Protocol: What is MCP?](https://modelcontextprotocol.io/docs/getting-started/intro) | doc | 19 | MCP 官方入门，工具/数据连接标准化的一手来源 |
 | [LangGraph overview](https://docs.langchain.com/oss/javascript/langgraph/overview) | doc | 19 | 编排 runtime 代表，长任务持久化与 human-in-the-loop 官方文档 |
-| [Introducing Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) | blog | rag-chunk, rag-hybrid | Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读 |
+| [Introducing Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) | blog | rag-chunk, rag-hybrid, rag-contextual | Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读 |
 | [Okapi BM25 - Wikipedia](https://en.wikipedia.org/wiki/Okapi_BM25) | doc | rag-hybrid | BM25 打分公式与 k1/b 参数的权威说明，对应本章 BM25Index |
 | [Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods](https://dl.acm.org/doi/10.1145/1571941.1572114) | paper | rag-hybrid | RRF 原始论文 (Cormack et al., SIGIR 2009)，混合检索融合法的来源 |
 | [Precise Zero-Shot Dense Retrieval without Relevance Labels (HyDE)](https://arxiv.org/abs/2212.10496) | paper | rag-query | HyDE 原始论文：用假设性文档的向量做检索 |
 | [RAGAS: Automated Evaluation of Retrieval Augmented Generation](https://arxiv.org/abs/2309.15217) | paper | rag-eval | RAG 评估指标 (faithfulness / context & answer relevance) 的代表性论文，本章三指标的来源 |
+| [Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection](https://arxiv.org/abs/2310.11511) | paper | rag-agentic | 把检索、生成、批判做成可控循环的代表论文，对应本章 gated retrieve / grade / retry 思想 |
+| [Corrective Retrieval Augmented Generation](https://arxiv.org/abs/2401.15884) | paper | rag-agentic | CRAG 用检索评估触发纠错与补充检索，对应本章证据不足就改写重试的控制流 |
 | [Cohere · Rerank documentation](https://docs.cohere.com/docs/rerank-overview) | doc | rag-rerank | 生产级 rerank API 与 cross-encoder 精排的官方说明，对照本章 llmRerank |
 | [pgvector — open-source vector similarity search for Postgres](https://github.com/pgvector/pgvector) | doc | rag-prod | 最常见的生产持久化向量库，迁移目标之一，对照本章 MemoryVectorStore 接口 |
 | [OWASP Top 10 for LLM Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/) | doc | rag-security | LLM01 提示注入位列榜首；RAG 检索内容是典型的间接注入攻击面，本章三道防线的威胁模型来源 |
@@ -821,3 +986,13 @@ graph LR
 | [Efficient and robust approximate nearest neighbor search using HNSW graphs](https://arxiv.org/abs/1603.09320) | paper | rag-index | HNSW 原始论文 (Malkov & Yashunin)：另一类主流 ANN 索引，efSearch 与本章 nprobe 同属『查多准 vs 查多快』旋钮 |
 | [Lost in the Middle: How Language Models Use Long Contexts](https://arxiv.org/abs/2307.03172) | paper | rag-context | Liu 等 (2023)：实证模型对长上下文『首尾强、中间弱』的 U 形利用曲线，本章注意力重排的直接依据 |
 | [LangChain · How to reorder retrieved results for long context](https://python.langchain.com/docs/how_to/long_context_reorder/) | doc | rag-context | 把最相关文档放到上下文首尾、次相关压中间的工程实现，正是本章 reorderForAttention 的现成对应 |
+| [LangGraph.js · Low-level 概念（State / Nodes / Edges / Reducers）](https://langchain-ai.github.io/langgraphjs/concepts/low_level/) | doc | lg-stategraph | LangGraph.js 官方底层概念：StateGraph、channel reducer、节点/边——本章手写图的权威参考 |
+| [LangGraph.js · Workflows and Agents](https://langchain-ai.github.io/langgraphjs/tutorials/workflows/) | doc | lg-stategraph | 从底层图到预制 agent 的官方教程，对照本章「createReactAgent 只是预制 StateGraph」 |
+| [LangGraph.js · Map-reduce branches with Send](https://langchain-ai.github.io/langgraphjs/how-tos/map-reduce/) | doc | lg-routing | 用 Send 从一条边动态扇出多个并行节点实例再 reduce 合并——本章图3 的官方对应 |
+| [LangGraph.js · How to control graph recursion limit](https://langchain-ai.github.io/langgraphjs/how-tos/recursion-limit/) | doc | lg-routing | recursionLimit 控制循环上限、超限抛 GraphRecursionError——本章循环安全阀的官方说明 |
+| [LangGraph.js · Persistence（Checkpointer / thread / state history）](https://langchain-ai.github.io/langgraphjs/concepts/persistence/) | doc | lg-checkpoint | 官方持久化概念：checkpointer 按 thread_id 存每个 super-step、getState/getStateHistory 取快照与时间线——本章的权威参考 |
+| [LangGraph.js · How to view and update past graph state（time travel）](https://langchain-ai.github.io/langgraphjs/how-tos/time-travel/) | doc | lg-checkpoint | 用 getStateHistory 回到过去某个 checkpoint、updateState 改写并从该点重放——本章时间旅行的官方对应 |
+| [LangGraph.js · Human-in-the-loop（概念）](https://langchain-ai.github.io/langgraphjs/concepts/human_in_the_loop/) | doc | lg-hitl | 官方 HITL 概念：interrupt 暂停、Command(resume) 续跑、审批/编辑/工具确认等模式——本章的权威参考 |
+| [LangGraph.js · How to wait for user input using interrupt](https://langchain-ai.github.io/langgraphjs/how-tos/wait-user-input-functional/) | doc | lg-hitl | 用 interrupt 暂停等用户输入、再用 Command({resume}) 续跑的官方 how-to，对应本章审批门 demo |
+| [LangGraph.js · Multi-agent systems（概念）](https://langchain-ai.github.io/langgraphjs/concepts/multi_agent/) | doc | lg-multiagent | 官方多 agent 拓扑总览：supervisor、network、hierarchical 等——本章 supervisor / parallel team 的权威参考 |
+| [LangGraph.js · Agent supervisor（教程）](https://langchain-ai.github.io/langgraphjs/tutorials/multi_agent/agent_supervisor/) | doc | lg-multiagent | 一个 supervisor 用条件边把任务派给多个 worker agent 的官方教程，对应本章图1 的中心化调度循环 |

@@ -15,7 +15,13 @@
  * 需要 key：embedding（OPENAI_API_KEY）+ LLM（getLLM 选用的 provider）。keyless=false。
  * 运行：npx tsx rag-advanced/03-reranking/index.ts
  */
-import { MemoryVectorStore, asRetriever, llmRerank, answerWithRag } from "../../src/shared/rag";
+import {
+  MemoryVectorStore,
+  asRetriever,
+  llmRerank,
+  answerWithRag,
+  retrievalMetricsAtK,
+} from "../../src/shared/rag";
 import type { RetrievedChunk } from "../../src/shared/rag";
 import { divider, logger, color } from "../../src/shared";
 
@@ -70,6 +76,9 @@ const CORPUS: { id: string; text: string }[] = [
   },
 ];
 
+/** golden 标注：这个问题真正需要的答案片段是 c1（续航 + AOD 续航）。 */
+const GOLDEN_RELEVANT_IDS = ["c1"];
+
 /** 把一组片段打印成「排名 + id + 分数 + 摘要」，用于直观对比精排前后顺序。 */
 function printRanking(title: string, chunks: RetrievedChunk[]): void {
   logger.info(title);
@@ -80,6 +89,17 @@ function printRanking(title: string, chunks: RetrievedChunk[]): void {
     const score = color(`score=${c.score.toFixed(3)}`, "gray");
     console.log(`${head} ${id} ${score}  ${preview}…`);
   });
+}
+
+/** 现场量化检索/精排质量，避免只靠肉眼看排名。 */
+function printRetrievalMetrics(label: string, ids: string[], k: number): ReturnType<typeof retrievalMetricsAtK> {
+  const metrics = retrievalMetricsAtK(ids, GOLDEN_RELEVANT_IDS, k);
+  logger.info(
+    `${label}: recall@${k}=${metrics.recall.toFixed(2)}`
+      + ` MRR=${metrics.mrr.toFixed(2)}`
+      + ` nDCG@${k}=${metrics.ndcg.toFixed(2)}`,
+  );
+  return metrics;
 }
 
 async function main(): Promise<void> {
@@ -98,15 +118,27 @@ async function main(): Promise<void> {
   divider("1. 召回（recall）：向量检索 top-8");
   const recalled = await retriever.retrieve(question, 8);
   printRanking("召回结果（按余弦相似度排序，含相近干扰项）：", recalled);
+  const recalledIds = recalled.map((c) => c.id);
+  const recallMetrics = printRetrievalMetrics("召回 top-8 实测", recalledIds, 8);
+  if (recallMetrics.recall < 1) {
+    logger.error("召回 top-8 漏掉了 golden 相关片段 c1，请调大 recallK 或检查 embedding 模型。");
+    process.exitCode = 1;
+  }
 
   // ---- 第二段：精排 top-3（重「排得准」）。----
   divider("2. 精排（rerank）：LLM 把 8 条精挑到 3 条");
   const reranked = await llmRerank(question, recalled, { topN: 3 });
   printRanking("精排结果（LLM 重排后保留 top-3）：", reranked);
+  const rerankedIds = reranked.map((c) => c.id);
+  const rerankMetrics = printRetrievalMetrics("精排 top-3 实测", rerankedIds, 3);
+  if (rerankMetrics.recall < 1) {
+    logger.error("精排 top-3 刷掉了 golden 相关片段 c1，请检查 rerank 提示词或 topN。");
+    process.exitCode = 1;
+  }
 
   // 直观对比：精排把哪些 id 提了上来、刷掉了哪些。
-  const recallTop3 = recalled.slice(0, 3).map((c) => c.id);
-  const rerankTop3 = reranked.map((c) => c.id);
+  const recallTop3 = recalledIds.slice(0, 3);
+  const rerankTop3 = rerankedIds;
   console.log(
     color(`\n顺序变化：召回 top-3 = [${recallTop3.join(", ")}]  →  精排 top-3 = [${rerankTop3.join(", ")}]`, "gray"),
   );

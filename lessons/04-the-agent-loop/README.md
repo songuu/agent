@@ -263,6 +263,9 @@ graph TB
   n_c10_reasoning_pattern["推理范式 (控制流选择)（第10章）"]
   n_c12_langgraph["LangGraph.js（第12章）"]
   n_c12_react_agent["createReactAgent 预制图（第12章）"]
+  n_cragagentic_state_machine["RAG 状态机（第rag-agentic章）"]
+  n_lgrt_loop["循环边（第lg-routing章）"]
+  n_lghitl_interrupt["interrupt 节点中途暂停（第lg-hitl章）"]
   n_c04_react -->|组成| n_c04_agent_loop
   n_c04_agent_loop -->|组成| n_c04_max_steps
   n_c04_agent_loop -->|组成| n_c04_scratchpad
@@ -279,8 +282,11 @@ graph TB
   n_c10_reasoning_pattern -->|对比| n_c04_agent_loop
   n_c12_langgraph -->|对比| n_c04_agent_loop
   n_c12_react_agent -->|应用| n_c04_react
+  n_cragagentic_state_machine -->|深化| n_c04_agent_loop
+  n_lgrt_loop -->|应用| n_c04_react
+  n_lghitl_interrupt -->|应用| n_c04_agent_loop
   class n_c04_react,n_c04_agent_loop,n_c04_text_protocol,n_c04_max_steps,n_c04_scratchpad,n_c04_tool_table,n_c04_native_fc own;
-  class n_c01_react_loop,n_c02_chat,n_c03_system_vs_user,n_c05_native_tool_use,n_c05_roundtrip_loop,n_c10_react,n_c10_reasoning_pattern,n_c12_langgraph,n_c12_react_agent cross;
+  class n_c01_react_loop,n_c02_chat,n_c03_system_vs_user,n_c05_native_tool_use,n_c05_roundtrip_loop,n_c10_react,n_c10_reasoning_pattern,n_c12_langgraph,n_c12_react_agent,n_cragagentic_state_machine,n_lgrt_loop,n_lghitl_interrupt cross;
   linkStyle 0 stroke:#d97706,stroke-width:2px;
   linkStyle 1 stroke:#d97706,stroke-width:2px;
   linkStyle 2 stroke:#d97706,stroke-width:2px;
@@ -297,6 +303,9 @@ graph TB
   linkStyle 13 stroke:#db2777,stroke-width:2px;
   linkStyle 14 stroke:#db2777,stroke-width:2px;
   linkStyle 15 stroke:#059669,stroke-width:2px;
+  linkStyle 16 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 17 stroke:#059669,stroke-width:2px;
+  linkStyle 18 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -310,6 +319,9 @@ graph TB
 - `推理范式 (控制流选择)` —**对比**→ `Agent 循环`（第 10 章）
 - `LangGraph.js` —**对比**→ `Agent 循环`（第 12 章）
 - `createReactAgent 预制图` —**应用**→ `ReAct (Reasoning + Acting)`（第 12 章）
+- `RAG 状态机` —**深化**→ `Agent 循环`（第 rag-agentic 章）
+- `循环边` —**应用**→ `ReAct (Reasoning + Acting)`（第 lg-routing 章）
+- `interrupt 节点中途暂停` —**应用**→ `Agent 循环`（第 lg-hitl 章）
 
 ### 延伸阅读
 

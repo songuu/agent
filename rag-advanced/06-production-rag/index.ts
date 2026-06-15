@@ -25,9 +25,9 @@ import { join } from "node:path";
 
 import {
   MemoryVectorStore,
-  asRetriever,
   answerWithRag,
 } from "../../src/shared/rag";
+import type { Retriever } from "../../src/shared/rag";
 import { divider, logger, color } from "../../src/shared";
 
 /**
@@ -63,21 +63,46 @@ const CORPUS: { id: string; text: string; metadata: { tenant: string } }[] = [
   },
 ];
 
+function invariant(condition: boolean, message: string): asserts condition {
+  if (!condition) throw new Error(`生产化 RAG invariant 失败：${message}`);
+}
+
+/** 把租户过滤下沉到 Retriever，确保最终注入生成的上下文也不会越权。 */
+function tenantRetriever(store: MemoryVectorStore, tenant: string): Retriever {
+  return {
+    async retrieve(query: string, k: number) {
+      const hits = await store.search(query, k, {
+        filter: (doc) => doc.metadata?.["tenant"] === tenant,
+      });
+      return hits.map((hit) => ({
+        id: hit.doc.id,
+        text: hit.doc.text,
+        score: hit.score,
+        ...(hit.doc.metadata ? { metadata: hit.doc.metadata } : {}),
+      }));
+    },
+  };
+}
+
 async function main(): Promise<void> {
   divider("① 入库：带 metadata.tenant 的多租户语料");
   const store = new MemoryVectorStore();
   await store.add(CORPUS);
+  invariant(store.size === CORPUS.length, `入库条数应为 ${CORPUS.length}，实际 ${store.size}`);
   logger.success(`已入库 ${store.size} 条文档（含 A/B 两个租户）。`);
 
   divider("② 持久化：toJSON → 临时文件 → fromJSON（不必重新付费 embedding）");
   // 把「已算好的向量」连同文本一起序列化为 JSON。
   const snapshot = store.toJSON();
+  const snapshotDocCount = (JSON.parse(snapshot) as { docs?: unknown[] }).docs?.length ?? -1;
+  invariant(snapshotDocCount === store.size, `持久化 JSON 条数应为 ${store.size}，实际 ${snapshotDocCount}`);
   const snapshotPath = join(tmpdir(), "agent-build-rag-store.json");
   writeFileSync(snapshotPath, snapshot, "utf-8");
   logger.info(`已写盘：${color(snapshotPath, "gray")}（${snapshot.length} 字节）`);
 
   // fromJSON 只解析 JSON、重建内存结构，不会再触发任何 embedding 网络调用。
   const reloaded = MemoryVectorStore.fromJSON(readFileSync(snapshotPath, "utf-8"));
+  invariant(reloaded.size === store.size, `fromJSON 后条数应保持 ${store.size}，实际 ${reloaded.size}`);
   logger.success(
     `从磁盘载回 ${reloaded.size} 条文档；后续都用这个「省钱副本」，重启不重嵌。`,
   );
@@ -91,6 +116,11 @@ async function main(): Promise<void> {
       metadata: { tenant: "A" },
     },
   ]);
+  invariant(reloaded.size === CORPUS.length, `upsert 覆盖后条数应仍为 ${CORPUS.length}，实际 ${reloaded.size}`);
+  invariant(
+    reloaded.all().some((doc) => doc.id === "A-pricing" && doc.text.includes("2025Q3 新价")),
+    "upsert 后 A-pricing 应被新价格文本覆盖",
+  );
   logger.success(`upsert 完成；文档总数仍为 ${reloaded.size}（覆盖而非新增）。`);
 
   divider("④ 过滤检索：只在租户 A 的文档里检索（权限隔离）");
@@ -107,22 +137,24 @@ async function main(): Promise<void> {
   }
   // 安全断言：过滤后的命中里绝不应出现 B 租户的资料。
   const leaked = filteredHits.some((hit) => hit.doc.metadata?.["tenant"] !== "A");
-  if (leaked) {
-    logger.error("检索结果里混入了非 A 租户文档，过滤未生效！");
-  } else {
-    logger.success("过滤生效：命中全部来自租户 A，没有跨租户泄漏。");
-  }
+  invariant(filteredHits.length > 0, "租户 A 过滤检索不应为空");
+  invariant(!leaked, "过滤检索结果里混入了非 A 租户文档");
+  logger.success("过滤生效：命中全部来自租户 A，没有跨租户泄漏。");
 
   divider("⑤ 全链路：answerWithRag（带精排，输出可溯源答案）");
-  // asRetriever 把向量库适配成统一 Retriever；rerank:true 先宽召回再用 LLM 精排到 k 条。
+  // 租户过滤必须下沉到 retriever；只靠 systemPreamble 约束模型并不能防止 B 租户片段被注入。
   const result = await answerWithRag({
     query,
-    retriever: asRetriever(reloaded),
+    retriever: tenantRetriever(reloaded, "A"),
     k: 2,
     recallK: 4,
     rerank: true,
     systemPreamble: "你是租户 A 的内部知识库助手，只回答租户 A 的问题。",
   });
+  invariant(
+    result.contexts.every((chunk) => chunk.metadata?.["tenant"] === "A"),
+    "最终注入生成的上下文必须全部来自租户 A",
+  );
 
   logger.success("答案（每条结论后带 [片段 N] 引用）：");
   console.log(color(result.answer, "green"));

@@ -53,6 +53,7 @@ function resolveRepoPath(fromMdRelativePath: string, href: string): string {
 function chapterText(part: string, idxInPart: number, id: string, title: string): string {
   if (id === "capstone") return `🎓 ${title.replace(/^毕业项目 · /, "")}`;
   if (part === "进阶 RAG 专题") return `R${idxInPart + 1} ${title}`;
+  if (part === "进阶 LangGraph 专题") return `L${idxInPart + 1} ${title}`;
   return `${id} ${title}`;
 }
 
@@ -212,6 +213,7 @@ export default withMermaid(
     rewrites: {
       "lessons/:lesson/README.md": "lessons/:lesson/index.md",
       "rag-advanced/:topic/README.md": "rag-advanced/:topic/index.md",
+      "langgraph-advanced/:topic/README.md": "langgraph-advanced/:topic/index.md",
       "capstone/:project/README.md": "capstone/:project/index.md",
       "knowledge-graph/README.md": "knowledge-graph/index.md",
     },

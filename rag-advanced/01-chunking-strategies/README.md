@@ -176,7 +176,7 @@ npx tsx rag-advanced/01-chunking-strategies/index.ts
 > 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
 
 ```mermaid
-graph LR
+graph TB
   classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
   classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_cragchunk_why_matters["切块决定检索上限"]
@@ -187,6 +187,7 @@ graph LR
   n_c09_chunk_overlap["分块与重叠 (chunk/overlap)（第09章）"]
   n_c09_rag_pipeline["RAG 全流程（第09章）"]
   n_c07_context_window_budget["上下文窗口预算（第07章）"]
+  n_cragcontextual_document_context["文档级上下文（第rag-contextual章）"]
   n_cragchunk_why_matters -->|深化| n_cragchunk_sliding_window
   n_cragchunk_sliding_window -->|对比| n_cragchunk_recursive
   n_cragchunk_recursive -->|深化| n_cragchunk_markdown_aware
@@ -194,8 +195,9 @@ graph LR
   n_cragchunk_why_matters -->|深化| n_c09_chunk_overlap
   n_cragchunk_recursive -->|应用| n_c09_rag_pipeline
   n_cragchunk_token_budget -->|应用| n_c07_context_window_budget
+  n_cragcontextual_document_context -->|深化| n_cragchunk_markdown_aware
   class n_cragchunk_why_matters,n_cragchunk_sliding_window,n_cragchunk_recursive,n_cragchunk_markdown_aware,n_cragchunk_token_budget own;
-  class n_c09_chunk_overlap,n_c09_rag_pipeline,n_c07_context_window_budget cross;
+  class n_c09_chunk_overlap,n_c09_rag_pipeline,n_c07_context_window_budget,n_cragcontextual_document_context cross;
   linkStyle 0 stroke:#7c3aed,stroke-width:2px;
   linkStyle 1 stroke:#db2777,stroke-width:2px;
   linkStyle 2 stroke:#7c3aed,stroke-width:2px;
@@ -203,6 +205,7 @@ graph LR
   linkStyle 4 stroke:#7c3aed,stroke-width:2px;
   linkStyle 5 stroke:#059669,stroke-width:2px;
   linkStyle 6 stroke:#059669,stroke-width:2px;
+  linkStyle 7 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -210,6 +213,7 @@ graph LR
 - `切块决定检索上限` —**深化**→ `分块与重叠 (chunk/overlap)`（第 09 章）
 - `递归语义切分` —**应用**→ `RAG 全流程`（第 09 章）
 - `按 token 计长 (approxTokens)` —**应用**→ `上下文窗口预算`（第 07 章）
+- `文档级上下文` —**深化**→ `Markdown 标题感知切分`（第 rag-contextual 章）
 
 ### 延伸阅读
 

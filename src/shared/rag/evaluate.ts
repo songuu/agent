@@ -30,6 +30,79 @@ export interface RagEvalInput {
   llm?: LLMClient;
 }
 
+export interface JudgeParseResult {
+  score: number;
+  reason: string;
+}
+
+function clampScore(score: number): number {
+  if (!Number.isFinite(score)) return 0;
+  return Math.max(0, Math.min(1, score));
+}
+
+function extractJsonObject(text: string): unknown | undefined {
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start < 0 || end <= start) return undefined;
+
+  try {
+    return JSON.parse(text.slice(start, end + 1));
+  } catch {
+    return undefined;
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function parseNumericScore(value: unknown): number | undefined {
+  if (typeof value === "number") return value;
+  if (typeof value !== "string") return undefined;
+  const match = value.match(/[0-9]*\.?[0-9]+/);
+  return match ? Number(match[0]) : undefined;
+}
+
+function parseReason(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+/** 解析 LLM-as-judge 输出。WHY: 不同模型偶尔会回 JSON/中文标签/多余文字，评估脚本不能因此失真或崩掉。 */
+export function parseJudgeOutput(text: string): JudgeParseResult {
+  const json = extractJsonObject(text);
+  if (isRecord(json)) {
+    const score =
+      parseNumericScore(json.score) ??
+      parseNumericScore(json.Score) ??
+      parseNumericScore(json.SCORE) ??
+      parseNumericScore(json["分数"]);
+    const reason =
+      parseReason(json.reason) ??
+      parseReason(json.Reason) ??
+      parseReason(json.REASON) ??
+      parseReason(json["理由"]);
+
+    if (score !== undefined) {
+      return { score: clampScore(score), reason: reason ?? text.trim().slice(0, 120) };
+    }
+  }
+
+  const scoreMatch =
+    text.match(/SCORE\s*[:：]\s*([0-9]*\.?[0-9]+)/i) ??
+    text.match(/分数\s*[:：]\s*([0-9]*\.?[0-9]+)/);
+  const reasonMatch =
+    text.match(/REASON\s*[:：]\s*(.+)/i) ??
+    text.match(/理由\s*[:：]\s*(.+)/);
+
+  const score = scoreMatch ? Number(scoreMatch[1]) : 0;
+  return {
+    score: clampScore(score),
+    reason: reasonMatch?.[1]?.trim() ?? text.trim().slice(0, 120),
+  };
+}
+
 /** 单项裁判：要求模型输出 SCORE/REASON 两行，容错解析成 0~1 分数。 */
 async function judge(
   llm: LLMClient,
@@ -42,12 +115,7 @@ async function judge(
     messages: [{ role: "user", content: payload }],
     temperature: 0,
   });
-  const scoreMatch = res.text.match(/SCORE:\s*([0-9]*\.?[0-9]+)/i);
-  const reasonMatch = res.text.match(/REASON:\s*(.+)/i);
-  let score = scoreMatch ? Number(scoreMatch[1]) : 0;
-  if (!Number.isFinite(score)) score = 0;
-  score = Math.max(0, Math.min(1, score));
-  return { score, reason: reasonMatch?.[1]?.trim() ?? res.text.trim().slice(0, 120) };
+  return parseJudgeOutput(res.text);
 }
 
 /** 评估一次 RAG 问答，返回三项 0~1 分数与各自理由。三项裁判并行执行。 */

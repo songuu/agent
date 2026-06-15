@@ -238,6 +238,7 @@ graph TB
   n_c02_llm_call_pure_function["LLM 调用本质 (无状态纯函数)（第02章）"]
   n_c04_agent_loop["Agent 循环（第04章）"]
   n_c07_conversation_as_array["记忆即回灌 messages（第07章）"]
+  n_lgrt_recursion_limit["recursionLimit 安全阀（第lg-routing章）"]
   n_c01_llm_vs_agent -->|深化| n_c01_agent_formula
   n_c01_agent_formula -->|组成| n_c01_react_loop
   n_c01_agent_formula -->|组成| n_c01_tool_as_capability
@@ -249,8 +250,9 @@ graph TB
   n_c02_llm_call_pure_function -->|深化| n_c01_llm_vs_agent
   n_c04_agent_loop -->|深化| n_c01_react_loop
   n_c07_conversation_as_array -->|深化| n_c01_message_memory
+  n_lgrt_recursion_limit -->|对比| n_c01_max_steps
   class n_c01_llm_vs_agent,n_c01_agent_formula,n_c01_react_loop,n_c01_tool_as_capability,n_c01_message_memory,n_c01_max_steps,n_c01_yagni_when_not_agent own;
-  class n_c02_llm_call_pure_function,n_c04_agent_loop,n_c07_conversation_as_array cross;
+  class n_c02_llm_call_pure_function,n_c04_agent_loop,n_c07_conversation_as_array,n_lgrt_recursion_limit cross;
   linkStyle 0 stroke:#7c3aed,stroke-width:2px;
   linkStyle 1 stroke:#d97706,stroke-width:2px;
   linkStyle 2 stroke:#d97706,stroke-width:2px;
@@ -262,6 +264,7 @@ graph TB
   linkStyle 8 stroke:#7c3aed,stroke-width:2px;
   linkStyle 9 stroke:#7c3aed,stroke-width:2px;
   linkStyle 10 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 11 stroke:#db2777,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -269,6 +272,7 @@ graph TB
 - `LLM 调用本质 (无状态纯函数)` —**深化**→ `LLM 与 Agent 的区别`（第 02 章）
 - `Agent 循环` —**深化**→ `感知-决策-行动-观察循环`（第 04 章）
 - `记忆即回灌 messages` —**深化**→ `消息数组即记忆`（第 07 章）
+- `recursionLimit 安全阀` —**对比**→ `maxSteps 安全阀`（第 lg-routing 章）
 
 ### 延伸阅读
 

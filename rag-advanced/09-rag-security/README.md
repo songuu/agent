@@ -164,12 +164,14 @@ graph TB
   n_cragsec_pii_redaction["PII 出口脱敏"]
   n_cragsec_citation_verification["引用可核验"]
   n_cragsec_defense_in_depth["RAG 纵深防御"]
+  n_cragagentic_refuse["无答案拒答（第rag-agentic章）"]
   n_c17_trust_boundary["信任边界（第17章）"]
   n_c17_prompt_injection["提示注入 (Prompt Injection)（第17章）"]
   n_c17_isolate_and_label["隔离 + 标注 (wrapUntrusted)（第17章）"]
   n_c17_pii_redaction["PII 脱敏（第17章）"]
   n_c09_citation["引用溯源（第09章）"]
   n_c17_defense_in_depth["纵深防御（第17章）"]
+  n_cragagentic_refuse -->|应用| n_cragsec_defense_in_depth
   n_cragsec_untrusted_retrieval -->|应用| n_cragsec_injection_detection
   n_cragsec_untrusted_retrieval -->|应用| n_cragsec_pii_redaction
   n_cragsec_injection_detection -->|组成| n_cragsec_defense_in_depth
@@ -182,22 +184,24 @@ graph TB
   n_cragsec_citation_verification -->|深化| n_c09_citation
   n_cragsec_defense_in_depth -->|深化| n_c17_defense_in_depth
   class n_cragsec_untrusted_retrieval,n_cragsec_injection_detection,n_cragsec_pii_redaction,n_cragsec_citation_verification,n_cragsec_defense_in_depth own;
-  class n_c17_trust_boundary,n_c17_prompt_injection,n_c17_isolate_and_label,n_c17_pii_redaction,n_c09_citation,n_c17_defense_in_depth cross;
+  class n_cragagentic_refuse,n_c17_trust_boundary,n_c17_prompt_injection,n_c17_isolate_and_label,n_c17_pii_redaction,n_c09_citation,n_c17_defense_in_depth cross;
   linkStyle 0 stroke:#059669,stroke-width:2px;
   linkStyle 1 stroke:#059669,stroke-width:2px;
-  linkStyle 2 stroke:#d97706,stroke-width:2px;
+  linkStyle 2 stroke:#059669,stroke-width:2px;
   linkStyle 3 stroke:#d97706,stroke-width:2px;
   linkStyle 4 stroke:#d97706,stroke-width:2px;
-  linkStyle 5 stroke:#059669,stroke-width:2px;
-  linkStyle 6 stroke:#7c3aed,stroke-width:2px;
-  linkStyle 7 stroke:#059669,stroke-width:2px;
-  linkStyle 8 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 5 stroke:#d97706,stroke-width:2px;
+  linkStyle 6 stroke:#059669,stroke-width:2px;
+  linkStyle 7 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 8 stroke:#059669,stroke-width:2px;
   linkStyle 9 stroke:#7c3aed,stroke-width:2px;
   linkStyle 10 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 11 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
 
+- `无答案拒答` —**应用**→ `RAG 纵深防御`（第 rag-agentic 章）
 - `检索内容即不可信数据` —**应用**→ `信任边界`（第 17 章）
 - `注入检测与隔离` —**深化**→ `提示注入 (Prompt Injection)`（第 17 章）
 - `注入检测与隔离` —**应用**→ `隔离 + 标注 (wrapUntrusted)`（第 17 章）

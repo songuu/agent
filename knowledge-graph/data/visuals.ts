@@ -244,6 +244,22 @@ export const CONCEPT_VISUALS: ConceptVisual[] = [
     takeaway: "生产 RAG 的难点不是一次问答，而是长期更新和边界隔离。",
   },
   {
+    chapter: "rag-contextual",
+    kind: "pipeline",
+    title: "Contextual Retrieval：先补语境，再入索引",
+    summary: "chunk 被切出来后会丢标题、章节和文档背景；把这些上下文补回索引文本，能让 BM25 与向量召回都重新看见关键语境。",
+    steps: ["原始文档", "切出 chunk", "补标题/章节", "入 BM25/向量索引", "召回恢复"],
+    takeaway: "Contextual Retrieval 不是改写事实，而是在索引前把被切块丢掉的语境补回来。",
+  },
+  {
+    chapter: "rag-agentic",
+    kind: "loop",
+    title: "Agentic RAG：检索后先判断，再决定下一步",
+    summary: "一次 top-k 不够可靠；显式把 retrieve、grade、rewrite、answer/refuse 做成状态机，证据不足就重试，无答案就拒答。",
+    steps: ["Retrieve", "Grade", "Rewrite", "Re-retrieve", "Answer/Refuse"],
+    takeaway: "Agentic RAG 的价值在控制流：不要拿不够的证据硬答。",
+  },
+  {
     chapter: "rag-security",
     kind: "shield",
     title: "RAG 安全是套在检索面上的三道确定性防线",
@@ -266,6 +282,46 @@ export const CONCEPT_VISUALS: ConceptVisual[] = [
     summary: "检索到 ≠ 用得上：先去重删整片冗余、压缩裁超长、按 token 预算挑子集，再把最该读的片段放到首尾——对抗模型「中间遗忘」(lost-in-the-middle)。",
     steps: ["多路检索片段", "近重复去重", "超长片段压缩", "预算内打包", "按注意力重排", "装配最终上下文"],
     takeaway: "上下文工程是确定性纯函数：去重/压缩/预算/重排各司其职，把召回结果装配成最省、最好读的提示。",
+  },
+  {
+    chapter: "lg-stategraph",
+    kind: "pipeline",
+    title: "手写 StateGraph：State + 函数节点 + 边，把 createReactAgent 拆开",
+    summary: "图 = 带 reducer 的共享 State + 返回 partial 更新的函数节点 + 边；沿 START→节点→END 跑，reducer 把各节点的 partial 更新合并成终态。",
+    steps: ["定义 State 与 reducer channels", "写函数节点（返回 partial）", "addEdge 连成流程", "compile 编译图", "invoke 沿边累积成终态"],
+    takeaway: "createReactAgent 只是预制版；手写 StateGraph 才看清 channel/reducer/节点/边这套机制。",
+  },
+  {
+    chapter: "lg-routing",
+    kind: "loop",
+    title: "条件边：让图在运行时自己决定走向（分支 / 循环 / 扇出）",
+    summary: "addConditionalEdges 用一个 router 函数读 State 返回下一个节点名：返回更早的节点=循环（ReAct 骨架）、按 State 选 handler=分支、返回一组 Send=扇出 map-reduce；recursionLimit 兜底防失控。",
+    steps: ["router 读 State", "分支：选 handler", "循环：指回更早节点", "recursionLimit 兜底", "Send 扇出 map-reduce"],
+    takeaway: "线性图只会一条道走到黑；条件边才让图能分支、能循环、能扇出——这是状态机图真正的威力。",
+  },
+  {
+    chapter: "lg-checkpoint",
+    kind: "stream",
+    title: "Checkpointer：给图一条可回溯、可续跑、可重放的状态时间线",
+    summary: "compile 时挂 MemorySaver，invoke 带 thread_id，每个 super-step 的状态都被存成一个 checkpoint：同 thread 跨 invoke 自动续上、不同 thread 隔离；getState/getStateHistory 看快照与时间线，updateState 改写、invoke(null, 历史config) 从过去某点重放。",
+    steps: ["compile 挂 checkpointer", "invoke 带 thread_id", "每个 super-step 存快照", "getState/History 回看时间线", "updateState 人工改写", "从历史 checkpoint 重放"],
+    takeaway: "跑完即忘的图加一个 checkpointer，就有了会话记忆、断点续跑和时间旅行——这是 human-in-the-loop 的底座。",
+  },
+  {
+    chapter: "lg-hitl",
+    kind: "shield",
+    title: "Human-in-the-Loop：interrupt 暂停 → 人拍板 → Command 续跑",
+    summary: "节点里 interrupt(payload) 把待批项交给人、就地暂停整张图（要靠 checkpointer 持久化暂停点）；payload 从 getState().tasks[].interrupts[].value 取；人用 invoke(new Command({resume}), cfg) 续跑，interrupt() 返回该值，条件边按它放行(apply)或拦截(cancel)。",
+    steps: ["propose 准备待批项", "interrupt 暂停交给人", "getState 读 payload", "Command(resume) 续跑", "条件边：放行 / 拦截"],
+    takeaway: "interrupt + Command 让图能停下来等人拍板；续跑只能用 Command，普通 invoke 会重跑——这是审批门/人工纠偏的底座。",
+  },
+  {
+    chapter: "lg-multiagent",
+    kind: "fusion",
+    title: "多 Agent 编排：supervisor 中心化调度 vs 并行异构 team",
+    summary: "把多个专职 agent 当节点编排进一张图。两种基本拓扑：supervisor 用条件边按任务类型把每条任务派给对应 worker、干完回到 supervisor 循环到队空（串行、顺序可控）；parallel team 从 fork 一次连出多条边让多个角色并行、产出经 append reducer 汇集、join 排序聚合（并行、顺序无关）。",
+    steps: ["多专职 agent = 多节点", "supervisor 条件边派活", "worker 干完回 supervisor", "fork 并行多角色", "join 排序聚合"],
+    takeaway: "多 Agent 不是堆人数，而是选对拓扑——中心化调度还是并行协作，全建立在前四章的 channel/reducer/条件边/Send 之上。",
   },
 ];
 
@@ -374,6 +430,14 @@ const CONCEPT_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> =
     { tone: "core", label: "核心判断", body: "生产化 RAG 是持续入库、权限过滤、检索精排、评估观测的长期系统。" },
     { tone: "warning", label: "易错边界", body: "一次 demo 问答不代表生产可用；更新、权限、失败恢复和监控才是主战场。" },
   ],
+  "rag-contextual": [
+    { tone: "core", label: "核心判断", body: "Contextual Retrieval 在入索引前给 chunk 补文档标题、章节路径等语境，让孤立片段重新可被召回。" },
+    { tone: "warning", label: "易错边界", body: "补上下文不是把答案写进 chunk；原始正文必须保留可审计，生成式上下文也要和原文分层保存。" },
+  ],
+  "rag-agentic": [
+    { tone: "core", label: "核心判断", body: "Agentic RAG 把检索后的证据判断显式化：够证据才回答，不够就改写重试，无答案就拒答。" },
+    { tone: "warning", label: "易错边界", body: "不要把“多检索几次”当智能；没有 grade 和停止条件，只会放大成本与噪声。" },
+  ],
   "rag-security": [
     { tone: "core", label: "核心判断", body: "RAG 把外部文档塞进提示，等于把不可信数据递到模型嘴边；检测注入、脱敏 PII、核验引用都该是确定性纯函数。" },
     { tone: "warning", label: "易错边界", body: "别指望模型自觉拒绝投毒内容或不泄露 PII；护栏要在进出检索的边界上代码强制，且可审计。" },
@@ -385,6 +449,26 @@ const CONCEPT_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> =
   "rag-context": [
     { tone: "core", label: "核心判断", body: "检索到 ≠ 用得上：上下文要在 token 预算内去重、压缩、挑子集，再按位置注意力把最该读的放到首尾——这些都是确定性纯函数，不是玄学。" },
     { tone: "warning", label: "易错边界", body: "别无脑塞满窗口：塞满 ≠ 读懂。高分重复会挤掉唯一信息、长文吃光预算、关键证据埋中部被「中间遗忘」忽略；每多塞一段都付 token 成本。" },
+  ],
+  "lg-stategraph": [
+    { tone: "core", label: "核心判断", body: "StateGraph 三件套：带 reducer 的 channel（决定写入怎么合并）+ 返回 partial 更新的函数节点 + 连接它们的边；createReactAgent 只是其上的预制封装。" },
+    { tone: "warning", label: "易错边界", body: "节点返回的是 partial 更新、不是整个 state；channel 不配 reducer 就走默认 replace（后写覆盖先写），想累积（如 messages）必须显式用 append reducer。" },
+  ],
+  "lg-routing": [
+    { tone: "core", label: "核心判断", body: "条件边让图在运行时自己决定走向：一个 router 函数读 State 返回下一个节点名——分支=选一条、循环=指回更早节点、Send=动态扇出并行。" },
+    { tone: "warning", label: "易错边界", body: "循环边必须有终止条件，否则只能靠 recursionLimit 兜底抛 GraphRecursionError；router 别依赖未初始化的 channel，否则首轮就走错分支。" },
+  ],
+  "lg-checkpoint": [
+    { tone: "core", label: "核心判断", body: "Checkpointer 按 thread_id 持久化每个 super-step 的状态：同 thread 跨 invoke 自动续上（靠 reducer 累积，不用手动回传历史）、不同 thread 隔离；这是会话记忆、断点续跑与时间旅行的共同底座。" },
+    { tone: "warning", label: "易错边界", body: "持久化是否「累积」取决于 channel 的 reducer，不是 checkpointer 本身：replace channel 仍会被新输入覆盖；MemorySaver 只活在内存，进程退出即丢，生产要换 SqliteSaver/PostgresSaver；updateState 也经 reducer 合并，不是无脑覆盖。" },
+  ],
+  "lg-hitl": [
+    { tone: "core", label: "核心判断", body: "interrupt(payload) 在节点中途暂停整张图、把 payload 交给人；人用 invoke(new Command({resume}), cfg) 续跑，interrupt() 就地返回该值——这是审批门、人工纠偏、危险操作前确认的统一底座，建立在 checkpointer 之上。" },
+    { tone: "warning", label: "易错边界", body: "interrupt 必须配 checkpointer 才能暂停/恢复；payload 不在 invoke 返回值顶层（result.__interrupt__ 为 undefined），要从 getState().tasks[].interrupts[].value 取；续跑只能用 Command({resume})——暂停时用普通 invoke(input) 不会 resume，而是带新输入从头重跑并再次暂停。" },
+  ],
+  "lg-multiagent": [
+    { tone: "core", label: "核心判断", body: "多 Agent 就是把多个专职节点编排进一张图：supervisor 用条件边中心化调度（串行、顺序可控），parallel team 用 fork/join 并行协作（并行、靠 append reducer 合并）；选哪种拓扑取决于任务能否并行、是否需要顺序与集中控制。" },
+    { tone: "warning", label: "易错边界", body: "并行 agent 的产出顺序不保证（与完成顺序有关），跨 agent 聚合必须靠 reducer + 排序消除顺序依赖，别假设边的书写顺序就是执行/收集顺序；supervisor 的循环边必须有终止条件（队列空 → END），否则要靠 recursionLimit 兜底。" },
   ],
 };
 

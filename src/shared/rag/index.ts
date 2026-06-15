@@ -36,16 +36,41 @@ export type { Retriever, RetrievedChunk } from "./types";
 // 精排 / 查询改写
 export { llmRerank } from "./rerank";
 export type { RerankOptions } from "./rerank";
-export { multiQuery, hyde } from "./queryTransform";
-export type { QueryTransformOptions } from "./queryTransform";
+export {
+  DEFAULT_QUERY_ROUTES,
+  routeQuery,
+  decomposeQuery,
+  stepBackQuery,
+  planQuery,
+  multiQuery,
+  hyde,
+} from "./queryTransform";
+export type {
+  QueryTransformOptions,
+  QueryRouteDefinition,
+  QueryRouteResult,
+  QueryPlan,
+} from "./queryTransform";
 
 // 端到端管线
 export { answerWithRag, asRetriever, buildContextBlock } from "./ragPipeline";
 export type { RagAnswer, AnswerWithRagOptions } from "./ragPipeline";
 
 // 评估
-export { evaluateRag } from "./evaluate";
-export type { RagEvalScores, RagEvalInput } from "./evaluate";
+export { evaluateRag, parseJudgeOutput } from "./evaluate";
+export type { RagEvalScores, RagEvalInput, JudgeParseResult } from "./evaluate";
+export {
+  isRefusalAnswer,
+  evaluateGoldenSet,
+  checkGoldenGate,
+} from "./evalGate";
+export type {
+  GoldenEvalCase,
+  GoldenEvalCaseResult,
+  GoldenEvalReport,
+  GoldenGateThresholds,
+  GoldenGateResult,
+} from "./evalGate";
 
 // 检索质量指标（纯函数：recall/precision/F1/hitRate/MRR/nDCG）
 export {
@@ -116,3 +141,33 @@ export type {
   PackOptions,
   PackResult,
 } from "./contextAssembly";
+
+// Contextual Retrieval（纯函数：给孤立 chunk 补文档/章节上下文，再对照检索收益）
+export {
+  contextualizeChunk,
+  contextualizeChunks,
+  makeContextualRetrievalCorpus,
+  compareContextualRetrieval,
+} from "./contextualRetrieval";
+export type {
+  ContextualChunk,
+  ContextualizedChunk,
+  ContextualRetrievalComparison,
+} from "./contextualRetrieval";
+
+// Agentic RAG（纯函数：检索 → 证据打分 → 改写重试 → 回答/拒答）
+export {
+  gradeRetrieval,
+  rewriteForAgenticRetrieval,
+  runAgenticRetrieval,
+  makeAgenticRagCorpus,
+  makeBm25Retriever,
+} from "./agenticRag";
+export type {
+  AgenticRagDoc,
+  RetrievalGradeDecision,
+  RetrievalGrade,
+  AgenticRetrievalStep,
+  AgenticRetrievalResult,
+  RunAgenticRetrievalOptions,
+} from "./agenticRag";

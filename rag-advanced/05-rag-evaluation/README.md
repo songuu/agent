@@ -175,6 +175,7 @@ graph TB
   n_c15_llm_judge["LLM-as-judge（第15章）"]
   n_c09_hallucination_reduction["幻觉抑制与 A/B 对比（第09章）"]
   n_c15_eval_harness["评估框架 runEval（第15章）"]
+  n_cragagentic_grade["证据打分器（第rag-agentic章）"]
   n_cragidx_recall_at_scale["近似召回度量（第rag-index章）"]
   n_cragctx_lost_in_middle["中间遗忘 (lost-in-the-middle)（第rag-context章）"]
   n_crageval_llm_judge_rag -->|组成| n_crageval_context_relevance
@@ -185,10 +186,11 @@ graph TB
   n_crageval_llm_judge_rag -->|深化| n_c15_llm_judge
   n_crageval_faithfulness -->|深化| n_c09_hallucination_reduction
   n_crageval_stage_localization -->|应用| n_c15_eval_harness
+  n_cragagentic_grade -->|应用| n_crageval_context_relevance
   n_cragidx_recall_at_scale -->|应用| n_crageval_context_relevance
   n_cragctx_lost_in_middle -->|应用| n_crageval_answer_relevance
   class n_crageval_llm_judge_rag,n_crageval_context_relevance,n_crageval_faithfulness,n_crageval_answer_relevance,n_crageval_stage_localization own;
-  class n_c15_llm_judge,n_c09_hallucination_reduction,n_c15_eval_harness,n_cragidx_recall_at_scale,n_cragctx_lost_in_middle cross;
+  class n_c15_llm_judge,n_c09_hallucination_reduction,n_c15_eval_harness,n_cragagentic_grade,n_cragidx_recall_at_scale,n_cragctx_lost_in_middle cross;
   linkStyle 0 stroke:#d97706,stroke-width:2px;
   linkStyle 1 stroke:#d97706,stroke-width:2px;
   linkStyle 2 stroke:#d97706,stroke-width:2px;
@@ -199,6 +201,7 @@ graph TB
   linkStyle 7 stroke:#059669,stroke-width:2px;
   linkStyle 8 stroke:#059669,stroke-width:2px;
   linkStyle 9 stroke:#059669,stroke-width:2px;
+  linkStyle 10 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -206,6 +209,7 @@ graph TB
 - `RAG 的 LLM-as-judge` —**深化**→ `LLM-as-judge`（第 15 章）
 - `忠实度` —**深化**→ `幻觉抑制与 A/B 对比`（第 09 章）
 - `按指标定位坏环` —**应用**→ `评估框架 runEval`（第 15 章）
+- `证据打分器` —**应用**→ `上下文相关性`（第 rag-agentic 章）
 - `近似召回度量` —**应用**→ `上下文相关性`（第 rag-index 章）
 - `中间遗忘 (lost-in-the-middle)` —**应用**→ `答案相关性`（第 rag-context 章）
 

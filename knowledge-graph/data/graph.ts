@@ -98,9 +98,16 @@ export const CHAPTERS: Chapter[] = [
   { id: "rag-query", slug: "04-query-transformation", title: "查询改写 (multi-query/HyDE)", part: "进阶 RAG 专题", dir: "rag-advanced/04-query-transformation", demo: { needsKey: "embedding" } },
   { id: "rag-eval", slug: "05-rag-evaluation", title: "RAG 评估三指标", part: "进阶 RAG 专题", dir: "rag-advanced/05-rag-evaluation", demo: { needsKey: "embedding" } },
   { id: "rag-prod", slug: "06-production-rag", title: "生产化 RAG 全链路", part: "进阶 RAG 专题", dir: "rag-advanced/06-production-rag", demo: { needsKey: "embedding" } },
+  { id: "rag-contextual", slug: "07-contextual-retrieval", title: "Contextual Retrieval", part: "进阶 RAG 专题", dir: "rag-advanced/07-contextual-retrieval", demo: { needsKey: "none" } },
+  { id: "rag-agentic", slug: "08-agentic-rag", title: "Agentic RAG", part: "进阶 RAG 专题", dir: "rag-advanced/08-agentic-rag", demo: { needsKey: "none" } },
   { id: "rag-security", slug: "09-rag-security", title: "RAG 安全护栏", part: "进阶 RAG 专题", dir: "rag-advanced/09-rag-security", demo: { needsKey: "none" } },
   { id: "rag-index", slug: "10-index-internals", title: "向量索引内部机制", part: "进阶 RAG 专题", dir: "rag-advanced/10-index-internals", demo: { needsKey: "none" } },
   { id: "rag-context", slug: "11-context-engineering", title: "检索后上下文工程", part: "进阶 RAG 专题", dir: "rag-advanced/11-context-engineering", demo: { needsKey: "none" } },
+  { id: "lg-stategraph", slug: "01-stategraph-basics", title: "手写 StateGraph", part: "进阶 LangGraph 专题", dir: "langgraph-advanced/01-stategraph-basics", demo: { needsKey: "none" } },
+  { id: "lg-routing", slug: "02-conditional-routing", title: "条件边与路由", part: "进阶 LangGraph 专题", dir: "langgraph-advanced/02-conditional-routing", demo: { needsKey: "none" } },
+  { id: "lg-checkpoint", slug: "03-checkpointing", title: "Checkpointer 持久化与时间旅行", part: "进阶 LangGraph 专题", dir: "langgraph-advanced/03-checkpointing", demo: { needsKey: "none" } },
+  { id: "lg-hitl", slug: "04-human-in-the-loop", title: "Human-in-the-Loop（interrupt 审批门）", part: "进阶 LangGraph 专题", dir: "langgraph-advanced/04-human-in-the-loop", demo: { needsKey: "none" } },
+  { id: "lg-multiagent", slug: "05-multi-agent-graph", title: "多 Agent 编排（supervisor / 并行 team）", part: "进阶 LangGraph 专题", dir: "langgraph-advanced/05-multi-agent-graph", demo: { needsKey: "none" } },
 ];
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -287,6 +294,18 @@ export const CONCEPTS: Concept[] = [
   { id: "cragprod-pipeline-compose", label: "端到端管线组合", chapter: "rag-prod", summary: "过滤+检索+精排+引用增强生成组装成可复用 answerWithRag" },
   { id: "cragprod-vectordb-migration", label: "迁移到专用向量 DB", chapter: "rag-prod", summary: "数据量/并发/持久化需求超内存库时迁 pgvector/Qdrant，接口对齐" },
 
+  { id: "cragcontextual-document-context", label: "文档级上下文", chapter: "rag-contextual", summary: "标题、章节路径、metadata 等 chunk 被切出来后容易丢掉的语境" },
+  { id: "cragcontextual-pre-index", label: "入索引前补上下文", chapter: "rag-contextual", summary: "在 embedding/BM25 前把上下文与原文拼成 contextualized chunk" },
+  { id: "cragcontextual-title-recall", label: "标题词召回恢复", chapter: "rag-contextual", summary: "用户查询命中标题/章节词时，补上下文能让孤立片段重新被召回" },
+  { id: "cragcontextual-raw-preserved", label: "原文可审计", chapter: "rag-contextual", summary: "上下文前缀与原文正文分层保存，确保不改写原始事实" },
+  { id: "cragcontextual-hybrid-friendly", label: "同时服务 BM25 与向量", chapter: "rag-contextual", summary: "补上下文后的文本可同时增强关键词匹配与语义 embedding 输入" },
+
+  { id: "cragagentic-gated-retrieve", label: "gated retrieve", chapter: "rag-agentic", summary: "检索后先判断证据是否足够，够才进入回答，不够则重试" },
+  { id: "cragagentic-grade", label: "证据打分器", chapter: "rag-agentic", summary: "把候选片段评成 answer/retry/refuse，控制后续路径" },
+  { id: "cragagentic-rewrite-loop", label: "改写重试循环", chapter: "rag-agentic", summary: "证据不足时把口语 query 改写成更贴资料的检索词再召回" },
+  { id: "cragagentic-refuse", label: "无答案拒答", chapter: "rag-agentic", summary: "资料没有答案时停止并拒答，而不是强行生成" },
+  { id: "cragagentic-state-machine", label: "RAG 状态机", chapter: "rag-agentic", summary: "retrieve、grade、rewrite、answer/refuse 显式成状态，便于测试和观测" },
+
   { id: "cragsec-untrusted-retrieval", label: "检索内容即不可信数据", chapter: "rag-security", summary: "RAG 把外部文档塞进提示词，等于把不可信数据递给模型，是间接注入的攻击面" },
   { id: "cragsec-injection-detection", label: "注入检测与隔离", chapter: "rag-security", summary: "用确定性规则扫描检索片段里的指令式文本，命中即隔离，不让投毒文档当指令执行" },
   { id: "cragsec-pii-redaction", label: "PII 出口脱敏", chapter: "rag-security", summary: "片段/答案落地前在边界用正则脱敏邮箱/手机/身份证/卡号，并留审计命中" },
@@ -305,6 +324,41 @@ export const CONCEPTS: Concept[] = [
   { id: "cragctx-compression", label: "抽取式压缩", chapter: "rag-context", summary: "超长片段按句抽取裁到预算内，保留高信息前缀；纯抽取是原文子串，无幻觉风险" },
   { id: "cragctx-lost-in-middle", label: "中间遗忘 (lost-in-the-middle)", chapter: "rag-context", summary: "模型对上下文首尾注意力强、中间弱，埋在中部的关键证据容易被忽略" },
   { id: "cragctx-reorder", label: "注意力感知重排", chapter: "rag-context", summary: "按位置注意力权重把高相关片段放到首尾，依重排不等式最大化有效相关性" },
+
+  // 进阶 LangGraph · 第 01 章 手写 StateGraph
+  { id: "lgsg-state-channels", label: "State 与 channels", chapter: "lg-stategraph", summary: "图的共享状态由若干带类型的 channel 组成，在节点间流动；State 是 StateGraph 的中枢" },
+  { id: "lgsg-reducer", label: "channel reducer", chapter: "lg-stategraph", summary: "每个 channel 配一个 reducer 决定多次写入如何合并：append 累积 / replace 覆盖（默认）" },
+  { id: "lgsg-node-partial", label: "节点返回 partial 更新", chapter: "lg-stategraph", summary: "节点是普通函数，只返回它要改的 channel；没碰的 channel 由上一状态自动保留" },
+  { id: "lgsg-edges-compile", label: "边与 compile/invoke", chapter: "lg-stategraph", summary: "START/END + addEdge 连成流程，compile 成可执行图，invoke 给初始 state 跑到终态" },
+  { id: "lgsg-vs-prebuilt", label: "揭开 createReactAgent", chapter: "lg-stategraph", summary: "预制 agent = StateGraph + messages channel(append reducer) + 模型节点 + 工具节点 + 循环边" },
+
+  // 进阶 LangGraph · 第 02 章 条件边与路由
+  { id: "lgrt-conditional-edge", label: "条件边 (addConditionalEdges)", chapter: "lg-routing", summary: "router 函数读 State 返回下一个节点名，图在运行时自己决定走向——分支/循环/扇出的共同基础" },
+  { id: "lgrt-branch", label: "分支路由", chapter: "lg-routing", summary: "router 按 State 返回不同节点名，把流程导向不同 handler" },
+  { id: "lgrt-loop", label: "循环边", chapter: "lg-routing", summary: "条件边指回更早的节点形成循环，必须有终止条件；这正是 ReAct「反复行动直到完成」的骨架" },
+  { id: "lgrt-recursion-limit", label: "recursionLimit 安全阀", chapter: "lg-routing", summary: "循环不收敛跑到上限抛 GraphRecursionError，图版的 maxSteps，防无限循环烧资源" },
+  { id: "lgrt-send-fanout", label: "Send 扇出 (map-reduce)", chapter: "lg-routing", summary: "从一条边返回一组 Send 动态生成多个并行节点实例，结果经 reducer 合并、与完成顺序无关" },
+
+  // 进阶 LangGraph · 第 03 章 Checkpointer 持久化与时间旅行
+  { id: "lgcp-checkpointer", label: "Checkpointer 与 thread_id", chapter: "lg-checkpoint", summary: "给图 compile 时挂 MemorySaver，invoke 带 {configurable:{thread_id}}，每个 super-step 的状态即按 thread 持久化" },
+  { id: "lgcp-persist-accumulate", label: "跨 invoke 持久化累积", chapter: "lg-checkpoint", summary: "同一 thread 多次 invoke，状态经 reducer 自动续上（append 累积/sum 累加），无需手动回传历史；不同 thread 完全隔离" },
+  { id: "lgcp-getstate", label: "getState 状态快照", chapter: "lg-checkpoint", summary: "getState 取某 thread 的当前快照：values（各 channel 值）+ next（待执行节点，空=已到 END）+ checkpoint_id" },
+  { id: "lgcp-history", label: "getStateHistory 执行时间线", chapter: "lg-checkpoint", summary: "getStateHistory 倒序（newest-first）遍历每个 super-step 的快照，构成可回溯的执行时间线" },
+  { id: "lgcp-time-travel", label: "updateState 改写与时间旅行", chapter: "lg-checkpoint", summary: "updateState 人工改写某个 channel（经 reducer 合并）；invoke(null, 历史 checkpoint 的 config) 从过去某点重放，纯函数节点下结果可复现" },
+
+  // 进阶 LangGraph · 第 04 章 Human-in-the-Loop（interrupt 审批门）
+  { id: "lghitl-interrupt", label: "interrupt 节点中途暂停", chapter: "lg-hitl", summary: "节点内调用 interrupt(payload) 把 payload 交给人、就地暂停整张图；必须配 checkpointer 才能持久化暂停点" },
+  { id: "lghitl-read-payload", label: "读取 interrupt payload", chapter: "lg-hitl", summary: "暂停时 payload 不在 invoke 返回值顶层，要从 getState(cfg).tasks[].interrupts[].value 取（0.2.x 实证暴露位置）" },
+  { id: "lghitl-command-resume", label: "Command(resume) 续跑", chapter: "lg-hitl", summary: "invoke(new Command({resume:val}), cfg) 续跑，被暂停的 interrupt() 就地返回 val；这是唯一能 resume 的方式" },
+  { id: "lghitl-approval-gate", label: "审批门：放行 / 拦截", chapter: "lg-hitl", summary: "humanReview 后用条件边按人给的决定路由——批准走 apply 放行，否则走 cancel 拦截；终态完全由人决定" },
+  { id: "lghitl-plain-invoke-pitfall", label: "易错：普通 invoke 不 resume", chapter: "lg-hitl", summary: "暂停时用普通 invoke(input)（非 Command）不会续跑，会带新输入从头重跑并再次暂停——resume 必须用 Command" },
+
+  // 进阶 LangGraph · 第 05 章 多 Agent 编排（supervisor / 并行 team）
+  { id: "lgma-multi-agent", label: "多 Agent = 多专职节点编排", chapter: "lg-multiagent", summary: "把多个专职 agent 编排进一张图协作；agent 就是节点，拓扑由边决定——两种基本拓扑是 supervisor 与并行 team" },
+  { id: "lgma-supervisor", label: "supervisor 中心化调度", chapter: "lg-multiagent", summary: "一个调度节点用条件边按任务类型把每条任务分给对应 worker，worker 干完回到 supervisor，循环到队列空——串行、顺序可控" },
+  { id: "lgma-worker-routing", label: "按类型路由到 worker", chapter: "lg-multiagent", summary: "supervisor 的条件边读队首任务类型，返回对应 worker 节点名（math/upper/echo）；队列空则返回 END 收工" },
+  { id: "lgma-parallel-team", label: "并行异构 team（fork/join）", chapter: "lg-multiagent", summary: "从 fork 点一次连出多条边，多个不同角色 agent 在同一 super-step 并行执行，结果汇入 join——并行、靠 reducer 合并" },
+  { id: "lgma-order-independent-join", label: "join 顺序无关聚合", chapter: "lg-multiagent", summary: "并行产出的原始顺序不保证，append reducer 汇集后 join 先排序再聚合，使最终报告与各 agent 完成顺序无关、确定可回归" },
 ];
 
 export const RELATIONS: Relation[] = [
@@ -561,6 +615,34 @@ export const RELATIONS: Relation[] = [
   { from: "cragprod-pipeline-compose", to: "c18-agent-as-service", type: "应用", note: "RAG 管线可包成 HTTP 服务对外提供" },
   { from: "cragprod-vectordb-migration", to: "ccapstone-rag-corpus", type: "对比", note: "毕设内存语料 vs 生产专用向量库" },
 
+  // ── 进阶 RAG 专题：Contextual Retrieval 章内关系 ──
+  { from: "cragcontextual-document-context", to: "cragcontextual-pre-index", type: "前置", note: "先确定可用的文档级上下文，再拼入索引文本" },
+  { from: "cragcontextual-pre-index", to: "cragcontextual-title-recall", type: "应用", note: "补上下文后，标题/章节词能参与检索匹配" },
+  { from: "cragcontextual-pre-index", to: "cragcontextual-raw-preserved", type: "组成", note: "上下文前缀和原文正文分层保存，便于审计" },
+  { from: "cragcontextual-pre-index", to: "cragcontextual-hybrid-friendly", type: "应用", note: "同一 contextualized text 可服务 BM25 与 embedding" },
+  { from: "cragcontextual-title-recall", to: "cragcontextual-hybrid-friendly", type: "深化", note: "召回恢复既可来自字面标题词，也可来自更完整的语义表达" },
+
+  // ── Contextual Retrieval 跨章关系（接回 chunk/hybrid/09/context）──
+  { from: "cragcontextual-document-context", to: "cragchunk-markdown-aware", type: "深化", note: "Markdown 标题路径是最容易拿到的文档级上下文" },
+  { from: "cragcontextual-pre-index", to: "craghybrid-retriever", type: "应用", note: "混合检索的两路索引都可吃 contextualized chunk" },
+  { from: "cragcontextual-title-recall", to: "c09-topk-retrieval", type: "应用", note: "让 top-k 召回重新看见被切块丢掉的标题语境" },
+  { from: "cragcontextual-raw-preserved", to: "c09-citation", type: "应用", note: "答案引用仍应指向原文 chunk，而不是只引用生成的上下文前缀" },
+  { from: "cragcontextual-hybrid-friendly", to: "cragctx-context-budget", type: "前置", note: "更完整的召回结果进入后续上下文工程装配" },
+
+  // ── 进阶 RAG 专题：Agentic RAG 章内关系 ──
+  { from: "cragagentic-state-machine", to: "cragagentic-gated-retrieve", type: "组成", note: "状态机第一段是检索后 gate" },
+  { from: "cragagentic-gated-retrieve", to: "cragagentic-grade", type: "组成", note: "gate 的判断来自证据打分器" },
+  { from: "cragagentic-grade", to: "cragagentic-rewrite-loop", type: "应用", note: "打分为 retry 时进入改写重试" },
+  { from: "cragagentic-grade", to: "cragagentic-refuse", type: "应用", note: "打分为 refuse 时停止并拒答" },
+  { from: "cragagentic-rewrite-loop", to: "cragagentic-gated-retrieve", type: "应用", note: "改写后重新检索，再回到 gate" },
+
+  // ── Agentic RAG 跨章关系（接回 query/eval/security/observability）──
+  { from: "cragagentic-rewrite-loop", to: "cragquery-multi-query", type: "应用", note: "改写重试可复用第04章 query transformation" },
+  { from: "cragagentic-grade", to: "crageval-context-relevance", type: "应用", note: "grade 本质是在检索后判断上下文相关性是否足够" },
+  { from: "cragagentic-refuse", to: "cragsec-defense-in-depth", type: "应用", note: "无答案拒答是 RAG 安全与质量护栏的一部分" },
+  { from: "cragagentic-state-machine", to: "c04-agent-loop", type: "深化", note: "把 Agent 循环思想落到 RAG 查询路径" },
+  { from: "cragagentic-state-machine", to: "c16-decorator-tracer", type: "应用", note: "每次 retrieve/grade/rewrite 都应成为可观测 span" },
+
   // ── 进阶 RAG 专题：RAG 安全护栏 章内关系 ──
   { from: "cragsec-untrusted-retrieval", to: "cragsec-injection-detection", type: "应用", note: "正因检索内容不可信，才要对片段做注入检测" },
   { from: "cragsec-untrusted-retrieval", to: "cragsec-pii-redaction", type: "应用", note: "不可信内容落地前必须在出口脱敏 PII" },
@@ -605,6 +687,81 @@ export const RELATIONS: Relation[] = [
   { from: "cragctx-reorder", to: "cragrerank-recall-precision", type: "对比", note: "精排把最相关排最前；重排却把次相关也放首尾——因位置注意力不均，排第一≠被最好利用" },
   { from: "cragctx-compression", to: "c07-llm-summary-compression", type: "对比", note: "第07章用 LLM 摘要压历史（生成式、需 key）vs 本章抽取式压片段（纯函数、离线）" },
   { from: "cragctx-lost-in-middle", to: "crageval-answer-relevance", type: "应用", note: "关键证据埋中部被忽略会拉低答案相关性，可由评估指标观测" },
+
+  // ── 进阶 LangGraph 专题：手写 StateGraph 章内关系 ──
+  { from: "lgsg-state-channels", to: "lgsg-reducer", type: "组成", note: "每个 channel 配一个 reducer 决定写入如何合并" },
+  { from: "lgsg-state-channels", to: "lgsg-node-partial", type: "前置", note: "先定义 channel，节点才知道往哪写 partial 更新" },
+  { from: "lgsg-node-partial", to: "lgsg-reducer", type: "应用", note: "节点吐出 partial 更新，由对应 channel 的 reducer 合并" },
+  { from: "lgsg-node-partial", to: "lgsg-edges-compile", type: "组成", note: "函数节点 + 边 compile 成一张可 invoke 的图" },
+  { from: "lgsg-reducer", to: "lgsg-vs-prebuilt", type: "应用", note: "createReactAgent 的 messages 正是个 append-reducer channel，本章手写同款机制" },
+
+  // ── 手写 StateGraph 跨章关系（接回 12/06/07）──
+  { from: "lgsg-vs-prebuilt", to: "c12-react-agent", type: "深化", note: "第12章用预制 createReactAgent，本章揭开它内部就是一张手写 StateGraph" },
+  { from: "lgsg-state-channels", to: "c12-state-graph", type: "深化", note: "第12章把 agent 看作状态机图，本章手写那张图的 State 与 channel" },
+  { from: "lgsg-edges-compile", to: "c12-langgraph", type: "深化", note: "StateGraph/addEdge/compile/invoke 是 LangGraph.js 的底层 API" },
+  { from: "lgsg-node-partial", to: "c06-run-agent-loop", type: "对比", note: "第06章手写 for 循环驱动流程 vs 这里用图的节点+边表达同样的控制流" },
+  { from: "lgsg-reducer", to: "c07-conversation-as-array", type: "应用", note: "消息数组即记忆——LangGraph 的 messages channel 用 append reducer 实现同一件事" },
+  { from: "lgsg-vs-prebuilt", to: "c12-framework-choice", type: "前置", note: "看清图机制后，才能判断何时该用 LangGraph 而非手写或 AI SDK" },
+
+  // ── 进阶 LangGraph 专题：条件边与路由 章内关系 ──
+  { from: "lgrt-conditional-edge", to: "lgrt-branch", type: "组成", note: "条件边的一种用法：router 按 State 路由到不同 handler" },
+  { from: "lgrt-conditional-edge", to: "lgrt-loop", type: "组成", note: "条件边指回更早的节点即构成循环" },
+  { from: "lgrt-loop", to: "lgrt-recursion-limit", type: "应用", note: "循环必须有终止条件，recursionLimit 是兜底断路器" },
+  { from: "lgrt-conditional-edge", to: "lgrt-send-fanout", type: "组成", note: "条件边返回一组 Send 即动态扇出" },
+  { from: "lgrt-branch", to: "lgrt-send-fanout", type: "对比", note: "分支是选一条路走；扇出是同时并行走多份" },
+
+  // ── 条件边与路由 跨章关系（接回 LG01 / 01 / 04 / 12）──
+  { from: "lgrt-conditional-edge", to: "lgsg-edges-compile", type: "深化", note: "第01章的固定边 addEdge → 本章的条件边，图从「写死走向」变成「运行时决定走向」" },
+  { from: "lgrt-loop", to: "lgsg-vs-prebuilt", type: "深化", note: "createReactAgent 的模型↔工具循环正是一条指回模型节点的条件循环边" },
+  { from: "lgrt-loop", to: "c04-react", type: "应用", note: "ReAct「想一步做一步直到完成」就是图里的循环边 + 终止条件" },
+  { from: "lgrt-recursion-limit", to: "c01-max-steps", type: "对比", note: "recursionLimit 是图版的 maxSteps 安全阀，同一种「给反复执行设硬上限」思想" },
+  { from: "lgrt-send-fanout", to: "lgsg-reducer", type: "应用", note: "扇出的并行结果靠第01章的 append reducer 合并，与 worker 完成顺序无关" },
+  { from: "lgrt-conditional-edge", to: "c12-react-agent", type: "应用", note: "createReactAgent 内部「是否还要调工具」(tools_condition) 就是一条条件边" },
+
+  // ── 进阶 LangGraph 专题：Checkpointer 持久化与时间旅行 章内关系 ──
+  { from: "lgcp-checkpointer", to: "lgcp-persist-accumulate", type: "前置", note: "先有 checkpointer 按 thread 存状态，跨 invoke 累积才成立" },
+  { from: "lgcp-persist-accumulate", to: "lgcp-getstate", type: "应用", note: "累积后的状态用 getState 取出查看当前快照" },
+  { from: "lgcp-getstate", to: "lgcp-history", type: "组成", note: "当前快照就是执行时间线里最新的那一条" },
+  { from: "lgcp-history", to: "lgcp-time-travel", type: "前置", note: "有了可回溯的时间线，才能挑过去某个 checkpoint 重放" },
+  { from: "lgcp-checkpointer", to: "lgcp-time-travel", type: "应用", note: "updateState 改写与历史重放都依赖 checkpointer 存下的每步快照" },
+
+  // ── Checkpointer 持久化与时间旅行 跨章关系（接回 LG01/LG02 / 06 / 07 / 12）──
+  { from: "lgcp-checkpointer", to: "lgsg-edges-compile", type: "深化", note: "compile 时多传一个 checkpointer 选项，图就从「跑完即忘」变成「按 thread 持久化每一步」" },
+  { from: "lgcp-persist-accumulate", to: "lgsg-reducer", type: "应用", note: "跨 invoke 累积靠的正是第01章的 reducer（append/sum）；checkpointer 只负责把上一轮终态存下来再喂进来" },
+  { from: "lgcp-persist-accumulate", to: "c07-conversation-as-array", type: "深化", note: "第07章手动把消息数组回传当记忆，checkpointer 把这件事下沉成框架能力——messages channel 自动持久化续上" },
+  { from: "lgcp-time-travel", to: "c06-run-agent-loop", type: "对比", note: "第06章手写循环跑完即丢中间态；checkpointer 让每一步可回溯、可从中途重放或改写" },
+  { from: "lgcp-time-travel", to: "lgrt-loop", type: "应用", note: "给循环图挂 checkpointer，就能在循环中途暂停查状态、改写再续跑——这是 human-in-the-loop 的前奏" },
+  { from: "lgcp-checkpointer", to: "c12-langgraph", type: "深化", note: "checkpointer + thread_id 正是 LangGraph「长流程状态恢复」卖点的底层机制" },
+
+  // ── 进阶 LangGraph 专题：Human-in-the-Loop 章内关系 ──
+  { from: "lghitl-interrupt", to: "lghitl-read-payload", type: "前置", note: "先 interrupt 暂停，才有 payload 要从快照里读出来给人看" },
+  { from: "lghitl-interrupt", to: "lghitl-command-resume", type: "应用", note: "暂停之后必须用 Command 续跑，interrupt() 才返回人给的值" },
+  { from: "lghitl-read-payload", to: "lghitl-approval-gate", type: "应用", note: "人看到 payload（待批数额）才能做审批决定" },
+  { from: "lghitl-command-resume", to: "lghitl-approval-gate", type: "组成", note: "resume 的值写入 decision，喂给审批门的条件边决定放行还是拦截" },
+  { from: "lghitl-command-resume", to: "lghitl-plain-invoke-pitfall", type: "对比", note: "续跑只能用 Command；普通 invoke 不 resume 会重跑——这是最常见的坑" },
+
+  // ── Human-in-the-Loop 跨章关系（接回 LG02/LG03 / 04）──
+  { from: "lghitl-interrupt", to: "lgcp-checkpointer", type: "前置", note: "interrupt 的暂停点要靠第03章的 checkpointer 持久化，没 checkpointer 无法暂停/恢复" },
+  { from: "lghitl-read-payload", to: "lgcp-getstate", type: "应用", note: "payload 正是从第03章的 getState 快照里 tasks[].interrupts[].value 取出" },
+  { from: "lghitl-approval-gate", to: "lgrt-conditional-edge", type: "应用", note: "审批后的放行/拦截就是第02章的条件边：按人给的决定路由到 apply/cancel" },
+  { from: "lghitl-command-resume", to: "lgcp-time-travel", type: "对比", note: "Command(resume) 续跑 与 第03章 invoke(null,历史config) 重放，都是「特殊 invoke 控制图怎么往下走」" },
+  { from: "lghitl-interrupt", to: "c04-agent-loop", type: "应用", note: "给 Agent 循环在「执行危险工具前」插一个 interrupt，就是工业级的人工确认闸门" },
+  { from: "lghitl-plain-invoke-pitfall", to: "lgcp-persist-accumulate", type: "深化", note: "普通 invoke 之所以「重跑」，正是第03章持久化语义：带新输入经 reducer 并入已存状态再从头跑，而非 resume" },
+
+  // ── 进阶 LangGraph 专题：多 Agent 编排 章内关系 ──
+  { from: "lgma-multi-agent", to: "lgma-supervisor", type: "组成", note: "supervisor 是多 agent 的一种基本拓扑：中心化调度" },
+  { from: "lgma-multi-agent", to: "lgma-parallel-team", type: "组成", note: "并行 team 是另一种基本拓扑：fork/join 并行协作" },
+  { from: "lgma-supervisor", to: "lgma-worker-routing", type: "组成", note: "supervisor 的核心就是按任务类型路由到对应 worker 的条件边" },
+  { from: "lgma-parallel-team", to: "lgma-order-independent-join", type: "组成", note: "并行 team 的收尾是 join 把无序并行产出排序聚合成确定报告" },
+  { from: "lgma-supervisor", to: "lgma-parallel-team", type: "对比", note: "supervisor 串行、顺序可控；parallel team 并行、靠 reducer 消除顺序依赖——两种拓扑各擅其用" },
+
+  // ── 多 Agent 编排 跨章关系（接回 LG01/LG02 / 主课 11 多 agent）──
+  { from: "lgma-supervisor", to: "c11-supervisor-worker", type: "深化", note: "第11章手写的 supervisor+worker 模式，本章用 StateGraph + 条件边落地成一张可运行的图" },
+  { from: "lgma-worker-routing", to: "c11-supervisor-routing", type: "对比", note: "第11章用一次 LLM JSON 调用做路由决策；本章用确定性条件边——同一个「supervisor 决定派给谁」思想的离线版" },
+  { from: "lgma-order-independent-join", to: "c11-scratchpad", type: "深化", note: "第11章的 scratchpad 共享工作台，本章用 append-reducer channel 汇集 + join 聚合实现" },
+  { from: "lgma-supervisor", to: "lgrt-loop", type: "应用", note: "supervisor↔worker 的「派活→回到 supervisor」正是第02章的循环边 + 终止条件（队列空）" },
+  { from: "lgma-parallel-team", to: "lgrt-send-fanout", type: "对比", note: "fork/join 是固定的多个异构角色并行；第02章 Send 是动态扇出同构 worker——并行的两种形态" },
+  { from: "lgma-order-independent-join", to: "lgsg-reducer", type: "应用", note: "并行产出「顺序无关」靠的正是第01章的 append reducer 把各 agent 输出合并" },
 ];
 
 export const ARTICLES: Article[] = [
@@ -644,11 +801,13 @@ export const ARTICLES: Article[] = [
   { title: "Node.js HTTP module documentation", url: "https://nodejs.org/api/http.html", kind: "doc", chapters: ["18"], note: "node:http 内置模块文档，本章无框架起服务的基础" },
   { title: "Model Context Protocol: What is MCP?", url: "https://modelcontextprotocol.io/docs/getting-started/intro", kind: "doc", chapters: ["19"], note: "MCP 官方入门，工具/数据连接标准化的一手来源" },
   { title: "LangGraph overview", url: "https://docs.langchain.com/oss/javascript/langgraph/overview", kind: "doc", chapters: ["19"], note: "编排 runtime 代表，长任务持久化与 human-in-the-loop 官方文档" },
-  { title: "Introducing Contextual Retrieval", url: "https://www.anthropic.com/news/contextual-retrieval", kind: "blog", chapters: ["rag-chunk", "rag-hybrid"], note: "Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读" },
+  { title: "Introducing Contextual Retrieval", url: "https://www.anthropic.com/news/contextual-retrieval", kind: "blog", chapters: ["rag-chunk", "rag-hybrid", "rag-contextual"], note: "Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读" },
   { title: "Okapi BM25 - Wikipedia", url: "https://en.wikipedia.org/wiki/Okapi_BM25", kind: "doc", chapters: ["rag-hybrid"], note: "BM25 打分公式与 k1/b 参数的权威说明，对应本章 BM25Index" },
   { title: "Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods", url: "https://dl.acm.org/doi/10.1145/1571941.1572114", kind: "paper", chapters: ["rag-hybrid"], note: "RRF 原始论文 (Cormack et al., SIGIR 2009)，混合检索融合法的来源" },
   { title: "Precise Zero-Shot Dense Retrieval without Relevance Labels (HyDE)", url: "https://arxiv.org/abs/2212.10496", kind: "paper", chapters: ["rag-query"], note: "HyDE 原始论文：用假设性文档的向量做检索" },
   { title: "RAGAS: Automated Evaluation of Retrieval Augmented Generation", url: "https://arxiv.org/abs/2309.15217", kind: "paper", chapters: ["rag-eval"], note: "RAG 评估指标 (faithfulness / context & answer relevance) 的代表性论文，本章三指标的来源" },
+  { title: "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection", url: "https://arxiv.org/abs/2310.11511", kind: "paper", chapters: ["rag-agentic"], note: "把检索、生成、批判做成可控循环的代表论文，对应本章 gated retrieve / grade / retry 思想" },
+  { title: "Corrective Retrieval Augmented Generation", url: "https://arxiv.org/abs/2401.15884", kind: "paper", chapters: ["rag-agentic"], note: "CRAG 用检索评估触发纠错与补充检索，对应本章证据不足就改写重试的控制流" },
   { title: "Cohere · Rerank documentation", url: "https://docs.cohere.com/docs/rerank-overview", kind: "doc", chapters: ["rag-rerank"], note: "生产级 rerank API 与 cross-encoder 精排的官方说明，对照本章 llmRerank" },
   { title: "pgvector — open-source vector similarity search for Postgres", url: "https://github.com/pgvector/pgvector", kind: "doc", chapters: ["rag-prod"], note: "最常见的生产持久化向量库，迁移目标之一，对照本章 MemoryVectorStore 接口" },
   { title: "OWASP Top 10 for LLM Applications", url: "https://owasp.org/www-project-top-10-for-large-language-model-applications/", kind: "doc", chapters: ["rag-security"], note: "LLM01 提示注入位列榜首；RAG 检索内容是典型的间接注入攻击面，本章三道防线的威胁模型来源" },
@@ -657,4 +816,14 @@ export const ARTICLES: Article[] = [
   { title: "Efficient and robust approximate nearest neighbor search using HNSW graphs", url: "https://arxiv.org/abs/1603.09320", kind: "paper", chapters: ["rag-index"], note: "HNSW 原始论文 (Malkov & Yashunin)：另一类主流 ANN 索引，efSearch 与本章 nprobe 同属『查多准 vs 查多快』旋钮" },
   { title: "Lost in the Middle: How Language Models Use Long Contexts", url: "https://arxiv.org/abs/2307.03172", kind: "paper", chapters: ["rag-context"], note: "Liu 等 (2023)：实证模型对长上下文『首尾强、中间弱』的 U 形利用曲线，本章注意力重排的直接依据" },
   { title: "LangChain · How to reorder retrieved results for long context", url: "https://python.langchain.com/docs/how_to/long_context_reorder/", kind: "doc", chapters: ["rag-context"], note: "把最相关文档放到上下文首尾、次相关压中间的工程实现，正是本章 reorderForAttention 的现成对应" },
+  { title: "LangGraph.js · Low-level 概念（State / Nodes / Edges / Reducers）", url: "https://langchain-ai.github.io/langgraphjs/concepts/low_level/", kind: "doc", chapters: ["lg-stategraph"], note: "LangGraph.js 官方底层概念：StateGraph、channel reducer、节点/边——本章手写图的权威参考" },
+  { title: "LangGraph.js · Workflows and Agents", url: "https://langchain-ai.github.io/langgraphjs/tutorials/workflows/", kind: "doc", chapters: ["lg-stategraph"], note: "从底层图到预制 agent 的官方教程，对照本章「createReactAgent 只是预制 StateGraph」" },
+  { title: "LangGraph.js · Map-reduce branches with Send", url: "https://langchain-ai.github.io/langgraphjs/how-tos/map-reduce/", kind: "doc", chapters: ["lg-routing"], note: "用 Send 从一条边动态扇出多个并行节点实例再 reduce 合并——本章图3 的官方对应" },
+  { title: "LangGraph.js · How to control graph recursion limit", url: "https://langchain-ai.github.io/langgraphjs/how-tos/recursion-limit/", kind: "doc", chapters: ["lg-routing"], note: "recursionLimit 控制循环上限、超限抛 GraphRecursionError——本章循环安全阀的官方说明" },
+  { title: "LangGraph.js · Persistence（Checkpointer / thread / state history）", url: "https://langchain-ai.github.io/langgraphjs/concepts/persistence/", kind: "doc", chapters: ["lg-checkpoint"], note: "官方持久化概念：checkpointer 按 thread_id 存每个 super-step、getState/getStateHistory 取快照与时间线——本章的权威参考" },
+  { title: "LangGraph.js · How to view and update past graph state（time travel）", url: "https://langchain-ai.github.io/langgraphjs/how-tos/time-travel/", kind: "doc", chapters: ["lg-checkpoint"], note: "用 getStateHistory 回到过去某个 checkpoint、updateState 改写并从该点重放——本章时间旅行的官方对应" },
+  { title: "LangGraph.js · Human-in-the-loop（概念）", url: "https://langchain-ai.github.io/langgraphjs/concepts/human_in_the_loop/", kind: "doc", chapters: ["lg-hitl"], note: "官方 HITL 概念：interrupt 暂停、Command(resume) 续跑、审批/编辑/工具确认等模式——本章的权威参考" },
+  { title: "LangGraph.js · How to wait for user input using interrupt", url: "https://langchain-ai.github.io/langgraphjs/how-tos/wait-user-input-functional/", kind: "doc", chapters: ["lg-hitl"], note: "用 interrupt 暂停等用户输入、再用 Command({resume}) 续跑的官方 how-to，对应本章审批门 demo" },
+  { title: "LangGraph.js · Multi-agent systems（概念）", url: "https://langchain-ai.github.io/langgraphjs/concepts/multi_agent/", kind: "doc", chapters: ["lg-multiagent"], note: "官方多 agent 拓扑总览：supervisor、network、hierarchical 等——本章 supervisor / parallel team 的权威参考" },
+  { title: "LangGraph.js · Agent supervisor（教程）", url: "https://langchain-ai.github.io/langgraphjs/tutorials/multi_agent/agent_supervisor/", kind: "doc", chapters: ["lg-multiagent"], note: "一个 supervisor 用条件边把任务派给多个 worker agent 的官方教程，对应本章图1 的中心化调度循环" },
 ];

@@ -178,12 +178,14 @@ graph TB
   n_cragctx_compression["抽取式压缩"]
   n_cragctx_lost_in_middle["中间遗忘 (lost-in-the-middle)"]
   n_cragctx_reorder["注意力感知重排"]
+  n_cragcontextual_hybrid_friendly["同时服务 BM25 与向量（第rag-contextual章）"]
   n_c07_context_window_budget["上下文窗口预算（第07章）"]
   n_c09_augment_prompt["上下文增强 (augment)（第09章）"]
   n_cragrerank_signal_to_noise["上下文信噪比（第rag-rerank章）"]
   n_cragrerank_recall_precision["召回-精排两段式（第rag-rerank章）"]
   n_c07_llm_summary_compression["LLM 摘要压缩（第07章）"]
   n_crageval_answer_relevance["答案相关性（第rag-eval章）"]
+  n_cragcontextual_hybrid_friendly -->|前置| n_cragctx_context_budget
   n_cragctx_lost_in_middle -->|前置| n_cragctx_reorder
   n_cragctx_context_budget -->|组成| n_cragctx_dedup
   n_cragctx_context_budget -->|组成| n_cragctx_compression
@@ -196,22 +198,24 @@ graph TB
   n_cragctx_compression -->|对比| n_c07_llm_summary_compression
   n_cragctx_lost_in_middle -->|应用| n_crageval_answer_relevance
   class n_cragctx_context_budget,n_cragctx_dedup,n_cragctx_compression,n_cragctx_lost_in_middle,n_cragctx_reorder own;
-  class n_c07_context_window_budget,n_c09_augment_prompt,n_cragrerank_signal_to_noise,n_cragrerank_recall_precision,n_c07_llm_summary_compression,n_crageval_answer_relevance cross;
+  class n_cragcontextual_hybrid_friendly,n_c07_context_window_budget,n_c09_augment_prompt,n_cragrerank_signal_to_noise,n_cragrerank_recall_precision,n_c07_llm_summary_compression,n_crageval_answer_relevance cross;
   linkStyle 0 stroke:#2563eb,stroke-width:2px;
-  linkStyle 1 stroke:#d97706,stroke-width:2px;
+  linkStyle 1 stroke:#2563eb,stroke-width:2px;
   linkStyle 2 stroke:#d97706,stroke-width:2px;
-  linkStyle 3 stroke:#db2777,stroke-width:2px;
-  linkStyle 4 stroke:#2563eb,stroke-width:2px;
-  linkStyle 5 stroke:#7c3aed,stroke-width:2px;
-  linkStyle 6 stroke:#059669,stroke-width:2px;
+  linkStyle 3 stroke:#d97706,stroke-width:2px;
+  linkStyle 4 stroke:#db2777,stroke-width:2px;
+  linkStyle 5 stroke:#2563eb,stroke-width:2px;
+  linkStyle 6 stroke:#7c3aed,stroke-width:2px;
   linkStyle 7 stroke:#059669,stroke-width:2px;
-  linkStyle 8 stroke:#db2777,stroke-width:2px;
+  linkStyle 8 stroke:#059669,stroke-width:2px;
   linkStyle 9 stroke:#db2777,stroke-width:2px;
-  linkStyle 10 stroke:#059669,stroke-width:2px;
+  linkStyle 10 stroke:#db2777,stroke-width:2px;
+  linkStyle 11 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
 
+- `同时服务 BM25 与向量` —**前置**→ `上下文 token 预算`（第 rag-contextual 章）
 - `上下文 token 预算` —**深化**→ `上下文窗口预算`（第 07 章）
 - `上下文 token 预算` —**应用**→ `上下文增强 (augment)`（第 09 章）
 - `近重复去重` —**应用**→ `上下文信噪比`（第 rag-rerank 章）

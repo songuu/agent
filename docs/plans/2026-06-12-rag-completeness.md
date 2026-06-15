@@ -1,12 +1,12 @@
 ---
 title: "RAG 系统最完整补充"
 type: sprint
-status: checkpoint-4
+status: blocked-on-key
 created: "2026-06-12"
 updated: "2026-06-12"
-checkpoints: 4
+checkpoints: 5
 tasks_total: 11
-tasks_completed: 4
+tasks_completed: 10
 tags: [sprint, rag, curriculum, documentation, code]
 aliases: ["RAG 补全", "rag-completeness"]
 
@@ -20,12 +20,17 @@ invariants:
 
 invariant_tests:
   - "npx tsx rag-advanced/smoke.ts"
+  - "npm run rag:eval"
+  - "pnpm rag:capstone"
+  - "npx tsx rag-advanced/07-contextual-retrieval/index.ts"
+  - "npx tsx rag-advanced/08-agentic-rag/index.ts"
   - "npx tsx knowledge-graph/data/visuals.test.mts"
   - "npx tsx knowledge-graph/generate.test.mts"
   - "pnpm typecheck"
   - "pnpm site:build"
 
-deferred: []
+deferred:
+  - "T2: 02/03/04/05/06 切到真 embedding fixture 仍需 OPENAI_API_KEY 与用户明确授权外部 embedding API；当前 embeddings.json 为空，不能手造假向量。"
 deadcode_until: []
 ---
 
@@ -103,19 +108,19 @@ deadcode_until: []
 **MUST 块（→ 完成后 checkpoint #1）**
 
 - [x] T1 (L) 离线 embedding fixture 基建：`embeddings.ts` 离线路径 + `scripts/build-embedding-fixture.ts` + `src/shared/rag/fixtures/` + rag:smoke 加离线确定性断言。✅ smoke 29/0 + tsc 绿。
-- [ ] T2 (M) 5 章切离线：02/03/04/05/06 demo 默认走 fixture；graph.ts demo.needsKey 改 "none"；每章 demo 顶部说明"离线真向量 fixture，联网可换真 API"。
-- [ ] T3 (M) 严谨化既有章：02 overlap 收益实测、03 加 NDCG/MRR、recall@k；06 持久化条数核对；`evaluate.ts` 容错解析加固。
-- [ ] T4 (M) 新 07-contextual-retrieval（六件套，Anthropic 配方：嵌入/BM25 前给每块补 LLM 上下文）。
-- [ ] T5 (L) 新 08-agentic-rag（六件套，gated retrieve→grade→re-retrieve loop）。
+- [ ] T2 (M) 5 章切离线：02/03/04/05/06 demo 默认走 fixture；graph.ts demo.needsKey 改 "none"；每章 demo 顶部说明"离线真向量 fixture，联网可换真 API"。⏸️ blocked：缺 `OPENAI_API_KEY` 且 `rag:build-fixture` 属外部 embedding API/付费/数据外发动作，需用户明确授权；当前 `embeddings.json` 为空，不能造假向量。
+- [x] T3 (M) 严谨化既有章：02 overlap 收益实测、03 加 NDCG/MRR、recall@k；06 持久化条数核对；`evaluate.ts` 容错解析加固。✅ smoke 111→113/0 + typecheck 绿；03/06 已加运行时指标/边界 invariant。
+- [x] T4 (M) 新 07-contextual-retrieval（六件套，Anthropic 配方：嵌入/BM25 前给每块补 LLM 上下文）。✅ no-key demo exit 0 + smoke 覆盖 + KG/site 构建绿。
+- [x] T5 (L) 新 08-agentic-rag（六件套，gated retrieve→grade→re-retrieve loop）。✅ no-key demo exit 0 + smoke 覆盖 + KG/site 构建绿。
 - [x] T6 (M) 新 09-rag-security（六件套，注入检测+隔离 / PII 出口脱敏 / 引用核验；复用第17章概念）。✅ smoke 41→54/0 + tsc/visuals/generate/site:build 全绿 + demo exit 0 + 对抗复核 0 P0/P1。
-- [ ] T7 (M) 深化 05-eval：recall/precision@k + golden-set + CI 阈值门 + 拒答正确性。
+- [x] T7 (M) 深化 05-eval：recall/precision@k + golden-set + CI 阈值门 + 拒答正确性。✅ `npm run rag:eval` 绿 + smoke 覆盖 gate/failure/refusal。
 
 **SHOULD 块（→ 完成后 checkpoint #2 / Review / Compound）**
 
-- [ ] T8 (M) 深化 04-query-transformation：routing + decomposition + step-back。
+- [x] T8 (M) 深化 04-query-transformation：routing + decomposition + step-back。✅ no-key planning helper + 04 demo 前置展示 + smoke 断言覆盖。
 - [x] T9 (M) 新 10-index-internals（六件套，brute-force vs ANN/分桶直觉，纯函数可离线对比召回/速度）。✅ smoke 54→62/0 + tsc/visuals/generate/site:build 全绿 + demo exit 0（默认/NLIST=32/JITTER=0.6 三场景）+ 对抗复核 8→4 confirmed 全修。
 - [x] T10 (M) 新 11-context-engineering（六件套，去重/压缩/预算/lost-in-the-middle 重排，纯逻辑离线）。✅ smoke 62→86/0（+24 断言）+ tsc/visuals/generate/registry/site:build 全绿 + demo exit 0（默认+极端旋钮四连）+ 对抗复核 3→2 confirmed 全修。
-- [ ] T11 (M) capstone 仓库内 checkpoint：消除"跳外部 repo"断崖（rag-system-project.md + 可选 `capstone/rag-system/` 最小骨架/checklist）。
+- [x] T11 (M) capstone 仓库内 checkpoint：消除"跳外部 repo"断崖（rag-system-project.md + 可选 `capstone/rag-system/` 最小骨架/checklist）。✅ `pnpm rag:capstone` 绿 + navigation/rag-system-project 接入。
 
 > 任务数 11 > 8 且含 2 个 L → 人工 gate 保留（无 --auto）。Task 5 后自动评估 checkpoint。
 
@@ -152,7 +157,50 @@ deadcode_until: []
 ### 执行序调整（按 key 约束，2026-06-12）
 
 > 发现：embedding fixture 只解决「向量」离线；03/04/05 章还调 **LLM-chat**（rerank/multiQuery/hyde/judge/answer），用假 LLM stub 会造**假结论**（违反教学确定性本能）。
-> 决策：先做**离线真 payoff** 的纯函数任务（指标 ✅、09-security、10-index 合成向量、11-context-eng 纯逻辑、T3/T7 指标层）；把 **02 翻 needsKey / 07-contextual / 03/04/05 端到端 / 08 grading** 推到 key 可用时一并实现+验证（不半做、不假证）。原 11 task 范围不变，仅执行顺序按可验证性重排。
+> 决策：先做**离线真 payoff** 的纯函数任务（指标 ✅、07-contextual BM25 对照、08-agentic gated loop、09-security、10-index 合成向量、11-context-eng 纯逻辑、T3/T7 指标层）。**T2 的 02/03/04/05/06 真 embedding fixture 切换**仍必须等 `OPENAI_API_KEY` 与用户明确授权外部 embedding API 后生成真向量；当前不半做、不伪造。
+
+### 2026-06-12 T7/T8/T11 · eval gate / query planning / capstone checkpoint
+
+- **T7 深化 05-eval** ✅（`npm run rag:eval` 绿；smoke 覆盖 gate/failure/refusal）
+  - 新增 `src/shared/rag/evalGate.ts`：golden-set 单条/聚合报告、recall/precision/MRR/nDCG、拒答正确性、阈值门 `checkGoldenGate()`。
+  - 新增 `rag-advanced/05-rag-evaluation/eval-gate.ts` + `package.json` `rag:eval`，固定 golden set 可作为 CI gate，退化时 exit 1。
+  - smoke 加 golden gate 断言：达标 ok、阈值过高 failure、拒答/非拒答识别、非法 k 抛错。
+- **T8 深化 04-query-transformation** ✅（smoke 覆盖 routing/decomposition/step-back）
+  - `queryTransform.ts` 新增 `DEFAULT_QUERY_ROUTES`、`routeQuery()`、`decomposeQuery()`、`stepBackQuery()`、`planQuery()`，全部纯函数离线确定。
+  - 04 demo 前置打印 query planning，再进入原 multiQuery/HyDE key 路径；README 补 routing/decomposition/step-back 说明。
+  - 修复 `decomposeQuery()` split regex 的捕获组问题，避免分隔符进入 parts 造成 `undefined`/重复碎片。
+- **T11 capstone 仓库内 checkpoint** ✅（`pnpm rag:capstone` 绿）
+  - 新增 `capstone/rag-system/src/checkpoint.ts`：BM25 检索、golden gate、引用核验、拒答分支组成最小 RAG 系统验收。
+  - 新增 `capstone/rag-system/README.md`，并把 `docs/rag-system-project.md` / `docs/navigation.md` 从“直接跳外部 repo”改为“先跑仓库内 checkpoint，再连接外部项目”。
+
+### 2026-06-12 T3 · 既有章节严谨化（无 key 可验证部分完成）
+
+- **T3 严谨化既有章** ✅（`npm run rag:smoke` 111→113/0；`pnpm typecheck` 绿）
+  - smoke 加 overlap 收益实测：构造边界事实，无 overlap 时完整事实被切断，有 overlap 时被完整保留。
+  - `evaluate.ts` 新增 `parseJudgeOutput()`：兼容 JSON、`SCORE/REASON`、中文“分数/理由”，统一 0~1 clamp；smoke 加 4 条离线回归。
+  - 03-reranking 加 `retrievalMetricsAtK()` 实测：召回 top-8 与精排 top-3 打印 recall/MRR/nDCG，并在漏掉 golden 片段 `c1` 时置 `process.exitCode=1`。
+  - 06-production-rag 加 `invariant()`：入库条数、持久化 JSON 条数、fromJSON 条数、upsert 覆盖不新增、过滤检索非空且不越权；最终 `answerWithRag` 改用 tenant-scoped retriever，确保注入上下文也不跨租户。
+
+### 2026-06-12 T4 · 07-contextual-retrieval 新章（离线真 payoff，六件套原子完成）
+
+- **T4 新 07-contextual-retrieval** ✅（demo exit 0；smoke 覆盖；visuals/generate/site:build 绿）
+  - 新增 `src/shared/rag/contextualRetrieval.ts`：`contextualizeChunk()`/`contextualizeChunks()`、固定语料、raw vs contextual BM25 对照。
+  - 新增 `rag-advanced/07-contextual-retrieval/index.ts`：构造“账号删除规则”干扰 raw top1，补文档/章节上下文后 top1 命中生命周期目标，且原文保留可审计。
+  - 新增 README + graph/visuals/ARTICLE（Anthropic Contextual Retrieval）+ smoke 4 条断言，`demo.needsKey:"none"`。
+
+### 2026-06-12 T5 · 08-agentic-rag 新章（离线真 payoff，六件套原子完成）
+
+- **T5 新 08-agentic-rag** ✅（demo exit 0；smoke 覆盖；visuals/generate/site:build 绿）
+  - 新增 `src/shared/rag/agenticRag.ts`：BM25 retriever、`gradeRetrieval()`、`rewriteForAgenticRetrieval()`、`runAgenticRetrieval()`、固定 corpus。
+  - 新增 `rag-advanced/08-agentic-rag/index.ts`：首轮口语 query `"坏了咋办"` 无命中 → grade retry → 改写成 SLA/补偿检索词 → 二轮命中并 answer；无答案 golden 直接 refuse。
+  - 新增 README + graph/visuals/ARTICLE（Self-RAG、CRAG）+ smoke 5 条断言，`demo.needsKey:"none"`。
+
+### 2026-06-12 T2 · 真 embedding fixture blocker（未完成）
+
+- **T2 仍未完成，原因是外部依赖/授权而非代码遗漏** ⏸️
+  - 当前环境没有 `OPENAI_API_KEY`，`src/shared/rag/fixtures/embeddings.json` 仍为 `{ "model": "", "dim": 0, "vectors": {} }`。
+  - `npm run rag:build-fixture` 会把登记文本发送到外部 embedding API 并可能产生费用；本次执行请求被安全策略拒绝，需用户明确授权后再跑。
+  - 由于 invariant 明确要求“离线 embedding 走预计算真向量 fixture，不得返回手造假向量”，因此不能把 02/03/04/05/06 的 `demo.needsKey` 改为 `"none"`，也不能提交假 fixture。
 
 ### 2026-06-12 T9 · 10-index-internals 新章（离线真 payoff，六件套原子完成）
 
@@ -194,7 +242,19 @@ deadcode_until: []
 
 ## Phase 4: 审查结果
 
-（Review 阶段填写，含第 6 视角集成连续性）
+### 2026-06-12 验证记录
+
+- ✅ `npm run rag:smoke`：113 通过 / 0 失败。
+- ✅ `npm run rag:eval`：golden-set gate 通过（meanRecall=1.00, meanPrecision=0.33, meanMRR=1.00, meanNDCG=1.00, refusalAccuracy=1.00）。
+- ✅ `pnpm rag:capstone`：RAG system checkpoint 通过。
+- ✅ `npx tsx rag-advanced/07-contextual-retrieval/index.ts`：raw top1 被干扰项抢走，contextual top1 命中目标片段，原文保留。
+- ✅ `npx tsx rag-advanced/08-agentic-rag/index.ts`：首轮 retry、二轮 answer、无答案 refuse 分支均通过。
+- ✅ `npx tsx knowledge-graph/data/visuals.test.mts`：ok。
+- ✅ `npx tsx knowledge-graph/generate.test.mts`：ok。
+- ✅ `pnpm typecheck`：通过。
+- ✅ `pnpm site:build`：通过；仅有 VitePress chunk size warning。
+- ⚠️ sandbox 内 tsx / VitePress 多次触发 esbuild `spawn EPERM`；按同一命令在沙箱外重跑通过，判定为本机 sandbox 子进程权限限制，不是代码回归。
+- ⏸️ `npm run rag:build-fixture` 未执行：该命令会调用外部 embedding API/可能产生费用和数据外发，本轮未获明确授权；T2 保持 blocked。
 
 ## Phase 5: 复利记录
 

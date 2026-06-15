@@ -254,6 +254,8 @@ graph TB
   n_c17_human_in_the_loop["最小权限 + 人在回路（第17章）"]
   n_c18_agent_as_service["脚本到服务 (Agent as Service)（第18章）"]
   n_ccapstone_tool_registry["工具系统 (search/calc/saveNote)（第capstone章）"]
+  n_lgsg_node_partial["节点返回 partial 更新（第lg-stategraph章）"]
+  n_lgcp_time_travel["updateState 改写与时间旅行（第lg-checkpoint章）"]
   n_c06_single_zod_schema -->|组成| n_c06_define_tool
   n_c06_define_tool -->|组成| n_c06_tool_registry
   n_c06_define_tool -->|组成| n_c06_safe_execution
@@ -271,8 +273,10 @@ graph TB
   n_c17_human_in_the_loop -->|应用| n_c06_tool_registry
   n_c18_agent_as_service -->|应用| n_c06_run_agent_loop
   n_ccapstone_tool_registry -->|组成| n_c06_tool_registry
+  n_lgsg_node_partial -->|对比| n_c06_run_agent_loop
+  n_lgcp_time_travel -->|对比| n_c06_run_agent_loop
   class n_c06_single_zod_schema,n_c06_define_tool,n_c06_tool_registry,n_c06_safe_execution,n_c06_type_erasure,n_c06_self_correction_loop,n_c06_run_agent_loop own;
-  class n_c05_toolspec_schema,n_c05_roundtrip_loop,n_c05_error_feedback,n_c11_orchestration_loop,n_c12_vercel_ai_sdk,n_c14_progress_streaming,n_c17_human_in_the_loop,n_c18_agent_as_service,n_ccapstone_tool_registry cross;
+  class n_c05_toolspec_schema,n_c05_roundtrip_loop,n_c05_error_feedback,n_c11_orchestration_loop,n_c12_vercel_ai_sdk,n_c14_progress_streaming,n_c17_human_in_the_loop,n_c18_agent_as_service,n_ccapstone_tool_registry,n_lgsg_node_partial,n_lgcp_time_travel cross;
   linkStyle 0 stroke:#d97706,stroke-width:2px;
   linkStyle 1 stroke:#d97706,stroke-width:2px;
   linkStyle 2 stroke:#d97706,stroke-width:2px;
@@ -290,6 +294,8 @@ graph TB
   linkStyle 14 stroke:#059669,stroke-width:2px;
   linkStyle 15 stroke:#059669,stroke-width:2px;
   linkStyle 16 stroke:#d97706,stroke-width:2px;
+  linkStyle 17 stroke:#db2777,stroke-width:2px;
+  linkStyle 18 stroke:#db2777,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -303,6 +309,8 @@ graph TB
 - `最小权限 + 人在回路` —**应用**→ `工具注册表 (ToolRegistry)`（第 17 章）
 - `脚本到服务 (Agent as Service)` —**应用**→ `runAgent 循环`（第 18 章）
 - `工具系统 (search/calc/saveNote)` —**组成**→ `工具注册表 (ToolRegistry)`（第 capstone 章）
+- `节点返回 partial 更新` —**对比**→ `runAgent 循环`（第 lg-stategraph 章）
+- `updateState 改写与时间旅行` —**对比**→ `runAgent 循环`（第 lg-checkpoint 章）
 
 ### 延伸阅读
 

@@ -252,6 +252,8 @@ graph TB
   n_cragchunk_token_budget["按 token 计长 (approxTokens)（第rag-chunk章）"]
   n_cragctx_context_budget["上下文 token 预算（第rag-context章）"]
   n_cragctx_compression["抽取式压缩（第rag-context章）"]
+  n_lgsg_reducer["channel reducer（第lg-stategraph章）"]
+  n_lgcp_persist_accumulate["跨 invoke 持久化累积（第lg-checkpoint章）"]
   n_c07_context_window_budget -->|前置| n_c07_conversation_as_array
   n_c07_sliding_window -->|应用| n_c07_context_window_budget
   n_c07_llm_summary_compression -->|应用| n_c07_context_window_budget
@@ -266,8 +268,10 @@ graph TB
   n_cragchunk_token_budget -->|应用| n_c07_context_window_budget
   n_cragctx_context_budget -->|深化| n_c07_context_window_budget
   n_cragctx_compression -->|对比| n_c07_llm_summary_compression
+  n_lgsg_reducer -->|应用| n_c07_conversation_as_array
+  n_lgcp_persist_accumulate -->|深化| n_c07_conversation_as_array
   class n_c07_conversation_as_array,n_c07_context_window_budget,n_c07_sliding_window,n_c07_llm_summary_compression,n_c07_message_layout,n_c07_summarize_threshold,n_c07_conversation_class own;
-  class n_c01_message_memory,n_c02_usage_token,n_cragchunk_token_budget,n_cragctx_context_budget,n_cragctx_compression cross;
+  class n_c01_message_memory,n_c02_usage_token,n_cragchunk_token_budget,n_cragctx_context_budget,n_cragctx_compression,n_lgsg_reducer,n_lgcp_persist_accumulate cross;
   linkStyle 0 stroke:#2563eb,stroke-width:2px;
   linkStyle 1 stroke:#059669,stroke-width:2px;
   linkStyle 2 stroke:#059669,stroke-width:2px;
@@ -282,6 +286,8 @@ graph TB
   linkStyle 11 stroke:#059669,stroke-width:2px;
   linkStyle 12 stroke:#7c3aed,stroke-width:2px;
   linkStyle 13 stroke:#db2777,stroke-width:2px;
+  linkStyle 14 stroke:#059669,stroke-width:2px;
+  linkStyle 15 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -291,6 +297,8 @@ graph TB
 - `按 token 计长 (approxTokens)` —**应用**→ `上下文窗口预算`（第 rag-chunk 章）
 - `上下文 token 预算` —**深化**→ `上下文窗口预算`（第 rag-context 章）
 - `抽取式压缩` —**对比**→ `LLM 摘要压缩`（第 rag-context 章）
+- `channel reducer` —**应用**→ `记忆即回灌 messages`（第 lg-stategraph 章）
+- `跨 invoke 持久化累积` —**深化**→ `记忆即回灌 messages`（第 lg-checkpoint 章）
 
 ### 延伸阅读
 

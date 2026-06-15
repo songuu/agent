@@ -416,6 +416,9 @@ graph TB
   n_c11_handoff_agent_tool["Handoff vs Agent-as-tool"]
   n_c11_approval_observability["审批与可观测"]
   n_c06_run_agent_loop["runAgent 循环（第06章）"]
+  n_lgma_supervisor["supervisor 中心化调度（第lg-multiagent章）"]
+  n_lgma_worker_routing["按类型路由到 worker（第lg-multiagent章）"]
+  n_lgma_order_independent_join["join 顺序无关聚合（第lg-multiagent章）"]
   n_c11_supervisor_worker -->|组成| n_c11_supervisor_routing
   n_c11_supervisor_worker -->|组成| n_c11_worker_specialist
   n_c11_topology_choice -->|前置| n_c11_supervisor_worker
@@ -432,8 +435,11 @@ graph TB
   n_c11_approval_observability -->|应用| n_c11_agent_team
   n_c11_approval_observability -->|应用| n_c11_handoff_agent_tool
   n_c11_orchestration_loop -->|应用| n_c06_run_agent_loop
+  n_lgma_supervisor -->|深化| n_c11_supervisor_worker
+  n_lgma_worker_routing -->|对比| n_c11_supervisor_routing
+  n_lgma_order_independent_join -->|深化| n_c11_scratchpad
   class n_c11_supervisor_worker,n_c11_topology_choice,n_c11_supervisor_routing,n_c11_worker_specialist,n_c11_scratchpad,n_c11_orchestration_loop,n_c11_cost_tradeoff,n_c11_decision_validation,n_c11_subagent_workflow,n_c11_agent_team,n_c11_worktree_isolation,n_c11_handoff_agent_tool,n_c11_approval_observability own;
-  class n_c06_run_agent_loop cross;
+  class n_c06_run_agent_loop,n_lgma_supervisor,n_lgma_worker_routing,n_lgma_order_independent_join cross;
   linkStyle 0 stroke:#d97706,stroke-width:2px;
   linkStyle 1 stroke:#d97706,stroke-width:2px;
   linkStyle 2 stroke:#2563eb,stroke-width:2px;
@@ -450,11 +456,17 @@ graph TB
   linkStyle 13 stroke:#059669,stroke-width:2px;
   linkStyle 14 stroke:#059669,stroke-width:2px;
   linkStyle 15 stroke:#059669,stroke-width:2px;
+  linkStyle 16 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 17 stroke:#db2777,stroke-width:2px;
+  linkStyle 18 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
 
 - `编排主循环` —**应用**→ `runAgent 循环`（第 06 章）
+- `supervisor 中心化调度` —**深化**→ `Supervisor + Worker 模式`（第 lg-multiagent 章）
+- `按类型路由到 worker` —**对比**→ `Supervisor 路由决策`（第 lg-multiagent 章）
+- `join 顺序无关聚合` —**深化**→ `Scratchpad 共享工作台`（第 lg-multiagent 章）
 
 ### 延伸阅读
 

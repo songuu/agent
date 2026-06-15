@@ -22,7 +22,7 @@
  */
 import { MemoryVectorStore } from "../../src/shared/rag/vectorStore";
 import { asRetriever } from "../../src/shared/rag/ragPipeline";
-import { multiQuery, hyde } from "../../src/shared/rag/queryTransform";
+import { multiQuery, hyde, planQuery } from "../../src/shared/rag/queryTransform";
 import { embedOne, cosineSimilarity } from "../../src/shared/llm/embeddings";
 import type { RetrievedChunk } from "../../src/shared/rag/types";
 import { divider, logger, color } from "../../src/shared";
@@ -102,6 +102,13 @@ async function searchByHyde(
 }
 
 async function main(): Promise<void> {
+  const planned = planQuery(QUERY);
+  divider("策略 0 · 查询规划（routing / decomposition / step-back）");
+  logger.info(`路由：${planned.route.route.label}（命中：${planned.route.matchedKeywords.join(", ") || "fallback"}）`);
+  logger.info("拆解出的子问题：");
+  planned.subQueries.forEach((q, i) => console.log(`  ${i + 1}. ${q}`));
+  logger.info(`step-back 查询：${planned.stepBackQuery}`);
+
   // 1) 建库：把虚构手册灌进内存向量库（add 内部自动向量化）。
   const store = new MemoryVectorStore();
   await store.add(KNOWLEDGE);
