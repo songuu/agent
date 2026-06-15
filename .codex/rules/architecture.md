@@ -1,5 +1,12 @@
 # Architecture Notes
 
+## 2026-06-15 multi-cloud static-site deploy
+
+- Static-site deploys should stay provider-profile driven over SSH (`aliyun`, `volcengine`, `tencent`, `custom`) instead of using cloud SDKs. Rationale: the deploy target is an already-provisioned Linux/Nginx VM, and avoiding AK/SK in scripts keeps the public repo safe.
+- `scripts/deploy.ps1` remains the private, gitignored production entrypoint. It may contain real hosts and paths; public docs should not duplicate those values outside private runbooks.
+- Keep one deploy flow across clouds: local gates, production base build, dist base self-check, tar/scp upload, remote stage extraction, old dist backup, atomic swap, then remote HTTP(S) verification.
+- New cloud migrations should only need `-Provider`, `-DeployHost`, optional `-WebRoot`, `-Domain`, and `-BasePath` changes after the VM/Nginx/TLS prerequisites are prepared.
+
 ## 2026-06-10 production demo runner
 
 - Production demo execution runs as a PM2 service named `agent-build-runner` from `/opt/agent-build/current`.
