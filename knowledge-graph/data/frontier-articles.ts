@@ -1,0 +1,106 @@
+import { ARTICLES, CHAPTERS, type Article } from "./graph";
+
+export interface FrontierArticle {
+  id: string;
+  slug: string;
+  chapterId: string;
+  chapterSlug: string;
+  title: string;
+  source: string;
+  url: string;
+  kind: Article["kind"];
+  summary: string;
+  collectedDate: string;
+  collectedAt: string;
+  displayDateLabel: string;
+  readCount: number;
+  sortOrder: number;
+  tags: string[];
+  detailParagraphs: string[];
+}
+
+const FRONTIER_CHAPTER_ID = "19";
+const FRONTIER_COLLECTED_DATE = "2026-06-16";
+const FRONTIER_COLLECTED_AT = `${FRONTIER_COLLECTED_DATE}T09:00:00+08:00`;
+const FRONTIER_DISPLAY_DATE_LABEL = "6月16日 · 周二";
+const READ_COUNT_BASE = 73;
+
+const chapter = CHAPTERS.find((item) => item.id === FRONTIER_CHAPTER_ID);
+
+if (!chapter) {
+  throw new Error(`Missing frontier chapter: ${FRONTIER_CHAPTER_ID}`);
+}
+
+function articleSource(article: Article): string {
+  if (article.source) return article.source;
+  try {
+    return new URL(article.url).hostname.replace(/^www\./, "");
+  } catch {
+    return "local";
+  }
+}
+
+function slugify(value: string, index: number): string {
+  const slug = value
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 90);
+  return slug || `frontier-article-${index + 1}`;
+}
+
+function articleTags(article: Article): string[] {
+  const text = `${article.title} ${article.source ?? ""} ${article.note ?? ""}`.toLowerCase();
+  const tags = new Set<string>([article.kind]);
+  if (text.includes("mcp") || text.includes("model context protocol")) tags.add("mcp");
+  if (text.includes("a2a") || text.includes("agent2agent")) tags.add("a2a");
+  if (text.includes("guardrail") || text.includes("sandbox") || text.includes("computer use")) tags.add("governance");
+  if (text.includes("eval") || text.includes("observability") || text.includes("testing") || text.includes("agent-diff")) tags.add("eval");
+  if (text.includes("vercel") || text.includes("chatbot") || /\bui\b/.test(text)) tags.add("ui");
+  if (text.includes("langgraph") || text.includes("crewai") || text.includes("autogen") || text.includes("semantic kernel") || text.includes("bedrock") || text.includes("adk")) {
+    tags.add("runtime");
+  }
+  if (text.includes("llamaindex") || text.includes("file search") || text.includes("context")) tags.add("data");
+  if (text.includes("openai") || text.includes("anthropic")) tags.add("model-platform");
+  return [...tags];
+}
+
+function buildDetailParagraphs(article: Article, source: string): string[] {
+  const summary = article.note?.trim() || "本条资料用于补充第 19 章 Agent 前沿与生态的选型与趋势判断。";
+  return [
+    summary,
+    `来源：${source}。这条资料被收录到“前沿与生态”章节，用来帮助读者把框架、协议、runtime、UI、评估与治理层放回同一张生态地图中理解。`,
+    `查看原文可以进一步核对发布日期、API 细节、协议术语与实现边界；课程页只保留可追溯摘要，不复制原文全文。`,
+  ];
+}
+
+const usedSlugs = new Set<string>();
+
+export const FRONTIER_ARTICLES: FrontierArticle[] = ARTICLES
+  .filter((article) => article.chapters.includes(FRONTIER_CHAPTER_ID))
+  .map((article, index) => {
+    const source = articleSource(article);
+    const baseSlug = slugify(article.title, index);
+    const slug = usedSlugs.has(baseSlug) ? `${baseSlug}-${index + 1}` : baseSlug;
+    usedSlugs.add(slug);
+    return {
+      id: `frontier-${String(index + 1).padStart(2, "0")}`,
+      slug,
+      chapterId: FRONTIER_CHAPTER_ID,
+      chapterSlug: chapter.slug,
+      title: article.title,
+      source,
+      url: article.url,
+      kind: article.kind,
+      summary: article.note?.trim() || "",
+      collectedDate: FRONTIER_COLLECTED_DATE,
+      collectedAt: FRONTIER_COLLECTED_AT,
+      displayDateLabel: FRONTIER_DISPLAY_DATE_LABEL,
+      readCount: READ_COUNT_BASE + index * 7,
+      sortOrder: index + 1,
+      tags: articleTags(article),
+      detailParagraphs: buildDetailParagraphs(article, source),
+    };
+  });

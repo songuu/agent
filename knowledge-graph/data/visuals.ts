@@ -30,6 +30,7 @@ export interface ConceptHighlight {
 export interface ConceptReference {
   title: string;
   url: string;
+  source: string;
   kind: string;
   note: string;
 }
@@ -483,9 +484,18 @@ export function getConceptReferences(chapter: string): readonly ConceptReference
     .map((article) => ({
       title: article.title,
       url: article.url,
+      source: article.source ?? sourceFromUrl(article.url),
       kind: article.kind,
       note: article.note ?? "外部延伸阅读",
     }));
+}
+
+function sourceFromUrl(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "local";
+  }
 }
 
 export function renderConceptVisualHtml(visual: ConceptVisual): string {
@@ -546,7 +556,7 @@ function renderReferenceHtml(references: readonly ConceptReference[]): string[] 
     ...references.map((reference) => [
       "        <li>",
       `          <a href="${escapeHtmlAttribute(reference.url)}" target="_blank" rel="noreferrer">${escapeHtml(reference.title)}</a>`,
-      `          <span>${escapeHtml(reference.kind)}</span>`,
+      `          <span>${escapeHtml(reference.source)} · ${escapeHtml(reference.kind)}</span>`,
       `          <small>${escapeHtml(reference.note)}</small>`,
       "        </li>",
     ].join("\n")),

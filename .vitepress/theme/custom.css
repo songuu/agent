@@ -1103,6 +1103,207 @@
   color: var(--vp-c-text-2);
 }
 
+.vp-doc .frontier-archive-shell {
+  width: min(1084px, calc(100vw - 56px));
+  max-width: none;
+  margin: 24px 0 34px;
+  padding: 24px 0;
+  color: #20242c;
+  background: #f5f5f5;
+}
+
+.vp-doc .frontier-article-detail {
+  min-height: 672px;
+  padding: 25px 24px 38px;
+  border: 1px solid #f1f1f1;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.vp-doc .frontier-detail-title {
+  margin: 0;
+  border-top: 0;
+  padding-top: 0;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: 0;
+  color: #202124;
+}
+
+.frontier-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 14px;
+  align-items: center;
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #687185;
+}
+
+.frontier-detail-meta a {
+  font-weight: 500;
+  color: #687185;
+  text-decoration: none;
+}
+
+.frontier-detail-meta a:hover {
+  color: #3f63ff;
+}
+
+.frontier-detail-body {
+  margin-top: 22px;
+  font-size: 16px;
+  line-height: 1.82;
+  color: #242933;
+}
+
+.frontier-detail-body p {
+  margin: 0;
+}
+
+.frontier-detail-body p + p {
+  margin-top: 52px;
+}
+
+.frontier-detail-actions {
+  margin-top: 34px;
+}
+
+.frontier-detail-actions a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #3f63ff;
+  text-decoration: none;
+}
+
+.frontier-detail-actions a:hover {
+  text-decoration: underline;
+}
+
+.frontier-article-timeline {
+  position: relative;
+  margin-top: 28px;
+  padding-left: 29px;
+}
+
+.frontier-article-timeline::before {
+  position: absolute;
+  top: 8px;
+  bottom: 0;
+  left: 13px;
+  border-left: 2px dashed #dce6ff;
+  content: "";
+}
+
+.frontier-timeline-date {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 24px;
+  margin-bottom: 13px;
+  color: #3f63ff;
+}
+
+.frontier-timeline-date span {
+  width: 0;
+  height: 0;
+  margin-left: -16px;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 8px solid #3f63ff;
+}
+
+.frontier-timeline-date strong {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.frontier-timeline-list {
+  display: grid;
+  gap: 14px;
+}
+
+.frontier-timeline-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 15px minmax(0, 1fr);
+  gap: 0;
+  align-items: start;
+  cursor: pointer;
+  outline: none;
+}
+
+.frontier-timeline-marker {
+  position: relative;
+  z-index: 1;
+  width: 12px;
+  height: 12px;
+  margin-top: 17px;
+  margin-left: -22px;
+  border: 2px solid #4f6fff;
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+.frontier-timeline-card {
+  min-height: 116px;
+  padding: 16px 16px 14px;
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: #ffffff;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+.frontier-timeline-item:hover .frontier-timeline-card,
+.frontier-timeline-item:focus-visible .frontier-timeline-card,
+.frontier-timeline-item[data-active="true"] .frontier-timeline-card {
+  border-color: rgba(63, 99, 255, 0.22);
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+  transform: translateY(-1px);
+}
+
+.frontier-timeline-title {
+  display: block;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.42;
+  color: #071225;
+  text-decoration: none;
+}
+
+.frontier-timeline-title:hover {
+  color: #3f63ff;
+}
+
+.frontier-timeline-excerpt {
+  display: -webkit-box;
+  margin: 6px 0 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #566175;
+}
+
+.frontier-timeline-meta {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #7a8496;
+}
+
 @keyframes conceptNodePulse {
   0%,
   100% {
@@ -1171,6 +1372,51 @@
 }
 
 @media (max-width: 640px) {
+  .vp-doc .frontier-archive-shell {
+    width: 100%;
+    margin: 20px 0 28px;
+    padding: 16px 0;
+  }
+
+  .vp-doc .frontier-article-detail {
+    min-height: 0;
+    padding: 22px 18px 26px;
+  }
+
+  .vp-doc .frontier-detail-title {
+    font-size: 23px;
+  }
+
+  .frontier-detail-body {
+    font-size: 15px;
+  }
+
+  .frontier-detail-body p + p {
+    margin-top: 28px;
+  }
+
+  .frontier-article-timeline {
+    padding-left: 23px;
+  }
+
+  .frontier-timeline-item {
+    grid-template-columns: 10px minmax(0, 1fr);
+  }
+
+  .frontier-timeline-card {
+    min-height: 0;
+    padding: 14px 14px 13px;
+  }
+
+  .frontier-timeline-title {
+    font-size: 16px;
+  }
+
+  .frontier-timeline-excerpt {
+    -webkit-line-clamp: 3;
+    font-size: 14px;
+  }
+
   .demo-runner-header {
     flex-direction: column;
   }

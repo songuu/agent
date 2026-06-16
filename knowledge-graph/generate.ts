@@ -63,6 +63,15 @@ function relLink(fromChapterDir: string, toRepoPath: string): string {
   return relative(fromDir, to).split("\\").join("/");
 }
 
+function articleSource(article: Article): string {
+  if (article.source) return article.source;
+  try {
+    return new URL(article.url).hostname.replace(/^www\./, "");
+  } catch {
+    return "local";
+  }
+}
+
 // ── 数据校验（fail-fast）────────────────────────────────────────────────────
 
 function validate(): void {
@@ -164,11 +173,11 @@ function buildGlobalMd(): string {
   lines.push("");
   lines.push("> 想新增文章？在 `knowledge-graph/data/graph.ts` 的 `ARTICLES` 加一条，跑 `npm run kg` 即可。外部链接请自行核实有效性。");
   lines.push("");
-  lines.push("| 文章 | 类型 | 关联章节 | 说明 |");
-  lines.push("| --- | --- | --- | --- |");
+  lines.push("| 文章 | 来源 | 类型 | 关联章节 | 说明 |");
+  lines.push("| --- | --- | --- | --- | --- |");
   for (const a of ARTICLES) {
     const chs = a.chapters.join(", ");
-    lines.push(`| [${a.title}](${a.url}) | ${a.kind} | ${chs} | ${a.note ?? ""} |`);
+    lines.push(`| [${a.title}](${a.url}) | ${articleSource(a)} | ${a.kind} | ${chs} | ${a.note ?? ""} |`);
   }
   lines.push("");
   return lines.join("\n");
@@ -178,11 +187,11 @@ function buildGlobalMd(): string {
 
 function buildHtmlData(): HtmlData {
   const chapterById = new Map(CHAPTERS.map((c) => [c.id, c]));
-  const articlesByChapter = new Map<string, { title: string; url: string }[]>();
+  const articlesByChapter = new Map<string, { title: string; url: string; source: string }[]>();
   for (const a of ARTICLES) {
     for (const ch of a.chapters) {
       const list = articlesByChapter.get(ch) ?? [];
-      list.push({ title: a.title, url: a.url });
+      list.push({ title: a.title, url: a.url, source: articleSource(a) });
       articlesByChapter.set(ch, list);
     }
   }
@@ -311,8 +320,14 @@ function buildChapterSection(ch: Chapter): string {
   lines.push("### 延伸阅读");
   lines.push("");
   if (arts.length) {
+    const showArticleSource = ch.id === "19";
+    if (showArticleSource) {
+      lines.push("> 标题可点击查看原文；来源为发布方或官方文档站。");
+      lines.push("");
+    }
     for (const a of arts) {
-      lines.push(`- [${a.title}](${a.url})${a.note ? " — " + a.note : ""} \`${a.kind}\``);
+      const prefix = showArticleSource ? `来源：${articleSource(a)} · ` : "";
+      lines.push(`- ${prefix}[${a.title}](${a.url})${a.note ? " — " + a.note : ""} \`${a.kind}\``);
     }
   } else {
     lines.push("_暂无（可在 `graph.ts` 的 `ARTICLES` 中新增本章关联文章）。_");

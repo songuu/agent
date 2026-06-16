@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **36** 个单元、**221** 个概念、**351** 条关系、**61** 篇关联文章。
+共 **36** 个单元、**221** 个概念、**351** 条关系、**87** 篇关联文章。
 
 ## 章节地图
 
@@ -933,66 +933,92 @@ graph LR
 
 > 想新增文章？在 `knowledge-graph/data/graph.ts` 的 `ARTICLES` 加一条，跑 `npm run kg` 即可。外部链接请自行核实有效性。
 
-| 文章 | 类型 | 关联章节 | 说明 |
-| --- | --- | --- | --- |
-| [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) | doc | 01, 19 | Anthropic 官方工程博客，系统讲解 Agent 的循环、工具与何时该用 Agent，与本章心智模型高度对应 |
-| [Anthropic Messages API 文档](https://docs.anthropic.com/en/api/messages) | doc | 02 | Claude 的 messages.create 接口，对应本章 chat() 的底层 |
-| [OpenAI Chat Completions API 文档](https://platform.openai.com/docs/api-reference/chat) | doc | 02 | OpenAI 的 chat.completions.create 接口，本章 provider 抽象的另一实现 |
-| [Chain-of-Thought Prompting Elicits Reasoning in Large Language Models](https://arxiv.org/abs/2201.11903) | paper | 03 | 思维链 (CoT) 的奠基论文，对应本章实验三 |
-| [Language Models are Few-Shot Learners (GPT-3)](https://arxiv.org/abs/2005.14165) | paper | 03 | few-shot 学习的代表性论文，对应本章实验二 |
-| [Anthropic 文档：Prompt engineering overview](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview) | doc | 03 | 官方提示工程技巧汇总，覆盖角色/示例/格式约束 |
-| [ReAct: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629) | paper | 04, 10, capstone | ReAct 原始论文，本章「思考+行动交替」范式的来源 |
-| [Anthropic Docs · Tool use (function calling) with Claude](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) | doc | 05, 06 | 官方工具调用文档，含 tool_use stopReason 与 tool_result 回传机制 |
-| [OpenAI Docs · Function calling](https://platform.openai.com/docs/guides/function-calling) | doc | 05 | OpenAI 侧 function calling 指南，与本章抽象对应 |
-| [Zod 官方文档](https://zod.dev) | doc | 06 | 本章 schema 校验与类型推断的基础库，README 前置知识引用 |
-| [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) | blog | 07 | Anthropic 官方：上下文是有限资源，需主动裁剪与压缩，与本章窗口预算/摘要思路一致 |
-| [Vector embeddings - OpenAI API documentation](https://platform.openai.com/docs/guides/embeddings) | doc | 08 | 本章 embedding 默认调用 OpenAI text-embedding-3-small，官方指南 |
-| [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401) | paper | 09, capstone | RAG 原始论文 (Lewis et al., 2020)，提出检索增强生成范式 |
-| [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366) | paper | 10 | Reflection/自我反思修正的代表性论文 |
-| [Claude Code Docs · Orchestrate teams of Claude Code sessions](https://code.claude.com/docs/en/agent-teams) | doc | 11 | Claude Code 官方 agent teams 文档：team lead、teammates、共享任务列表、mailbox、hooks 与限制 |
-| [Codex Docs · Subagents](https://developers.openai.com/codex/subagents) | doc | 11 | OpenAI Codex 官方 subagent workflows 文档：显式 spawn、线程管理、sandbox/approval 继承与 custom agents |
-| [OpenAI Agents SDK · Orchestration and handoffs](https://developers.openai.com/api/docs/guides/agents/orchestration) | doc | 11 | OpenAI 官方 Agents SDK 编排文档：handoff 与 agent-as-tool 的选择边界 |
-| [Claude Code Docs · Create custom subagents](https://code.claude.com/docs/en/sub-agents) | doc | 11 | Claude Code 官方 subagents 文档：独立上下文、工具权限、自动/显式委派与上下文隔离 |
-| [Codex Docs · Custom instructions with AGENTS.md](https://developers.openai.com/codex/guides/agents-md) | doc | 11 | OpenAI Codex 官方 AGENTS.md 文档：全局、项目、子目录指令链与覆盖规则 |
-| [OpenAI Agents SDK · Guardrails and human review](https://developers.openai.com/api/docs/guides/agents/guardrails-approvals) | doc | 11 | OpenAI 官方：guardrails 与 human-in-the-loop approvals 控制敏感工具和副作用 |
-| [OpenAI Agents SDK · Integrations and observability](https://developers.openai.com/api/docs/guides/agents/integrations-observability) | doc | 11 | OpenAI 官方：tracing 记录 model calls、tool calls、handoffs、guardrails 与 custom spans |
-| [Vercel AI SDK 官方文档](https://sdk.vercel.ai/docs) | doc | 12 | generateText / streamText / tool / maxSteps 的权威参考 |
-| [LangGraph.js 官方文档](https://langchain-ai.github.io/langgraphjs/) | doc | 12 | StateGraph / createReactAgent / checkpointer 的权威参考 |
-| [Zod - TypeScript-first schema validation](https://zod.dev/) | doc | 13 | z.object / z.infer / safeParse 官方文档 |
-| [Vercel AI SDK - generateObject](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-object) | doc | 13 | 框架内建结构化输出 API 参考 |
-| [AbortController - Web APIs | MDN](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) | doc | 14 | 本章取消机制的权威参考，README 中直接引用 |
-| [Streaming Messages - Anthropic API](https://docs.anthropic.com/en/api/messages-streaming) | doc | 14 | 官方流式消息 SSE 协议，对应底层 stream() 的实现 |
-| [Statistical Approaches to Evaluating LLM Outputs (Anthropic - Create strong empirical evaluations)](https://docs.anthropic.com/en/docs/test-and-evaluate/develop-tests) | doc | 15 | Anthropic 官方关于设计评估与评分（含规则与模型评分）的指南 |
-| [promptfoo - LLM evals & testing](https://www.promptfoo.dev/docs/intro/) | doc | 15 | 本章小结点名的生产级 eval/数据集管理框架官方文档 |
-| [Anthropic Pricing](https://www.anthropic.com/pricing) | doc | 16 | Anthropic 官方价格页，价格表单价的权威来源 |
-| [OpenAI API Pricing](https://openai.com/api/pricing) | doc | 16 | OpenAI 官方价格页，对比厂商单价用 |
-| [OpenAI Agents — Guardrails](https://platform.openai.com/docs/guides/agents/guardrails) | doc | 17 | 官方对 agent 输入/输出护栏的设计说明，与本章分层防御思路一致 |
-| [Server-sent events - MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) | doc | 18 | SSE 与 EventSource 的官方权威说明，对应本章 /chat/stream |
-| [Node.js HTTP module documentation](https://nodejs.org/api/http.html) | doc | 18 | node:http 内置模块文档，本章无框架起服务的基础 |
-| [Model Context Protocol: What is MCP?](https://modelcontextprotocol.io/docs/getting-started/intro) | doc | 19 | MCP 官方入门，工具/数据连接标准化的一手来源 |
-| [LangGraph overview](https://docs.langchain.com/oss/javascript/langgraph/overview) | doc | 19 | 编排 runtime 代表，长任务持久化与 human-in-the-loop 官方文档 |
-| [Introducing Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) | blog | rag-chunk, rag-hybrid, rag-contextual | Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读 |
-| [Okapi BM25 - Wikipedia](https://en.wikipedia.org/wiki/Okapi_BM25) | doc | rag-hybrid | BM25 打分公式与 k1/b 参数的权威说明，对应本章 BM25Index |
-| [Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods](https://dl.acm.org/doi/10.1145/1571941.1572114) | paper | rag-hybrid | RRF 原始论文 (Cormack et al., SIGIR 2009)，混合检索融合法的来源 |
-| [Precise Zero-Shot Dense Retrieval without Relevance Labels (HyDE)](https://arxiv.org/abs/2212.10496) | paper | rag-query | HyDE 原始论文：用假设性文档的向量做检索 |
-| [RAGAS: Automated Evaluation of Retrieval Augmented Generation](https://arxiv.org/abs/2309.15217) | paper | rag-eval | RAG 评估指标 (faithfulness / context & answer relevance) 的代表性论文，本章三指标的来源 |
-| [Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection](https://arxiv.org/abs/2310.11511) | paper | rag-agentic | 把检索、生成、批判做成可控循环的代表论文，对应本章 gated retrieve / grade / retry 思想 |
-| [Corrective Retrieval Augmented Generation](https://arxiv.org/abs/2401.15884) | paper | rag-agentic | CRAG 用检索评估触发纠错与补充检索，对应本章证据不足就改写重试的控制流 |
-| [Cohere · Rerank documentation](https://docs.cohere.com/docs/rerank-overview) | doc | rag-rerank | 生产级 rerank API 与 cross-encoder 精排的官方说明，对照本章 llmRerank |
-| [pgvector — open-source vector similarity search for Postgres](https://github.com/pgvector/pgvector) | doc | rag-prod | 最常见的生产持久化向量库，迁移目标之一，对照本章 MemoryVectorStore 接口 |
-| [OWASP Top 10 for LLM Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/) | doc | rag-security | LLM01 提示注入位列榜首；RAG 检索内容是典型的间接注入攻击面，本章三道防线的威胁模型来源 |
-| [Prompt injection: What's the worst that can happen? (Simon Willison)](https://simonwillison.net/2023/Apr/14/worst-that-can-happen/) | blog | rag-security | 讲透『把不可信数据喂进 LLM』为何危险，对应本章『检索内容即不可信数据』 |
-| [Faiss: A library for efficient similarity search (Meta Engineering)](https://engineering.fb.com/2017/03/29/data-infrastructure/faiss-a-library-for-efficient-similarity-search/) | blog | rag-index | FAISS 官方工程博客，讲清暴力检索为何扛不住规模、IVF 等索引如何用分桶换速度，本章 IVF 直觉的来源 |
-| [Efficient and robust approximate nearest neighbor search using HNSW graphs](https://arxiv.org/abs/1603.09320) | paper | rag-index | HNSW 原始论文 (Malkov & Yashunin)：另一类主流 ANN 索引，efSearch 与本章 nprobe 同属『查多准 vs 查多快』旋钮 |
-| [Lost in the Middle: How Language Models Use Long Contexts](https://arxiv.org/abs/2307.03172) | paper | rag-context | Liu 等 (2023)：实证模型对长上下文『首尾强、中间弱』的 U 形利用曲线，本章注意力重排的直接依据 |
-| [LangChain · How to reorder retrieved results for long context](https://python.langchain.com/docs/how_to/long_context_reorder/) | doc | rag-context | 把最相关文档放到上下文首尾、次相关压中间的工程实现，正是本章 reorderForAttention 的现成对应 |
-| [LangGraph.js · Low-level 概念（State / Nodes / Edges / Reducers）](https://langchain-ai.github.io/langgraphjs/concepts/low_level/) | doc | lg-stategraph | LangGraph.js 官方底层概念：StateGraph、channel reducer、节点/边——本章手写图的权威参考 |
-| [LangGraph.js · Workflows and Agents](https://langchain-ai.github.io/langgraphjs/tutorials/workflows/) | doc | lg-stategraph | 从底层图到预制 agent 的官方教程，对照本章「createReactAgent 只是预制 StateGraph」 |
-| [LangGraph.js · Map-reduce branches with Send](https://langchain-ai.github.io/langgraphjs/how-tos/map-reduce/) | doc | lg-routing | 用 Send 从一条边动态扇出多个并行节点实例再 reduce 合并——本章图3 的官方对应 |
-| [LangGraph.js · How to control graph recursion limit](https://langchain-ai.github.io/langgraphjs/how-tos/recursion-limit/) | doc | lg-routing | recursionLimit 控制循环上限、超限抛 GraphRecursionError——本章循环安全阀的官方说明 |
-| [LangGraph.js · Persistence（Checkpointer / thread / state history）](https://langchain-ai.github.io/langgraphjs/concepts/persistence/) | doc | lg-checkpoint | 官方持久化概念：checkpointer 按 thread_id 存每个 super-step、getState/getStateHistory 取快照与时间线——本章的权威参考 |
-| [LangGraph.js · How to view and update past graph state（time travel）](https://langchain-ai.github.io/langgraphjs/how-tos/time-travel/) | doc | lg-checkpoint | 用 getStateHistory 回到过去某个 checkpoint、updateState 改写并从该点重放——本章时间旅行的官方对应 |
-| [LangGraph.js · Human-in-the-loop（概念）](https://langchain-ai.github.io/langgraphjs/concepts/human_in_the_loop/) | doc | lg-hitl | 官方 HITL 概念：interrupt 暂停、Command(resume) 续跑、审批/编辑/工具确认等模式——本章的权威参考 |
-| [LangGraph.js · How to wait for user input using interrupt](https://langchain-ai.github.io/langgraphjs/how-tos/wait-user-input-functional/) | doc | lg-hitl | 用 interrupt 暂停等用户输入、再用 Command({resume}) 续跑的官方 how-to，对应本章审批门 demo |
-| [LangGraph.js · Multi-agent systems（概念）](https://langchain-ai.github.io/langgraphjs/concepts/multi_agent/) | doc | lg-multiagent | 官方多 agent 拓扑总览：supervisor、network、hierarchical 等——本章 supervisor / parallel team 的权威参考 |
-| [LangGraph.js · Agent supervisor（教程）](https://langchain-ai.github.io/langgraphjs/tutorials/multi_agent/agent_supervisor/) | doc | lg-multiagent | 一个 supervisor 用条件边把任务派给多个 worker agent 的官方教程，对应本章图1 的中心化调度循环 |
+| 文章 | 来源 | 类型 | 关联章节 | 说明 |
+| --- | --- | --- | --- | --- |
+| [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) | Anthropic | doc | 01, 19 | Anthropic 官方工程博客，系统讲解 Agent 的循环、工具与何时该用 Agent，与本章心智模型高度对应 |
+| [OpenAI Agents SDK for TypeScript](https://openai.github.io/openai-agents-js/) | OpenAI | doc | 19 | OpenAI 官方 TypeScript Agents SDK 文档，对应 agent、tool、handoff、guardrail、session、tracing、MCP 等 SDK 层能力 |
+| [OpenAI Responses API Reference](https://platform.openai.com/docs/api-reference/responses) | OpenAI | doc | 19 | OpenAI 官方 Responses API 参考，对应模型原生输入输出、工具调用与状态化交互接口层 |
+| [OpenAI: The next evolution of the Agents SDK](https://openai.com/index/the-next-evolution-of-the-agents-sdk/) | OpenAI | blog | 19 | OpenAI 官方产品文章：Agents SDK 向 sandbox execution、long-horizon tasks、durable harness 演进，是前沿趋势来源 |
+| [OpenAI Docs · Sandbox agents](https://developers.openai.com/api/docs/guides/agents/sandboxes) | OpenAI | doc | 19 | Agents SDK sandbox 文档，对应 code execution / long-running task 的隔离执行与生产化边界 |
+| [OpenAI Docs · Evaluate agent workflows](https://developers.openai.com/api/docs/guides/agent-evals) | OpenAI | doc | 19 | OpenAI 官方 agent workflow eval 指南，对应第 19 章评估治理层 |
+| [OpenAI Docs · MCP and Connectors](https://developers.openai.com/api/docs/guides/tools-connectors-mcp) | OpenAI | doc | 19 | OpenAI 官方 MCP/connectors 文档，对应 hosted platform 如何接入远程工具协议 |
+| [OpenAI Docs · Web search](https://developers.openai.com/api/docs/guides/tools-web-search) | OpenAI | doc | 19 | OpenAI 官方 web search 工具文档，对应 hosted tools 层的网页检索能力 |
+| [OpenAI Docs · File search](https://developers.openai.com/api/docs/guides/tools-file-search) | OpenAI | doc | 19 | OpenAI 官方 file search 工具文档，对应 hosted tools / 私有资料检索能力 |
+| [OpenAI Docs · Computer use](https://developers.openai.com/api/docs/guides/tools-computer-use) | OpenAI | doc | 19 | OpenAI 官方 computer use 工具文档，对应 UI/桌面自动化与 sandbox 风险边界 |
+| [OpenAI Docs · Conversation state](https://developers.openai.com/api/docs/guides/conversation-state) | OpenAI | doc | 19 | OpenAI 官方 conversation state 文档，对应状态化交互和从手写 message history 到平台托管状态的迁移 |
+| [Anthropic Messages API 文档](https://docs.anthropic.com/en/api/messages) | docs.anthropic.com | doc | 02 | Claude 的 messages.create 接口，对应本章 chat() 的底层 |
+| [OpenAI Chat Completions API 文档](https://platform.openai.com/docs/api-reference/chat) | platform.openai.com | doc | 02 | OpenAI 的 chat.completions.create 接口，本章 provider 抽象的另一实现 |
+| [Chain-of-Thought Prompting Elicits Reasoning in Large Language Models](https://arxiv.org/abs/2201.11903) | arxiv.org | paper | 03 | 思维链 (CoT) 的奠基论文，对应本章实验三 |
+| [Language Models are Few-Shot Learners (GPT-3)](https://arxiv.org/abs/2005.14165) | arxiv.org | paper | 03 | few-shot 学习的代表性论文，对应本章实验二 |
+| [Anthropic 文档：Prompt engineering overview](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview) | docs.anthropic.com | doc | 03 | 官方提示工程技巧汇总，覆盖角色/示例/格式约束 |
+| [ReAct: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629) | arxiv.org | paper | 04, 10, capstone | ReAct 原始论文，本章「思考+行动交替」范式的来源 |
+| [Anthropic Docs · Tool use (function calling) with Claude](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) | docs.anthropic.com | doc | 05, 06 | 官方工具调用文档，含 tool_use stopReason 与 tool_result 回传机制 |
+| [OpenAI Docs · Function calling](https://platform.openai.com/docs/guides/function-calling) | platform.openai.com | doc | 05 | OpenAI 侧 function calling 指南，与本章抽象对应 |
+| [Zod 官方文档](https://zod.dev) | zod.dev | doc | 06 | 本章 schema 校验与类型推断的基础库，README 前置知识引用 |
+| [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) | Anthropic | blog | 07, 19 | Anthropic 官方：上下文是有限资源，需主动裁剪与压缩，与本章窗口预算/摘要思路一致 |
+| [Vector embeddings - OpenAI API documentation](https://platform.openai.com/docs/guides/embeddings) | platform.openai.com | doc | 08 | 本章 embedding 默认调用 OpenAI text-embedding-3-small，官方指南 |
+| [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401) | arxiv.org | paper | 09, capstone | RAG 原始论文 (Lewis et al., 2020)，提出检索增强生成范式 |
+| [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366) | arxiv.org | paper | 10 | Reflection/自我反思修正的代表性论文 |
+| [Claude Code Docs · Orchestrate teams of Claude Code sessions](https://code.claude.com/docs/en/agent-teams) | code.claude.com | doc | 11 | Claude Code 官方 agent teams 文档：team lead、teammates、共享任务列表、mailbox、hooks 与限制 |
+| [Codex Docs · Subagents](https://developers.openai.com/codex/subagents) | developers.openai.com | doc | 11 | OpenAI Codex 官方 subagent workflows 文档：显式 spawn、线程管理、sandbox/approval 继承与 custom agents |
+| [OpenAI Agents SDK · Orchestration and handoffs](https://developers.openai.com/api/docs/guides/agents/orchestration) | developers.openai.com | doc | 11 | OpenAI 官方 Agents SDK 编排文档：handoff 与 agent-as-tool 的选择边界 |
+| [Claude Code Docs · Create custom subagents](https://code.claude.com/docs/en/sub-agents) | code.claude.com | doc | 11 | Claude Code 官方 subagents 文档：独立上下文、工具权限、自动/显式委派与上下文隔离 |
+| [Codex Docs · Custom instructions with AGENTS.md](https://developers.openai.com/codex/guides/agents-md) | developers.openai.com | doc | 11 | OpenAI Codex 官方 AGENTS.md 文档：全局、项目、子目录指令链与覆盖规则 |
+| [OpenAI Agents SDK · Guardrails and human review](https://developers.openai.com/api/docs/guides/agents/guardrails-approvals) | OpenAI | doc | 11, 19 | OpenAI 官方：guardrails 与 human-in-the-loop approvals 控制敏感工具和副作用 |
+| [OpenAI Agents SDK · Integrations and observability](https://developers.openai.com/api/docs/guides/agents/integrations-observability) | OpenAI | doc | 11, 19 | OpenAI 官方：tracing 记录 model calls、tool calls、handoffs、guardrails 与 custom spans |
+| [Vercel AI SDK 官方文档](https://sdk.vercel.ai/docs) | Vercel | doc | 12, 19 | generateText / streamText / tool / maxSteps 的权威参考 |
+| [LangGraph.js 官方文档](https://langchain-ai.github.io/langgraphjs/) | langchain-ai.github.io | doc | 12 | StateGraph / createReactAgent / checkpointer 的权威参考 |
+| [Zod - TypeScript-first schema validation](https://zod.dev/) | zod.dev | doc | 13 | z.object / z.infer / safeParse 官方文档 |
+| [Vercel AI SDK - generateObject](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-object) | ai-sdk.dev | doc | 13 | 框架内建结构化输出 API 参考 |
+| [AbortController - Web APIs | MDN](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) | developer.mozilla.org | doc | 14 | 本章取消机制的权威参考，README 中直接引用 |
+| [Streaming Messages - Anthropic API](https://docs.anthropic.com/en/api/messages-streaming) | docs.anthropic.com | doc | 14 | 官方流式消息 SSE 协议，对应底层 stream() 的实现 |
+| [Statistical Approaches to Evaluating LLM Outputs (Anthropic - Create strong empirical evaluations)](https://docs.anthropic.com/en/docs/test-and-evaluate/develop-tests) | docs.anthropic.com | doc | 15 | Anthropic 官方关于设计评估与评分（含规则与模型评分）的指南 |
+| [promptfoo - LLM evals & testing](https://www.promptfoo.dev/docs/intro/) | promptfoo.dev | doc | 15 | 本章小结点名的生产级 eval/数据集管理框架官方文档 |
+| [Anthropic Pricing](https://www.anthropic.com/pricing) | anthropic.com | doc | 16 | Anthropic 官方价格页，价格表单价的权威来源 |
+| [OpenAI API Pricing](https://openai.com/api/pricing) | openai.com | doc | 16 | OpenAI 官方价格页，对比厂商单价用 |
+| [OpenAI Agents — Guardrails](https://platform.openai.com/docs/guides/agents/guardrails) | platform.openai.com | doc | 17 | 官方对 agent 输入/输出护栏的设计说明，与本章分层防御思路一致 |
+| [Server-sent events - MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) | developer.mozilla.org | doc | 18 | SSE 与 EventSource 的官方权威说明，对应本章 /chat/stream |
+| [Node.js HTTP module documentation](https://nodejs.org/api/http.html) | nodejs.org | doc | 18 | node:http 内置模块文档，本章无框架起服务的基础 |
+| [Model Context Protocol: What is MCP?](https://modelcontextprotocol.io/docs/getting-started/intro) | Model Context Protocol | doc | 19 | MCP 官方入门，工具/数据连接标准化的一手来源 |
+| [Model Context Protocol specification repository](https://github.com/modelcontextprotocol/modelcontextprotocol) | Model Context Protocol | doc | 19 | MCP 官方 specification 与文档仓库，用于复核协议层术语、版本与实现边界 |
+| [A2A Protocol specification](https://github.com/a2aproject/A2A/blob/main/docs/specification.md) | A2A Project | doc | 19 | A2A 官方 specification，对应 agent card、task/message、artifact/status 等跨 agent 协作对象 |
+| [Google Developers Blog · Announcing the Agent2Agent Protocol (A2A)](https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/) | Google Developers Blog | blog | 19 | Google Cloud 官方 A2A 发布文章，解释协议动机、设计原则、Agent Card、task/artifact/status 等生态背景 |
+| [Google Agent Development Kit (ADK) docs](https://adk.dev/) | Google ADK | doc | 19 | Google ADK 官方文档，对应 Google 生态里的 agent 开发框架与多 agent 工程实践 |
+| [LangGraph overview](https://docs.langchain.com/oss/javascript/langgraph/overview) | LangChain | doc | 19 | 编排 runtime 代表，长任务持久化与 human-in-the-loop 官方文档 |
+| [LangSmith Observability](https://docs.langchain.com/langsmith/observability) | LangChain | doc | 19 | LangSmith 官方观测文档，对应 agent tracing、调试、线上监控与评估治理层 |
+| [Vercel AI SDK 5 announcement](https://vercel.com/blog/ai-sdk-5) | Vercel | blog | 19 | Vercel 官方 AI SDK 5 发布文章，对应前端流式 UI、typed messages、tooling 与产品体验层趋势 |
+| [Vercel AI SDK UI · Chatbot](https://ai-sdk.dev/docs/ai-sdk-ui/chatbot) | Vercel | doc | 19 | Vercel AI SDK UI 官方 chatbot 文档，对应产品/UI 层的对话体验与状态管理 |
+| [CrewAI introduction](https://docs.crewai.com/en/introduction) | CrewAI | doc | 19 | CrewAI 官方入门，对应企业流程自动化、Flows 与 Crews 的团队/流程 runtime 心智模型 |
+| [CrewAI Flows](https://docs.crewai.com/en/concepts/flows) | CrewAI | doc | 19 | CrewAI 官方 Flows 文档，对应事件驱动 workflow、状态管理、条件控制流与长期流程编排 |
+| [LlamaIndex Agents documentation](https://developers.llamaindex.ai/python/framework/use_cases/agents/) | LlamaIndex | doc | 19 | LlamaIndex 官方 Agents 用例文档，对应数据密集型 agent、query planning、tools 与 RAG 生态层 |
+| [LlamaIndex Workflows](https://developers.llamaindex.ai/python/llamaagents/workflows/) | LlamaIndex | doc | 19 | LlamaIndex 官方 Workflows 文档，对应事件驱动、可观测、可组合的数据/agent 工作流 |
+| [Microsoft AutoGen · AgentChat](https://microsoft.github.io/autogen/stable/user-guide/agentchat-user-guide/index.html) | Microsoft AutoGen | doc | 19 | AutoGen 官方 AgentChat 文档，对应 agents、teams、human-in-the-loop、state、observability 等多 agent 框架能力 |
+| [Microsoft Semantic Kernel Agent Framework](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/) | Microsoft Learn | doc | 19 | Semantic Kernel 官方 agent framework 文档，对应企业应用里的 agent 协作、人工参与和流程编排 |
+| [Amazon Bedrock Agents](https://docs.aws.amazon.com/bedrock/latest/userguide/agents.html) | AWS | doc | 19 | Amazon Bedrock 官方 Agents 文档，对应云平台托管 agent、API action、knowledge base 与企业集成生态 |
+| [Testing Agentic Workflows with Structural Coverage Criteria](https://arxiv.org/abs/2605.26521) | arXiv | paper | 19 | 2026 论文：用结构覆盖衡量多 agent workflow 的测试充分性，对应 agent eval 的前沿方向 |
+| [Agent-Diff: Benchmarking LLM Agents on Enterprise API Tasks via Code Execution with State-Diff-Based Evaluation](https://arxiv.org/abs/2602.11224) | arXiv | paper | 19 | 2026 论文：用企业 API 任务和 state-diff 合约评估 agent 执行结果，对应生产级 agent benchmark 方向 |
+| [Introducing Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) | anthropic.com | blog | rag-chunk, rag-hybrid, rag-contextual | Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读 |
+| [Okapi BM25 - Wikipedia](https://en.wikipedia.org/wiki/Okapi_BM25) | en.wikipedia.org | doc | rag-hybrid | BM25 打分公式与 k1/b 参数的权威说明，对应本章 BM25Index |
+| [Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods](https://dl.acm.org/doi/10.1145/1571941.1572114) | dl.acm.org | paper | rag-hybrid | RRF 原始论文 (Cormack et al., SIGIR 2009)，混合检索融合法的来源 |
+| [Precise Zero-Shot Dense Retrieval without Relevance Labels (HyDE)](https://arxiv.org/abs/2212.10496) | arxiv.org | paper | rag-query | HyDE 原始论文：用假设性文档的向量做检索 |
+| [RAGAS: Automated Evaluation of Retrieval Augmented Generation](https://arxiv.org/abs/2309.15217) | arxiv.org | paper | rag-eval | RAG 评估指标 (faithfulness / context & answer relevance) 的代表性论文，本章三指标的来源 |
+| [Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection](https://arxiv.org/abs/2310.11511) | arxiv.org | paper | rag-agentic | 把检索、生成、批判做成可控循环的代表论文，对应本章 gated retrieve / grade / retry 思想 |
+| [Corrective Retrieval Augmented Generation](https://arxiv.org/abs/2401.15884) | arxiv.org | paper | rag-agentic | CRAG 用检索评估触发纠错与补充检索，对应本章证据不足就改写重试的控制流 |
+| [Cohere · Rerank documentation](https://docs.cohere.com/docs/rerank-overview) | docs.cohere.com | doc | rag-rerank | 生产级 rerank API 与 cross-encoder 精排的官方说明，对照本章 llmRerank |
+| [pgvector — open-source vector similarity search for Postgres](https://github.com/pgvector/pgvector) | github.com | doc | rag-prod | 最常见的生产持久化向量库，迁移目标之一，对照本章 MemoryVectorStore 接口 |
+| [OWASP Top 10 for LLM Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/) | owasp.org | doc | rag-security | LLM01 提示注入位列榜首；RAG 检索内容是典型的间接注入攻击面，本章三道防线的威胁模型来源 |
+| [Prompt injection: What's the worst that can happen? (Simon Willison)](https://simonwillison.net/2023/Apr/14/worst-that-can-happen/) | simonwillison.net | blog | rag-security | 讲透『把不可信数据喂进 LLM』为何危险，对应本章『检索内容即不可信数据』 |
+| [Faiss: A library for efficient similarity search (Meta Engineering)](https://engineering.fb.com/2017/03/29/data-infrastructure/faiss-a-library-for-efficient-similarity-search/) | engineering.fb.com | blog | rag-index | FAISS 官方工程博客，讲清暴力检索为何扛不住规模、IVF 等索引如何用分桶换速度，本章 IVF 直觉的来源 |
+| [Efficient and robust approximate nearest neighbor search using HNSW graphs](https://arxiv.org/abs/1603.09320) | arxiv.org | paper | rag-index | HNSW 原始论文 (Malkov & Yashunin)：另一类主流 ANN 索引，efSearch 与本章 nprobe 同属『查多准 vs 查多快』旋钮 |
+| [Lost in the Middle: How Language Models Use Long Contexts](https://arxiv.org/abs/2307.03172) | arxiv.org | paper | rag-context | Liu 等 (2023)：实证模型对长上下文『首尾强、中间弱』的 U 形利用曲线，本章注意力重排的直接依据 |
+| [LangChain · How to reorder retrieved results for long context](https://python.langchain.com/docs/how_to/long_context_reorder/) | python.langchain.com | doc | rag-context | 把最相关文档放到上下文首尾、次相关压中间的工程实现，正是本章 reorderForAttention 的现成对应 |
+| [LangGraph.js · Low-level 概念（State / Nodes / Edges / Reducers）](https://langchain-ai.github.io/langgraphjs/concepts/low_level/) | langchain-ai.github.io | doc | lg-stategraph | LangGraph.js 官方底层概念：StateGraph、channel reducer、节点/边——本章手写图的权威参考 |
+| [LangGraph.js · Workflows and Agents](https://langchain-ai.github.io/langgraphjs/tutorials/workflows/) | langchain-ai.github.io | doc | lg-stategraph | 从底层图到预制 agent 的官方教程，对照本章「createReactAgent 只是预制 StateGraph」 |
+| [LangGraph.js · Map-reduce branches with Send](https://langchain-ai.github.io/langgraphjs/how-tos/map-reduce/) | langchain-ai.github.io | doc | lg-routing | 用 Send 从一条边动态扇出多个并行节点实例再 reduce 合并——本章图3 的官方对应 |
+| [LangGraph.js · How to control graph recursion limit](https://langchain-ai.github.io/langgraphjs/how-tos/recursion-limit/) | langchain-ai.github.io | doc | lg-routing | recursionLimit 控制循环上限、超限抛 GraphRecursionError——本章循环安全阀的官方说明 |
+| [LangGraph.js · Persistence（Checkpointer / thread / state history）](https://langchain-ai.github.io/langgraphjs/concepts/persistence/) | langchain-ai.github.io | doc | lg-checkpoint | 官方持久化概念：checkpointer 按 thread_id 存每个 super-step、getState/getStateHistory 取快照与时间线——本章的权威参考 |
+| [LangGraph.js · How to view and update past graph state（time travel）](https://langchain-ai.github.io/langgraphjs/how-tos/time-travel/) | langchain-ai.github.io | doc | lg-checkpoint | 用 getStateHistory 回到过去某个 checkpoint、updateState 改写并从该点重放——本章时间旅行的官方对应 |
+| [LangGraph.js · Human-in-the-loop（概念）](https://langchain-ai.github.io/langgraphjs/concepts/human_in_the_loop/) | langchain-ai.github.io | doc | lg-hitl | 官方 HITL 概念：interrupt 暂停、Command(resume) 续跑、审批/编辑/工具确认等模式——本章的权威参考 |
+| [LangGraph.js · How to wait for user input using interrupt](https://langchain-ai.github.io/langgraphjs/how-tos/wait-user-input-functional/) | langchain-ai.github.io | doc | lg-hitl | 用 interrupt 暂停等用户输入、再用 Command({resume}) 续跑的官方 how-to，对应本章审批门 demo |
+| [LangGraph.js · Multi-agent systems（概念）](https://langchain-ai.github.io/langgraphjs/concepts/multi_agent/) | langchain-ai.github.io | doc | lg-multiagent | 官方多 agent 拓扑总览：supervisor、network、hierarchical 等——本章 supervisor / parallel team 的权威参考 |
+| [LangGraph.js · Agent supervisor（教程）](https://langchain-ai.github.io/langgraphjs/tutorials/multi_agent/agent_supervisor/) | langchain-ai.github.io | doc | lg-multiagent | 一个 supervisor 用条件边把任务派给多个 worker agent 的官方教程，对应本章图1 的中心化调度循环 |

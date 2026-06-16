@@ -63,6 +63,8 @@ export interface Article {
   title: string;
   url: string;
   kind: "paper" | "doc" | "blog" | "video" | "internal";
+  /** 发布方 / 原始来源；用于生成“来源：X · 可点击原文”。缺省时生成器用域名兜底。 */
+  source?: string;
   /** 关联到哪些章节（章节 id 列表）。 */
   chapters: string[];
   note?: string;
@@ -765,7 +767,17 @@ export const RELATIONS: Relation[] = [
 ];
 
 export const ARTICLES: Article[] = [
-  { title: "Building effective agents", url: "https://www.anthropic.com/engineering/building-effective-agents", kind: "doc", chapters: ["01","19"], note: "Anthropic 官方工程博客，系统讲解 Agent 的循环、工具与何时该用 Agent，与本章心智模型高度对应" },
+  { title: "Building effective agents", url: "https://www.anthropic.com/engineering/building-effective-agents", kind: "doc", source: "Anthropic", chapters: ["01","19"], note: "Anthropic 官方工程博客，系统讲解 Agent 的循环、工具与何时该用 Agent，与本章心智模型高度对应" },
+  { title: "OpenAI Agents SDK for TypeScript", url: "https://openai.github.io/openai-agents-js/", kind: "doc", source: "OpenAI", chapters: ["19"], note: "OpenAI 官方 TypeScript Agents SDK 文档，对应 agent、tool、handoff、guardrail、session、tracing、MCP 等 SDK 层能力" },
+  { title: "OpenAI Responses API Reference", url: "https://platform.openai.com/docs/api-reference/responses", kind: "doc", source: "OpenAI", chapters: ["19"], note: "OpenAI 官方 Responses API 参考，对应模型原生输入输出、工具调用与状态化交互接口层" },
+  { title: "OpenAI: The next evolution of the Agents SDK", url: "https://openai.com/index/the-next-evolution-of-the-agents-sdk/", kind: "blog", source: "OpenAI", chapters: ["19"], note: "OpenAI 官方产品文章：Agents SDK 向 sandbox execution、long-horizon tasks、durable harness 演进，是前沿趋势来源" },
+  { title: "OpenAI Docs · Sandbox agents", url: "https://developers.openai.com/api/docs/guides/agents/sandboxes", kind: "doc", source: "OpenAI", chapters: ["19"], note: "Agents SDK sandbox 文档，对应 code execution / long-running task 的隔离执行与生产化边界" },
+  { title: "OpenAI Docs · Evaluate agent workflows", url: "https://developers.openai.com/api/docs/guides/agent-evals", kind: "doc", source: "OpenAI", chapters: ["19"], note: "OpenAI 官方 agent workflow eval 指南，对应第 19 章评估治理层" },
+  { title: "OpenAI Docs · MCP and Connectors", url: "https://developers.openai.com/api/docs/guides/tools-connectors-mcp", kind: "doc", source: "OpenAI", chapters: ["19"], note: "OpenAI 官方 MCP/connectors 文档，对应 hosted platform 如何接入远程工具协议" },
+  { title: "OpenAI Docs · Web search", url: "https://developers.openai.com/api/docs/guides/tools-web-search", kind: "doc", source: "OpenAI", chapters: ["19"], note: "OpenAI 官方 web search 工具文档，对应 hosted tools 层的网页检索能力" },
+  { title: "OpenAI Docs · File search", url: "https://developers.openai.com/api/docs/guides/tools-file-search", kind: "doc", source: "OpenAI", chapters: ["19"], note: "OpenAI 官方 file search 工具文档，对应 hosted tools / 私有资料检索能力" },
+  { title: "OpenAI Docs · Computer use", url: "https://developers.openai.com/api/docs/guides/tools-computer-use", kind: "doc", source: "OpenAI", chapters: ["19"], note: "OpenAI 官方 computer use 工具文档，对应 UI/桌面自动化与 sandbox 风险边界" },
+  { title: "OpenAI Docs · Conversation state", url: "https://developers.openai.com/api/docs/guides/conversation-state", kind: "doc", source: "OpenAI", chapters: ["19"], note: "OpenAI 官方 conversation state 文档，对应状态化交互和从手写 message history 到平台托管状态的迁移" },
   { title: "Anthropic Messages API 文档", url: "https://docs.anthropic.com/en/api/messages", kind: "doc", chapters: ["02"], note: "Claude 的 messages.create 接口，对应本章 chat() 的底层" },
   { title: "OpenAI Chat Completions API 文档", url: "https://platform.openai.com/docs/api-reference/chat", kind: "doc", chapters: ["02"], note: "OpenAI 的 chat.completions.create 接口，本章 provider 抽象的另一实现" },
   { title: "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models", url: "https://arxiv.org/abs/2201.11903", kind: "paper", chapters: ["03"], note: "思维链 (CoT) 的奠基论文，对应本章实验三" },
@@ -775,7 +787,7 @@ export const ARTICLES: Article[] = [
   { title: "Anthropic Docs · Tool use (function calling) with Claude", url: "https://docs.anthropic.com/en/docs/build-with-claude/tool-use", kind: "doc", chapters: ["05","06"], note: "官方工具调用文档，含 tool_use stopReason 与 tool_result 回传机制" },
   { title: "OpenAI Docs · Function calling", url: "https://platform.openai.com/docs/guides/function-calling", kind: "doc", chapters: ["05"], note: "OpenAI 侧 function calling 指南，与本章抽象对应" },
   { title: "Zod 官方文档", url: "https://zod.dev", kind: "doc", chapters: ["06"], note: "本章 schema 校验与类型推断的基础库，README 前置知识引用" },
-  { title: "Effective context engineering for AI agents", url: "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents", kind: "blog", chapters: ["07"], note: "Anthropic 官方：上下文是有限资源，需主动裁剪与压缩，与本章窗口预算/摘要思路一致" },
+  { title: "Effective context engineering for AI agents", url: "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents", kind: "blog", source: "Anthropic", chapters: ["07","19"], note: "Anthropic 官方：上下文是有限资源，需主动裁剪与压缩，与本章窗口预算/摘要思路一致" },
   { title: "Vector embeddings - OpenAI API documentation", url: "https://platform.openai.com/docs/guides/embeddings", kind: "doc", chapters: ["08"], note: "本章 embedding 默认调用 OpenAI text-embedding-3-small，官方指南" },
   { title: "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks", url: "https://arxiv.org/abs/2005.11401", kind: "paper", chapters: ["09","capstone"], note: "RAG 原始论文 (Lewis et al., 2020)，提出检索增强生成范式" },
   { title: "Reflexion: Language Agents with Verbal Reinforcement Learning", url: "https://arxiv.org/abs/2303.11366", kind: "paper", chapters: ["10"], note: "Reflection/自我反思修正的代表性论文" },
@@ -784,9 +796,9 @@ export const ARTICLES: Article[] = [
   { title: "OpenAI Agents SDK · Orchestration and handoffs", url: "https://developers.openai.com/api/docs/guides/agents/orchestration", kind: "doc", chapters: ["11"], note: "OpenAI 官方 Agents SDK 编排文档：handoff 与 agent-as-tool 的选择边界" },
   { title: "Claude Code Docs · Create custom subagents", url: "https://code.claude.com/docs/en/sub-agents", kind: "doc", chapters: ["11"], note: "Claude Code 官方 subagents 文档：独立上下文、工具权限、自动/显式委派与上下文隔离" },
   { title: "Codex Docs · Custom instructions with AGENTS.md", url: "https://developers.openai.com/codex/guides/agents-md", kind: "doc", chapters: ["11"], note: "OpenAI Codex 官方 AGENTS.md 文档：全局、项目、子目录指令链与覆盖规则" },
-  { title: "OpenAI Agents SDK · Guardrails and human review", url: "https://developers.openai.com/api/docs/guides/agents/guardrails-approvals", kind: "doc", chapters: ["11"], note: "OpenAI 官方：guardrails 与 human-in-the-loop approvals 控制敏感工具和副作用" },
-  { title: "OpenAI Agents SDK · Integrations and observability", url: "https://developers.openai.com/api/docs/guides/agents/integrations-observability", kind: "doc", chapters: ["11"], note: "OpenAI 官方：tracing 记录 model calls、tool calls、handoffs、guardrails 与 custom spans" },
-  { title: "Vercel AI SDK 官方文档", url: "https://sdk.vercel.ai/docs", kind: "doc", chapters: ["12"], note: "generateText / streamText / tool / maxSteps 的权威参考" },
+  { title: "OpenAI Agents SDK · Guardrails and human review", url: "https://developers.openai.com/api/docs/guides/agents/guardrails-approvals", kind: "doc", source: "OpenAI", chapters: ["11","19"], note: "OpenAI 官方：guardrails 与 human-in-the-loop approvals 控制敏感工具和副作用" },
+  { title: "OpenAI Agents SDK · Integrations and observability", url: "https://developers.openai.com/api/docs/guides/agents/integrations-observability", kind: "doc", source: "OpenAI", chapters: ["11","19"], note: "OpenAI 官方：tracing 记录 model calls、tool calls、handoffs、guardrails 与 custom spans" },
+  { title: "Vercel AI SDK 官方文档", url: "https://sdk.vercel.ai/docs", kind: "doc", source: "Vercel", chapters: ["12","19"], note: "generateText / streamText / tool / maxSteps 的权威参考" },
   { title: "LangGraph.js 官方文档", url: "https://langchain-ai.github.io/langgraphjs/", kind: "doc", chapters: ["12"], note: "StateGraph / createReactAgent / checkpointer 的权威参考" },
   { title: "Zod - TypeScript-first schema validation", url: "https://zod.dev/", kind: "doc", chapters: ["13"], note: "z.object / z.infer / safeParse 官方文档" },
   { title: "Vercel AI SDK - generateObject", url: "https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-object", kind: "doc", chapters: ["13"], note: "框架内建结构化输出 API 参考" },
@@ -799,8 +811,24 @@ export const ARTICLES: Article[] = [
   { title: "OpenAI Agents — Guardrails", url: "https://platform.openai.com/docs/guides/agents/guardrails", kind: "doc", chapters: ["17"], note: "官方对 agent 输入/输出护栏的设计说明，与本章分层防御思路一致" },
   { title: "Server-sent events - MDN Web Docs", url: "https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events", kind: "doc", chapters: ["18"], note: "SSE 与 EventSource 的官方权威说明，对应本章 /chat/stream" },
   { title: "Node.js HTTP module documentation", url: "https://nodejs.org/api/http.html", kind: "doc", chapters: ["18"], note: "node:http 内置模块文档，本章无框架起服务的基础" },
-  { title: "Model Context Protocol: What is MCP?", url: "https://modelcontextprotocol.io/docs/getting-started/intro", kind: "doc", chapters: ["19"], note: "MCP 官方入门，工具/数据连接标准化的一手来源" },
-  { title: "LangGraph overview", url: "https://docs.langchain.com/oss/javascript/langgraph/overview", kind: "doc", chapters: ["19"], note: "编排 runtime 代表，长任务持久化与 human-in-the-loop 官方文档" },
+  { title: "Model Context Protocol: What is MCP?", url: "https://modelcontextprotocol.io/docs/getting-started/intro", kind: "doc", source: "Model Context Protocol", chapters: ["19"], note: "MCP 官方入门，工具/数据连接标准化的一手来源" },
+  { title: "Model Context Protocol specification repository", url: "https://github.com/modelcontextprotocol/modelcontextprotocol", kind: "doc", source: "Model Context Protocol", chapters: ["19"], note: "MCP 官方 specification 与文档仓库，用于复核协议层术语、版本与实现边界" },
+  { title: "A2A Protocol specification", url: "https://github.com/a2aproject/A2A/blob/main/docs/specification.md", kind: "doc", source: "A2A Project", chapters: ["19"], note: "A2A 官方 specification，对应 agent card、task/message、artifact/status 等跨 agent 协作对象" },
+  { title: "Google Developers Blog · Announcing the Agent2Agent Protocol (A2A)", url: "https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/", kind: "blog", source: "Google Developers Blog", chapters: ["19"], note: "Google Cloud 官方 A2A 发布文章，解释协议动机、设计原则、Agent Card、task/artifact/status 等生态背景" },
+  { title: "Google Agent Development Kit (ADK) docs", url: "https://adk.dev/", kind: "doc", source: "Google ADK", chapters: ["19"], note: "Google ADK 官方文档，对应 Google 生态里的 agent 开发框架与多 agent 工程实践" },
+  { title: "LangGraph overview", url: "https://docs.langchain.com/oss/javascript/langgraph/overview", kind: "doc", source: "LangChain", chapters: ["19"], note: "编排 runtime 代表，长任务持久化与 human-in-the-loop 官方文档" },
+  { title: "LangSmith Observability", url: "https://docs.langchain.com/langsmith/observability", kind: "doc", source: "LangChain", chapters: ["19"], note: "LangSmith 官方观测文档，对应 agent tracing、调试、线上监控与评估治理层" },
+  { title: "Vercel AI SDK 5 announcement", url: "https://vercel.com/blog/ai-sdk-5", kind: "blog", source: "Vercel", chapters: ["19"], note: "Vercel 官方 AI SDK 5 发布文章，对应前端流式 UI、typed messages、tooling 与产品体验层趋势" },
+  { title: "Vercel AI SDK UI · Chatbot", url: "https://ai-sdk.dev/docs/ai-sdk-ui/chatbot", kind: "doc", source: "Vercel", chapters: ["19"], note: "Vercel AI SDK UI 官方 chatbot 文档，对应产品/UI 层的对话体验与状态管理" },
+  { title: "CrewAI introduction", url: "https://docs.crewai.com/en/introduction", kind: "doc", source: "CrewAI", chapters: ["19"], note: "CrewAI 官方入门，对应企业流程自动化、Flows 与 Crews 的团队/流程 runtime 心智模型" },
+  { title: "CrewAI Flows", url: "https://docs.crewai.com/en/concepts/flows", kind: "doc", source: "CrewAI", chapters: ["19"], note: "CrewAI 官方 Flows 文档，对应事件驱动 workflow、状态管理、条件控制流与长期流程编排" },
+  { title: "LlamaIndex Agents documentation", url: "https://developers.llamaindex.ai/python/framework/use_cases/agents/", kind: "doc", source: "LlamaIndex", chapters: ["19"], note: "LlamaIndex 官方 Agents 用例文档，对应数据密集型 agent、query planning、tools 与 RAG 生态层" },
+  { title: "LlamaIndex Workflows", url: "https://developers.llamaindex.ai/python/llamaagents/workflows/", kind: "doc", source: "LlamaIndex", chapters: ["19"], note: "LlamaIndex 官方 Workflows 文档，对应事件驱动、可观测、可组合的数据/agent 工作流" },
+  { title: "Microsoft AutoGen · AgentChat", url: "https://microsoft.github.io/autogen/stable/user-guide/agentchat-user-guide/index.html", kind: "doc", source: "Microsoft AutoGen", chapters: ["19"], note: "AutoGen 官方 AgentChat 文档，对应 agents、teams、human-in-the-loop、state、observability 等多 agent 框架能力" },
+  { title: "Microsoft Semantic Kernel Agent Framework", url: "https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/", kind: "doc", source: "Microsoft Learn", chapters: ["19"], note: "Semantic Kernel 官方 agent framework 文档，对应企业应用里的 agent 协作、人工参与和流程编排" },
+  { title: "Amazon Bedrock Agents", url: "https://docs.aws.amazon.com/bedrock/latest/userguide/agents.html", kind: "doc", source: "AWS", chapters: ["19"], note: "Amazon Bedrock 官方 Agents 文档，对应云平台托管 agent、API action、knowledge base 与企业集成生态" },
+  { title: "Testing Agentic Workflows with Structural Coverage Criteria", url: "https://arxiv.org/abs/2605.26521", kind: "paper", source: "arXiv", chapters: ["19"], note: "2026 论文：用结构覆盖衡量多 agent workflow 的测试充分性，对应 agent eval 的前沿方向" },
+  { title: "Agent-Diff: Benchmarking LLM Agents on Enterprise API Tasks via Code Execution with State-Diff-Based Evaluation", url: "https://arxiv.org/abs/2602.11224", kind: "paper", source: "arXiv", chapters: ["19"], note: "2026 论文：用企业 API 任务和 state-diff 合约评估 agent 执行结果，对应生产级 agent benchmark 方向" },
   { title: "Introducing Contextual Retrieval", url: "https://www.anthropic.com/news/contextual-retrieval", kind: "blog", chapters: ["rag-chunk", "rag-hybrid", "rag-contextual"], note: "Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读" },
   { title: "Okapi BM25 - Wikipedia", url: "https://en.wikipedia.org/wiki/Okapi_BM25", kind: "doc", chapters: ["rag-hybrid"], note: "BM25 打分公式与 k1/b 参数的权威说明，对应本章 BM25Index" },
   { title: "Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods", url: "https://dl.acm.org/doi/10.1145/1571941.1572114", kind: "paper", chapters: ["rag-hybrid"], note: "RRF 原始论文 (Cormack et al., SIGIR 2009)，混合检索融合法的来源" },

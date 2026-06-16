@@ -16,7 +16,7 @@ export interface HtmlNode {
   chapterTitle: string;
   part: string;
   summary: string;
-  articles: { title: string; url: string }[];
+  articles: { title: string; url: string; source: string }[];
 }
 
 export interface HtmlEdge {
@@ -61,7 +61,9 @@ export function buildHtml(data: HtmlData): string {
   #detail .meta { font-size: 12px; color: #9aa0aa; margin: 4px 0 8px; }
   #detail .summary { font-size: 13px; line-height: 1.6; }
   #detail ul { padding-left: 18px; }
+  #detail li { margin: 6px 0; }
   #detail a { color: #8ab4f8; }
+  .source { display: block; color: #9aa0aa; font-size: 11px; margin-bottom: 2px; }
   .empty { color: #6b7280; font-style: italic; }
 </style>
 </head>
@@ -127,7 +129,7 @@ function showDetail(n) {
   if (n.articles && n.articles.length) {
     html += "<ul>";
     n.articles.forEach(function (a) {
-      html += '<li><a href="' + esc(a.url) + '" target="_blank" rel="noopener">' + esc(a.title) + "</a></li>";
+      html += '<li><span class="source">来源：' + esc(a.source || "") + '</span><a href="' + esc(a.url) + '" target="_blank" rel="noopener">' + esc(a.title) + "</a></li>";
     });
     html += "</ul>";
   } else {
