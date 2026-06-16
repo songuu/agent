@@ -92,7 +92,7 @@ await graph.invoke(input, { recursionLimit: 8 }); // 恒循环图 → 抛 GraphR
 .addEdge("worker", "reduce") // 多个 worker 汇入同一个 reduce（fan-in：等所有 worker 完成后跑一次）
 ```
 
-各 worker 的结果经 **append reducer** 合并（回顾第 01 章），所以**汇总值与 worker 的完成顺序无关**——这正是用 reducer 管状态的好处。
+各 worker 的结果经 **append reducer** 收集进 `results`（回顾第 01 章）——注意 append 本身**保留到达顺序、并不消除顺序**。本例**汇总值与完成顺序无关**，靠的是 `reduce` 做的是**求和**这种**可交换**运算（加法 a+b===b+a）。换句话说：append 负责「都收齐」，顺序无关来自「聚合运算可交换」。若聚合换成顺序敏感的运算（如拼接字符串），就得先排序——这正是第 05 章 fork/join 的处理。
 
 ---
 

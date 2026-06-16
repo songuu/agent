@@ -11,14 +11,14 @@
 - [ ] 说清 **多 Agent = 多个专职节点编排进一张图**：agent 就是节点，拓扑由边决定。
 - [ ] 实现 **supervisor 中心化调度**：一个调度节点用条件边按任务类型派给对应 worker，干完回到 supervisor，循环到队列空。
 - [ ] 实现 **并行异构 team**：从 fork 一次连出多条边让多个不同角色 agent 并行，结果汇入 join。
-- [ ] 知道 **并行产出顺序不保证**：跨 agent 聚合必须靠 **append reducer + 排序** 消除顺序依赖（呼应第 02 章 Send 教训）。
+- [ ] 知道 **并行产出顺序「契约上」不保证**：append reducer 的收集顺序不承诺等于边书写顺序（纯同步本地虽确定，但换异步/分布式 worker 就会变），所以跨 agent 聚合必须靠 **排序** 消除顺序依赖（呼应第 02 章 Send 教训）。
 - [ ] 选对拓扑：**串行/顺序可控/集中决策 → supervisor**；**可并行/无顺序依赖 → parallel team**。
 
 ## 前置知识
 
 - 已读 [第 01 章 · 手写 StateGraph](../01-stategraph-basics/README.md)：channel/**reducer**——并行聚合靠 append reducer。
 - 已读 [第 02 章 · 条件边与路由](../02-conditional-routing/README.md)：supervisor 调度就是**条件边 + 循环边**；并行 team 对照 **Send 扇出**。
-- 选读 [第 11 章 · 多 Agent 系统](../../lessons/11-multi-agent-systems/README.md)：那里**手写** supervisor + worker（用 LLM 做路由决策）；本章是它的 **LangGraph 图版**（用确定性条件边离线讲透拓扑）。
+- 选读 [第 11 章 · 多智能体编排](../../lessons/11-multi-agent-orchestration/README.md)：那里**手写** supervisor + worker（用 LLM 做路由决策）；本章是它的 **LangGraph 图版**（用确定性条件边离线讲透拓扑）。
 - 本章 agent 全是**纯函数节点**（确定规则，不调模型），**无需任何 API key**、两种拓扑都离线确定。
 
 ## 三层学习路线
@@ -95,7 +95,7 @@ agent 就是节点，**拓扑由边决定**。本章讲两种最常见的多 age
 .addEdge("research", "join").addEdge("critique", "join").addEdge("summary", "join") // 汇入
 ```
 
-⚠️ **关键：并行产出的顺序不保证**（取决于各 agent 完成顺序，与边的书写顺序无关）。所以 `join` 必须**先排序再聚合**，最终报告才与完成顺序无关、确定可回归：
+⚠️ **关键：并行产出的顺序在「契约上」不保证**——append reducer 不承诺收集顺序等于边的书写顺序，它取决于各 agent 的完成顺序。本章纯同步纯函数节点本地跑虽然**每次都确定**（别指望「多跑几次自己乱」），但只要换成真实的异步/分布式 worker，完成顺序就会变。所以**不能依赖这个顺序**：`join` 必须**先排序再聚合**，最终报告才与完成顺序无关、确定可回归：
 
 ```ts
 const join = (state) => ({ report: [...state.contributions].sort().join(" | ") });
@@ -145,7 +145,7 @@ npx tsx langgraph-advanced/05-multi-agent-graph/index.ts
 预期看到（**具体数字由运行时打印，下面是构造保证的趋势**）：
 
 1. **supervisor 调度**：调度轨迹在 `supervise` 和各 worker 间交替；产出顺序与输入一致（①~③）；supervisor 比 worker 多跑一次（最后空队列收工，④）。
-2. **parallel team**：3 个角色各贡献一条（原始顺序不定，⑤）；`join` 排序聚合的报告两次 invoke 逐字相等（⑥）。
+2. **parallel team**：3 个角色各贡献一条（收集顺序不被契约承诺，⑤）；`join` 排序聚合的报告两次 invoke 逐字相等（⑥）。
 
 也可跑纯函数冒烟（含本章全部断言）：`npx tsx langgraph-advanced/smoke.ts`（或 `npm run lg:smoke`）。
 
@@ -158,8 +158,8 @@ npx tsx langgraph-advanced/05-multi-agent-graph/index.ts
 1. **加任务、看顺序保持**：往 `TASKS` 里多塞几条（含重复类型），观察产出顺序始终与输入一致、`computeTaskResult` 期望自动重算。
 2. **加一个 worker**：给 supervisor 加一个 `reverse:` 任务类型 + `reverseAgent`（把 payload 反转），在条件边里加一条路由分支——体会「加专才 = 加节点 + 加一条路由」。
 3. **加一个角色**：给 parallel team 加第 4 个角色 `factcheck`，确认 `join` 的报告依然确定（因为先排序）——这就是 fork/join 的可扩展性。
-4. **故意不排序**：把 `join` 的 `.sort()` 去掉，多跑几次，观察报告**可能变得不稳定**（顺序依赖）——亲眼验证「并行聚合必须消除顺序依赖」。
-5. **进阶 · 对照第 11 章**：回看 [第 11 章手写多 agent](../../lessons/11-multi-agent-systems/README.md) 的 supervisor 路由（一次 LLM JSON 调用决定派给谁），说清它对应本章 supervisor 的**哪条边**，以及「LLM 决策」换成「确定性条件边」丢了什么、换来什么（提示：可控性/可测试性 vs 灵活性）。
+4. **故意不排序**：把 `join` 的 `.sort()` 去掉——本地纯同步跑报告**每次仍一样**（别指望它自己乱），但它的顺序是 reducer 收集顺序、**不等于**你的边书写顺序，也**不被契约承诺**。再把某个角色节点改成 `async` 并 `await` 一个不同时长的延时，重跑——报告顺序就会变。亲眼验证「不能依赖收集顺序，并行聚合必须排序消除顺序依赖」。
+5. **进阶 · 对照第 11 章**：回看 [第 11 章 · 多智能体编排](../../lessons/11-multi-agent-orchestration/README.md) 的 supervisor 路由（一次 LLM JSON 调用决定派给谁），说清它对应本章 supervisor 的**哪条边**，以及「LLM 决策」换成「确定性条件边」丢了什么、换来什么（提示：可控性/可测试性 vs 灵活性）。
 
 ---
 
@@ -236,7 +236,7 @@ graph TB
 
 - **多 Agent = 多专职节点编排进一张图**：agent 是节点，拓扑由边决定。
 - **supervisor（中心化调度）**：条件边按类型派活 + 循环边回到 supervisor + 队空终止；串行、顺序可控；对应第 11 章手写的 supervisor+worker。
-- **parallel team（并行异构）**：fork 一次连出多条边并行、join 聚合；并行产出**顺序不保证**，必须 append reducer + 排序消除顺序依赖。
+- **parallel team（并行异构）**：fork 一次连出多条边并行、join 聚合；并行产出顺序**契约上不保证**（纯同步本地虽确定，但不可依赖），必须 append reducer + 排序消除顺序依赖。
 - **选拓扑**：有依赖/需顺序/需集中决策 → supervisor；相互独立可并行 → parallel team。
 - **本轨道收官**：从 [01 手写 StateGraph](../01-stategraph-basics/README.md) → [02 条件边](../02-conditional-routing/README.md) → [03 checkpointer](../03-checkpointing/README.md) → [04 human-in-the-loop](../04-human-in-the-loop/README.md) → 05 多 Agent，你已经把 LangGraph 的 channel/reducer/节点/边/条件路由/持久化/中断恢复/多 agent 编排**从零拼齐**。再往后是 streaming 事件流、LCEL 链式组合等工程化主题——但底层都是这套图机制。
 

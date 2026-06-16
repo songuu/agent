@@ -69,7 +69,7 @@ const State = Annotation.Root({
 - `replace`（覆盖）：`(_old, next) => next`——后写覆盖先写，channel 只保留最后一次写入。**这是默认语义**。
 - `append`（累积）：`(old, next) => old.concat(next)`——把每次写入都接到后面。**想累积历史（如对话 messages）必须显式用它**。
 
-> 这就是本章最容易踩的坑：channel 不配 append reducer，多个节点往它写就会**互相覆盖**。
+> 这就是本章最容易踩的坑：channel 用默认 replace reducer 时，**先后**往它写的值会**互相覆盖**（只留最后一次）；想累积就得显式配 append。（注意：若是**同一步并行**的多个节点同时写同一个 replace channel，LangGraph 会直接抛 `InvalidUpdateError` 而非静默覆盖——并行聚合到底怎么处理，留到第 05 章 fork/join 讲。）
 
 ### 2) 节点：返回 partial 更新
 

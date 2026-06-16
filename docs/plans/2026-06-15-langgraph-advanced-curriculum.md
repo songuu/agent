@@ -1,9 +1,9 @@
 ---
 title: "进阶 LangGraph / LangChain 课程轨道"
 type: sprint
-status: reviewing
+status: completed
 created: "2026-06-15"
-updated: "2026-06-15"
+updated: "2026-06-16"
 checkpoints: 5
 tasks_total: 5
 tasks_completed: 5
@@ -170,5 +170,69 @@ invariant_tests:
 ## Phase 4: 审查结果
 
 > 5/5 build 任务全绿完成，进入多视角对抗复核（含 LG3/LG4/LG5 此前推迟的复核）。
+> 复核方式：Workflow 多视角（教学正确性/代码/集成一致性）→ 逐条对抗验证（skeptic 默认 refuted）。
+> 11 findings，5 confirmed（0 P0 / 1 P1 / 2 P2 / 2 P3），6 refuted。
+> （对抗验证子 agent 因外部限流 carpool quota 退出，confirmed 由存活 reviewer 的细节核对坐实——尤其 P1 已逐字验证路径与标题。）
+
+### Confirmed findings + 处理
+
+| # | 级别 | 文件:位置 | 问题 | 处理 |
+|---|------|-----------|------|------|
+| 1 | **P1** | `05/README.md:21,162` | 链接 `../../lessons/11-multi-agent-systems/README.md` 不存在（真实目录 `11-multi-agent-orchestration`）+ 链接文案「多 Agent 系统/手写多 agent」与第 11 章规范标题「多智能体编排」漂移 | ✅ 修：两处路径改 `11-multi-agent-orchestration/README.md`，文案统一「第 11 章 · 多智能体编排」。site:build 验证渲染 HTML 链接解析到 `/lessons/11-multi-agent-orchestration/`，无 README 死链 |
+| 2 | **P2(a)** | `01/README.md:72` | 「多个节点往它写就会互相覆盖」过度概括——同步串行写才是覆盖；**同一步并行**写同一 replace channel 实际抛 `InvalidUpdateError` 而非静默覆盖 | ✅ 修：补限定从句（先后写=覆盖）+ 前向指针到第 05 章 fork/join（并行聚合留到那里讲） |
+| 3 | **P2(b)** | `05/README.md:14,98,148,161,239` | 「并行产出顺序不保证」措辞误导——纯同步纯函数 demo 收集顺序其实**每次确定**，练习 4「去掉 sort 多跑几次观察不稳定」**不会复现**（违反「练习现象须可见」不变量） | ✅ 修：全部重框为**契约级不保证**（append 不承诺=边书写顺序、不可依赖；本地同步确定但换异步/分布式就变）；练习 4 改为「本地仍一样，改 async+延时才会变」可真实复现 |
+| 4 | **P3(a)** | `02/README.md:95` | Send 汇总「顺序无关」归因错——归到 append reducer，实则 append **保留到达顺序**；顺序无关来自 **reduce 求和可交换** | ✅ 修：澄清 append 负责收齐、顺序无关来自聚合运算可交换；顺序敏感运算（拼接）需排序（前向指针第 05 章） |
+| 5 | **P3(b)** | `knowledge-graph/generate.ts`（KG 注入「与其他章节的关系」段） | 跨章关系标签显示原始 id「（第 lg-routing 章）」而非人类可读章号/标题；根因在 generate.ts 渲染逻辑 | ⚠️ **manual gate kept — 推迟**：generate.ts 是**共享生成器**，改它同时影响并行的 RAG 轨道全部章节输出；纯外观 P3，不阻塞收官。已 flag 给用户，待 RAG sprint 停泊后再做全局修（见下方「未决项」） |
+
+### Refuted（6）
+
+对抗验证否定的 findings（多为「疑似不变量破坏」「疑似死代码」「疑似 demo 误报」经核对站得住）：例 computeTaskResult 被疑重复实现（实为单一纯函数核 worker/期望共用，零漂移，故意）、supervisor 循环被疑可能不终止（队列单调递减+recursionLimit 双保险）、stream kind 被疑串味（renderLayerArt steps 驱动，非 ch08/ch10 硬编码）等。
+
+### 第 6 视角 · 集成连续性（跨 sprint 强制）
+
+- ✅ 不变量未破坏：`CONCEPT_VISUALS.length===CHAPTERS.length`（36===36）；每章 `${dir}/index.ts` 存在；No-Vue（本轨道只加 md+ts demo）；CHAPTERS 单一事实源自动派生 sidebar/concept-visual/demo 白名单；新章 kind 全避开 space/compare 硬编码（pipeline/loop/stream/shield/fusion，steps 驱动）。
+- ✅ 无死代码：barrel 5 模块全被各章 index.ts + smoke.ts import。
+- ✅ 无半下沉漂移：每新章自包含、KG 自动派生入站，无跨层中间态。
+- ✅ 与并行 RAG sprint 共存全绿：仅 P3(b) 触及共享 generator → 已推迟，不擅动。
+
+### auto-mode gate 汇总
+
+- 自动通过：P1（obvious 死链/文案漂移）、P3(a)（一处归因措辞）。
+- 教学正确性修（doc-only L1、限本轨道我新建文件、修复自有「demo 确定性/练习现象可见」不变量）：P2(a)、P2(b)。
+- ⚠ manual gate kept：P3(b) generate.ts 共享生成器，影响并行 RAG 轨道 → 推迟 + flag。
+- 强制保留 0 个 destructive/L4/安全 gate（本轮纯文档修订）。
+
+### 未决项（交接给用户）
+
+- **P3(b) 全局修**：`knowledge-graph/generate.ts` 的跨章关系标签把章 id（lg-routing）渲染成人类可读章号/标题。属共享生成器、影响 RAG 轨道全部章节，建议待并行 RAG sprint（`2026-06-12-rag-completeness.md`）停泊后单独做、统一重跑 `npm run kg` 验证两轨道。
+- **提交/部署**：本轨道全部改动仍**未提交、未部署**（强制人工 gate，需显式 "go"）。
 
 ## Phase 5: 复利记录
+
+### 2026-06-16 Compound（本轨道收官）
+
+- **解决方案**：`docs/solutions/2026-06-16-langgraph-offline-teaching-track.md`——离线确定性 LangGraph 教学轨道范式（六件套原子 + 旋钮无关 invariant + 0.2.74 API 离线坐实 + Phase 4 复核揪「教学谬误」三类）。
+  - ⚠️ 本仓库无 Codex 端 `scripts/sync-solution-index.js` / `index.jsonl`（那是 Codex runtime 投影）；`docs/solutions/*.md` 直接维护，无需 sync 步骤。
+- **记忆（Claude memory）**：新增 `teaching-order-independence-triad.md`——并行/聚合教学必分清「收集顺序≠聚合可交换≠契约保证」，混淆是教学谬误高发区；已加 MEMORY.md 索引。延续 [[teaching-demo-deterministic-payoff]] / [[precommit-adversarial-review-catches-dom-races]]。
+- **复用经验沉淀**：
+  1. LangGraph 核心机制纯函数节点即可离线讲透（needsKey:"none"）——把人/agent 抽象成确定值，审批两路径、多 agent 两拓扑全确定可回归。
+  2. invariant 旋钮无关（断言构造性质非具体数，期望纯函数核现场重算）是教学 demo 抗练习改崩的关键。
+  3. 0.2.74 interrupt payload 在 `getState().tasks[].interrupts[].value`（非返回值顶层）；累积靠 reducer 非 checkpointer。
+  4. 「顺序无关」三件事区分 + 「不保证=契约级非每次乱」是教学谬误高发，对抗复核专治全绿漏网。
+- **本能信号**：六件套原子契约 + kind 避硬编码 + 共享文件改前重读锚点，均已在前序 memory 沉淀，本轮复用验证有效。
+
+### Sprint 收官汇总
+
+- **交付**：`langgraph-advanced/` 5 章（01 StateGraph → 02 条件边 → 03 checkpointer → 04 HITL → 05 多 agent），六件套全齐。
+- **全绿门**：lg smoke **55/0**；tsc 0；visuals **36===36**；generate/registry ok；site:build ok（5 章 index.html 入站、sidebar L1-L5、渲染 HTML 无 README 死链、ch11 链接解析正确）；5 demo exit 0（①~⑥ 旋钮无关）。
+- **Checkpoints**：5 次（一窗口一大章原子完成）。
+- **Phase 4 复核**：11 findings → 5 confirmed（P1×1 修 + P2×2 修 + P3(a) 修 + P3(b) 推迟）/ 6 refuted。
+- **auto-mode gate**：自动通过 P1/P3(a)（obvious）；教学正确性修 P2(a)/P2(b)（修自有不变量）；⚠ manual gate kept ×1（P3(b) 共享 generator）；强制 destructive/L4/安全 gate 0。
+
+### 🏁 收尾预热（无下一 Phase）
+
+- **关键文件**：本 sprint 文档 frontmatter（status: completed ✅）。
+- **未决项（交接用户，强制人工 gate）**：
+  1. **提交/部署**：全部改动**未提交、未部署**——需显式 "go"。提交范围须排除 `deploy.ps1`/`DEPLOYMENT.md`（含 SSH target，禁入公开仓库）；提交无 attribution；base 保持 `/agent-build/`。
+  2. **P3(b) 全局修**：`knowledge-graph/generate.ts` 跨章关系标签渲染原始 id（「第 lg-routing 章」）→ 人类可读章号。共享生成器、影响并行 RAG 轨道，建议待 `2026-06-12-rag-completeness.md` 停泊后统一做。
+- **风险预判**：与并行 RAG sprint 仍共用 graph.ts/visuals.ts/config.mts/package.json——后续任何提交前重新 `git status` + 重读锚点，避免裹入对方未完成改动。
