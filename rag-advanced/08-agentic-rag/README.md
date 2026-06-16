@@ -72,6 +72,8 @@ npx tsx rag-advanced/08-agentic-rag/index.ts
 - `grade` 是系统安全阀：证据不足就 retry，无答案就 refuse。
 - 状态机可用纯函数先做教学版，再把 grader/rewrite 换成 LLM 或 reranker。
 
+> 💡 **面试会问**：Agentic RAG 和朴素 RAG 的本质区别是什么（提示：检索后的控制流，而非多调几次模型）？`grade`（证据评估）这个安全阀解决什么问题，证据不足时为什么要 retry 甚至 refuse、而不是硬答？什么场景下才值得引入 retrieve/grade/rewrite 循环，它的主要代价是什么？
+
 <!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
 
 ## 知识图谱与延伸阅读

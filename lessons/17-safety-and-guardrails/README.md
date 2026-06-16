@@ -266,6 +266,7 @@ graph TB
 ### 延伸阅读
 
 - [OpenAI Agents — Guardrails](https://platform.openai.com/docs/guides/agents/guardrails) — 官方对 agent 输入/输出护栏的设计说明，与本章分层防御思路一致 `doc`
+- [OWASP Top 10 for LLM Applications 2025](https://genai.owasp.org/resource/owasp-top-10-for-llm-applications-2025/) — OWASP LLM Top 10 2025：生产 LLM/agent 应用的通用风险清单，是第 19 章治理层的安全基线 `doc`
 
 > 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
 

@@ -10,6 +10,19 @@ create table if not exists public.frontier_ecosystem_articles (
   source text not null,
   source_url text not null,
   kind text not null check (kind in ('paper', 'doc', 'blog', 'video', 'internal')),
+  ecosystem_layer text not null default 'foundation' check (
+    ecosystem_layer in (
+      'foundation',
+      'model-platform',
+      'protocol',
+      'runtime',
+      'product-ui',
+      'data-memory',
+      'evaluation',
+      'security-governance'
+    )
+  ),
+  ecosystem_layer_label text not null default '基础综述',
   summary text not null default '',
   collected_date date not null,
   collected_at timestamptz not null default now(),
@@ -37,6 +50,9 @@ create index if not exists frontier_ecosystem_articles_collected_date_idx
 
 create index if not exists frontier_ecosystem_articles_tags_idx
   on public.frontier_ecosystem_articles using gin (tags);
+
+create index if not exists frontier_ecosystem_articles_layer_sort_idx
+  on public.frontier_ecosystem_articles (ecosystem_layer, sort_order);
 
 create index if not exists frontier_ecosystem_articles_search_idx
   on public.frontier_ecosystem_articles using gin (search_text);
@@ -75,3 +91,5 @@ comment on column public.frontier_ecosystem_articles.source_url is
   'Original article URL; UI renders this as the clickable source link.';
 comment on column public.frontier_ecosystem_articles.detail_paragraphs is
   'Short course-authored detail paragraphs for the article detail card; not a copy of the original article.';
+comment on column public.frontier_ecosystem_articles.ecosystem_layer is
+  'Systematic layer used by the chapter 19 archive UI: foundation, model-platform, protocol, runtime, product-ui, data-memory, evaluation, security-governance.';

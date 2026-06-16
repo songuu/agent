@@ -41,7 +41,7 @@ deadcode_until: []
 
 ### Success
 
-- [x] 第 19 章自动生成的“延伸阅读”从 3 条扩展到 33 条。
+- [x] 第 19 章自动生成的“延伸阅读”从 3 条扩展到 59 条。
 - [x] 新增/关联来源覆盖 OpenAI Agents SDK、Responses API、MCP spec、A2A、Vercel AI SDK、CrewAI、LlamaIndex、guardrails、observability。
 - [x] 第 19 章“延伸阅读”每条都显示 `来源：发布方 · [标题](原文链接)`,标题可直接点击查看原文。
 - [x] `npm run kg` 等价生成器入口通过,并更新 `docs/knowledge-graph.md`、`knowledge-graph/output/index.html`、第 19 章 README。
@@ -122,7 +122,7 @@ deadcode_until: []
   - CrewAI Flows、LlamaIndex Workflows。
   - Microsoft AutoGen、Semantic Kernel Agent Framework、Amazon Bedrock Agents。
   - 2026 arXiv: structural coverage for agentic workflows、Agent-Diff state-diff evaluation。
-- 重生成后 `ARTICLES` 总数为 87,第 19 章延伸阅读为 33 条。
+- 重生成后第 19 章延伸阅读为 59 条，并按 8 个体系层分组。
 
 ## Phase 4: 审查结果
 

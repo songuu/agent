@@ -42,3 +42,5 @@ pnpm rag:capstone
 | 纯函数护栏 | 租户权限、PII、注入隔离、审计 |
 
 完成本目录后，再读 [RAG 系统实战项目连接指南](../../docs/rag-system-project.md)。
+
+> 💡 **面试会问**：这个 RAG checkpoint 为什么用 golden-set gate（固定问答集 + 阈值）来判收，而不是人工抽查？纯函数护栏（拒答、引用越界检查）相比直接让 LLM 生成答案，好在哪、限制在哪？要把它扩成生产级 RAG 系统，你会先补哪一层（向量库 / 租户权限 / eval 看板）、为什么？

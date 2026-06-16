@@ -30,7 +30,8 @@ deadcode_until: []
 
 ### Scope
 
-- 将第 19 章“前沿与生态”收集到的 33 篇文章整理成可进入 Supabase 的完整表结构与 seed/upsert SQL。
+- 将第 19 章“前沿与生态”收集到的 59 篇文章整理成可进入 Supabase 的完整表结构与 seed/upsert SQL。
+- 按 8 个体系层组织文章：基础综述、模型与托管平台、协议与互操作、编排 Runtime、产品与交互、数据与记忆、评测与基准、安全与治理。
 - 在第 19 章页面新增文章归档 UI，按用户截图还原“详情卡 + 日期时间线列表”的视觉形式。
 - 每条文章保留来源、原文 URL、摘要、类型、排序、标签、详情段落等字段。
 
@@ -43,7 +44,7 @@ deadcode_until: []
 ### Success
 
 - [x] 新增 `public.frontier_ecosystem_articles` migration。
-- [x] 新增 `supabase/seed/frontier_ecosystem_articles.sql`，包含 33 条 upsert。
+- [x] 新增 `supabase/seed/frontier_ecosystem_articles.sql`，包含 59 条 upsert。
 - [x] 新增 `FRONTIER_ARTICLES` 数据模块，供 UI 和 seed 共享。
 - [x] 第 19 章页面有截图风格的详情卡和时间线，标题/来源可打开原文。
 - [x] 关键验证通过；站点 build 的沙盒限制被单独记录。
@@ -72,13 +73,14 @@ deadcode_until: []
 |---|------|------|------|
 | 1 | 抽取第 19 章文章派生数据 | L2 | `knowledge-graph/data/frontier-articles.ts` |
 | 2 | 新建 Supabase migration 与 seed 生成器 | L2 | `supabase/migrations/*`、`scripts/generate-frontier-ecosystem-supabase-seed.ts` |
-| 3 | 生成 33 条 seed/upsert SQL | L1 | `supabase/seed/frontier_ecosystem_articles.sql` |
+| 3 | 生成 59 条 seed/upsert SQL | L1 | `supabase/seed/frontier_ecosystem_articles.sql` |
 | 4 | 按截图接入详情卡 + 时间线 UI | L2 | `.vitepress/theme/frontier-article-archive.ts`、CSS、README 占位 |
 | 5 | 验证与审查 | L2 | typecheck、kg、demo、diff check、build 记录 |
 
 ## Phase 3: 变更日志
 
 - 新增 `FRONTIER_ARTICLES`，字段覆盖 `slug/source/source_url/kind/summary/read_count/tags/detail_paragraphs/sort_order`。
+- 补充 `ecosystem_layer/ecosystem_layer_label`，用于成体系筛选和 Supabase 分层检索。
 - 新增 Supabase 表：唯一键、RLS public select、GIN tags/search index、更新时间 trigger。
 - 新增 seed 生成脚本和 `package.json` 脚本 `supabase:frontier-seed`。
 - 第 19 章新增“前沿文章归档”占位；theme 脚本渲染白底详情卡、元信息、详情段落、左侧虚线时间线、可点击原文标题。
@@ -93,8 +95,8 @@ deadcode_until: []
 
 ## Phase 5: 验证记录
 
-- `node node_modules\\tsx\\dist\\cli.mjs scripts\\generate-frontier-ecosystem-supabase-seed.ts` → pass，写出 33 条。
-- `node node_modules\\tsx\\dist\\cli.mjs -e "import { FRONTIER_ARTICLES } ..."` → pass，count=33。
+- `node node_modules\\tsx\\dist\\cli.mjs scripts\\generate-frontier-ecosystem-supabase-seed.ts` → pass，写出 59 条。
+- `node node_modules\\tsx\\dist\\cli.mjs -e "import { FRONTIER_ARTICLES } ..."` → pass，count=59。
 - `node node_modules\\tsx\\dist\\cli.mjs lessons\\19-agent-ecosystem-and-frontier\\index.ts` → pass。
 - `node node_modules\\tsx\\dist\\cli.mjs knowledge-graph\\generate.ts` → pass，README 注入幂等。
 - `npx tsc --noEmit` → pass，仅 npm config warning。

@@ -1,4 +1,9 @@
-import { FRONTIER_ARTICLES, type FrontierArticle } from "../../knowledge-graph/data/frontier-articles";
+import {
+  FRONTIER_ARTICLES,
+  FRONTIER_ECOSYSTEM_LAYERS,
+  type FrontierArticle,
+} from "../../knowledge-graph/data/frontier-articles";
+import type { FrontierEcosystemLayer } from "../../knowledge-graph/data/graph";
 
 const initialized = new WeakSet<HTMLElement>();
 
@@ -29,7 +34,14 @@ function createArchive(root: HTMLElement): void {
     return;
   }
 
+  type LayerFilter = FrontierEcosystemLayer | "all";
+
+  let selectedLayer: LayerFilter = "all";
   let selected = FRONTIER_ARTICLES[0]!;
+  const filters = document.createElement("nav");
+  filters.className = "frontier-layer-tabs";
+  filters.setAttribute("aria-label", "前沿与生态文章体系层");
+
   const detail = document.createElement("article");
   detail.className = "frontier-article-detail";
 
@@ -48,6 +60,41 @@ function createArchive(root: HTMLElement): void {
   const list = document.createElement("div");
   list.className = "frontier-timeline-list";
 
+  function visibleArticles(): FrontierArticle[] {
+    if (selectedLayer === "all") return FRONTIER_ARTICLES;
+    return FRONTIER_ARTICLES.filter((article) => article.ecosystemLayer === selectedLayer);
+  }
+
+  function layerCount(layer: LayerFilter): number {
+    if (layer === "all") return FRONTIER_ARTICLES.length;
+    return FRONTIER_ARTICLES.filter((article) => article.ecosystemLayer === layer).length;
+  }
+
+  function renderFilters(): void {
+    filters.replaceChildren();
+    const filterEntries: Array<{ id: LayerFilter; label: string }> = [
+      { id: "all", label: "全部体系" },
+      ...FRONTIER_ECOSYSTEM_LAYERS.map((layer) => ({ id: layer.id, label: layer.label })),
+    ];
+
+    for (const filter of filterEntries) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "frontier-layer-tab";
+      if (filter.id === selectedLayer) button.dataset.active = "true";
+      button.textContent = `${filter.label} ${layerCount(filter.id)}`;
+      button.addEventListener("click", () => {
+        selectedLayer = filter.id;
+        const nextArticles = visibleArticles();
+        selected = nextArticles.includes(selected) ? selected : nextArticles[0] ?? FRONTIER_ARTICLES[0]!;
+        renderDetail(selected);
+        renderFilters();
+        renderTimeline();
+      });
+      filters.append(button);
+    }
+  }
+
   function renderDetail(article: FrontierArticle): void {
     detail.replaceChildren();
 
@@ -64,6 +111,8 @@ function createArchive(root: HTMLElement): void {
     source.textContent = article.source;
     meta.append(
       source,
+      metaSeparator(),
+      textNode(article.ecosystemLayerLabel),
       metaSeparator(),
       textNode(article.collectedAt.replace("T", " ").slice(0, 16)),
       metaSeparator(),
@@ -92,7 +141,10 @@ function createArchive(root: HTMLElement): void {
 
   function renderTimeline(): void {
     list.replaceChildren();
-    for (const article of FRONTIER_ARTICLES) {
+    const articles = visibleArticles();
+    dateText.textContent = articles[0]?.displayDateLabel ?? selected.displayDateLabel;
+
+    for (const article of articles) {
       const card = document.createElement("article");
       card.className = "frontier-timeline-item";
       card.tabIndex = 0;
@@ -120,7 +172,7 @@ function createArchive(root: HTMLElement): void {
 
       const meta = document.createElement("div");
       meta.className = "frontier-timeline-meta";
-      meta.textContent = `来源：${article.source} · ${article.kind}`;
+      meta.textContent = `来源：${article.source} · ${article.ecosystemLayerLabel} · ${article.kind}`;
 
       content.append(title, excerpt, meta);
       card.append(marker, content);
@@ -143,10 +195,11 @@ function createArchive(root: HTMLElement): void {
     renderTimeline();
   }
 
+  renderFilters();
   renderDetail(selected);
   renderTimeline();
   timeline.append(dateHeader, list);
-  root.append(detail, timeline);
+  root.append(filters, detail, timeline);
 }
 
 function textNode(value: string): Text {

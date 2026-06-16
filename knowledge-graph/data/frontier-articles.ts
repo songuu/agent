@@ -1,4 +1,21 @@
-import { ARTICLES, CHAPTERS, type Article } from "./graph";
+import { ARTICLES, CHAPTERS, type Article, type FrontierEcosystemLayer } from "./graph";
+
+export interface FrontierEcosystemLayerDefinition {
+  id: FrontierEcosystemLayer;
+  label: string;
+  description: string;
+}
+
+export const FRONTIER_ECOSYSTEM_LAYERS: FrontierEcosystemLayerDefinition[] = [
+  { id: "foundation", label: "基础综述", description: "综述、taxonomy、系统边界与概念地图" },
+  { id: "model-platform", label: "模型与托管平台", description: "模型 API、托管工具、平台级 agent primitives" },
+  { id: "protocol", label: "协议与互操作", description: "MCP、A2A、身份、生命周期与生态标准" },
+  { id: "runtime", label: "编排 Runtime", description: "图、workflow、多 agent、human-in-the-loop runtime" },
+  { id: "product-ui", label: "产品与交互", description: "Operator、deep research、coding agent、GUI/浏览器 agent" },
+  { id: "data-memory", label: "数据与记忆", description: "文件检索、长期记忆、上下文工程与知识接入" },
+  { id: "evaluation", label: "评测与基准", description: "Web/OS/tool/coding/research agent benchmark 与 eval 方法" },
+  { id: "security-governance", label: "安全与治理", description: "授权、prompt injection、secret、审计与风险缓解" },
+];
 
 export interface FrontierArticle {
   id: string;
@@ -9,6 +26,8 @@ export interface FrontierArticle {
   source: string;
   url: string;
   kind: Article["kind"];
+  ecosystemLayer: FrontierEcosystemLayer;
+  ecosystemLayerLabel: string;
   summary: string;
   collectedDate: string;
   collectedAt: string;
@@ -67,11 +86,28 @@ function articleTags(article: Article): string[] {
   return [...tags];
 }
 
-function buildDetailParagraphs(article: Article, source: string): string[] {
+function articleLayer(article: Article, tags: string[]): FrontierEcosystemLayer {
+  if (article.ecosystemLayer) return article.ecosystemLayer;
+  const text = `${article.title} ${article.source ?? ""} ${article.note ?? ""}`.toLowerCase();
+  if (tags.includes("eval") || text.includes("benchmark") || text.includes("testing")) return "evaluation";
+  if (tags.includes("governance") || text.includes("owasp") || text.includes("security") || text.includes("authorization")) return "security-governance";
+  if (tags.includes("mcp") || tags.includes("a2a") || text.includes("protocol") || text.includes("apps sdk")) return "protocol";
+  if (tags.includes("ui") || text.includes("operator") || text.includes("deep research") || text.includes("codex")) return "product-ui";
+  if (tags.includes("runtime")) return "runtime";
+  if (tags.includes("data") || text.includes("memory") || text.includes("context")) return "data-memory";
+  if (tags.includes("model-platform")) return "model-platform";
+  return "foundation";
+}
+
+function articleLayerLabel(layer: FrontierEcosystemLayer): string {
+  return FRONTIER_ECOSYSTEM_LAYERS.find((item) => item.id === layer)?.label ?? layer;
+}
+
+function buildDetailParagraphs(article: Article, source: string, layerLabel: string): string[] {
   const summary = article.note?.trim() || "本条资料用于补充第 19 章 Agent 前沿与生态的选型与趋势判断。";
   return [
     summary,
-    `来源：${source}。这条资料被收录到“前沿与生态”章节，用来帮助读者把框架、协议、runtime、UI、评估与治理层放回同一张生态地图中理解。`,
+    `体系层：${layerLabel}。来源：${source}。这条资料被收录到“前沿与生态”章节，用来帮助读者把框架、协议、runtime、UI、评估与治理层放回同一张生态地图中理解。`,
     `查看原文可以进一步核对发布日期、API 细节、协议术语与实现边界；课程页只保留可追溯摘要，不复制原文全文。`,
   ];
 }
@@ -82,6 +118,9 @@ export const FRONTIER_ARTICLES: FrontierArticle[] = ARTICLES
   .filter((article) => article.chapters.includes(FRONTIER_CHAPTER_ID))
   .map((article, index) => {
     const source = articleSource(article);
+    const baseTags = articleTags(article);
+    const ecosystemLayer = articleLayer(article, baseTags);
+    const ecosystemLayerLabel = articleLayerLabel(ecosystemLayer);
     const baseSlug = slugify(article.title, index);
     const slug = usedSlugs.has(baseSlug) ? `${baseSlug}-${index + 1}` : baseSlug;
     usedSlugs.add(slug);
@@ -94,13 +133,15 @@ export const FRONTIER_ARTICLES: FrontierArticle[] = ARTICLES
       source,
       url: article.url,
       kind: article.kind,
+      ecosystemLayer,
+      ecosystemLayerLabel,
       summary: article.note?.trim() || "",
       collectedDate: FRONTIER_COLLECTED_DATE,
       collectedAt: FRONTIER_COLLECTED_AT,
       displayDateLabel: FRONTIER_DISPLAY_DATE_LABEL,
       readCount: READ_COUNT_BASE + index * 7,
       sortOrder: index + 1,
-      tags: articleTags(article),
-      detailParagraphs: buildDetailParagraphs(article, source),
+      tags: [...new Set([...baseTags, ecosystemLayer])],
+      detailParagraphs: buildDetailParagraphs(article, source, ecosystemLayerLabel),
     };
   });

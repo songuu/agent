@@ -15,6 +15,7 @@
     "rag:capstone": "tsx capstone/rag-system/src/checkpoint.ts",
     "kg": "tsx knowledge-graph/generate.ts",
     "supabase:frontier-seed": "tsx scripts/generate-frontier-ecosystem-supabase-seed.ts",
+    "supabase:interview-seed": "tsx scripts/generate-interview-questions-supabase-seed.ts",
     "rag:smoke": "tsx rag-advanced/smoke.ts",
     "rag:eval": "tsx rag-advanced/05-rag-evaluation/eval-gate.ts",
     "lg:smoke": "tsx langgraph-advanced/smoke.ts",

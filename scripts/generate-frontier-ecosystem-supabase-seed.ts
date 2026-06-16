@@ -28,6 +28,7 @@ const rows = FRONTIER_ARTICLES.map((article) => {
     sourceFile: "knowledge-graph/data/graph.ts",
     displayDateLabel: article.displayDateLabel,
     originalKind: article.kind,
+    ecosystemLayer: article.ecosystemLayer,
   };
   return [
     article.id,
@@ -38,6 +39,8 @@ const rows = FRONTIER_ARTICLES.map((article) => {
     article.source,
     article.url,
     article.kind,
+    article.ecosystemLayer,
+    article.ecosystemLayerLabel,
     article.summary,
     article.collectedDate,
     article.collectedAt,
@@ -45,7 +48,7 @@ const rows = FRONTIER_ARTICLES.map((article) => {
     article.sortOrder,
   ]
     .map((value, index) => {
-      if (index === 11 || index === 12) return String(value);
+      if (index === 13 || index === 14) return String(value);
       return sqlString(String(value));
     })
     .concat([
@@ -69,6 +72,8 @@ insert into public.frontier_ecosystem_articles (
   source,
   source_url,
   kind,
+  ecosystem_layer,
+  ecosystem_layer_label,
   summary,
   collected_date,
   collected_at,
@@ -88,6 +93,8 @@ on conflict (slug) do update set
   source = excluded.source,
   source_url = excluded.source_url,
   kind = excluded.kind,
+  ecosystem_layer = excluded.ecosystem_layer,
+  ecosystem_layer_label = excluded.ecosystem_layer_label,
   summary = excluded.summary,
   collected_date = excluded.collected_date,
   collected_at = excluded.collected_at,
