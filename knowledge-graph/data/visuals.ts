@@ -197,6 +197,30 @@ export const CONCEPT_VISUALS: ConceptVisual[] = [
     takeaway: "毕业项目不是新知识点，而是前面所有边界的集成验收。",
   },
   {
+    chapter: "cap-support",
+    kind: "shield",
+    title: "客服 Copilot 是一条纵深防御管线",
+    summary: "用户消息先过安全门，再补会话记忆、路由到技能、敏感动作走人工审批，出口统一脱敏并记录成本。",
+    steps: ["安全入口", "会话记忆", "意图路由", "工具技能", "人工审批", "脱敏追踪"],
+    takeaway: "客服 Agent 的核心不是会聊天，而是每个业务动作都有边界、审批和可追溯性。",
+  },
+  {
+    chapter: "cap-review",
+    kind: "fusion",
+    title: "代码评审团用并行角色合并成一个评审门",
+    summary: "安全、性能、风格 reviewer 并行扫描同一批改动，supervisor 校验结构、去重排序，critical 发现直接阻断合并。",
+    steps: ["Diff 输入", "Fork reviewer", "结构校验", "去重排序", "Merge gate"],
+    takeaway: "多 Agent 评审的价值在角色分工和确定性汇总，不在把一个大 prompt 写得更长。",
+  },
+  {
+    chapter: "cap-eval",
+    kind: "pipeline",
+    title: "Agent 评测把主观体验变成回归门",
+    summary: "Golden set 固定输入与期望，subject 输出轨迹，离线裁判打分，指标聚合后由阈值决定 pass 或 block。",
+    steps: ["Golden set", "Run subject", "Judge", "Aggregate", "Regression gate"],
+    takeaway: "让 Agent 跑起来只是起点；能证明它没有变差，才适合持续迭代。",
+  },
+  {
     chapter: "rag-chunk",
     kind: "pipeline",
     title: "分块策略决定 RAG 能不能先把证据切对",
@@ -406,6 +430,18 @@ const CONCEPT_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> =
   capstone: [
     { tone: "core", label: "核心判断", body: "毕业项目是端到端验收：规划、检索、工具、结构化报告、引用和成本要串起来。" },
     { tone: "warning", label: "易错边界", body: "不要只追求能跑；要看报告是否有来源、步骤是否可观测、失败是否能定位。" },
+  ],
+  "cap-support": [
+    { tone: "core", label: "核心判断", body: "客服 Copilot 是纵深防御系统：入口安全、记忆、路由、工具、审批、脱敏、观测必须按顺序闭环。" },
+    { tone: "warning", label: "易错边界", body: "不要让模型直接决定退款等敏感动作；业务副作用必须经过工具校验和人工审批门。" },
+  ],
+  "cap-review": [
+    { tone: "core", label: "核心判断", body: "代码评审团把多 Agent 编排落成 fork/join：角色并行发现问题，supervisor 统一校验、去重和卡门。" },
+    { tone: "warning", label: "易错边界", body: "Reviewer 输出必须结构化校验；否则并行越多，噪声、重复和严重度误判越难收口。" },
+  ],
+  "cap-eval": [
+    { tone: "core", label: "核心判断", body: "Agent 评测框架用 golden set、裁判、聚合指标和阈值，把质量变化变成可回归信号。" },
+    { tone: "warning", label: "易错边界", body: "不要只靠人工抽查判断 Agent 变好；没有固定测试集，就无法证明改动没有退化。" },
   ],
   "rag-chunk": [
     { tone: "core", label: "核心判断", body: "分块决定证据能否被召回；chunk 必须在完整性和大小之间取平衡。" },

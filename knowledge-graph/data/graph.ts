@@ -841,12 +841,12 @@ export const RELATIONS: Relation[] = [
 ];
 
 export const ARTICLES: Article[] = [
-  { title: "Building effective agents", url: "https://www.anthropic.com/engineering/building-effective-agents", kind: "doc", source: "Anthropic", chapters: ["01","19"], note: "Anthropic 官方工程博客，系统讲解 Agent 的循环、工具与何时该用 Agent，与本章心智模型高度对应" },
+  { title: "Building effective agents", url: "https://www.anthropic.com/engineering/building-effective-agents", kind: "doc", source: "Anthropic", chapters: ["01","19","cap-support"], note: "Anthropic 官方工程博客，系统讲解 Agent 的循环、工具与何时该用 Agent，与本章心智模型高度对应" },
   { title: "OpenAI Agents SDK for TypeScript", url: "https://openai.github.io/openai-agents-js/", kind: "doc", source: "OpenAI", chapters: ["19"], note: "OpenAI 官方 TypeScript Agents SDK 文档，对应 agent、tool、handoff、guardrail、session、tracing、MCP 等 SDK 层能力" },
   { title: "OpenAI Responses API Reference", url: "https://platform.openai.com/docs/api-reference/responses", kind: "doc", source: "OpenAI", chapters: ["19"], note: "OpenAI 官方 Responses API 参考，对应模型原生输入输出、工具调用与状态化交互接口层" },
   { title: "OpenAI: The next evolution of the Agents SDK", url: "https://openai.com/index/the-next-evolution-of-the-agents-sdk/", kind: "blog", source: "OpenAI", chapters: ["19"], note: "OpenAI 官方产品文章：Agents SDK 向 sandbox execution、long-horizon tasks、durable harness 演进，是前沿趋势来源" },
   { title: "OpenAI Docs · Sandbox agents", url: "https://developers.openai.com/api/docs/guides/agents/sandboxes", kind: "doc", source: "OpenAI", chapters: ["19"], note: "Agents SDK sandbox 文档，对应 code execution / long-running task 的隔离执行与生产化边界" },
-  { title: "OpenAI Docs · Evaluate agent workflows", url: "https://developers.openai.com/api/docs/guides/agent-evals", kind: "doc", source: "OpenAI", chapters: ["19"], note: "OpenAI 官方 agent workflow eval 指南，对应第 19 章评估治理层" },
+  { title: "OpenAI Docs · Evaluate agent workflows", url: "https://developers.openai.com/api/docs/guides/agent-evals", kind: "doc", source: "OpenAI", chapters: ["19","cap-eval"], note: "OpenAI 官方 agent workflow eval 指南，对应第 19 章评估治理层" },
   { title: "OpenAI Docs · MCP and Connectors", url: "https://developers.openai.com/api/docs/guides/tools-connectors-mcp", kind: "doc", source: "OpenAI", chapters: ["19"], note: "OpenAI 官方 MCP/connectors 文档，对应 hosted platform 如何接入远程工具协议" },
   { title: "OpenAI Docs · Web search", url: "https://developers.openai.com/api/docs/guides/tools-web-search", kind: "doc", source: "OpenAI", chapters: ["19"], note: "OpenAI 官方 web search 工具文档，对应 hosted tools 层的网页检索能力" },
   { title: "OpenAI Docs · File search", url: "https://developers.openai.com/api/docs/guides/tools-file-search", kind: "doc", source: "OpenAI", chapters: ["19"], note: "OpenAI 官方 file search 工具文档，对应 hosted tools / 私有资料检索能力" },
@@ -867,7 +867,7 @@ export const ARTICLES: Article[] = [
   { title: "Reflexion: Language Agents with Verbal Reinforcement Learning", url: "https://arxiv.org/abs/2303.11366", kind: "paper", chapters: ["10"], note: "Reflection/自我反思修正的代表性论文" },
   { title: "Claude Code Docs · Orchestrate teams of Claude Code sessions", url: "https://code.claude.com/docs/en/agent-teams", kind: "doc", chapters: ["11"], note: "Claude Code 官方 agent teams 文档：team lead、teammates、共享任务列表、mailbox、hooks 与限制" },
   { title: "Codex Docs · Subagents", url: "https://developers.openai.com/codex/subagents", kind: "doc", chapters: ["11"], note: "OpenAI Codex 官方 subagent workflows 文档：显式 spawn、线程管理、sandbox/approval 继承与 custom agents" },
-  { title: "OpenAI Agents SDK · Orchestration and handoffs", url: "https://developers.openai.com/api/docs/guides/agents/orchestration", kind: "doc", chapters: ["11"], note: "OpenAI 官方 Agents SDK 编排文档：handoff 与 agent-as-tool 的选择边界" },
+  { title: "OpenAI Agents SDK · Orchestration and handoffs", url: "https://developers.openai.com/api/docs/guides/agents/orchestration", kind: "doc", chapters: ["11","cap-review"], note: "OpenAI 官方 Agents SDK 编排文档：handoff 与 agent-as-tool 的选择边界" },
   { title: "Claude Code Docs · Create custom subagents", url: "https://code.claude.com/docs/en/sub-agents", kind: "doc", chapters: ["11"], note: "Claude Code 官方 subagents 文档：独立上下文、工具权限、自动/显式委派与上下文隔离" },
   { title: "Codex Docs · Custom instructions with AGENTS.md", url: "https://developers.openai.com/codex/guides/agents-md", kind: "doc", chapters: ["11"], note: "OpenAI Codex 官方 AGENTS.md 文档：全局、项目、子目录指令链与覆盖规则" },
   { title: "OpenAI Agents SDK · Guardrails and human review", url: "https://developers.openai.com/api/docs/guides/agents/guardrails-approvals", kind: "doc", source: "OpenAI", chapters: ["11","19"], note: "OpenAI 官方：guardrails 与 human-in-the-loop approvals 控制敏感工具和副作用" },
