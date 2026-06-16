@@ -1600,6 +1600,290 @@
   }
 }
 
+/* ── 前沿与生态：按日期筛选日历 ── */
+.frontier-calendar {
+  margin: 1rem 0 1.25rem;
+  padding: 0.85rem 1rem 1rem;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  background: var(--vp-c-bg-soft);
+}
+
+.frontier-cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.frontier-cal-title {
+  font-size: 0.95rem;
+  color: var(--vp-c-text-1);
+}
+
+.frontier-cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.frontier-cal-label {
+  min-width: 6.5em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+}
+
+.frontier-cal-navbtn {
+  width: 1.9rem;
+  height: 1.9rem;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.frontier-cal-navbtn:hover {
+  border-color: var(--vp-c-brand-2);
+  background: var(--vp-c-brand-soft);
+}
+
+.frontier-cal-weekdays,
+.frontier-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.frontier-cal-weekdays {
+  margin-bottom: 4px;
+  font-size: 0.78rem;
+  color: var(--vp-c-text-3);
+}
+
+.frontier-cal-weekdays span {
+  text-align: center;
+  padding: 2px 0;
+}
+
+.frontier-cal-cell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--vp-c-text-2);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  cursor: default;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.frontier-cal-cell[data-outside="true"] {
+  color: var(--vp-c-text-3);
+  opacity: 0.45;
+}
+
+.frontier-cal-cell[data-has-content="true"] {
+  cursor: pointer;
+  color: var(--vp-c-text-1);
+  font-weight: 600;
+  border-color: var(--vp-c-divider);
+  background: var(--vp-c-bg);
+}
+
+.frontier-cal-cell[data-has-content="true"]:hover {
+  border-color: var(--vp-c-brand-2);
+  background: var(--vp-c-brand-soft);
+}
+
+.frontier-cal-cell[data-has-content="true"]::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--vp-c-brand-1);
+}
+
+.frontier-cal-cell[data-active="true"] {
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-1);
+  color: #fff;
+}
+
+.frontier-cal-cell[data-active="true"]::after {
+  background: #fff;
+}
+
+.frontier-cal-cell:disabled {
+  cursor: default;
+}
+
+.frontier-cal-all {
+  margin-top: 0.7rem;
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.frontier-cal-all:hover {
+  border-color: var(--vp-c-brand-2);
+}
+
+.frontier-cal-all[data-active="true"] {
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+  font-weight: 600;
+}
+
+.frontier-timeline-empty {
+  padding: 1rem;
+  color: var(--vp-c-text-3);
+  font-size: 0.9rem;
+}
+
+/* ── 求职指南：高频面试题可筛清单 ── */
+.interview-clinic {
+  margin: 1rem 0 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  background: var(--vp-c-bg-soft);
+}
+
+.interview-clinic-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.interview-clinic-tab {
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 999px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-2);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.interview-clinic-tab:hover {
+  border-color: var(--vp-c-brand-2);
+}
+
+.interview-clinic-tab[data-active="true"] {
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-text-1);
+  font-weight: 600;
+}
+
+.interview-clinic-controls {
+  margin-bottom: 0.5rem;
+}
+
+.interview-clinic-chapter {
+  font-size: 0.85rem;
+  color: var(--vp-c-text-2);
+}
+
+.interview-clinic-select {
+  margin-left: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  font-size: 0.85rem;
+}
+
+.interview-clinic-summary {
+  margin: 0 0 0.6rem;
+  font-size: 0.82rem;
+  color: var(--vp-c-text-3);
+}
+
+.interview-clinic-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.interview-clinic-item {
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  background: var(--vp-c-bg);
+}
+
+.interview-clinic-question {
+  display: block;
+  color: var(--vp-c-text-1);
+  line-height: 1.55;
+}
+
+.interview-clinic-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.45rem;
+}
+
+.interview-clinic-badge {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+}
+
+.interview-clinic-chapter-tag {
+  font-size: 0.74rem;
+  color: var(--vp-c-text-3);
+}
+
+.interview-clinic-empty {
+  padding: 0.8rem;
+  color: var(--vp-c-text-3);
+  list-style: none;
+}
+
+@media (max-width: 640px) {
+  .frontier-cal-cell {
+    font-size: 0.78rem;
+  }
+
+  .interview-clinic-tab {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .selection-chat-drawer {
     transition: none;

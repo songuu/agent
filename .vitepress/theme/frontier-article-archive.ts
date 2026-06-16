@@ -1,5 +1,16 @@
 import { FRONTIER_ECOSYSTEM_LAYERS } from "../../knowledge-graph/data/frontier-ecosystem-layers";
 import type { FrontierEcosystemLayer } from "../../knowledge-graph/data/graph";
+import {
+  availableDates,
+  buildCalendarMonth,
+  filterByDate,
+  pickDefaultDate,
+  shiftMonth,
+  yearMonthOf,
+  type YearMonth,
+} from "./frontier-date-filter";
+
+const WEEKDAY_LABELS = ["一", "二", "三", "四", "五", "六", "日"] as const;
 
 declare const __FRONTIER_SUPABASE_CONFIG__:
   | {
@@ -149,11 +160,25 @@ function renderArchive(root: HTMLElement, articles: FrontierArticle[]): void {
     return;
   }
 
+  const contentDates = new Set(availableDates(articles));
   let selectedLayer: LayerFilter = "all";
-  let selected = articles[0]!;
+  let selectedDate: string | null = pickDefaultDate(articles);
+  let calendarMonth: YearMonth =
+    yearMonthOf(selectedDate) ?? yearMonthOf(availableDates(articles)[0] ?? null) ?? { year: 2026, month: 6 };
+
+  function dateScopedArticles(): FrontierArticle[] {
+    return filterByDate(articles, selectedDate);
+  }
+
+  let selected = dateScopedArticles()[0] ?? articles[0]!;
+
   const filters = document.createElement("nav");
   filters.className = "frontier-layer-tabs";
   filters.setAttribute("aria-label", "前沿与生态文章体系层");
+
+  const calendar = document.createElement("section");
+  calendar.className = "frontier-calendar";
+  calendar.setAttribute("aria-label", "按日期筛选前沿与生态文章");
 
   const detail = document.createElement("article");
   detail.className = "frontier-article-detail";
@@ -167,20 +192,38 @@ function renderArchive(root: HTMLElement, articles: FrontierArticle[]): void {
   const triangle = document.createElement("span");
   triangle.setAttribute("aria-hidden", "true");
   const dateText = document.createElement("strong");
-  dateText.textContent = selected.displayDateLabel;
   dateHeader.append(triangle, dateText);
 
   const list = document.createElement("div");
   list.className = "frontier-timeline-list";
 
   function visibleArticles(): FrontierArticle[] {
-    if (selectedLayer === "all") return articles;
-    return articles.filter((article) => article.ecosystemLayer === selectedLayer);
+    const scoped = dateScopedArticles();
+    if (selectedLayer === "all") return scoped;
+    return scoped.filter((article) => article.ecosystemLayer === selectedLayer);
   }
 
   function layerCount(layer: LayerFilter): number {
-    if (layer === "all") return articles.length;
-    return articles.filter((article) => article.ecosystemLayer === layer).length;
+    const scoped = dateScopedArticles();
+    if (layer === "all") return scoped.length;
+    return scoped.filter((article) => article.ecosystemLayer === layer).length;
+  }
+
+  /** 当前日期档的展示标签：选某天 → 该天 displayDateLabel；全部 → "全部日期"。 */
+  function selectedDateLabel(): string {
+    if (selectedDate === null) return "全部日期";
+    const hit = articles.find((article) => article.collectedDate.slice(0, 10) === selectedDate);
+    return hit?.displayDateLabel ?? formatChineseDateLabel(selectedDate);
+  }
+
+  /** 切换筛选条件后统一重渲染（含重新挑选当前文章）。 */
+  function renderAll(): void {
+    const vis = visibleArticles();
+    selected = vis.includes(selected) ? selected : vis[0] ?? dateScopedArticles()[0] ?? articles[0]!;
+    renderFilters();
+    renderCalendar();
+    renderDetail(selected);
+    renderTimeline();
   }
 
   function renderFilters(): void {
@@ -198,14 +241,83 @@ function renderArchive(root: HTMLElement, articles: FrontierArticle[]): void {
       button.textContent = `${filter.label} ${layerCount(filter.id)}`;
       button.addEventListener("click", () => {
         selectedLayer = filter.id;
-        const nextArticles = visibleArticles();
-        selected = nextArticles.includes(selected) ? selected : nextArticles[0] ?? articles[0]!;
-        renderDetail(selected);
-        renderFilters();
-        renderTimeline();
+        renderAll();
       });
       filters.append(button);
     }
+  }
+
+  function renderCalendar(): void {
+    calendar.replaceChildren();
+
+    const head = document.createElement("div");
+    head.className = "frontier-cal-head";
+    const title = document.createElement("strong");
+    title.className = "frontier-cal-title";
+    title.textContent = "按日期筛选 AI 前沿";
+    const nav = document.createElement("div");
+    nav.className = "frontier-cal-nav";
+    const prev = calNavButton("‹", "上个月", () => {
+      calendarMonth = shiftMonth(calendarMonth.year, calendarMonth.month, -1);
+      renderCalendar();
+    });
+    const label = document.createElement("span");
+    label.className = "frontier-cal-label";
+    label.textContent = `${calendarMonth.year}年 ${calendarMonth.month}月`;
+    const next = calNavButton("›", "下个月", () => {
+      calendarMonth = shiftMonth(calendarMonth.year, calendarMonth.month, 1);
+      renderCalendar();
+    });
+    nav.append(prev, label, next);
+    head.append(title, nav);
+
+    const weekdays = document.createElement("div");
+    weekdays.className = "frontier-cal-weekdays";
+    for (const w of WEEKDAY_LABELS) {
+      const span = document.createElement("span");
+      span.textContent = w;
+      weekdays.append(span);
+    }
+
+    const grid = document.createElement("div");
+    grid.className = "frontier-cal-grid";
+    for (const week of buildCalendarMonth(calendarMonth.year, calendarMonth.month, contentDates)) {
+      for (const cell of week) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "frontier-cal-cell";
+        button.textContent = String(cell.day);
+        if (!cell.inMonth) button.dataset.outside = "true";
+        if (cell.hasContent) {
+          button.dataset.hasContent = "true";
+          button.setAttribute("aria-label", `查看 ${cell.date} 的文章`);
+        } else {
+          button.disabled = true;
+        }
+        if (cell.date === selectedDate) button.dataset.active = "true";
+        if (cell.hasContent) {
+          button.addEventListener("click", () => {
+            selectedDate = cell.date;
+            const ym = yearMonthOf(cell.date);
+            if (ym) calendarMonth = ym;
+            renderAll();
+          });
+        }
+        grid.append(button);
+      }
+    }
+
+    const all = document.createElement("button");
+    all.type = "button";
+    all.className = "frontier-cal-all";
+    all.textContent = `全部日期 (${articles.length})`;
+    if (selectedDate === null) all.dataset.active = "true";
+    all.addEventListener("click", () => {
+      selectedDate = null;
+      renderAll();
+    });
+
+    calendar.append(head, weekdays, grid, all);
   }
 
   function renderDetail(article: FrontierArticle): void {
@@ -255,7 +367,15 @@ function renderArchive(root: HTMLElement, articles: FrontierArticle[]): void {
   function renderTimeline(): void {
     list.replaceChildren();
     const visible = visibleArticles();
-    dateText.textContent = visible[0]?.displayDateLabel ?? selected.displayDateLabel;
+    dateText.textContent = selectedDateLabel();
+
+    if (visible.length === 0) {
+      const empty = document.createElement("p");
+      empty.className = "frontier-timeline-empty";
+      empty.textContent = "该筛选条件下暂无文章。";
+      list.append(empty);
+      return;
+    }
 
     for (const article of visible) {
       const card = document.createElement("article");
@@ -317,11 +437,20 @@ function renderArchive(root: HTMLElement, articles: FrontierArticle[]): void {
     renderTimeline();
   }
 
-  renderFilters();
-  renderDetail(selected);
-  renderTimeline();
   timeline.append(dateHeader, list);
-  root.append(filters, detail, timeline);
+  renderAll();
+  root.append(filters, calendar, detail, timeline);
+}
+
+/** 日历月份导航的小箭头按钮。 */
+function calNavButton(symbol: string, label: string, onClick: () => void): HTMLButtonElement {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "frontier-cal-navbtn";
+  button.textContent = symbol;
+  button.setAttribute("aria-label", label);
+  button.addEventListener("click", onClick);
+  return button;
 }
 
 function normalizeArticleRow(row: FrontierArticleRow): FrontierArticle {
