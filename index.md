@@ -18,9 +18,9 @@ hero:
 features:
   - icon: 🧱
     title: 第一部分 · 基础概念
-    details: 什么是 Agent、第一次 LLM 调用、提示工程——先建立正确的心智模型。
-    link: /lessons/01-what-is-an-agent/
-    linkText: 从 01 开始
+    details: 什么是 Agent、第一次 LLM 调用、提示工程，再补 messages、token、tool calling、workflow vs agent 等底层词汇。
+    link: /agent-basics/
+    linkText: 基础扩展
   - icon: ✍️
     title: 第二部分 · 从零手写核心
     details: 亲手写出 Agent 循环、工具调用、工具系统、短期记忆——整门课的地基。
@@ -83,7 +83,8 @@ features:
 ```mermaid
 flowchart LR
   A["00 环境搭建"] --> B["01–03 基础概念"]
-  B --> C["04–07 从零手写核心"]
+  B --> B2["B1–B12 基础概念扩展"]
+  B2 --> C["04–07 从零手写核心"]
   C --> D["08–09 知识与检索"]
   D --> E["10–11 进阶模式"]
   E --> F["12–14 工程化与框架"]

@@ -107,7 +107,7 @@ pnpm site:live
  01 什么是 Agent             04 手写 Agent 循环 (ReAct)
  02 第一次 LLM 调用          05 工具调用基础
  03 提示工程                 06 从零构建工具系统
-                            07 短期记忆与上下文
+ B 基础概念扩展专题          07 短期记忆与上下文
    │                                │
    ▼                                ▼
 第三部分 · 知识与检索        第四部分 · 进阶模式
@@ -156,6 +156,7 @@ pnpm site:live
 | 01 | [什么是 Agent](./lessons/01-what-is-an-agent/) | ⭐ | LLM vs Agent，循环心智模型 |
 | 02 | [第一次 LLM 调用](./lessons/02-first-llm-call/) | ⭐ | provider 无关客户端、chat/stream、token |
 | 03 | [提示工程](./lessons/03-prompt-engineering/) | ⭐ | system/few-shot/CoT/temperature |
+| B1-B12 | [基础概念扩展专题](./agent-basics/) | ⭐⭐ | messages、roles、token、tool calling、workflow vs agent、guardrails |
 | **第二部分** | **从零手写核心** | | |
 | 04 | [手写 Agent 循环 (ReAct)](./lessons/04-the-agent-loop/) | ⭐⭐ | Thought/Action/Observation 循环 |
 | 05 | [工具调用基础](./lessons/05-tool-use-basics/) | ⭐⭐ | 原生 function calling、tool 往返 |

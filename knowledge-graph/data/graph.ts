@@ -106,6 +106,9 @@ export const CHAPTERS: Chapter[] = [
   { id: "18", slug: "18-deployment", title: "部署：把 Agent 变成服务", part: "第六部分 · 生产化", dir: "lessons/18-deployment", demo: { needsKey: "llm", needsServer: true } },
   { id: "19", slug: "19-agent-ecosystem-and-frontier", title: "Agent 前沿发展与生态拆解", part: "第七部分 · 前沿与生态", dir: "lessons/19-agent-ecosystem-and-frontier", demo: { needsKey: "none" } },
   { id: "capstone", slug: "deep-research-agent", title: "毕业项目 · Deep Research Agent", part: "毕业项目", dir: "capstone/deep-research-agent", demo: { entry: "capstone/deep-research-agent/src/cli.ts", needsKey: "embedding", interactive: true } },
+  { id: "cap-support", slug: "support-copilot", title: "毕业项目 · 客服 Copilot", part: "毕业项目", dir: "capstone/support-copilot", demo: { entry: "capstone/support-copilot/src/cli.ts", needsKey: "none" } },
+  { id: "cap-review", slug: "code-review-crew", title: "毕业项目 · 代码评审团", part: "毕业项目", dir: "capstone/code-review-crew", demo: { entry: "capstone/code-review-crew/src/cli.ts", needsKey: "none" } },
+  { id: "cap-eval", slug: "agent-eval-harness", title: "毕业项目 · Agent 评测与回归门", part: "毕业项目", dir: "capstone/agent-eval-harness", demo: { entry: "capstone/agent-eval-harness/src/cli.ts", needsKey: "none" } },
   { id: "rag-chunk", slug: "01-chunking-strategies", title: "进阶分块策略", part: "进阶 RAG 专题", dir: "rag-advanced/01-chunking-strategies", demo: { needsKey: "none" } },
   { id: "rag-hybrid", slug: "02-hybrid-search", title: "混合检索 (向量+BM25+RRF)", part: "进阶 RAG 专题", dir: "rag-advanced/02-hybrid-search", demo: { needsKey: "embedding" } },
   { id: "rag-rerank", slug: "03-reranking", title: "召回-精排两段式", part: "进阶 RAG 专题", dir: "rag-advanced/03-reranking", demo: { needsKey: "embedding" } },
@@ -272,6 +275,29 @@ export const CONCEPTS: Concept[] = [
   { id: "ccapstone-structured-output", label: "结构化输出 (zod 约束)", chapter: "capstone", summary: "planSchema/reportSchema 把不确定模型输出收敛为类型安全产物" },
   { id: "ccapstone-tracer-cost", label: "Tracer 可观测与成本", chapter: "capstone", summary: "装饰器无侵入包裹 LLMClient，统计 tokens/调用并估算成本" },
   { id: "ccapstone-dual-entrypoint", label: "CLI / HTTP 双入口", chapter: "capstone", summary: "核心逻辑与展示层解耦，同一份能力暴露为命令行和 HTTP 服务" },
+
+  // ── 毕业项目 · 客服 Copilot ──
+  { id: "csup-pipeline", label: "单轮纵深处理管线", chapter: "cap-support", summary: "安全→记忆→路由→RAG/工具→HITL→脱敏→可观测，一轮串起七种能力" },
+  { id: "csup-memory", label: "会话短期记忆 (不可变快照)", chapter: "cap-support", summary: "跨轮累积订单号等槽位，每次返回新快照不就地改写" },
+  { id: "csup-rag", label: "知识库检索 (BM25 带引用)", chapter: "cap-support", summary: "FAQ 装入 BM25 倒排，离线确定地按问题检索并带 [n] 引用" },
+  { id: "csup-tools", label: "查单/退款工具 (zod 边界校验)", chapter: "cap-support", summary: "defineTool 把不可信输入挡在系统边界外，退款仅产出待审批意图" },
+  { id: "csup-hitl", label: "退款 HITL 审批门", chapter: "cap-support", summary: "大额/敏感退款挂起等人工审批，签名记入会话后才放行" },
+  { id: "csup-security", label: "注入检测 + PII 脱敏", chapter: "cap-support", summary: "入口扫提示注入即拦截，出口正则脱敏邮箱/手机/卡号" },
+  { id: "csup-observability", label: "Tracer 估算 token 与成本", chapter: "cap-support", summary: "累加工具调用、用 approxTokens 估 token 并按价格表算成本" },
+
+  // ── 毕业项目 · 代码评审团 ──
+  { id: "crev-crew", label: "评审团 supervisor (并行 fork-join)", chapter: "cap-review", summary: "多角色评审员并行跑每个文件，supervisor 只负责调度与合并" },
+  { id: "crev-reviewers", label: "角色评审员 (security/perf/style)", chapter: "cap-review", summary: "每个角色是纯函数 agent，用确定性规则扫出本职发现" },
+  { id: "crev-structured", label: "结构化发现 (zod schema)", chapter: "cap-review", summary: "findingSchema 校验每条发现，挡掉格式跑偏的产物" },
+  { id: "crev-severity", label: "严重度排序与去重", chapter: "cap-review", summary: "critical/major/minor 排序，同文件同行同规则合并去重" },
+  { id: "crev-gate", label: "评审门 (critical 即 BLOCK)", chapter: "cap-review", summary: "出现任何 critical 即拦截合并，门禁裁决可作 CI 卡点" },
+
+  // ── 毕业项目 · Agent 评测与回归门 ──
+  { id: "cev-golden", label: "Golden 测试集", chapter: "cap-eval", summary: "固定的输入+期望(工具/关键词/是否拒答)，是评测的事实基准" },
+  { id: "cev-subject", label: "被测 Agent (合规 vs 退化)", chapter: "cap-eval", summary: "确定性 Subject，退化版『该拒答却乱答』用来演示评测能抓回归" },
+  { id: "cev-judges", label: "离线裁判 (tool/keyword/refusal)", chapter: "cap-eval", summary: "纯函数裁判逐条打分，复用 shared 的 isRefusalAnswer 规则" },
+  { id: "cev-metrics", label: "聚合指标", chapter: "cap-eval", summary: "通过率/工具准确率/拒答准确率/成本，量化 Agent 质量" },
+  { id: "cev-gate", label: "回归门 (CI exit code)", chapter: "cap-eval", summary: "指标跌破阈值即非零退出，自动拦下退化版本" },
 
   // ── 进阶 RAG 专题 ──
   { id: "cragchunk-why-matters", label: "切块决定检索上限", chapter: "rag-chunk", summary: "检索质量的天花板很大程度由分块策略决定，太大太小都伤召回" },
@@ -575,6 +601,42 @@ export const RELATIONS: Relation[] = [
   { from: "ccapstone-structured-output", to: "c13-structured-output", type: "组成", note: "毕设复用结构化输出" },
   { from: "ccapstone-tracer-cost", to: "c16-decorator-tracer", type: "组成", note: "毕设复用 Tracer 可观测" },
   { from: "ccapstone-dual-entrypoint", to: "c18-agent-as-service", type: "组成", note: "毕设复用服务化部署" },
+
+  // ── 毕业项目 · 客服 Copilot（内部组成 + 跨章复用）──
+  { from: "csup-pipeline", to: "csup-memory", type: "组成", note: "管线第二步从会话快照补全订单号" },
+  { from: "csup-pipeline", to: "csup-rag", type: "组成", note: "FAQ 分支走知识库检索带引用作答" },
+  { from: "csup-pipeline", to: "csup-tools", type: "应用", note: "查单/退款分支调用注册表里的工具" },
+  { from: "csup-pipeline", to: "csup-hitl", type: "组成", note: "退款分支经审批门决定放行/挂起/拒绝" },
+  { from: "csup-pipeline", to: "csup-security", type: "组成", note: "管线首尾各一道安全门：入口检注入、出口脱敏" },
+  { from: "csup-observability", to: "csup-pipeline", type: "应用", note: "Tracer 贯穿每轮估算 token 与成本" },
+  { from: "csup-memory", to: "c07-conversation-as-array", type: "组成", note: "复用第07章短期记忆思想，落成不可变会话快照" },
+  { from: "csup-rag", to: "c09-rag-pipeline", type: "组成", note: "复用第09章 RAG，检索器换成离线 BM25" },
+  { from: "csup-tools", to: "c06-tool-registry", type: "组成", note: "复用第06章工具系统做边界校验" },
+  { from: "csup-hitl", to: "c17-human-in-the-loop", type: "组成", note: "落地第17章人在回路：敏感动作人工放行" },
+  { from: "csup-security", to: "cragsec-injection-detection", type: "组成", note: "复用 RAG 安全章的注入检测规则" },
+  { from: "csup-security", to: "cragsec-pii-redaction", type: "组成", note: "复用 RAG 安全章的 PII 出口脱敏" },
+  { from: "csup-observability", to: "c16-cost-estimation", type: "组成", note: "复用第16章成本公式估算每轮花费" },
+
+  // ── 毕业项目 · 代码评审团（内部组成 + 跨章复用）──
+  { from: "crev-crew", to: "crev-reviewers", type: "组成", note: "supervisor 调度多个角色评审员" },
+  { from: "crev-reviewers", to: "crev-structured", type: "应用", note: "评审员产出结构化发现" },
+  { from: "crev-crew", to: "crev-severity", type: "应用", note: "supervisor 合并后做去重与严重度排序" },
+  { from: "crev-severity", to: "crev-gate", type: "前置", note: "排序后的发现喂给评审门做裁决" },
+  { from: "crev-crew", to: "c11-topology-choice", type: "深化", note: "并行异构 team 是第11章编排拓扑的一种落地" },
+  { from: "crev-crew", to: "c11-approval-observability", type: "应用", note: "用评审门做副作用与回归控制" },
+  { from: "crev-structured", to: "c13-structured-output", type: "组成", note: "复用第13章结构化输出收敛发现格式" },
+  { from: "crev-gate", to: "c15-eval-harness", type: "应用", note: "评审门同评估框架一样按阈值卡门" },
+
+  // ── 毕业项目 · Agent 评测与回归门（内部组成 + 跨章复用）──
+  { from: "cev-golden", to: "cev-judges", type: "组成", note: "golden 的期望字段就是裁判的打分依据" },
+  { from: "cev-subject", to: "cev-judges", type: "应用", note: "裁判对被测 Agent 的轨迹逐条打分" },
+  { from: "cev-judges", to: "cev-metrics", type: "组成", note: "逐条分数聚合成通过率等指标" },
+  { from: "cev-metrics", to: "cev-gate", type: "前置", note: "指标与阈值比对得出回归门裁决" },
+  { from: "cev-golden", to: "c15-eval-dataset", type: "组成", note: "复用第15章离线评估数据集思想" },
+  { from: "cev-judges", to: "c15-llm-judge", type: "深化", note: "把 LLM-as-judge 降级为离线规则裁判，确定可回归" },
+  { from: "cev-gate", to: "c15-eval-harness", type: "组成", note: "复用第15章 runEval+卡门的评估框架骨架" },
+  { from: "cev-metrics", to: "c16-observability", type: "应用", note: "成本与调用统计沿用第16章可观测思路" },
+  { from: "cev-judges", to: "crageval-llm-judge-rag", type: "对比", note: "RAG 用裁判模型 vs 这里用离线规则裁判" },
 
   // ── 进阶 RAG 专题：章内关系 ──
   { from: "cragchunk-why-matters", to: "cragchunk-sliding-window", type: "深化", note: "从最朴素的滑窗基线出发理解切块" },

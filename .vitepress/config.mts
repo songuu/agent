@@ -183,6 +183,13 @@ const sidebar: DefaultTheme.SidebarItem[] = [
       { text: "术语表", link: "/docs/glossary" },
     ],
   },
+  {
+    text: "基础概念扩展专题",
+    collapsed: true,
+    items: [
+      { text: "B1-B12 扩章地图", link: "/agent-basics/" },
+    ],
+  },
   ...buildCourseSidebar(),
   {
     text: "知识图谱",
@@ -232,7 +239,9 @@ export default withMermaid(
     ignoreDeadLinks: true,
     rewrites: {
       "lessons/:lesson/README.md": "lessons/:lesson/index.md",
+      "agent-basics/README.md": "agent-basics/index.md",
       "rag-advanced/:topic/README.md": "rag-advanced/:topic/index.md",
+      "langgraph-advanced/README.md": "langgraph-advanced/index.md",
       "langgraph-advanced/:topic/README.md": "langgraph-advanced/:topic/index.md",
       "capstone/:project/README.md": "capstone/:project/index.md",
       "knowledge-graph/README.md": "knowledge-graph/index.md",

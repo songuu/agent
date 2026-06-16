@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **36** 个单元、**221** 个概念、**351** 条关系、**124** 篇关联文章。
+共 **39** 个单元、**238** 个概念、**381** 条关系、**124** 篇关联文章。
 
 ## 章节地图
 
@@ -45,6 +45,9 @@ flowchart LR
   end
   subgraph P7["毕业项目"]
     C_capstone["capstone 毕业项目 · Deep Research Agent"]
+    C_cap-support["cap-support 毕业项目 · 客服 Copilot"]
+    C_cap-review["cap-review 毕业项目 · 代码评审团"]
+    C_cap-eval["cap-eval 毕业项目 · Agent 评测与回归门"]
   end
   subgraph P8["进阶 RAG 专题"]
     C_rag-chunk["rag-chunk 进阶分块策略"]
@@ -85,7 +88,10 @@ flowchart LR
   C_17 --> C_18
   C_18 --> C_19
   C_19 --> C_capstone
-  C_capstone --> C_rag-chunk
+  C_capstone --> C_cap-support
+  C_cap-support --> C_cap-review
+  C_cap-review --> C_cap-eval
+  C_cap-eval --> C_rag-chunk
   C_rag-chunk --> C_rag-hybrid
   C_rag-hybrid --> C_rag-rerank
   C_rag-rerank --> C_rag-query
@@ -267,6 +273,23 @@ graph LR
     n_ccapstone_structured_output["结构化输出 (zod 约束)"]
     n_ccapstone_tracer_cost["Tracer 可观测与成本"]
     n_ccapstone_dual_entrypoint["CLI / HTTP 双入口"]
+    n_csup_pipeline["单轮纵深处理管线"]
+    n_csup_memory["会话短期记忆 (不可变快照)"]
+    n_csup_rag["知识库检索 (BM25 带引用)"]
+    n_csup_tools["查单/退款工具 (zod 边界校验)"]
+    n_csup_hitl["退款 HITL 审批门"]
+    n_csup_security["注入检测 + PII 脱敏"]
+    n_csup_observability["Tracer 估算 token 与成本"]
+    n_crev_crew["评审团 supervisor (并行 fork-join)"]
+    n_crev_reviewers["角色评审员 (security/perf/style)"]
+    n_crev_structured["结构化发现 (zod schema)"]
+    n_crev_severity["严重度排序与去重"]
+    n_crev_gate["评审门 (critical 即 BLOCK)"]
+    n_cev_golden["Golden 测试集"]
+    n_cev_subject["被测 Agent (合规 vs 退化)"]
+    n_cev_judges["离线裁判 (tool/keyword/refusal)"]
+    n_cev_metrics["聚合指标"]
+    n_cev_gate["回归门 (CI exit code)"]
   end
   subgraph G8["进阶 RAG 专题"]
     n_cragchunk_why_matters["切块决定检索上限"]
@@ -549,6 +572,36 @@ graph LR
   n_ccapstone_structured_output -->|组成| n_c13_structured_output
   n_ccapstone_tracer_cost -->|组成| n_c16_decorator_tracer
   n_ccapstone_dual_entrypoint -->|组成| n_c18_agent_as_service
+  n_csup_pipeline -->|组成| n_csup_memory
+  n_csup_pipeline -->|组成| n_csup_rag
+  n_csup_pipeline -->|应用| n_csup_tools
+  n_csup_pipeline -->|组成| n_csup_hitl
+  n_csup_pipeline -->|组成| n_csup_security
+  n_csup_observability -->|应用| n_csup_pipeline
+  n_csup_memory -->|组成| n_c07_conversation_as_array
+  n_csup_rag -->|组成| n_c09_rag_pipeline
+  n_csup_tools -->|组成| n_c06_tool_registry
+  n_csup_hitl -->|组成| n_c17_human_in_the_loop
+  n_csup_security -->|组成| n_cragsec_injection_detection
+  n_csup_security -->|组成| n_cragsec_pii_redaction
+  n_csup_observability -->|组成| n_c16_cost_estimation
+  n_crev_crew -->|组成| n_crev_reviewers
+  n_crev_reviewers -->|应用| n_crev_structured
+  n_crev_crew -->|应用| n_crev_severity
+  n_crev_severity -->|前置| n_crev_gate
+  n_crev_crew -->|深化| n_c11_topology_choice
+  n_crev_crew -->|应用| n_c11_approval_observability
+  n_crev_structured -->|组成| n_c13_structured_output
+  n_crev_gate -->|应用| n_c15_eval_harness
+  n_cev_golden -->|组成| n_cev_judges
+  n_cev_subject -->|应用| n_cev_judges
+  n_cev_judges -->|组成| n_cev_metrics
+  n_cev_metrics -->|前置| n_cev_gate
+  n_cev_golden -->|组成| n_c15_eval_dataset
+  n_cev_judges -->|深化| n_c15_llm_judge
+  n_cev_gate -->|组成| n_c15_eval_harness
+  n_cev_metrics -->|应用| n_c16_observability
+  n_cev_judges -->|对比| n_crageval_llm_judge_rag
   n_cragchunk_why_matters -->|深化| n_cragchunk_sliding_window
   n_cragchunk_sliding_window -->|对比| n_cragchunk_recursive
   n_cragchunk_recursive -->|深化| n_cragchunk_markdown_aware
@@ -850,6 +903,23 @@ graph LR
 | 结构化输出 (zod 约束) | [capstone 毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md) | planSchema/reportSchema 把不确定模型输出收敛为类型安全产物 |
 | Tracer 可观测与成本 | [capstone 毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md) | 装饰器无侵入包裹 LLMClient，统计 tokens/调用并估算成本 |
 | CLI / HTTP 双入口 | [capstone 毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md) | 核心逻辑与展示层解耦，同一份能力暴露为命令行和 HTTP 服务 |
+| 单轮纵深处理管线 | [cap-support 毕业项目 · 客服 Copilot](../capstone/support-copilot/README.md) | 安全→记忆→路由→RAG/工具→HITL→脱敏→可观测，一轮串起七种能力 |
+| 会话短期记忆 (不可变快照) | [cap-support 毕业项目 · 客服 Copilot](../capstone/support-copilot/README.md) | 跨轮累积订单号等槽位，每次返回新快照不就地改写 |
+| 知识库检索 (BM25 带引用) | [cap-support 毕业项目 · 客服 Copilot](../capstone/support-copilot/README.md) | FAQ 装入 BM25 倒排，离线确定地按问题检索并带 [n] 引用 |
+| 查单/退款工具 (zod 边界校验) | [cap-support 毕业项目 · 客服 Copilot](../capstone/support-copilot/README.md) | defineTool 把不可信输入挡在系统边界外，退款仅产出待审批意图 |
+| 退款 HITL 审批门 | [cap-support 毕业项目 · 客服 Copilot](../capstone/support-copilot/README.md) | 大额/敏感退款挂起等人工审批，签名记入会话后才放行 |
+| 注入检测 + PII 脱敏 | [cap-support 毕业项目 · 客服 Copilot](../capstone/support-copilot/README.md) | 入口扫提示注入即拦截，出口正则脱敏邮箱/手机/卡号 |
+| Tracer 估算 token 与成本 | [cap-support 毕业项目 · 客服 Copilot](../capstone/support-copilot/README.md) | 累加工具调用、用 approxTokens 估 token 并按价格表算成本 |
+| 评审团 supervisor (并行 fork-join) | [cap-review 毕业项目 · 代码评审团](../capstone/code-review-crew/README.md) | 多角色评审员并行跑每个文件，supervisor 只负责调度与合并 |
+| 角色评审员 (security/perf/style) | [cap-review 毕业项目 · 代码评审团](../capstone/code-review-crew/README.md) | 每个角色是纯函数 agent，用确定性规则扫出本职发现 |
+| 结构化发现 (zod schema) | [cap-review 毕业项目 · 代码评审团](../capstone/code-review-crew/README.md) | findingSchema 校验每条发现，挡掉格式跑偏的产物 |
+| 严重度排序与去重 | [cap-review 毕业项目 · 代码评审团](../capstone/code-review-crew/README.md) | critical/major/minor 排序，同文件同行同规则合并去重 |
+| 评审门 (critical 即 BLOCK) | [cap-review 毕业项目 · 代码评审团](../capstone/code-review-crew/README.md) | 出现任何 critical 即拦截合并，门禁裁决可作 CI 卡点 |
+| Golden 测试集 | [cap-eval 毕业项目 · Agent 评测与回归门](../capstone/agent-eval-harness/README.md) | 固定的输入+期望(工具/关键词/是否拒答)，是评测的事实基准 |
+| 被测 Agent (合规 vs 退化) | [cap-eval 毕业项目 · Agent 评测与回归门](../capstone/agent-eval-harness/README.md) | 确定性 Subject，退化版『该拒答却乱答』用来演示评测能抓回归 |
+| 离线裁判 (tool/keyword/refusal) | [cap-eval 毕业项目 · Agent 评测与回归门](../capstone/agent-eval-harness/README.md) | 纯函数裁判逐条打分，复用 shared 的 isRefusalAnswer 规则 |
+| 聚合指标 | [cap-eval 毕业项目 · Agent 评测与回归门](../capstone/agent-eval-harness/README.md) | 通过率/工具准确率/拒答准确率/成本，量化 Agent 质量 |
+| 回归门 (CI exit code) | [cap-eval 毕业项目 · Agent 评测与回归门](../capstone/agent-eval-harness/README.md) | 指标跌破阈值即非零退出，自动拦下退化版本 |
 | 切块决定检索上限 | [rag-chunk 进阶分块策略](../rag-advanced/01-chunking-strategies/README.md) | 检索质量的天花板很大程度由分块策略决定，太大太小都伤召回 |
 | 字符滑窗切分 | [rag-chunk 进阶分块策略](../rag-advanced/01-chunking-strategies/README.md) | 第09章基线：定长字符 + 重叠，简单但会盲切句子 |
 | 递归语义切分 | [rag-chunk 进阶分块策略](../rag-advanced/01-chunking-strategies/README.md) | 优先在段落/句子/词等语义边界下刀，按 token 控大小 |

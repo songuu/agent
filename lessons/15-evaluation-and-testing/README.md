@@ -271,6 +271,10 @@ graph TB
   n_c15_regression_ci["回归测试与 CI 门槛"]
   n_c15_sut_separation["被测对象与评估分离"]
   n_c13_structured_output["结构化输出（第13章）"]
+  n_crev_gate["评审门 (critical 即 BLOCK)（第cap-review章）"]
+  n_cev_golden["Golden 测试集（第cap-eval章）"]
+  n_cev_judges["离线裁判 (tool/keyword/refusal)（第cap-eval章）"]
+  n_cev_gate["回归门 (CI exit code)（第cap-eval章）"]
   n_cragrerank_llm_rerank["LLM 重排（第rag-rerank章）"]
   n_crageval_llm_judge_rag["RAG 的 LLM-as-judge（第rag-eval章）"]
   n_crageval_stage_localization["按指标定位坏环（第rag-eval章）"]
@@ -282,11 +286,15 @@ graph TB
   n_c15_eval_harness -->|应用| n_c15_regression_ci
   n_c15_sut_separation -->|前置| n_c15_eval_harness
   n_c15_eval_dataset -->|应用| n_c13_structured_output
+  n_crev_gate -->|应用| n_c15_eval_harness
+  n_cev_golden -->|组成| n_c15_eval_dataset
+  n_cev_judges -->|深化| n_c15_llm_judge
+  n_cev_gate -->|组成| n_c15_eval_harness
   n_cragrerank_llm_rerank -->|对比| n_c15_llm_judge
   n_crageval_llm_judge_rag -->|深化| n_c15_llm_judge
   n_crageval_stage_localization -->|应用| n_c15_eval_harness
   class n_c15_nondeterminism,n_c15_eval_dataset,n_c15_eval_harness,n_c15_rule_scoring,n_c15_llm_judge,n_c15_regression_ci,n_c15_sut_separation own;
-  class n_c13_structured_output,n_cragrerank_llm_rerank,n_crageval_llm_judge_rag,n_crageval_stage_localization cross;
+  class n_c13_structured_output,n_crev_gate,n_cev_golden,n_cev_judges,n_cev_gate,n_cragrerank_llm_rerank,n_crageval_llm_judge_rag,n_crageval_stage_localization cross;
   linkStyle 0 stroke:#2563eb,stroke-width:2px;
   linkStyle 1 stroke:#059669,stroke-width:2px;
   linkStyle 2 stroke:#d97706,stroke-width:2px;
@@ -295,14 +303,22 @@ graph TB
   linkStyle 5 stroke:#059669,stroke-width:2px;
   linkStyle 6 stroke:#2563eb,stroke-width:2px;
   linkStyle 7 stroke:#059669,stroke-width:2px;
-  linkStyle 8 stroke:#db2777,stroke-width:2px;
-  linkStyle 9 stroke:#7c3aed,stroke-width:2px;
-  linkStyle 10 stroke:#059669,stroke-width:2px;
+  linkStyle 8 stroke:#059669,stroke-width:2px;
+  linkStyle 9 stroke:#d97706,stroke-width:2px;
+  linkStyle 10 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 11 stroke:#d97706,stroke-width:2px;
+  linkStyle 12 stroke:#db2777,stroke-width:2px;
+  linkStyle 13 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 14 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
 
 - `离线评估数据集` —**应用**→ `结构化输出`（第 13 章）
+- `评审门 (critical 即 BLOCK)` —**应用**→ `评估框架 runEval`（第 cap-review 章）
+- `Golden 测试集` —**组成**→ `离线评估数据集`（第 cap-eval 章）
+- `离线裁判 (tool/keyword/refusal)` —**深化**→ `LLM-as-judge`（第 cap-eval 章）
+- `回归门 (CI exit code)` —**组成**→ `评估框架 runEval`（第 cap-eval 章）
 - `LLM 重排` —**对比**→ `LLM-as-judge`（第 rag-rerank 章）
 - `RAG 的 LLM-as-judge` —**深化**→ `LLM-as-judge`（第 rag-eval 章）
 - `按指标定位坏环` —**应用**→ `评估框架 runEval`（第 rag-eval 章）

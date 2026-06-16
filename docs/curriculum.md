@@ -73,16 +73,18 @@
 |------|------|----------|
 | 第 00 章 · 环境搭建 | 1 章 | ~30 分钟 |
 | 第一部分 · 基础概念 | 01–03 | ~2.5 小时 |
+| 基础概念扩展专题 | agent-basics ×12 候选 | ~2–3 小时 |
 | 第二部分 · 从零手写核心 | 04–07 | ~5 小时 |
 | 第三部分 · 知识与检索 | 08–09 | ~3 小时 |
 | 第四部分 · 进阶模式 | 10–11 | ~3.5 小时 |
 | 第五部分 · 工程化与框架 | 12–14 | ~3.5 小时 |
 | 第六部分 · 生产化 | 15–18 | ~5 小时 |
 | 第七部分 · 前沿与生态 | 19 | ~1 小时 |
-| 🎓 毕业项目 · Deep Research Agent | 综合 | ~6–10 小时 |
-| 🔬 进阶 RAG 专题 | rag-advanced ×6 | ~4–5 小时 |
+| 🎓 毕业项目（4 个）· Deep Research / 客服 Copilot / 代码评审团 / Agent 评测 | 综合 | ~13–19 小时 |
+| 🔬 进阶 RAG 专题 | rag-advanced ×11 | ~7–9 小时 |
+| 🧩 进阶 LangGraph 专题 | langgraph-advanced ×5 + 生产化扩章地图 | ~4–6 小时 |
 | 🧭 RAG 完整架构蓝图 | 架构阅读 | ~1 小时 |
-| **合计** | **19 章 + 毕业项目 + RAG 专题 + 架构蓝图** | **约 36–42 小时**（不含动手扩展） |
+| **合计** | **19 章 + 基础概念扩展 + 4 个毕业项目 + RAG 专题 + LangGraph 专题 + 架构蓝图** | **约 49–63 小时**（不含动手扩展） |
 
 > 按每天投入 1–1.5 小时算，大约 **3–4 周**可以完整走完一遍。建议分散学、多动手，比一口气刷完更扎实。
 
@@ -100,6 +102,7 @@
         ┌──────────────────────────────────────────────────────┐
         │  第一部分 · 基础概念                                   │
         │  01 什么是 Agent → 02 第一次 LLM 调用 → 03 提示工程    │
+        │  + 基础概念扩展专题：messages / token / tool / eval    │
         └────────────────────────────┬─────────────────────────┘
                                      ▼
         ┌──────────────────────────────────────────────────────┐
@@ -145,6 +148,11 @@
                   └────────────────┬─────────────────┘
                                    ▼
                   ┌──────────────────────────────────┐
+                  │  🧩 进阶 LangGraph 专题            │
+                  │  StateGraph/路由/持久化/HITL/多Agent │
+                  └────────────────┬─────────────────┘
+                                   ▼
+                  ┌──────────────────────────────────┐
                   │  🧭 RAG 完整架构蓝图              │
                   │     写入/查询/eval/治理/部署      │
                   └────────────────┬─────────────────┘
@@ -178,6 +186,7 @@
 | 01 | 什么是 Agent | ⭐ | 40 分钟 | 厘清 LLM 与 Agent 的区别，理解「感知-决策-行动」循环这个核心心智模型 | [../lessons/01-what-is-an-agent/README.md](../lessons/01-what-is-an-agent/README.md) |
 | 02 | 第一次 LLM 调用 | ⭐ | 50 分钟 | 用 provider 无关的客户端发起第一次对话，理解 chat / stream / token 三件事 | [../lessons/02-first-llm-call/README.md](../lessons/02-first-llm-call/README.md) |
 | 03 | 提示工程 | ⭐ | 50 分钟 | system prompt、few-shot、思维链(CoT)、temperature——把模型的能力调出来 | [../lessons/03-prompt-engineering/README.md](../lessons/03-prompt-engineering/README.md) |
+| B1-B12 | 基础概念扩展专题 | ⭐⭐ | 2–3 小时 | 补齐 messages、roles、token、sampling、tool calling、workflow vs agent、guardrails、evaluation 等先修词汇 | [../agent-basics/README.md](../agent-basics/README.md) |
 
 ### 第二部分 · 从零手写核心
 
@@ -237,11 +246,16 @@
 |---|------|------|------|------------|------|
 | 19 | Agent 前沿发展与生态拆解 | ⭐⭐⭐ | 70 分钟 | 从模型接口、工具协议、Agent SDK、编排 runtime、RAG、UI、观测、安全八层拆解当前生态，并练习按需求选型 | [../lessons/19-agent-ecosystem-and-frontier/README.md](../lessons/19-agent-ecosystem-and-frontier/README.md) |
 
-### 🎓 毕业项目 · Deep Research Agent
+### 🎓 毕业项目（4 个综合实战，可直接放进作品集）
+
+> 4 个项目各展示一种完整架构，彼此互补：研究型 agent / 生产客服系统 / 多智能体评审 / Agent 评测。后三者**完全离线、零 key 可跑**，`pnpm <name>:smoke` 即可验证。
 
 | # | 标题 | 难度 | 预计 | 一句话简介 | 链接 |
 |---|------|------|------|------------|------|
-| 🎓 | Deep Research Agent | ⭐⭐⭐⭐ | 6–10 小时 | 综合 agent 循环、工具、RAG、多智能体、评估、护栏的实战项目，可直接放进作品集 | [../capstone/deep-research-agent/README.md](../capstone/deep-research-agent/README.md) |
+| 🎓 | Deep Research Agent | ⭐⭐⭐⭐ | 6–10 小时 | 综合 agent 循环、工具、RAG、多智能体、评估、护栏；Plan-and-Execute 研究型 agent | [../capstone/deep-research-agent/README.md](../capstone/deep-research-agent/README.md) |
+| 🎓 | 客服 Copilot | ⭐⭐⭐⭐ | 3–4 小时 | 记忆 / RAG / 工具 / HITL 审批 / 注入·PII 安全 / 成本可观测，串成单轮纵深防御管线 | [../capstone/support-copilot/README.md](../capstone/support-copilot/README.md) |
+| 🎓 | 代码评审团 | ⭐⭐⭐ | 2–3 小时 | 安全/性能/风格多智能体并行评审，结构化发现 + 严重度排序 + critical 即 BLOCK 的评审门 | [../capstone/code-review-crew/README.md](../capstone/code-review-crew/README.md) |
+| 🎓 | Agent 评测与回归门 | ⭐⭐⭐ | 2–3 小时 | golden 测试集 + 离线裁判 + 通过率/拒答准确率/成本指标 + CI 回归门，自动拦下退化版本 | [../capstone/agent-eval-harness/README.md](../capstone/agent-eval-harness/README.md) |
 
 ### 🧭 RAG 完整架构蓝图
 
@@ -261,7 +275,7 @@
 
 ### 🔬 进阶 RAG 专题（rag-advanced）
 
-> 目标：把第 08/09 章的「最小可解释 RAG」补成**生产级 RAG**。六章各自可运行，沉淀进 `src/shared/rag/` 复用。建议学完第 09 章后按序深入；其中第 01 章为纯函数 demo，**无需任何 API key** 即可跑通。
+> 目标：把第 08/09 章的「最小可解释 RAG」补成**生产级 RAG**。十一章各自可运行，沉淀进 `src/shared/rag/` 复用。建议学完第 09 章后按序深入；其中第 01 章为纯函数 demo，**无需任何 API key** 即可跑通。
 
 | # | 标题 | 难度 | 预计 | 一句话简介 | 链接 |
 |---|------|------|------|------------|------|
@@ -272,6 +286,19 @@
 | R5 | RAG 评估 | ⭐⭐⭐ | 50 分钟 | 上下文相关性 / 忠实度 / 答案相关性三指标，定位坏在哪一环 | [../rag-advanced/05-rag-evaluation/README.md](../rag-advanced/05-rag-evaluation/README.md) |
 | R6 | 生产化 RAG | ⭐⭐⭐⭐ | 60 分钟 | metadata 过滤、持久化、增量 upsert、端到端管线组合 | [../rag-advanced/06-production-rag/README.md](../rag-advanced/06-production-rag/README.md) |
 
+### 🧩 进阶 LangGraph 专题（langgraph-advanced）
+
+> 目标：把第 12 章的 LangGraph 入门继续往下挖，先用纯函数节点讲透状态图机制，再收集生产化章节路线。已完成 L1-L5；L6-L11 是生产化扩章地图，等逐章补齐六件套后再进入知识图谱。
+
+| # | 标题 | 难度 | 预计 | 一句话简介 | 链接 |
+|---|------|------|------|------------|------|
+| L1 | 手写 StateGraph | ⭐⭐⭐ | 45 分钟 | State、channel reducer、节点 partial、边与 compile/invoke，拆开 `createReactAgent` 的底层骨架 | [../langgraph-advanced/01-stategraph-basics/README.md](../langgraph-advanced/01-stategraph-basics/README.md) |
+| L2 | 条件边与路由 | ⭐⭐⭐ | 45 分钟 | 用 `addConditionalEdges` 做分支、循环、`recursionLimit` 安全阀与 `Send` 扇出 | [../langgraph-advanced/02-conditional-routing/README.md](../langgraph-advanced/02-conditional-routing/README.md) |
+| L3 | Checkpointer 持久化与时间旅行 | ⭐⭐⭐⭐ | 50 分钟 | 用 `thread_id`、`getState`、history、`updateState` 解释图的可恢复状态线 | [../langgraph-advanced/03-checkpointing/README.md](../langgraph-advanced/03-checkpointing/README.md) |
+| L4 | Human-in-the-Loop | ⭐⭐⭐⭐ | 50 分钟 | `interrupt` 暂停、读取 payload、`Command(resume)` 续跑，做危险操作审批门 | [../langgraph-advanced/04-human-in-the-loop/README.md](../langgraph-advanced/04-human-in-the-loop/README.md) |
+| L5 | 多 Agent 编排 | ⭐⭐⭐⭐ | 60 分钟 | supervisor 中心调度与并行 team fork/join，两种拓扑串起前四章机制 | [../langgraph-advanced/05-multi-agent-graph/README.md](../langgraph-advanced/05-multi-agent-graph/README.md) |
+| L6-L11 | 生产化扩章地图 | ⭐⭐⭐⭐ | 规划中 | event streaming、store、subgraph、fault tolerance、test/migration、deploy/observability 的章节候选与实现顺序 | [../langgraph-advanced/README.md#生产化扩章地图](../langgraph-advanced/README.md#生产化扩章地图) |
+
 ---
 
 ## 学完之后的下一步
@@ -280,7 +307,8 @@
 
 - 💼 **找工作 / 转行** → 看 [求职指南](./career-guide.md)：岗位画像、技能清单、用本项目（尤其毕业项目）写简历、高频面试题拆解。
 - 🚀 **做产品 / 创业** → 看 [创业指南](./startup-guide.md)：怎么判断机会、如何把毕业项目裁剪成 MVP、成本控制、上线 checklist。
-- 🔬 **进阶 RAG（仓库内）** → 看 [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md)：分块策略、混合检索、重排、查询改写、评估、生产化六章，把第 08/09 章的最小 RAG 补成生产级，能力沉淀在 `src/shared/rag/`。
+- 🔬 **进阶 RAG（仓库内）** → 看 [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md)：分块、混合检索、重排、查询改写、评估、生产化、安全、索引与上下文工程，把第 08/09 章的最小 RAG 补成生产级，能力沉淀在 `src/shared/rag/`。
+- 🧩 **进阶 LangGraph（仓库内）** → 看 [进阶 LangGraph 专题](../langgraph-advanced/README.md)：从 StateGraph 机制走到 production runtime 的扩章地图。
 - 🧭 **RAG 架构设计** → 看 [RAG 完整架构蓝图](./rag-architecture.md)：把 demo 能力组织成写入路径、查询路径、数据模型、安全治理、质量闭环和部署拓扑。
 - 📚 **深挖 RAG（独立项目）** → 看 [RAG 系统实战项目](./rag-system-project.md)：连接到 [songuu/rag-system](https://github.com/songuu/rag-system)，把课程里的 RAG 原理升级成独立系统。
 

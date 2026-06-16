@@ -172,12 +172,14 @@ graph TB
   n_crageval_faithfulness["忠实度"]
   n_crageval_answer_relevance["答案相关性"]
   n_crageval_stage_localization["按指标定位坏环"]
+  n_cev_judges["离线裁判 (tool/keyword/refusal)（第cap-eval章）"]
   n_c15_llm_judge["LLM-as-judge（第15章）"]
   n_c09_hallucination_reduction["幻觉抑制与 A/B 对比（第09章）"]
   n_c15_eval_harness["评估框架 runEval（第15章）"]
   n_cragagentic_grade["证据打分器（第rag-agentic章）"]
   n_cragidx_recall_at_scale["近似召回度量（第rag-index章）"]
   n_cragctx_lost_in_middle["中间遗忘 (lost-in-the-middle)（第rag-context章）"]
+  n_cev_judges -->|对比| n_crageval_llm_judge_rag
   n_crageval_llm_judge_rag -->|组成| n_crageval_context_relevance
   n_crageval_llm_judge_rag -->|组成| n_crageval_faithfulness
   n_crageval_llm_judge_rag -->|组成| n_crageval_answer_relevance
@@ -190,22 +192,24 @@ graph TB
   n_cragidx_recall_at_scale -->|应用| n_crageval_context_relevance
   n_cragctx_lost_in_middle -->|应用| n_crageval_answer_relevance
   class n_crageval_llm_judge_rag,n_crageval_context_relevance,n_crageval_faithfulness,n_crageval_answer_relevance,n_crageval_stage_localization own;
-  class n_c15_llm_judge,n_c09_hallucination_reduction,n_c15_eval_harness,n_cragagentic_grade,n_cragidx_recall_at_scale,n_cragctx_lost_in_middle cross;
-  linkStyle 0 stroke:#d97706,stroke-width:2px;
+  class n_cev_judges,n_c15_llm_judge,n_c09_hallucination_reduction,n_c15_eval_harness,n_cragagentic_grade,n_cragidx_recall_at_scale,n_cragctx_lost_in_middle cross;
+  linkStyle 0 stroke:#db2777,stroke-width:2px;
   linkStyle 1 stroke:#d97706,stroke-width:2px;
   linkStyle 2 stroke:#d97706,stroke-width:2px;
-  linkStyle 3 stroke:#059669,stroke-width:2px;
+  linkStyle 3 stroke:#d97706,stroke-width:2px;
   linkStyle 4 stroke:#059669,stroke-width:2px;
-  linkStyle 5 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 5 stroke:#059669,stroke-width:2px;
   linkStyle 6 stroke:#7c3aed,stroke-width:2px;
-  linkStyle 7 stroke:#059669,stroke-width:2px;
+  linkStyle 7 stroke:#7c3aed,stroke-width:2px;
   linkStyle 8 stroke:#059669,stroke-width:2px;
   linkStyle 9 stroke:#059669,stroke-width:2px;
   linkStyle 10 stroke:#059669,stroke-width:2px;
+  linkStyle 11 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
 
+- `离线裁判 (tool/keyword/refusal)` —**对比**→ `RAG 的 LLM-as-judge`（第 cap-eval 章）
 - `RAG 的 LLM-as-judge` —**深化**→ `LLM-as-judge`（第 15 章）
 - `忠实度` —**深化**→ `幻觉抑制与 A/B 对比`（第 09 章）
 - `按指标定位坏环` —**应用**→ `评估框架 runEval`（第 15 章）
