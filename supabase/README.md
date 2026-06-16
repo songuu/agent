@@ -8,7 +8,7 @@ This folder stores Supabase-ready SQL for the Agent course site.
 - Layer migration for existing installs: `migrations/20260616112000_add_frontier_ecosystem_article_layers.sql`
 - Generated seed/upsert: `seed/frontier_ecosystem_articles.sql`
 - Source of truth: `knowledge-graph/data/graph.ts` -> `FRONTIER_ARTICLES`
-- Rows: 59 articles across 8 ecosystem layers.
+- Rows: 70 articles across 8 ecosystem layers (foundation 6 / model-platform 7 / protocol 8 / runtime 7 / product-ui 8 / data-memory 9 / evaluation 14 / security-governance 11).
 
 Apply order:
 
