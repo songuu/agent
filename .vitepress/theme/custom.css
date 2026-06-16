@@ -1104,28 +1104,42 @@
 }
 
 .vp-doc .frontier-archive-shell {
-  width: min(1084px, calc(100vw - 56px));
-  max-width: none;
+  --frontier-bg: color-mix(in srgb, var(--vp-c-bg-soft) 78%, var(--vp-c-bg));
+  --frontier-card-bg: var(--vp-c-bg);
+  --frontier-card-border: color-mix(in srgb, var(--vp-c-divider) 84%, transparent);
+  --frontier-text-strong: var(--vp-c-text-1);
+  --frontier-text: var(--vp-c-text-2);
+  --frontier-text-muted: var(--vp-c-text-3);
+  --frontier-accent: var(--vp-c-brand-1);
+  --frontier-accent-soft: color-mix(in srgb, var(--vp-c-brand-1) 14%, transparent);
+
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
   margin: 24px 0 34px;
-  padding: 24px 0;
-  color: #20242c;
-  background: #f5f5f5;
+  padding: 18px;
+  overflow: clip;
+  border: 1px solid var(--frontier-card-border);
+  border-radius: 8px;
+  color: var(--frontier-text-strong);
+  background: var(--frontier-bg);
 }
 
 .frontier-layer-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin: 0 0 16px;
+  max-width: 100%;
+  margin: 0 0 14px;
 }
 
 .frontier-layer-tab {
   min-height: 34px;
   padding: 0 12px;
-  border: 1px solid #dfe5f6;
+  border: 1px solid var(--frontier-card-border);
   border-radius: 6px;
-  background: #ffffff;
-  color: #4d5a70;
+  background: var(--frontier-card-bg);
+  color: var(--frontier-text);
   font-size: 13px;
   font-weight: 700;
   line-height: 1;
@@ -1135,28 +1149,45 @@
 .frontier-layer-tab:hover,
 .frontier-layer-tab:focus-visible,
 .frontier-layer-tab[data-active="true"] {
-  border-color: #4f6fff;
-  color: #3155f6;
+  border-color: var(--frontier-accent);
+  color: var(--frontier-accent);
   outline: none;
+  background: var(--frontier-accent-soft);
+}
+
+.frontier-archive-status {
+  box-sizing: border-box;
+  min-height: 140px;
+  padding: 28px 24px;
+  border: 1px solid var(--frontier-card-border);
+  border-radius: 8px;
+  background: var(--frontier-card-bg);
+  color: var(--frontier-text);
+  font-size: 15px;
+  line-height: 1.7;
 }
 
 .vp-doc .frontier-article-detail {
-  min-height: 672px;
-  padding: 25px 24px 38px;
-  border: 1px solid #f1f1f1;
+  box-sizing: border-box;
+  min-height: 360px;
+  max-width: 100%;
+  padding: 24px;
+  overflow-wrap: anywhere;
+  border: 1px solid var(--frontier-card-border);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--frontier-card-bg);
 }
 
 .vp-doc .frontier-detail-title {
   margin: 0;
   border-top: 0;
   padding-top: 0;
-  font-size: 28px;
+  overflow-wrap: anywhere;
+  font-size: clamp(22px, 3vw, 28px);
   font-weight: 800;
   line-height: 1.35;
   letter-spacing: 0;
-  color: #202124;
+  color: var(--frontier-text-strong);
 }
 
 .frontier-detail-meta {
@@ -1167,32 +1198,33 @@
   margin-top: 12px;
   font-size: 14px;
   line-height: 1.5;
-  color: #687185;
+  color: var(--frontier-text-muted);
 }
 
 .frontier-detail-meta a {
   font-weight: 500;
-  color: #687185;
+  color: var(--frontier-text-muted);
   text-decoration: none;
 }
 
 .frontier-detail-meta a:hover {
-  color: #3f63ff;
+  color: var(--frontier-accent);
 }
 
 .frontier-detail-body {
   margin-top: 22px;
   font-size: 16px;
   line-height: 1.82;
-  color: #242933;
+  color: var(--frontier-text-strong);
 }
 
 .frontier-detail-body p {
   margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .frontier-detail-body p + p {
-  margin-top: 52px;
+  margin-top: 28px;
 }
 
 .frontier-detail-actions {
@@ -1205,7 +1237,7 @@
   min-height: 30px;
   font-size: 14px;
   font-weight: 700;
-  color: #3f63ff;
+  color: var(--frontier-accent);
   text-decoration: none;
 }
 
@@ -1216,7 +1248,8 @@
 .frontier-article-timeline {
   position: relative;
   margin-top: 28px;
-  padding-left: 29px;
+  padding-left: 26px;
+  max-width: 100%;
 }
 
 .frontier-article-timeline::before {
@@ -1224,7 +1257,7 @@
   top: 8px;
   bottom: 0;
   left: 13px;
-  border-left: 2px dashed #dce6ff;
+  border-left: 2px dashed color-mix(in srgb, var(--frontier-accent) 28%, var(--frontier-card-border));
   content: "";
 }
 
@@ -1236,7 +1269,7 @@
   gap: 14px;
   min-height: 24px;
   margin-bottom: 13px;
-  color: #3f63ff;
+  color: var(--frontier-accent);
 }
 
 .frontier-timeline-date span {
@@ -1245,7 +1278,7 @@
   margin-left: -16px;
   border-top: 8px solid transparent;
   border-bottom: 8px solid transparent;
-  border-left: 8px solid #3f63ff;
+  border-left: 8px solid var(--frontier-accent);
 }
 
 .frontier-timeline-date strong {
@@ -1257,6 +1290,7 @@
 .frontier-timeline-list {
   display: grid;
   gap: 14px;
+  max-width: 100%;
 }
 
 .frontier-timeline-item {
@@ -1265,6 +1299,8 @@
   grid-template-columns: 15px minmax(0, 1fr);
   gap: 0;
   align-items: start;
+  min-width: 0;
+  max-width: 100%;
   cursor: pointer;
   outline: none;
 }
@@ -1276,60 +1312,80 @@
   height: 12px;
   margin-top: 17px;
   margin-left: -22px;
-  border: 2px solid #4f6fff;
+  border: 2px solid var(--frontier-accent);
   border-radius: 999px;
-  background: #ffffff;
+  background: var(--frontier-card-bg);
 }
 
 .frontier-timeline-card {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
   min-height: 116px;
   padding: 16px 16px 14px;
   border: 1px solid transparent;
-  border-radius: 0;
-  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--frontier-card-bg);
   transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
 }
 
 .frontier-timeline-item:hover .frontier-timeline-card,
 .frontier-timeline-item:focus-visible .frontier-timeline-card,
 .frontier-timeline-item[data-active="true"] .frontier-timeline-card {
-  border-color: rgba(63, 99, 255, 0.22);
+  border-color: color-mix(in srgb, var(--frontier-accent) 28%, transparent);
   box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
   transform: translateY(-1px);
 }
 
 .frontier-timeline-title {
-  display: block;
+  display: -webkit-box;
   margin: 0;
+  overflow: hidden;
   overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   font-size: 17px;
   font-weight: 800;
   line-height: 1.42;
-  color: #071225;
+  color: var(--frontier-accent);
   text-decoration: none;
 }
 
 .frontier-timeline-title:hover {
-  color: #3f63ff;
+  color: var(--frontier-accent);
+  text-decoration: underline;
 }
 
 .frontier-timeline-excerpt {
   display: -webkit-box;
   margin: 6px 0 0;
   overflow: hidden;
+  overflow-wrap: anywhere;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   font-size: 15px;
   line-height: 1.5;
-  color: #566175;
+  color: var(--frontier-text);
 }
 
 .frontier-timeline-meta {
   margin-top: 8px;
+  overflow-wrap: anywhere;
   font-size: 12px;
   font-weight: 600;
   line-height: 1.4;
-  color: #7a8496;
+  color: var(--frontier-text-muted);
+}
+
+.frontier-timeline-meta a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.frontier-timeline-meta a:hover {
+  color: var(--frontier-accent);
+  text-decoration: underline;
 }
 
 @keyframes conceptNodePulse {
@@ -1403,7 +1459,7 @@
   .vp-doc .frontier-archive-shell {
     width: 100%;
     margin: 20px 0 28px;
-    padding: 16px 0;
+    padding: 14px;
   }
 
   .frontier-layer-tabs {
@@ -1419,7 +1475,7 @@
 
   .vp-doc .frontier-article-detail {
     min-height: 0;
-    padding: 22px 18px 26px;
+    padding: 20px 16px 24px;
   }
 
   .vp-doc .frontier-detail-title {

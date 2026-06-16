@@ -1,6 +1,7 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { config as loadDotenv } from "dotenv";
 import { defineConfig, type DefaultTheme } from "vitepress";
 import { withMermaid } from "vitepress-plugin-mermaid";
 // @ts-ignore markdown-it-task-lists has no bundled types; VitePress loads this config through esbuild.
@@ -13,6 +14,7 @@ import {
 } from "../knowledge-graph/data/visuals";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+loadDotenv({ path: resolve(__dirname, "../.env") });
 
 const GITHUB_REPO = "https://github.com/songuu/agent";
 const GITHUB_BLOB = `${GITHUB_REPO}/blob/master/`;
@@ -38,6 +40,12 @@ interface DemoMarker {
 interface DemoRunnerRuntime {
   token: string;
   port: number;
+}
+
+interface FrontierSupabaseConfig {
+  url: string;
+  anonKey: string;
+  schema: string;
 }
 
 function resolveRepoPath(fromMdRelativePath: string, href: string): string {
@@ -138,6 +146,17 @@ function readDemoRunnerRuntime(): DemoRunnerRuntime {
   }
 }
 
+function readFrontierSupabaseConfig(): FrontierSupabaseConfig | null {
+  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "").trim();
+  const anonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "").trim();
+  if (!url || !anonKey) return null;
+  return {
+    url,
+    anonKey,
+    schema: (process.env.SUPABASE_SCHEMA || "public").trim() || "public",
+  };
+}
+
 function serveKgHtmlPlugin() {
   return {
     name: "serve-kg-interactive-html",
@@ -198,6 +217,7 @@ const demoRunnerBaseUrl =
   `http://127.0.0.1:${demoRunnerRuntime.port}`;
 const demoRunnerClientEnabled = shouldInjectDemoRunnerToken || shouldEnableProductionDemoRunner;
 const siteBase = normalizeBase(process.env.VITEPRESS_BASE);
+const frontierSupabaseConfig = readFrontierSupabaseConfig();
 
 export default withMermaid(
   defineConfig({
@@ -295,6 +315,7 @@ export default withMermaid(
         __DEMO_RUNNER_TOKEN__: JSON.stringify(demoRunnerRuntime.token),
         __DEMO_RUNNER_BASE_URL__: JSON.stringify(demoRunnerBaseUrl),
         __DEMO_RUNNER_CLIENT_ENABLED__: JSON.stringify(demoRunnerClientEnabled),
+        __FRONTIER_SUPABASE_CONFIG__: JSON.stringify(frontierSupabaseConfig),
       },
       plugins: [serveKgHtmlPlugin()],
       optimizeDeps: {

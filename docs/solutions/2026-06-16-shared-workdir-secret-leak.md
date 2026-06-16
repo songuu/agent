@@ -38,6 +38,17 @@ aliases: ["密码进了公开仓库怎么办", "git 历史移除密钥 force-pus
 - **rotation > 历史重写**：公开暴露一律视泄漏值为永久 compromised，先轮换。
 - 副作用提醒：裸 `alter user postgres` 会让自托管 Supabase Studio 失配（"too many authentication failures"），数据面 PostgREST（独立 `authenticator` 角色）不受影响——见 [[supabase-selfhosted-sync]]。
 
+## 事件后审计（非回显扫描）
+
+止血后下一会话要复核"还有没有问题"，关键是**全程不把密钥打印到 transcript**（transcript 本身可能被持久化/共享，回显=二次泄漏）：
+
+1. **tracked + untracked 一起扫泄漏值**：`git grep -nI --untracked -e "<已知泄漏值>" -e "postgresql://postgres:" -- .`。只扫 tracked 会漏掉并行会话刚 `git add` 但你这边还没看见的新文件。命中要人工分辨真值 vs 占位符（`<真实密码>` 这类是安全的）。
+2. **对比当前 `.env` 密码 ≠ 泄漏值**，但**不回显**：`sed` 抽出密码段后 `[ "$PW" = "<泄漏值>" ]` 比较、`echo "len=${#PW}"` 只报长度/字符集，不报值。
+3. **扫"轮换后的新密码"有没有漏进文件**：同样 `-F "$PW"` 精确匹配 + `grep -vc '^\.env'` 排除 `.env` 自身，只报 occurrence 计数。
+4. **发现密码长度/形态异常要追因**：本次审计发现 `.env` 里已不是我 SQL 轮换的 32 字符 `randomBytes(24).base64url`，而是 8 字符值——说明**平台级重置（AIDAP 控制台）会另设自己的密码，与 SQL `alter user` 轮换分叉**，事后必须把 `.env` 与平台值重新对齐（否则直连断）。8 字符偏弱，平台重置后建议再换强密码。
+
+> Windows/Git Bash 注意：`grep -P` 在非 UTF-8 locale 报 `-P supports only unibyte and UTF-8 locales`，改用 `sed -E` 抽取。
+
 ## Related
 - [[supabase-selfhosted-sync]] — 自托管 Supabase 同步 + 密码轮换副作用
 - [[kg-data-driven-doc-generation]] — 本次承载泄漏的 sprint 来自数据驱动文章扩充

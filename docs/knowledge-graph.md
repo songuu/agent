@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **36** 个单元、**221** 个概念、**351** 条关系、**113** 篇关联文章。
+共 **36** 个单元、**221** 个概念、**351** 条关系、**124** 篇关联文章。
 
 ## 章节地图
 
@@ -1023,6 +1023,17 @@ graph LR
 | [Design Patterns for Securing LLM Agents against Prompt Injections](https://arxiv.org/abs/2506.08837) | arXiv | paper | 19 | prompt injection 防御设计模式论文，讨论工具权限、敏感信息和 agent 架构层面的安全/效用取舍 |
 | [Identity Management for Agentic AI](https://arxiv.org/abs/2510.25819) | arXiv | paper | 19 | OpenID Foundation 相关白皮书：agent 身份、认证、授权、delegated authority 与访问管理，是企业落地关键议题 |
 | [When Agents Handle Secrets: A Survey of Confidential Computing for Agentic AI](https://arxiv.org/abs/2605.03213) | arXiv | paper | 19 | 2026 综述：当 agent 持有密钥、记忆和工具权限时，TEE/远程证明/多跳 attestation 如何进入生产安全架构 |
+| [ReAct: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629) | arXiv | paper | 19 | Agent 控制流的奠基范式：交错 reasoning trace 与 action，让模型边推理边调用外部工具/环境，是本课程 ReAct 循环与 maxSteps 的源头 |
+| [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366) | arXiv | paper | 19 | 不更新权重、用语言反思 + episodic memory 让 agent 从试错中改进，是自我批判/重试类控制流（含进阶 RAG 的 self-grade）的理论根 |
+| [LLM Powered Autonomous Agents (Lilian Weng)](https://lilianweng.github.io/posts/2023-06-23-agent/) | Lil'Log | blog | 19 | 把 LLM agent 拆成 planning / memory / tool use 三大件的经典体系文，第 19 章生态地图的概念脚手架 |
+| [Anthropic · Claude Agent SDK overview](https://platform.claude.com/docs/en/agent-sdk/overview) | Anthropic | doc | 19 | 把驱动 Claude Code 的 agent loop / 工具执行 / 上下文管理做成 Python、TS 可编程 SDK 的官方文档，平台级 agent primitives 一手来源 |
+| [Anthropic Engineering · Building agents with the Claude Agent SDK](https://www.anthropic.com/engineering/building-agents-with-the-claude-agent-sdk) | Anthropic | blog | 19 | 官方工程博客：用 gather context / take action / verify work 三段式讲如何在 SDK 上搭生产 agent，对照本课程手写 loop 的取舍 |
+| [Amazon Bedrock AgentCore is now generally available](https://aws.amazon.com/about-aws/whats-new/2025/10/amazon-bedrock-agentcore-available) | AWS | doc | 19 | AWS 把 Runtime（8 小时执行 + 会话隔离 + A2A）、Memory、Identity、Gateway 等托管 agent 基建打包 GA，企业落地的平台层代表 |
+| [Introducing Microsoft Agent Framework](https://devblogs.microsoft.com/foundry/introducing-microsoft-agent-framework-the-open-source-engine-for-agentic-ai-apps/) | Microsoft | blog | 19 | 微软把 Semantic Kernel 的企业基座与 AutoGen 的多 agent 编排合并成单一开源 SDK/runtime（原生支持 A2A、MCP），runtime 收敛的标志性事件 |
+| [MemGPT: Towards LLMs as Operating Systems](https://arxiv.org/abs/2310.08560) | arXiv | paper | 19 | 把 LLM 上下文当虚拟内存分层管理（core/recall/archival），用中断在主体与用户间切换控制流，Letta 的理论原型与长期记忆层基石 |
+| [Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory](https://arxiv.org/abs/2504.19413) | arXiv | paper | 19 | 可外挂的记忆层：从对话动态抽取/合并/检索关键信息（含图变体），LOCOMO 上比满上下文省 90%+ token 与延迟，生产记忆的工程权衡样本 |
+| [Letta · Benchmarking AI Agent Memory](https://www.letta.com/blog/benchmarking-ai-agent-memory/) | Letta | blog | 19 | Letta（MemGPT 团队）用基准对比文件系统记忆 vs 各类记忆框架，给「agent 记忆到底该怎么存/取」提供可量化对照 |
+| [Anthropic Engineering · Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) | Anthropic | blog | 19 | 长跑 agent 的上下文工程：跨多个 context window 的 compaction、记忆落盘与首窗特殊 prompt，承接 context engineering 的实操篇 |
 | [Introducing Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) | anthropic.com | blog | rag-chunk, rag-hybrid, rag-contextual | Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读 |
 | [Okapi BM25 - Wikipedia](https://en.wikipedia.org/wiki/Okapi_BM25) | en.wikipedia.org | doc | rag-hybrid | BM25 打分公式与 k1/b 参数的权威说明，对应本章 BM25Index |
 | [Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods](https://dl.acm.org/doi/10.1145/1571941.1572114) | dl.acm.org | paper | rag-hybrid | RRF 原始论文 (Cormack et al., SIGIR 2009)，混合检索融合法的来源 |
