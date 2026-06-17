@@ -19,6 +19,12 @@
 
 ---
 
+> 💡 **快速查词**：下面的交互面板支持按主题筛选 + 中/英文搜索（数据与本页同源 `knowledge-graph/data/glossary.ts`）。需要无 JS 环境或想顺序通读，可继续往下看分主题的完整列表。
+
+<div data-glossary></div>
+
+---
+
 ## 一、大语言模型基础（LLM Basics）
 
 > → 见 lessons/02-first-llm-call

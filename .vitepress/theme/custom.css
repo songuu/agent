@@ -1873,12 +1873,142 @@
   list-style: none;
 }
 
+/* 术语表「可筛 + 可搜」渲染器（glossary-explorer.ts）。仅用 transition/静态样式，不引关键帧动画。 */
+.glossary-explorer {
+  margin: 1rem 0 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  background: var(--vp-c-bg-soft);
+}
+
+.glossary-search {
+  margin-bottom: 0.75rem;
+}
+
+.glossary-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  font-size: 0.9rem;
+  transition: border-color 0.15s;
+}
+
+.glossary-search-input:focus {
+  outline: none;
+  border-color: var(--vp-c-brand-1);
+}
+
+.glossary-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.glossary-tab {
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 999px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-2);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.glossary-tab:hover {
+  border-color: var(--vp-c-brand-2);
+}
+
+.glossary-tab[data-active="true"] {
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-text-1);
+  font-weight: 600;
+}
+
+.glossary-summary {
+  margin: 0 0 0.6rem;
+  font-size: 0.82rem;
+  color: var(--vp-c-text-3);
+}
+
+.glossary-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.glossary-term {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.65rem 0.8rem 0;
+  border: 1px solid var(--vp-c-divider);
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  background: var(--vp-c-bg);
+}
+
+.glossary-term-name {
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+}
+
+.glossary-topic-badge {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+}
+
+.glossary-definition {
+  margin: 0;
+  padding: 0.4rem 0.8rem 0.7rem;
+  border: 1px solid var(--vp-c-divider);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  background: var(--vp-c-bg);
+}
+
+.glossary-definition-text {
+  display: block;
+  color: var(--vp-c-text-2);
+  line-height: 1.6;
+}
+
+.glossary-chapter-tag {
+  display: inline-block;
+  margin: 0.4rem 0.4rem 0 0;
+  font-size: 0.74rem;
+  color: var(--vp-c-text-3);
+}
+
+.glossary-empty {
+  padding: 0.8rem;
+  color: var(--vp-c-text-3);
+}
+
 @media (max-width: 640px) {
   .frontier-cal-cell {
     font-size: 0.78rem;
   }
 
   .interview-clinic-tab {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .glossary-tab {
     padding: 0.3rem 0.6rem;
     font-size: 0.8rem;
   }

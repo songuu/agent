@@ -36,4 +36,21 @@ node node_modules/tsx/dist/cli.mjs scripts/generate-interview-questions-supabase
 
 Then run the generated `supabase/seed/interview_questions.sql` in the Supabase SQL editor or through your database connection.
 
+## Glossary terms
+
+- Table migration: `migrations/20260616130000_create_glossary_terms.sql`
+- Generated seed/upsert: `seed/glossary_terms.sql`
+- Source of truth: `knowledge-graph/data/glossary.ts` -> `GLOSSARY_TERMS`
+- Companion human-readable list: `docs/glossary.md` (also the no-JS fallback). The site renders an interactive, topic-filtered + searchable panel from the bundled TS (no runtime fetch), mirroring the interview-questions pipeline.
+- Rows: 51 terms across 8 topics (llm-basics / prompt-engineering / agents-reasoning / tool-use / embeddings-rag / multi-agent / output-eval-observability / safety-guardrails).
+
+Apply order:
+
+```bash
+supabase db push
+node node_modules/tsx/dist/cli.mjs scripts/generate-glossary-supabase-seed.ts
+```
+
+Then run the generated `supabase/seed/glossary_terms.sql` in the Supabase SQL editor or through your database connection.
+
 This repository currently does not contain Supabase connection settings, so the scripts generate auditable SQL instead of writing to a remote project implicitly.
