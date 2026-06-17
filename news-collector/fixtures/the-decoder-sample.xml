@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>The Decoder</title>
+    <link>https://the-decoder.com</link>
+    <description>AI news (offline test fixture)</description>
+    <item>
+      <title>LangGraph adds multi-agent orchestration runtime for production</title>
+      <link>https://the-decoder.com/langgraph-multi-agent-orchestration/</link>
+      <guid>https://the-decoder.com/langgraph-multi-agent-orchestration/</guid>
+      <pubDate>Tue, 16 Jun 2026 19:32:38 +0000</pubDate>
+      <description><![CDATA[<p>LangGraph ships a production-grade runtime for multi-agent orchestration and workflows.</p>]]></description>
+    </item>
+    <item>
+      <title>New SWE-bench benchmark evaluates coding agents at scale</title>
+      <link>https://the-decoder.com/swe-bench-benchmark-agents/</link>
+      <guid>https://the-decoder.com/swe-bench-benchmark-agents/</guid>
+      <pubDate>Tue, 16 Jun 2026 18:19:40 +0000</pubDate>
+      <description><![CDATA[<p>A refreshed SWE-bench leaderboard evaluates how coding agents perform across repositories.</p>]]></description>
+    </item>
+    <item>
+      <title>Prompt injection attack bypasses guardrails, OWASP issues warning</title>
+      <link>https://the-decoder.com/prompt-injection-guardrails-owasp/</link>
+      <guid>https://the-decoder.com/prompt-injection-guardrails-owasp/</guid>
+      <pubDate>Tue, 16 Jun 2026 15:16:08 +0000</pubDate>
+      <description><![CDATA[<p>Researchers show a prompt injection that bypasses agent guardrails; OWASP updates its security guidance.</p>]]></description>
+    </item>
+  </channel>
+</rss>

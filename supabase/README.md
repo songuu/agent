@@ -2,30 +2,36 @@
 
 This folder stores Supabase-ready SQL for the Agent course site.
 
+## News items
+
+- Table migration: `migrations/20260617120000_create_news_items.sql`
+- Generated seed/upsert: `seed/news_items.sql`
+- Source of truth: `news-collector` RSS pipeline -> `NewsItem`
+- Site chapter: `/lessons/20-agent-frontier-news/` and `/news/`
+- Calendar filter field: `published_date`; `collected_date` is only the collection batch date.
+- Demo rows: 8 articles (published_date: 2026-06-15 = 2, 2026-06-16 = 6).
+
+Apply order:
+
+```bash
+supabase db push
+pnpm supabase:news-seed
+```
+
+Then run the generated `supabase/seed/news_items.sql` in the Supabase SQL editor or through your database connection.
+
+Windows note:
+
+- If `pnpm supabase:news-seed` hits `tsx/esbuild -> spawn EPERM`, rerun outside the sandbox or use Node 24 native type stripping.
+
 ## Frontier ecosystem articles
 
 - Table migration: `migrations/20260616090000_create_frontier_ecosystem_articles.sql`
 - Layer migration for existing installs: `migrations/20260616112000_add_frontier_ecosystem_article_layers.sql`
 - Generated seed/upsert: `seed/frontier_ecosystem_articles.sql`
 - Source of truth: `knowledge-graph/data/graph.ts` -> `FRONTIER_ARTICLES`
-- Site chapter: `chapter_id=20`, `chapter_slug=20-agent-frontier-news`
+- Status: hand-curated reference archive retained for ecosystem research; chapter 20 now renders the `news_items` article stream.
 - Rows: 77 articles across 8 ecosystem layers (foundation 6 / model-platform 8 / protocol 8 / runtime 10 / product-ui 8 / data-memory 10 / evaluation 16 / security-governance 11).
-
-Apply order:
-
-```bash
-supabase db push
-node node_modules/tsx/dist/cli.mjs scripts/generate-frontier-ecosystem-supabase-seed.ts
-```
-
-Then run the generated `supabase/seed/frontier_ecosystem_articles.sql` in the Supabase SQL editor or through your database connection.
-
-Windows note:
-
-- If `npm run supabase:frontier-seed` or `npm run supabase:frontier-push` hits `tsx/esbuild -> spawn EPERM`, use Node 24 native type stripping for seed generation:
-  `node --experimental-transform-types scripts/generate-frontier-ecosystem-supabase-seed.ts`
-- For push, follow the hardened fallback:
-  `node scripts/push-frontier-seed-to-supabase.mjs`
 
 ## Interview questions
 

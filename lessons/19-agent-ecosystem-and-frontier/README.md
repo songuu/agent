@@ -428,7 +428,7 @@ graph TB
   n_c19_stack_selection["需求倒推选型"]
   n_c19_governance["可观测与安全治理"]
   n_c20_layer_filter["体系层筛选（第20章）"]
-  n_c20_article_detail["文章详情卡（第20章）"]
+  n_c20_article_detail["文章卡片与原文入口（第20章）"]
   n_c12_framework_choice["框架选型决策（第12章）"]
   n_c05_native_tool_use["原生工具调用 (Function Calling)（第05章）"]
   n_c20_news_archive["前沿文章库（第20章）"]
@@ -469,7 +469,7 @@ graph TB
 ### 与其他章节的关系
 
 - `体系层筛选` —**应用**→ `Agent 生态分层`（第 20 章）
-- `文章详情卡` —**应用**→ `需求倒推选型`（第 20 章）
+- `文章卡片与原文入口` —**应用**→ `需求倒推选型`（第 20 章）
 - `Agent 生态分层` —**深化**→ `框架选型决策`（第 12 章）
 - `MCP (模型上下文协议)` —**应用**→ `原生工具调用 (Function Calling)`（第 05 章）
 - `前沿文章库` —**深化**→ `Agent 生态分层`（第 20 章）
@@ -548,6 +548,13 @@ graph TB
 - 来源：arXiv · [Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory](https://arxiv.org/abs/2504.19413) — 可外挂的记忆层：从对话动态抽取/合并/检索关键信息（含图变体），LOCOMO 上比满上下文省 90%+ token 与延迟，生产记忆的工程权衡样本 `paper`
 - 来源：Letta · [Letta · Benchmarking AI Agent Memory](https://www.letta.com/blog/benchmarking-ai-agent-memory/) — Letta（MemGPT 团队）用基准对比文件系统记忆 vs 各类记忆框架，给「agent 记忆到底该怎么存/取」提供可量化对照 `blog`
 - 来源：Anthropic · [Anthropic Engineering · Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) — 长跑 agent 的上下文工程：跨多个 context window 的 compaction、记忆落盘与首窗特殊 prompt，承接 context engineering 的实操篇 `blog`
+- 来源：OpenAI · [OpenAI Agents Python v0.17.5 release notes](https://github.com/openai/openai-agents-python/releases/tag/v0.17.5) — 官方 release notes：新增可重试 sandbox_tool 错误、MongoDBSession memory 示例与 ModelSettings.truncation，让托管工具、会话存储和上下文截断的工程边界更明确。 `doc`
+- 来源：Microsoft · [Microsoft Agent Framework .NET 1.10.0 release notes](https://github.com/microsoft/agent-framework/releases/tag/dotnet-1.10.0) — 官方 release notes：加入 Authorization Toolbox、Azure AI Foundry deployment docs、上下文 compaction opt-in 与 auto-approval rule 增强，直接影响企业 agent 的授权、部署和长上下文治理。 `doc`
+- 来源：Google · [Google ADK Python v1.35.0 release notes](https://github.com/google/adk-python/releases/tag/v1.35.0) — 官方 release notes：加入 OpenTelemetry 自动 tracing、trajectory evaluator、A2A auth vs input required 区分、history compaction summaries 与 request_input 标准化，适合观察多 agent runtime 的工程收敛方向。 `doc`
+- 来源：arXiv · [StreamMemBench: Towards Better Long-Context Evaluation for Memory Agents](https://arxiv.org/abs/2509.16490) — 提出 streaming long-context benchmark，把 observations、user feedback、knowledge archive 与 follow-up reuse 放到同一条评测线上，适合校正“只看 recall 不看真实复用”的记忆评测偏差。 `paper`
+- 来源：arXiv · [What makes a harness a harness? Model-free foundation for agentic AI](https://arxiv.org/abs/2606.10666) — 把 harness 定义为不依赖模型能力、只负责状态、权限、审批、重试与回放的工程壳层，正好补上『agent framework ≠ harness』这层实践边界。 `paper`
+- 来源：arXiv · [WorkBench Revisited: Towards a Scalable Benchmark for Evaluating Agents in Realistic Enterprise Workflows](https://arxiv.org/abs/2606.13715) — 面向真实企业 workflow 的 agent benchmark，强调 success 之外还要统计 unintended / harmful action，适合补齐 workplace agent 的安全型评测口径。 `paper`
+- 来源：arXiv · [SciAgentArena: Benchmarking Scientific Agents from Paper to Experiment](https://arxiv.org/abs/2508.21126) — 把 scientific agents 的任务从 paper comprehension 拉到 experiment design / execution planning，适合校验研究型 agent 是否真的能从『读』走到『做』。 `paper`
 
 > 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
 

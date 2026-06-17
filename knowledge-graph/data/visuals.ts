@@ -192,8 +192,8 @@ export const CONCEPT_VISUALS: ConceptVisual[] = [
     chapter: "20",
     kind: "pipeline",
     title: "前沿文章库把外部资料整理成可追溯阅读流",
-    summary: "资料先按生态层分类，再按收集日期进入列表；选中条目后用详情卡保留摘要、来源、标签和原文入口。",
-    steps: ["Collect", "Layer", "Date", "List", "Detail", "Read"],
+    summary: "资料先按生态层分类，再按原文发布时间进入列表；文章卡片保留摘要、来源、体系层和原文入口。",
+    steps: ["Collect", "Layer", "Date", "Cards", "Read"],
     takeaway: "文章库不是堆链接，而是把资料变成可筛选、可回看的学习证据。",
   },
   {
@@ -436,7 +436,7 @@ const CONCEPT_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> =
     { tone: "warning", label: "易错边界", body: "不要从名词堆栈出发选型；先从产品需求反推必须购买或自建的层。" },
   ],
   "20": [
-    { tone: "core", label: "核心判断", body: "前沿文章库要服务阅读路径：先按日期和体系层定位，再用详情卡核对摘要、来源和原文。" },
+    { tone: "core", label: "核心判断", body: "前沿文章库要服务阅读路径：先按日期和体系层定位，再用文章卡片核对摘要、来源和原文。" },
     { tone: "warning", label: "易错边界", body: "不要让文章归档挤在教学章里；教学内容讲判断框架，文章库承载持续更新的外部证据。" },
   ],
   capstone: [

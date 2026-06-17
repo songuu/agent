@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Vendor Engineering Blog</title>
+  <link href="https://example.com"/>
+  <updated>2026-06-16T10:00:00Z</updated>
+  <id>https://example.com/</id>
+  <entry>
+    <title>Cursor ships an agentic copilot for developers</title>
+    <link href="https://example.com/blog/cursor-agentic-copilot"/>
+    <id>https://example.com/blog/cursor-agentic-copilot</id>
+    <updated>2026-06-16T09:00:00Z</updated>
+    <summary>Cursor brings an agentic copilot experience to its developer IDE.</summary>
+  </entry>
+  <entry>
+    <title>A survey overview of autonomous agents</title>
+    <link href="https://example.com/blog/autonomous-agents-survey"/>
+    <id>https://example.com/blog/autonomous-agents-survey</id>
+    <updated>2026-06-15T08:00:00Z</updated>
+    <summary>A broad overview that maps the landscape of autonomous agents for newcomers.</summary>
+  </entry>
+</feed>

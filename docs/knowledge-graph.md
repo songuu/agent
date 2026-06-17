@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **40** 个单元、**242** 个概念、**387** 条关系、**124** 篇关联文章。
+共 **40** 个单元、**242** 个概念、**387** 条关系、**131** 篇关联文章。
 
 ## 章节地图
 
@@ -269,7 +269,7 @@ graph LR
     n_c20_news_archive["前沿文章库"]
     n_c20_date_filter["日期筛选"]
     n_c20_layer_filter["体系层筛选"]
-    n_c20_article_detail["文章详情卡"]
+    n_c20_article_detail["文章卡片与原文入口"]
   end
   subgraph G7["毕业项目"]
     n_ccapstone_plan_and_execute["Plan-and-Execute 架构"]
@@ -908,10 +908,10 @@ graph LR
 | Hosted tools 与 sandbox | [19 Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | 平台内置的 web/file search、computer use、代码沙箱执行能力 |
 | 需求倒推选型 | [19 Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | 从约束出发判断手写还是选 SDK/runtime/协议的决策方法 |
 | 可观测与安全治理 | [19 Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | tracing/eval/cost/guardrails/HITL 作为上线门槛与一等部件 |
-| 前沿文章库 | [20 Agent 前沿文章库](../lessons/20-agent-frontier-news/README.md) | 把 agent 前沿资料按日期、体系层和详情组织成可扫描资讯页 |
-| 日期筛选 | [20 Agent 前沿文章库](../lessons/20-agent-frontier-news/README.md) | 按收集日期浏览文章批次，避免长列表失去时间上下文 |
+| 前沿文章库 | [20 Agent 前沿文章库](../lessons/20-agent-frontier-news/README.md) | 把 agent 前沿资料按日期、体系层和文章卡片组织成可扫描资讯页 |
+| 日期筛选 | [20 Agent 前沿文章库](../lessons/20-agent-frontier-news/README.md) | 按原文发布时间浏览文章，避免长列表失去时间上下文 |
 | 体系层筛选 | [20 Agent 前沿文章库](../lessons/20-agent-frontier-news/README.md) | 用八层生态分类快速定位模型、协议、runtime、评测与安全资料 |
-| 文章详情卡 | [20 Agent 前沿文章库](../lessons/20-agent-frontier-news/README.md) | 列表中选中资料后展示摘要、来源、标签和阅读入口 |
+| 文章卡片与原文入口 | [20 Agent 前沿文章库](../lessons/20-agent-frontier-news/README.md) | 文章卡片直接展示摘要、来源、体系层和原文入口 |
 | Plan-and-Execute 架构 | [capstone 毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md) | 先规划拆子问题再多步执行，减少无效工具调用且可审计 |
 | research() 研究主干 | [capstone 毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md) | 规划→检索推理→结构化汇总→成本统计的端到端纯逻辑 |
 | 工具系统 (search/calc/saveNote) | [capstone 毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md) | 工厂函数+闭包注入状态，zod schema 同管描述与校验 |
@@ -1120,6 +1120,13 @@ graph LR
 | [Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory](https://arxiv.org/abs/2504.19413) | arXiv | paper | 19 | 可外挂的记忆层：从对话动态抽取/合并/检索关键信息（含图变体），LOCOMO 上比满上下文省 90%+ token 与延迟，生产记忆的工程权衡样本 |
 | [Letta · Benchmarking AI Agent Memory](https://www.letta.com/blog/benchmarking-ai-agent-memory/) | Letta | blog | 19 | Letta（MemGPT 团队）用基准对比文件系统记忆 vs 各类记忆框架，给「agent 记忆到底该怎么存/取」提供可量化对照 |
 | [Anthropic Engineering · Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) | Anthropic | blog | 19 | 长跑 agent 的上下文工程：跨多个 context window 的 compaction、记忆落盘与首窗特殊 prompt，承接 context engineering 的实操篇 |
+| [OpenAI Agents Python v0.17.5 release notes](https://github.com/openai/openai-agents-python/releases/tag/v0.17.5) | OpenAI | doc | 19 | 官方 release notes：新增可重试 sandbox_tool 错误、MongoDBSession memory 示例与 ModelSettings.truncation，让托管工具、会话存储和上下文截断的工程边界更明确。 |
+| [Microsoft Agent Framework .NET 1.10.0 release notes](https://github.com/microsoft/agent-framework/releases/tag/dotnet-1.10.0) | Microsoft | doc | 19 | 官方 release notes：加入 Authorization Toolbox、Azure AI Foundry deployment docs、上下文 compaction opt-in 与 auto-approval rule 增强，直接影响企业 agent 的授权、部署和长上下文治理。 |
+| [Google ADK Python v1.35.0 release notes](https://github.com/google/adk-python/releases/tag/v1.35.0) | Google | doc | 19 | 官方 release notes：加入 OpenTelemetry 自动 tracing、trajectory evaluator、A2A auth vs input required 区分、history compaction summaries 与 request_input 标准化，适合观察多 agent runtime 的工程收敛方向。 |
+| [StreamMemBench: Towards Better Long-Context Evaluation for Memory Agents](https://arxiv.org/abs/2509.16490) | arXiv | paper | 19 | 提出 streaming long-context benchmark，把 observations、user feedback、knowledge archive 与 follow-up reuse 放到同一条评测线上，适合校正“只看 recall 不看真实复用”的记忆评测偏差。 |
+| [What makes a harness a harness? Model-free foundation for agentic AI](https://arxiv.org/abs/2606.10666) | arXiv | paper | 19 | 把 harness 定义为不依赖模型能力、只负责状态、权限、审批、重试与回放的工程壳层，正好补上『agent framework ≠ harness』这层实践边界。 |
+| [WorkBench Revisited: Towards a Scalable Benchmark for Evaluating Agents in Realistic Enterprise Workflows](https://arxiv.org/abs/2606.13715) | arXiv | paper | 19 | 面向真实企业 workflow 的 agent benchmark，强调 success 之外还要统计 unintended / harmful action，适合补齐 workplace agent 的安全型评测口径。 |
+| [SciAgentArena: Benchmarking Scientific Agents from Paper to Experiment](https://arxiv.org/abs/2508.21126) | arXiv | paper | 19 | 把 scientific agents 的任务从 paper comprehension 拉到 experiment design / execution planning，适合校验研究型 agent 是否真的能从『读』走到『做』。 |
 | [Introducing Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) | anthropic.com | blog | rag-chunk, rag-hybrid, rag-contextual | Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读 |
 | [Okapi BM25 - Wikipedia](https://en.wikipedia.org/wiki/Okapi_BM25) | en.wikipedia.org | doc | rag-hybrid | BM25 打分公式与 k1/b 参数的权威说明，对应本章 BM25Index |
 | [Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods](https://dl.acm.org/doi/10.1145/1571941.1572114) | dl.acm.org | paper | rag-hybrid | RRF 原始论文 (Cormack et al., SIGIR 2009)，混合检索融合法的来源 |

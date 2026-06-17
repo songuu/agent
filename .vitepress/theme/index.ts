@@ -1,5 +1,6 @@
 import DefaultTheme from "vitepress/theme";
 import "./custom.css";
+import "./daily-news-feed";
 import "./demo-runner/client";
 import "./diagram-zoom";
 import "./frontier-article-archive";

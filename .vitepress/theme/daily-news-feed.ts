@@ -1,3 +1,10 @@
+// 每日 AI 资讯展示器（仿 ai.codefather.cn/news）。
+//
+// 读取由 news-collector 自动收集的 Supabase `news_items` 表，渲染为 codefather 风格的
+// 日期时间线 + 体系层筛选。复用第 20 章「前沿文章库」的全套 frontier-* CSS 与 date-filter 纯逻辑。
+//
+// 安全不变量：仅使用公开 anon 配置只读；service_role 永不进前端 bundle。
+
 import { FRONTIER_ECOSYSTEM_LAYERS } from "../../knowledge-graph/data/frontier-ecosystem-layers";
 import type { FrontierEcosystemLayer } from "../../knowledge-graph/data/graph";
 import {
@@ -11,115 +18,98 @@ import {
 } from "./frontier-date-filter";
 
 const WEEKDAY_LABELS = ["一", "二", "三", "四", "五", "六", "日"] as const;
+const DEFAULT_DATE_LABEL = "6月17日 · 周三";
 
 declare const __FRONTIER_SUPABASE_CONFIG__:
-  | {
-      url: string;
-      anonKey: string;
-      schema: string;
-    }
+  | { url: string; anonKey: string; schema: string }
   | null
   | undefined;
 
-interface FrontierArticle {
-  id: string;
-  slug: string;
-  chapterId: string;
-  chapterSlug: string;
+interface NewsItemView {
+  externalId: string;
   title: string;
-  source: string;
   url: string;
-  kind: "paper" | "doc" | "blog" | "video" | "internal";
+  summary: string;
+  sourceName: string;
+  sourceKind: string;
   ecosystemLayer: FrontierEcosystemLayer;
   ecosystemLayerLabel: string;
-  summary: string;
+  /** date-filter helper uses this field as the article date; it is sourced from published_date. */
   collectedDate: string;
-  collectedAt: string;
-  displayDateLabel: string;
+  publishedAt: string | null;
+  publishedDate: string;
+  collectionDate: string;
   readCount: number;
-  sortOrder: number;
   tags: string[];
-  detailParagraphs: string[];
 }
 
-interface FrontierArticleRow {
-  article_id?: unknown;
-  slug?: unknown;
-  chapter_id?: unknown;
-  chapter_slug?: unknown;
+interface NewsItemRow {
+  external_id?: unknown;
   title?: unknown;
-  source?: unknown;
-  source_url?: unknown;
-  kind?: unknown;
+  url?: unknown;
+  summary?: unknown;
+  source_name?: unknown;
+  source_kind?: unknown;
   ecosystem_layer?: unknown;
   ecosystem_layer_label?: unknown;
-  summary?: unknown;
   collected_date?: unknown;
-  collected_at?: unknown;
+  published_date?: unknown;
+  published_at?: unknown;
   read_count?: unknown;
-  sort_order?: unknown;
   tags?: unknown;
-  detail_paragraphs?: unknown;
-  metadata?: unknown;
 }
 
 type LayerFilter = FrontierEcosystemLayer | "all";
 
-const initialized = new WeakSet<HTMLElement>();
-const FRONTIER_CHAPTER_ID = "20";
-const DEFAULT_DATE_LABEL = "6月16日 · 周二";
-const FRONTIER_COLUMNS = [
-  "article_id",
-  "slug",
-  "chapter_id",
-  "chapter_slug",
+const NEWS_COLUMNS = [
+  "external_id",
   "title",
-  "source",
-  "source_url",
-  "kind",
+  "url",
+  "summary",
+  "source_name",
+  "source_kind",
   "ecosystem_layer",
   "ecosystem_layer_label",
-  "summary",
   "collected_date",
-  "collected_at",
+  "published_date",
+  "published_at",
   "read_count",
-  "sort_order",
   "tags",
-  "detail_paragraphs",
-  "metadata",
 ].join(",");
 
+const initialized = new WeakSet<HTMLElement>();
+
 if (typeof window !== "undefined") {
-  installFrontierArticleArchives();
+  installDailyNewsFeeds();
 }
 
-function installFrontierArticleArchives(): void {
-  scanFrontierArticleArchives();
-  const observer = new MutationObserver(() => scanFrontierArticleArchives());
+function installDailyNewsFeeds(): void {
+  scanDailyNewsFeeds();
+  const observer = new MutationObserver(() => scanDailyNewsFeeds());
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
-function scanFrontierArticleArchives(): void {
-  document.querySelectorAll<HTMLElement>("[data-frontier-articles]").forEach((root) => {
+function scanDailyNewsFeeds(): void {
+  document.querySelectorAll<HTMLElement>("[data-daily-news]").forEach((root) => {
     if (initialized.has(root)) return;
     initialized.add(root);
-    createArchive(root);
+    createFeed(root);
   });
 }
 
-function createArchive(root: HTMLElement): void {
+function createFeed(root: HTMLElement): void {
   root.classList.add("frontier-archive-shell");
-  root.replaceChildren(statusBlock("正在读取前沿文章库..."));
+  root.replaceChildren(statusBlock("正在读取每日资讯..."));
 
-  loadFrontierArticlesFromSupabase()
-    .then((articles) => renderArchive(root, articles))
+  loadNewsFromSupabase()
+    .then((items) => renderFeed(root, items))
     .catch((error: unknown) => {
       const message = error instanceof Error ? error.message : String(error);
-      root.replaceChildren(statusBlock(`文章库读取失败：${message}`));
+      root.replaceChildren(statusBlock(`资讯读取失败：${message}`));
     });
 }
 
-async function loadFrontierArticlesFromSupabase(): Promise<FrontierArticle[]> {
+async function loadNewsFromSupabase(): Promise<NewsItemView[]> {
   const config = __FRONTIER_SUPABASE_CONFIG__ ?? null;
   if (!config?.url || !config.anonKey) {
     throw new Error("缺少 NEXT_PUBLIC_SUPABASE_URL 或 NEXT_PUBLIC_SUPABASE_ANON_KEY");
@@ -127,10 +117,10 @@ async function loadFrontierArticlesFromSupabase(): Promise<FrontierArticle[]> {
 
   const baseUrl = config.url.replace(/\/+$/, "");
   const endpoint =
-    `${baseUrl}/rest/v1/frontier_ecosystem_articles` +
-    `?select=${FRONTIER_COLUMNS}` +
-    `&chapter_id=eq.${FRONTIER_CHAPTER_ID}` +
-    "&order=sort_order.asc";
+    `${baseUrl}/rest/v1/news_items` +
+    `?select=${NEWS_COLUMNS}` +
+    "&order=published_date.desc,published_at.desc" +
+    "&limit=500";
   const response = await fetch(endpoint, {
     headers: {
       apikey: config.anonKey,
@@ -145,103 +135,101 @@ async function loadFrontierArticlesFromSupabase(): Promise<FrontierArticle[]> {
   }
 
   const rows = (await response.json()) as unknown;
-  if (!Array.isArray(rows)) {
-    throw new Error("返回数据不是数组");
-  }
+  if (!Array.isArray(rows)) throw new Error("返回数据不是数组");
 
-  return rows.map(normalizeArticleRow).filter((article) => article.title && article.url);
+  return rows.map(normalizeRow).filter((item) => item.title && item.url);
 }
 
-function renderArchive(root: HTMLElement, articles: FrontierArticle[]): void {
+function renderFeed(root: HTMLElement, items: NewsItemView[]): void {
   root.replaceChildren();
 
-  if (articles.length === 0) {
-    root.append(statusBlock("文章库暂无文章。"));
+  if (items.length === 0) {
+    root.append(
+      statusBlock("每日资讯暂无数据。先运行 news-collector（pnpm news:collect）或导入 news_items seed。"),
+    );
     return;
   }
 
   let selectedLayer: LayerFilter = "all";
-  let selectedDate: string | null = pickDefaultDate(articles);
+  let selectedDate: string | null = pickDefaultDate(items);
   let calendarMonth: YearMonth =
-    yearMonthOf(selectedDate) ?? yearMonthOf(availableDates(articles)[0] ?? null) ?? { year: 2026, month: 6 };
-
-  const filters = document.createElement("nav");
-  filters.className = "frontier-layer-tabs";
-  filters.setAttribute("aria-label", "前沿文章体系层");
-
-  const filterBoard = document.createElement("section");
-  filterBoard.className = "frontier-filter-board";
-  filterBoard.setAttribute("aria-label", "文章筛选器");
-
-  const layerFilterGroup = document.createElement("div");
-  layerFilterGroup.className = "frontier-filter-group";
-  const layerTitle = document.createElement("strong");
-  layerTitle.className = "frontier-filter-title";
-  layerTitle.textContent = "按体系层筛选";
-
-  const calendar = document.createElement("section");
-  calendar.className = "frontier-calendar";
-  calendar.setAttribute("aria-label", "按日期筛选前沿文章");
-
-  const timeline = document.createElement("section");
-  timeline.className = "frontier-article-timeline";
-  timeline.setAttribute("aria-label", "前沿文章列表");
+    yearMonthOf(selectedDate) ?? yearMonthOf(availableDates(items)[0] ?? null) ?? { year: 2026, month: 6 };
 
   const overview = document.createElement("header");
   overview.className = "frontier-news-hero";
-  overview.setAttribute("aria-label", "前沿文章库概览");
-
   const titleGroup = document.createElement("div");
   titleGroup.className = "frontier-news-title";
   const eyebrow = document.createElement("p");
-  eyebrow.textContent = "Agent Frontier News";
+  eyebrow.textContent = "Agent Frontier News · 自动收集";
   const title = document.createElement("h2");
-  title.textContent = "前沿文章库";
+  title.textContent = "AI 前沿文章";
   const description = document.createElement("p");
-  description.textContent = "按日期和体系层筛选 agent 前沿资料；每条文章保留摘要、来源、体系层和原文入口。";
+  description.textContent =
+    "由 news-collector 从多源 RSS 聚合；按发布时间与体系层筛选，每条保留来源、摘要与原文入口。";
   titleGroup.append(eyebrow, title, description);
 
   const stats = document.createElement("div");
   stats.className = "frontier-news-stats";
   stats.append(
-    statItem(String(articles.length), "资料"),
-    statItem(String(groupArticlesByDate(articles).length), "日期"),
-    statItem(String(new Set(articles.map((article) => article.ecosystemLayer)).size), "体系层"),
+    statItem(String(items.length), "文章"),
+    statItem(String(availableDates(items).length), "日期"),
+    statItem(String(new Set(items.map((i) => i.ecosystemLayer)).size), "体系层"),
+    statItem(String(new Set(items.map((i) => i.sourceName)).size), "来源"),
   );
   overview.append(titleGroup, stats);
 
-  const layout = document.createElement("div");
-  layout.className = "frontier-news-layout";
+  const filters = document.createElement("nav");
+  filters.className = "frontier-layer-tabs";
+  filters.setAttribute("aria-label", "资讯体系层");
+
+  const calendar = document.createElement("section");
+  calendar.className = "frontier-calendar";
+  calendar.setAttribute("aria-label", "按日期筛选文章");
+
+  const timeline = document.createElement("section");
+  timeline.className = "frontier-article-timeline";
+  timeline.setAttribute("aria-label", "文章列表");
+
+  const layerTitle = document.createElement("strong");
+  layerTitle.className = "frontier-filter-title";
+  layerTitle.textContent = "按体系层筛选";
+  const layerFilterGroup = document.createElement("div");
+  layerFilterGroup.className = "frontier-filter-group";
+
+  const filterBoard = document.createElement("section");
+  filterBoard.className = "frontier-filter-board";
+
   const listPanel = document.createElement("section");
   listPanel.className = "frontier-news-list-panel";
-  listPanel.setAttribute("aria-label", "文章列表");
 
-  function layerScopedArticles(layer: LayerFilter = selectedLayer): FrontierArticle[] {
-    if (layer === "all") return articles;
-    return articles.filter((article) => article.ecosystemLayer === layer);
+  const layout = document.createElement("div");
+  layout.className = "frontier-news-layout";
+
+  function layerScoped(layer: LayerFilter = selectedLayer): NewsItemView[] {
+    if (layer === "all") return items;
+    return items.filter((item) => item.ecosystemLayer === layer);
   }
 
-  function visibleArticles(): FrontierArticle[] {
-    return filterByDate(layerScopedArticles(), selectedDate);
+  function visible(): NewsItemView[] {
+    return filterByDate(layerScoped(), selectedDate);
   }
 
   function layerCount(layer: LayerFilter): number {
-    return filterByDate(layerScopedArticles(layer), selectedDate).length;
+    return filterByDate(layerScoped(layer), selectedDate).length;
+  }
+
+  function dateCount(date: string): number {
+    return layerScoped().filter((item) => item.collectedDate.slice(0, 10) === date).length;
   }
 
   function selectedDateLabel(): string {
     if (selectedDate === null) return "全部日期";
-    const hit = articles.find((article) => article.collectedDate.slice(0, 10) === selectedDate);
-    return hit?.displayDateLabel ?? formatChineseDateLabel(selectedDate);
-  }
-
-  function dateCount(date: string): number {
-    return layerScopedArticles().filter((article) => article.collectedDate.slice(0, 10) === date).length;
+    return formatChineseDateLabel(selectedDate);
   }
 
   function alignDateToLayer(): void {
     if (selectedDate === null) return;
-    const dates = availableDates(layerScopedArticles());
+    const dates = availableDates(layerScoped());
     if (dates.includes(selectedDate)) return;
     selectedDate = dates[0] ?? null;
     const nextMonth = yearMonthOf(selectedDate);
@@ -256,19 +244,18 @@ function renderArchive(root: HTMLElement, articles: FrontierArticle[]): void {
 
   function renderFilters(): void {
     filters.replaceChildren();
-    const filterEntries: Array<{ id: LayerFilter; label: string }> = [
+    const entries: Array<{ id: LayerFilter; label: string }> = [
       { id: "all", label: "全部体系" },
       ...FRONTIER_ECOSYSTEM_LAYERS.map((layer) => ({ id: layer.id, label: layer.label })),
     ];
-
-    for (const filter of filterEntries) {
+    for (const entry of entries) {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "frontier-layer-tab";
-      if (filter.id === selectedLayer) button.dataset.active = "true";
-      button.textContent = `${filter.label} ${layerCount(filter.id)}`;
+      if (entry.id === selectedLayer) button.dataset.active = "true";
+      button.textContent = `${entry.label} ${layerCount(entry.id)}`;
       button.addEventListener("click", () => {
-        selectedLayer = filter.id;
+        selectedLayer = entry.id;
         alignDateToLayer();
         renderAll();
       });
@@ -278,13 +265,13 @@ function renderArchive(root: HTMLElement, articles: FrontierArticle[]): void {
 
   function renderCalendar(): void {
     calendar.replaceChildren();
+    const contentDates = new Set(availableDates(layerScoped()));
 
-    const contentDates = new Set(availableDates(layerScopedArticles()));
     const head = document.createElement("div");
     head.className = "frontier-cal-head";
-    const title = document.createElement("strong");
-    title.className = "frontier-cal-title";
-    title.textContent = "按日期筛选文章";
+    const calTitle = document.createElement("strong");
+    calTitle.className = "frontier-cal-title";
+    calTitle.textContent = "按日期筛选文章";
     const nav = document.createElement("div");
     nav.className = "frontier-cal-nav";
     const prev = calNavButton("‹", "上个月", () => {
@@ -299,11 +286,11 @@ function renderArchive(root: HTMLElement, articles: FrontierArticle[]): void {
       renderCalendar();
     });
     nav.append(prev, label, next);
-    head.append(title, nav);
+    head.append(calTitle, nav);
 
     const current = document.createElement("p");
     current.className = "frontier-cal-current";
-    current.textContent = `${selectedDateLabel()} · ${visibleArticles().length} 篇`;
+    current.textContent = `${selectedDateLabel()} · ${visible().length} 篇`;
 
     const weekdays = document.createElement("div");
     weekdays.className = "frontier-cal-weekdays";
@@ -327,18 +314,16 @@ function renderArchive(root: HTMLElement, articles: FrontierArticle[]): void {
           button.dataset.hasContent = "true";
           button.title = `${cell.date} · ${count} 篇`;
           button.setAttribute("aria-label", `查看 ${cell.date} 的 ${count} 篇文章`);
-        } else {
-          button.disabled = true;
-        }
-        if (cell.date === selectedDate) button.dataset.active = "true";
-        if (cell.hasContent) {
           button.addEventListener("click", () => {
             selectedDate = cell.date;
             const nextMonth = yearMonthOf(cell.date);
             if (nextMonth) calendarMonth = nextMonth;
             renderAll();
           });
+        } else {
+          button.disabled = true;
         }
+        if (cell.date === selectedDate) button.dataset.active = "true";
         grid.append(button);
       }
     }
@@ -346,7 +331,7 @@ function renderArchive(root: HTMLElement, articles: FrontierArticle[]): void {
     const all = document.createElement("button");
     all.type = "button";
     all.className = "frontier-cal-all";
-    all.textContent = `全部日期 (${layerScopedArticles().length})`;
+    all.textContent = `全部日期 (${layerScoped().length})`;
     if (selectedDate === null) all.dataset.active = "true";
     all.addEventListener("click", () => {
       selectedDate = null;
@@ -358,9 +343,8 @@ function renderArchive(root: HTMLElement, articles: FrontierArticle[]): void {
 
   function renderTimeline(): void {
     timeline.replaceChildren();
-    const visible = visibleArticles();
-
-    if (visible.length === 0) {
+    const rows = visible();
+    if (rows.length === 0) {
       const empty = document.createElement("p");
       empty.className = "frontier-timeline-empty";
       empty.textContent = "该筛选条件下暂无文章。";
@@ -369,10 +353,9 @@ function renderArchive(root: HTMLElement, articles: FrontierArticle[]): void {
     }
 
     let rank = 1;
-    for (const group of groupArticlesByDate(visible)) {
+    for (const group of groupByDate(rows)) {
       const section = document.createElement("section");
       section.className = "frontier-date-section";
-
       const dateHeader = document.createElement("div");
       dateHeader.className = "frontier-timeline-date";
       const triangle = document.createElement("span");
@@ -380,16 +363,15 @@ function renderArchive(root: HTMLElement, articles: FrontierArticle[]): void {
       const dateText = document.createElement("strong");
       dateText.textContent = group.label;
       const count = document.createElement("em");
-      count.textContent = `${group.articles.length} 篇`;
+      count.textContent = `${group.items.length} 篇`;
       dateHeader.append(triangle, dateText, count);
 
       const list = document.createElement("div");
       list.className = "frontier-timeline-list";
-      for (const article of group.articles) {
-        list.append(articleCard(article, rank));
+      for (const item of group.items) {
+        list.append(newsCard(item, rank));
         rank += 1;
       }
-
       section.append(dateHeader, list);
       timeline.append(section);
     }
@@ -413,12 +395,12 @@ function calNavButton(symbol: string, label: string, onClick: () => void): HTMLB
   return button;
 }
 
-function articleCard(article: FrontierArticle, rankNumber: number): HTMLElement {
+function newsCard(item: NewsItemView, rankNumber: number): HTMLElement {
   const card = document.createElement("article");
   card.className = "frontier-timeline-item";
   card.tabIndex = 0;
   card.setAttribute("role", "link");
-  card.setAttribute("aria-label", `打开原文：${article.title}`);
+  card.setAttribute("aria-label", `打开原文：${item.title}`);
 
   const marker = document.createElement("span");
   marker.className = "frontier-timeline-marker";
@@ -434,111 +416,81 @@ function articleCard(article: FrontierArticle, rankNumber: number): HTMLElement 
   rank.textContent = String(rankNumber).padStart(2, "0");
   const kind = document.createElement("span");
   kind.className = "frontier-timeline-kind";
-  kind.textContent = article.kind;
+  kind.textContent = item.sourceKind;
   cardHead.append(rank, kind);
 
   const title = document.createElement("h3");
   title.className = "frontier-timeline-title";
-  title.textContent = article.title;
+  title.textContent = item.title;
 
   const excerpt = document.createElement("p");
   excerpt.className = "frontier-timeline-excerpt";
-  excerpt.textContent = article.summary;
+  excerpt.textContent = item.summary;
 
   const meta = document.createElement("div");
   meta.className = "frontier-timeline-meta";
   const source = document.createElement("span");
   source.className = "frontier-timeline-source";
-  source.textContent = article.source;
+  source.textContent = item.sourceName;
   const layer = document.createElement("span");
   layer.className = "frontier-timeline-layer";
-  layer.textContent = article.ecosystemLayerLabel;
-  const readCount = document.createElement("span");
-  readCount.className = "frontier-timeline-count";
-  readCount.textContent = `阅读 ${article.readCount}`;
+  layer.textContent = item.ecosystemLayerLabel;
   const read = document.createElement("a");
   read.className = "frontier-timeline-read";
-  read.href = article.url;
+  read.href = item.url;
   read.target = "_blank";
   read.rel = "noreferrer";
   read.textContent = "原文";
-  meta.append(source, layer, readCount, read);
+  meta.append(source, layer, read);
 
   content.append(cardHead, title, excerpt, meta);
   card.append(marker, content);
   card.addEventListener("click", (event) => {
     if (event.target instanceof Element && event.target.closest("a")) return;
-    window.open(article.url, "_blank", "noopener,noreferrer");
+    window.open(item.url, "_blank", "noopener,noreferrer");
   });
   card.addEventListener("keydown", (event) => {
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
-    window.open(article.url, "_blank", "noopener,noreferrer");
+    window.open(item.url, "_blank", "noopener,noreferrer");
   });
-
   return card;
 }
 
-function groupArticlesByDate(articles: FrontierArticle[]): Array<{
-  date: string;
-  label: string;
-  articles: FrontierArticle[];
-}> {
-  const groups = new Map<string, { date: string; label: string; articles: FrontierArticle[] }>();
-
-  for (const article of articles) {
-    const date = article.collectedDate.slice(0, 10);
-    const key = date || "unknown";
+function groupByDate(items: NewsItemView[]): Array<{ date: string; label: string; items: NewsItemView[] }> {
+  const groups = new Map<string, { date: string; label: string; items: NewsItemView[] }>();
+  for (const item of items) {
+    const key = item.collectedDate.slice(0, 10) || "unknown";
     const existing = groups.get(key);
     if (existing) {
-      existing.articles.push(article);
+      existing.items.push(item);
       continue;
     }
-
-    groups.set(key, {
-      date: key,
-      label: article.displayDateLabel || formatChineseDateLabel(key),
-      articles: [article],
-    });
+    groups.set(key, { date: key, label: formatChineseDateLabel(key), items: [item] });
   }
-
   return [...groups.values()].sort((left, right) => right.date.localeCompare(left.date));
 }
 
-function normalizeArticleRow(row: FrontierArticleRow): FrontierArticle {
-  const collectedDate = stringValue(row.collected_date, "2026-06-17");
-  const collectedAt = stringValue(row.collected_at, `${collectedDate}T09:00:00+08:00`);
+function normalizeRow(row: NewsItemRow): NewsItemView {
+  const collectionDate = stringValue(row.collected_date, "2026-06-17");
+  const publishedAt = typeof row.published_at === "string" ? row.published_at : null;
+  const publishedDate = dateStringValue(row.published_date, publishedAt?.slice(0, 10) ?? collectionDate);
   const layer = layerValue(row.ecosystem_layer);
-  const source = stringValue(row.source, "未知来源");
-  const summary = stringValue(row.summary, "");
-  const detailParagraphs = stringArrayValue(row.detail_paragraphs);
-
   return {
-    id: stringValue(row.article_id, ""),
-    slug: stringValue(row.slug, ""),
-    chapterId: stringValue(row.chapter_id, FRONTIER_CHAPTER_ID),
-    chapterSlug: stringValue(row.chapter_slug, "20-agent-frontier-news"),
+    externalId: stringValue(row.external_id, ""),
     title: stringValue(row.title, ""),
-    source,
-    url: stringValue(row.source_url, ""),
-    kind: kindValue(row.kind),
+    url: stringValue(row.url, ""),
+    summary: stringValue(row.summary, ""),
+    sourceName: stringValue(row.source_name, "未知来源"),
+    sourceKind: stringValue(row.source_kind, "news"),
     ecosystemLayer: layer,
     ecosystemLayerLabel: stringValue(row.ecosystem_layer_label, layerLabel(layer)),
-    summary,
-    collectedDate,
-    collectedAt,
-    displayDateLabel: displayDateLabel(row.metadata, collectedDate),
+    collectedDate: publishedDate,
+    publishedAt,
+    publishedDate,
+    collectionDate,
     readCount: numberValue(row.read_count, 0),
-    sortOrder: numberValue(row.sort_order, 0),
     tags: stringArrayValue(row.tags),
-    detailParagraphs:
-      detailParagraphs.length > 0
-        ? detailParagraphs
-        : [
-            summary || "本条资料用于补充第 20 章 Agent 前沿文章库的选型与趋势判断。",
-            `体系层：${layerLabel(layer)}。来源：${source}。`,
-            "查看原文可以进一步核对发布日期、API 细节、协议术语与实现边界。",
-          ],
   };
 }
 
@@ -557,6 +509,10 @@ function stringValue(value: unknown, fallback: string): string {
   return typeof value === "string" && value.trim() ? value : fallback;
 }
 
+function dateStringValue(value: unknown, fallback: string): string {
+  return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : fallback;
+}
+
 function numberValue(value: unknown, fallback: number): number {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
@@ -564,13 +520,6 @@ function numberValue(value: unknown, fallback: number): number {
 function stringArrayValue(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
-}
-
-function kindValue(value: unknown): FrontierArticle["kind"] {
-  if (value === "paper" || value === "doc" || value === "blog" || value === "video" || value === "internal") {
-    return value;
-  }
-  return "doc";
 }
 
 function layerValue(value: unknown): FrontierEcosystemLayer {
@@ -582,14 +531,6 @@ function layerValue(value: unknown): FrontierEcosystemLayer {
 
 function layerLabel(layer: FrontierEcosystemLayer): string {
   return FRONTIER_ECOSYSTEM_LAYERS.find((item) => item.id === layer)?.label ?? layer;
-}
-
-function displayDateLabel(metadata: unknown, collectedDate: string): string {
-  if (metadata && typeof metadata === "object" && "displayDateLabel" in metadata) {
-    const label = (metadata as { displayDateLabel?: unknown }).displayDateLabel;
-    if (typeof label === "string" && label.trim()) return label;
-  }
-  return formatChineseDateLabel(collectedDate);
 }
 
 function formatChineseDateLabel(value: string): string {

@@ -1,0 +1,31 @@
+# systemd 单元模板：AI 资讯定时收集器常驻服务。
+#
+# 安装：
+#   1) 把仓库部署到 /opt/agent-build（或改下方 WorkingDirectory）
+#   2) 在仓库根创建 .env（含 SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY），chmod 600 .env
+#   3) sudo cp news-collector/deploy/news-collector.service /etc/systemd/system/
+#   4) sudo systemctl daemon-reload && sudo systemctl enable --now news-collector
+#   5) journalctl -u news-collector -f   # 看日志
+#
+# 注意：--env-file=.env 由 Node 原生加载（dotenv 风格），无需额外 EnvironmentFile。
+
+[Unit]
+Description=AI News Collector (agent-build) — scheduled multi-source RSS aggregation
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/agent-build
+# 按实际 node 路径调整（which node）。tsx 直跑 TS。
+ExecStart=/usr/bin/node node_modules/tsx/dist/cli.mjs --env-file=.env news-collector/src/cron.ts
+Restart=always
+RestartSec=10
+# 用低权限用户运行；确保该用户可读 /opt/agent-build 与 .env。
+User=www-data
+Group=www-data
+StandardOutput=append:/var/log/news-collector.log
+StandardError=append:/var/log/news-collector.err.log
+
+[Install]
+WantedBy=multi-user.target

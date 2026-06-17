@@ -42,7 +42,7 @@
 | 17 | 生产化 | [安全与护栏](../lessons/17-safety-and-guardrails/README.md) | prompt injection、防护分层、人工确认 |
 | 18 | 生产化 | [部署：变成服务](../lessons/18-deployment/README.md) | HTTP API、SSE、timeout、并发、部署清单 |
 | 19 | 前沿与生态 | [Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | MCP、A2A、Agents SDK、生态选型 |
-| 20 | 前沿与生态 | [Agent 前沿文章库](../lessons/20-agent-frontier-news/README.md) | 日期筛选、体系层列表、文章详情、原文追踪 |
+| 20 | 前沿与生态 | [Agent 前沿文章库](../lessons/20-agent-frontier-news/README.md) | 日期筛选、体系层列表、文章卡片、原文追踪 |
 | 🎓 | 综合实战 | [Deep Research Agent](../capstone/deep-research-agent/README.md) | 工具、RAG、多智能体、评估、护栏端到端整合 |
 | 🎓 | 综合实战 | [客服 Copilot](../capstone/support-copilot/README.md) | 记忆、RAG、工具、HITL 审批、注入/PII 安全、成本可观测的纵深防御管线（离线可跑） |
 | 🎓 | 综合实战 | [代码评审团](../capstone/code-review-crew/README.md) | 多智能体并行评审、结构化发现、严重度排序、critical 即 BLOCK 的评审门（离线可跑） |

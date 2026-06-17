@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>量子位</title>
+    <link>https://www.qbitai.com</link>
+    <description>AI 前沿资讯（离线测试 fixture）</description>
+    <item>
+      <title>Anthropic 发布 Claude 新模型，上下文窗口大幅扩展</title>
+      <link>https://www.qbitai.com/2026/06/anthropic-claude.html</link>
+      <guid>https://www.qbitai.com/2026/06/anthropic-claude.html</guid>
+      <pubDate>Tue, 16 Jun 2026 13:23:06 +0000</pubDate>
+      <description><![CDATA[<p>Anthropic 正式发布新一代 Claude 模型，主打更长上下文与更稳的工具调用。</p>]]></description>
+    </item>
+    <item>
+      <title>MCP 协议迎来重大更新，跨厂商互操作性增强</title>
+      <link>https://www.qbitai.com/2026/06/mcp-update.html</link>
+      <guid>https://www.qbitai.com/2026/06/mcp-update.html</guid>
+      <pubDate>Tue, 16 Jun 2026 10:36:35 +0000</pubDate>
+      <description><![CDATA[<p>Model Context Protocol 发布新版本，强化授权与多客户端互操作。</p>]]></description>
+    </item>
+    <item>
+      <title>RAG 检索增强与向量记忆实战解析</title>
+      <link>https://www.qbitai.com/2026/06/rag-memory.html</link>
+      <guid>https://www.qbitai.com/2026/06/rag-memory.html</guid>
+      <pubDate>Mon, 15 Jun 2026 09:10:00 +0000</pubDate>
+      <description><![CDATA[<p>从 retrieval 到向量 memory，系统拆解 RAG 检索增强链路。</p>]]></description>
+    </item>
+  </channel>
+</rss>

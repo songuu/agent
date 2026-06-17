@@ -126,8 +126,6 @@ function upgradeMermaidDiagram(diagram: HTMLElement): void {
   parent.insertBefore(viewport, diagram);
   viewport.append(toolbar, surface);
   surface.append(content);
-  diagram.hidden = true;
-  diagram.setAttribute("aria-hidden", "true");
 
   const syncDiagramContent = () => {
     const sourceSvg = diagram.querySelector<SVGSVGElement>("svg");
@@ -136,7 +134,12 @@ function upgradeMermaidDiagram(diagram: HTMLElement): void {
     normalizeDiagramSvgSize(content);
     return true;
   };
-  if (!syncDiagramContent()) return;
+  if (!syncDiagramContent()) {
+    viewport.remove();
+    return;
+  }
+  diagram.hidden = true;
+  diagram.setAttribute("aria-hidden", "true");
   expandButton.addEventListener("click", () => openDiagramOverlay(content));
 
   const state: ZoomState = { scale: 1, x: 0, y: 0 };
@@ -432,6 +435,7 @@ function normalizeDiagramSvgSize(diagram: HTMLElement): void {
   svg.style.height = `${Math.ceil(bounds.height)}px`;
   svg.style.maxWidth = "none";
   svg.style.overflow = "hidden";
+  svg.dataset.diagramZoomNormalized = "true";
 }
 
 function expandSvgViewBoxToVisibleBounds(
@@ -584,6 +588,10 @@ function getDiagramBounds(diagram: HTMLElement): DiagramBounds {
   const svg = diagram.querySelector<SVGSVGElement>("svg");
   const svgRect = svg?.getBoundingClientRect();
   const viewBox = svg?.viewBox.baseVal;
+
+  if (svg?.dataset.diagramZoomNormalized === "true" && svgRect && svgRect.width > 0 && svgRect.height > 0) {
+    return { x: 0, y: 0, width: svgRect.width, height: svgRect.height };
+  }
 
   const visibleBounds = getVisibleSvgBounds(svg, svgRect, viewBox);
   if (visibleBounds) return visibleBounds;

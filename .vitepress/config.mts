@@ -233,7 +233,13 @@ export default withMermaid(
     title: "Agent 从零到上框架",
     description: "面向初学者的 AI Agent 开发完整学习路径：纯 TypeScript 手写每个零件，再上框架，进阶 RAG，直到可部署服务。",
     srcDir: ".",
-    srcExclude: ["docs/plans/**", "docs/DEPLOYMENT.md", "README.md", "**/node_modules/**"],
+    srcExclude: [
+      "docs/plans/**",
+      "docs/DEPLOYMENT.md",
+      "README.md",
+      "news-collector/**",
+      "**/node_modules/**",
+    ],
     cleanUrls: true,
     lastUpdated: true,
     ignoreDeadLinks: true,
@@ -355,6 +361,7 @@ export default withMermaid(
       nav: [
         { text: "开始学习", link: "/docs/setup" },
         { text: "课程总览", link: "/docs/navigation" },
+        { text: "AI 资讯", link: "/news/" },
         {
           text: "知识图谱",
           items: [
