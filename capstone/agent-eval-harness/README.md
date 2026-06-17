@@ -282,7 +282,7 @@ graph TB
 
 ### 延伸阅读
 
-_暂无（可在 `graph.ts` 的 `ARTICLES` 中新增本章关联文章）。_
+- [OpenAI Docs · Evaluate agent workflows](https://developers.openai.com/api/docs/guides/agent-evals) — OpenAI 官方 agent workflow eval 指南，对应第 19 章评估治理层 `doc`
 
 > 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
 

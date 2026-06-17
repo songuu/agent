@@ -189,6 +189,14 @@ export const CONCEPT_VISUALS: ConceptVisual[] = [
     takeaway: "生态地图的价值，是帮你判断该买哪层、手写哪层。",
   },
   {
+    chapter: "20",
+    kind: "pipeline",
+    title: "前沿文章库把外部资料整理成可追溯阅读流",
+    summary: "资料先按生态层分类，再按收集日期进入列表；选中条目后用详情卡保留摘要、来源、标签和原文入口。",
+    steps: ["Collect", "Layer", "Date", "List", "Detail", "Read"],
+    takeaway: "文章库不是堆链接，而是把资料变成可筛选、可回看的学习证据。",
+  },
+  {
     chapter: "capstone",
     kind: "pipeline",
     title: "毕业项目把课程能力串成研究流水线",
@@ -427,6 +435,10 @@ const CONCEPT_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> =
     { tone: "core", label: "核心判断", body: "Agent 生态要按层拆：模型、工具、协议、SDK、运行时、治理和部署各管一段。" },
     { tone: "warning", label: "易错边界", body: "不要从名词堆栈出发选型；先从产品需求反推必须购买或自建的层。" },
   ],
+  "20": [
+    { tone: "core", label: "核心判断", body: "前沿文章库要服务阅读路径：先按日期和体系层定位，再用详情卡核对摘要、来源和原文。" },
+    { tone: "warning", label: "易错边界", body: "不要让文章归档挤在教学章里；教学内容讲判断框架，文章库承载持续更新的外部证据。" },
+  ],
   capstone: [
     { tone: "core", label: "核心判断", body: "毕业项目是端到端验收：规划、检索、工具、结构化报告、引用和成本要串起来。" },
     { tone: "warning", label: "易错边界", body: "不要只追求能跑；要看报告是否有来源、步骤是否可观测、失败是否能定位。" },
@@ -514,8 +526,9 @@ export function getConceptHighlights(chapter: string): readonly ConceptHighlight
 }
 
 export function getConceptReferences(chapter: string): readonly ConceptReference[] {
+  const referenceChapter = chapter === "20" ? "19" : chapter;
   return ARTICLES
-    .filter((article) => article.chapters.includes(chapter) && article.kind !== "internal")
+    .filter((article) => article.chapters.includes(referenceChapter) && article.kind !== "internal")
     .slice(0, 3)
     .map((article) => ({
       title: article.title,

@@ -11,7 +11,7 @@
 // 用法：
 //   tsx --env-file=.env scripts/push-frontier-ecosystem-to-supabase.ts
 
-import { FRONTIER_ARTICLES } from "../knowledge-graph/data/frontier-articles";
+import { FRONTIER_ARTICLES } from "../knowledge-graph/data/frontier-articles.ts";
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -47,6 +47,12 @@ async function main(): Promise<void> {
       displayDateLabel: article.displayDateLabel,
       originalKind: article.kind,
       ecosystemLayer: article.ecosystemLayer,
+      publishedAt: article.publishedAt ?? null,
+      author: article.author ?? null,
+      institution: article.institution ?? null,
+      applicableModules: article.applicableModules,
+      confidence: article.confidence ?? null,
+      credibilityNote: article.credibilityNote ?? null,
     },
   }));
 

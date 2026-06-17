@@ -268,7 +268,7 @@ graph TB
 
 ### 延伸阅读
 
-_暂无（可在 `graph.ts` 的 `ARTICLES` 中新增本章关联文章）。_
+- [OpenAI Agents SDK · Orchestration and handoffs](https://developers.openai.com/api/docs/guides/agents/orchestration) — OpenAI 官方 Agents SDK 编排文档：handoff 与 agent-as-tool 的选择边界 `doc`
 
 > 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
 

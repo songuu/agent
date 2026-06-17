@@ -203,6 +203,10 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 7. 工具执行报错时，为什么**不直接抛异常**，而要把错误回传给模型？（→ 06）
 8. 什么场景下多 agent 比单 agent 更好？多 agent 的**主要代价**是什么、如何权衡？（→ 11）
 9. 什么场景**不该**用 Agent？（反向考察判断力，→ 01）
+10. 评测 computer-use / workplace agent 时，为什么不能只看任务成功率？`unintended / harmful action` 指标分别在兜什么风险？（→ 15 / 17 / 19）
+11. 长期记忆 agent 为何不能只测 recall？为什么 `observation stream / user feedback / knowledge archive / follow-up reuse` 要分开评估？（→ 07 / 15 / 19）
+12. 什么是 agent harness？它和 agent framework / SDK 的边界怎么划？为什么审批、重试、回放、权限壳层最好放在 harness 而不是模型里？（→ 04 / 12 / 16 / 19）
+13. Agent runtime / tool 协议升级时，为什么要单独审查 `auth-required vs input-required`、`history compaction`、`auto-approval` 规则和 tracing 注入边界？（→ 05 / 11 / 17 / 18 / 19）
 
 ### C. 项目深挖类（考你是不是真做过）
 

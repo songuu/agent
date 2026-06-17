@@ -66,7 +66,7 @@ interface FrontierArticleRow {
 type LayerFilter = FrontierEcosystemLayer | "all";
 
 const initialized = new WeakSet<HTMLElement>();
-const FRONTIER_CHAPTER_ID = "19";
+const FRONTIER_CHAPTER_ID = "20";
 const DEFAULT_DATE_LABEL = "6月16日 · 周二";
 const FRONTIER_COLUMNS = [
   "article_id",
@@ -109,13 +109,13 @@ function scanFrontierArticleArchives(): void {
 
 function createArchive(root: HTMLElement): void {
   root.classList.add("frontier-archive-shell");
-  root.replaceChildren(statusBlock("正在从 Supabase 读取文章..."));
+  root.replaceChildren(statusBlock("正在读取前沿文章库..."));
 
   loadFrontierArticlesFromSupabase()
     .then((articles) => renderArchive(root, articles))
     .catch((error: unknown) => {
       const message = error instanceof Error ? error.message : String(error);
-      root.replaceChildren(statusBlock(`Supabase 读取失败：${message}`));
+      root.replaceChildren(statusBlock(`文章库读取失败：${message}`));
     });
 }
 
@@ -156,7 +156,7 @@ function renderArchive(root: HTMLElement, articles: FrontierArticle[]): void {
   root.replaceChildren();
 
   if (articles.length === 0) {
-    root.append(statusBlock("Supabase 暂无文章。"));
+    root.append(statusBlock("文章库暂无文章。"));
     return;
   }
 
@@ -174,18 +174,50 @@ function renderArchive(root: HTMLElement, articles: FrontierArticle[]): void {
 
   const filters = document.createElement("nav");
   filters.className = "frontier-layer-tabs";
-  filters.setAttribute("aria-label", "前沿与生态文章体系层");
+  filters.setAttribute("aria-label", "前沿文章体系层");
 
   const calendar = document.createElement("section");
   calendar.className = "frontier-calendar";
-  calendar.setAttribute("aria-label", "按日期筛选前沿与生态文章");
+  calendar.setAttribute("aria-label", "按日期筛选前沿文章");
 
   const detail = document.createElement("article");
   detail.className = "frontier-article-detail";
 
   const timeline = document.createElement("section");
   timeline.className = "frontier-article-timeline";
-  timeline.setAttribute("aria-label", "前沿与生态文章时间线");
+  timeline.setAttribute("aria-label", "前沿文章列表");
+
+  const overview = document.createElement("header");
+  overview.className = "frontier-news-hero";
+  overview.setAttribute("aria-label", "前沿文章库概览");
+
+  const titleGroup = document.createElement("div");
+  titleGroup.className = "frontier-news-title";
+  const eyebrow = document.createElement("p");
+  eyebrow.textContent = "Agent Frontier News";
+  const title = document.createElement("h2");
+  title.textContent = "前沿文章库";
+  const description = document.createElement("p");
+  description.textContent = "按日期与体系层浏览 agent 前沿资料，选中列表条目即可查看摘要、来源、标签和原文入口。";
+  titleGroup.append(eyebrow, title, description);
+
+  const stats = document.createElement("div");
+  stats.className = "frontier-news-stats";
+  stats.append(
+    statItem(String(articles.length), "资料"),
+    statItem(String(contentDates.size), "日期"),
+    statItem(String(new Set(articles.map((article) => article.ecosystemLayer)).size), "体系层"),
+  );
+  overview.append(titleGroup, stats);
+
+  const layout = document.createElement("div");
+  layout.className = "frontier-news-layout";
+  const listPanel = document.createElement("section");
+  listPanel.className = "frontier-news-list-panel";
+  listPanel.setAttribute("aria-label", "文章列表");
+  const sidePanel = document.createElement("aside");
+  sidePanel.className = "frontier-news-side-panel";
+  sidePanel.setAttribute("aria-label", "日期筛选与文章详情");
 
   const dateHeader = document.createElement("div");
   dateHeader.className = "frontier-timeline-date";
@@ -439,7 +471,10 @@ function renderArchive(root: HTMLElement, articles: FrontierArticle[]): void {
 
   timeline.append(dateHeader, list);
   renderAll();
-  root.append(filters, calendar, detail, timeline);
+  listPanel.append(filters, timeline);
+  sidePanel.append(calendar, detail);
+  layout.append(listPanel, sidePanel);
+  root.append(overview, layout);
 }
 
 /** 日历月份导航的小箭头按钮。 */
@@ -454,7 +489,7 @@ function calNavButton(symbol: string, label: string, onClick: () => void): HTMLB
 }
 
 function normalizeArticleRow(row: FrontierArticleRow): FrontierArticle {
-  const collectedDate = stringValue(row.collected_date, "2026-06-16");
+  const collectedDate = stringValue(row.collected_date, "2026-06-17");
   const collectedAt = stringValue(row.collected_at, `${collectedDate}T09:00:00+08:00`);
   const layer = layerValue(row.ecosystem_layer);
   const source = stringValue(row.source, "未知来源");
@@ -465,7 +500,7 @@ function normalizeArticleRow(row: FrontierArticleRow): FrontierArticle {
     id: stringValue(row.article_id, ""),
     slug: stringValue(row.slug, ""),
     chapterId: stringValue(row.chapter_id, FRONTIER_CHAPTER_ID),
-    chapterSlug: stringValue(row.chapter_slug, "19-agent-ecosystem-and-frontier"),
+    chapterSlug: stringValue(row.chapter_slug, "20-agent-frontier-news"),
     title: stringValue(row.title, ""),
     source,
     url: stringValue(row.source_url, ""),
@@ -483,11 +518,22 @@ function normalizeArticleRow(row: FrontierArticleRow): FrontierArticle {
       detailParagraphs.length > 0
         ? detailParagraphs
         : [
-            summary || "本条资料用于补充第 19 章 Agent 前沿与生态的选型与趋势判断。",
+            summary || "本条资料用于补充第 20 章 Agent 前沿文章库的选型与趋势判断。",
             `体系层：${layerLabel(layer)}。来源：${source}。`,
             "查看原文可以进一步核对发布日期、API 细节、协议术语与实现边界。",
           ],
   };
+}
+
+function statItem(value: string, label: string): HTMLDivElement {
+  const item = document.createElement("div");
+  item.className = "frontier-news-stat";
+  const strong = document.createElement("strong");
+  strong.textContent = value;
+  const span = document.createElement("span");
+  span.textContent = label;
+  item.append(strong, span);
+  return item;
 }
 
 function stringValue(value: unknown, fallback: string): string {

@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { INTERVIEW_QUESTIONS } from "../knowledge-graph/data/interview-questions";
+import { INTERVIEW_QUESTIONS } from "../knowledge-graph/data/interview-questions.ts";
 
 const outputPath = join(
   import.meta.dirname,
@@ -28,6 +28,10 @@ const rows = INTERVIEW_QUESTIONS.map((question) => {
     sourceFile: "knowledge-graph/data/interview-questions.ts",
     companionDoc: "docs/career-guide.md#四高频面试题清单",
     answerSource: question.answerSource,
+    sourceTitles: question.sourceTitles,
+    sourceUrls: question.sourceUrls,
+    confidence: question.confidence ?? null,
+    rationale: question.rationale ?? null,
   };
   return [
     sqlString(question.id),

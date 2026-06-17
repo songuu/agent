@@ -11,7 +11,7 @@
 // 用法：
 //   tsx --env-file=.env scripts/push-interview-questions-to-supabase.ts
 
-import { INTERVIEW_QUESTIONS } from "../knowledge-graph/data/interview-questions";
+import { INTERVIEW_QUESTIONS } from "../knowledge-graph/data/interview-questions.ts";
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -40,6 +40,10 @@ async function main(): Promise<void> {
       sourceFile: "knowledge-graph/data/interview-questions.ts",
       companionDoc: "docs/career-guide.md#四高频面试题清单",
       answerSource: q.answerSource,
+      sourceTitles: q.sourceTitles,
+      sourceUrls: q.sourceUrls,
+      confidence: q.confidence ?? null,
+      rationale: q.rationale ?? null,
     },
   }));
 

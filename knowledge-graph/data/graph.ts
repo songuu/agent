@@ -75,11 +75,23 @@ export interface Article {
   kind: "paper" | "doc" | "blog" | "video" | "internal";
   /** 发布方 / 原始来源；用于生成“来源：X · 可点击原文”。缺省时生成器用域名兜底。 */
   source?: string;
+  /** 已核对到的发布日期；允许 YYYY-MM-DD / YYYY-MM / 文本备注。 */
+  publishedAt?: string;
+  /** 已核对到的作者或发布账号；拿不准就留空。 */
+  author?: string;
+  /** 机构 / 仓库所属组织。 */
+  institution?: string;
   /** 关联到哪些章节（章节 id 列表）。 */
   chapters: string[];
   note?: string;
-  /** 第 19 章前沿生态归档使用的体系层；其他章节可不填。 */
+  /** 第 20 章前沿文章库使用的体系层；其他章节可不填。 */
   ecosystemLayer?: FrontierEcosystemLayer;
+  /** 若未显式挂章，则按仓库现有课程结构给出最贴近的消费模块。 */
+  applicableModules?: string[];
+  /** 采集时的人类可信度判断。 */
+  confidence?: "high" | "medium" | "low";
+  /** 为什么给出这个可信度。 */
+  credibilityNote?: string;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -105,6 +117,7 @@ export const CHAPTERS: Chapter[] = [
   { id: "17", slug: "17-safety-and-guardrails", title: "安全与护栏", part: "第六部分 · 生产化", dir: "lessons/17-safety-and-guardrails", demo: { needsKey: "llm" } },
   { id: "18", slug: "18-deployment", title: "部署：把 Agent 变成服务", part: "第六部分 · 生产化", dir: "lessons/18-deployment", demo: { needsKey: "llm", needsServer: true } },
   { id: "19", slug: "19-agent-ecosystem-and-frontier", title: "Agent 前沿发展与生态拆解", part: "第七部分 · 前沿与生态", dir: "lessons/19-agent-ecosystem-and-frontier", demo: { needsKey: "none" } },
+  { id: "20", slug: "20-agent-frontier-news", title: "Agent 前沿文章库", part: "第七部分 · 前沿与生态", dir: "lessons/20-agent-frontier-news", demo: { needsKey: "none" } },
   { id: "capstone", slug: "deep-research-agent", title: "毕业项目 · Deep Research Agent", part: "毕业项目", dir: "capstone/deep-research-agent", demo: { entry: "capstone/deep-research-agent/src/cli.ts", needsKey: "embedding", interactive: true } },
   { id: "cap-support", slug: "support-copilot", title: "毕业项目 · 客服 Copilot", part: "毕业项目", dir: "capstone/support-copilot", demo: { entry: "capstone/support-copilot/src/cli.ts", needsKey: "none" } },
   { id: "cap-review", slug: "code-review-crew", title: "毕业项目 · 代码评审团", part: "毕业项目", dir: "capstone/code-review-crew", demo: { entry: "capstone/code-review-crew/src/cli.ts", needsKey: "none" } },
@@ -268,6 +281,10 @@ export const CONCEPTS: Concept[] = [
   { id: "c19-hosted-tools", label: "Hosted tools 与 sandbox", chapter: "19", summary: "平台内置的 web/file search、computer use、代码沙箱执行能力" },
   { id: "c19-stack-selection", label: "需求倒推选型", chapter: "19", summary: "从约束出发判断手写还是选 SDK/runtime/协议的决策方法" },
   { id: "c19-governance", label: "可观测与安全治理", chapter: "19", summary: "tracing/eval/cost/guardrails/HITL 作为上线门槛与一等部件" },
+  { id: "c20-news-archive", label: "前沿文章库", chapter: "20", summary: "把 agent 前沿资料按日期、体系层和详情组织成可扫描资讯页" },
+  { id: "c20-date-filter", label: "日期筛选", chapter: "20", summary: "按收集日期浏览文章批次，避免长列表失去时间上下文" },
+  { id: "c20-layer-filter", label: "体系层筛选", chapter: "20", summary: "用八层生态分类快速定位模型、协议、runtime、评测与安全资料" },
+  { id: "c20-article-detail", label: "文章详情卡", chapter: "20", summary: "列表中选中资料后展示摘要、来源、标签和阅读入口" },
   { id: "ccapstone-plan-and-execute", label: "Plan-and-Execute 架构", chapter: "capstone", summary: "先规划拆子问题再多步执行，减少无效工具调用且可审计" },
   { id: "ccapstone-research-pipeline", label: "research() 研究主干", chapter: "capstone", summary: "规划→检索推理→结构化汇总→成本统计的端到端纯逻辑" },
   { id: "ccapstone-tool-registry", label: "工具系统 (search/calc/saveNote)", chapter: "capstone", summary: "工厂函数+闭包注入状态，zod schema 同管描述与校验" },
@@ -557,6 +574,11 @@ export const RELATIONS: Relation[] = [
   { from: "c19-stack-selection", to: "c19-ecosystem-layers", type: "应用", note: "选型方法建立在分层框架之上：先问缺哪一层" },
   { from: "c19-stack-selection", to: "c19-agent-sdk", type: "应用", note: "依据约束在 SDK/runtime/协议间做取舍" },
   { from: "c19-governance", to: "c19-orchestration-runtime", type: "应用", note: "HITL 与 tracing 常落在 runtime 的风险节点上" },
+  { from: "c20-news-archive", to: "c20-date-filter", type: "组成", note: "文章库用日期筛选保留资料收集时间线" },
+  { from: "c20-news-archive", to: "c20-layer-filter", type: "组成", note: "文章库用体系层筛选承接第 19 章生态分层" },
+  { from: "c20-news-archive", to: "c20-article-detail", type: "组成", note: "列表选中后在详情卡承载摘要、来源和阅读入口" },
+  { from: "c20-layer-filter", to: "c19-ecosystem-layers", type: "应用", note: "第 20 章把第 19 章八层生态分类用于资料浏览" },
+  { from: "c20-article-detail", to: "c19-stack-selection", type: "应用", note: "文章详情帮助把外部资料转化为选型判断证据" },
   { from: "ccapstone-plan-and-execute", to: "ccapstone-research-pipeline", type: "组成", note: "research() 主干就是 Plan-and-Execute 的具体实现" },
   { from: "ccapstone-research-pipeline", to: "ccapstone-tool-registry", type: "应用", note: "执行阶段 runAgent 调用注册表里的工具收集证据" },
   { from: "ccapstone-tool-registry", to: "ccapstone-rag-corpus", type: "组成", note: "search 工具的实现就是对内置语料做 RAG 检索" },
@@ -595,6 +617,7 @@ export const RELATIONS: Relation[] = [
   { from: "c18-agent-as-service", to: "c06-run-agent-loop", type: "应用", note: "把 runAgent 包成 HTTP 服务" },
   { from: "c19-ecosystem-layers", to: "c12-framework-choice", type: "深化", note: "从单框架选型上升到全生态分层" },
   { from: "c19-mcp", to: "c05-native-tool-use", type: "应用", note: "MCP 把工具调用标准化为跨厂商协议" },
+  { from: "c20-news-archive", to: "c19-ecosystem-layers", type: "深化", note: "把生态分层进一步落到可按日期阅读的资料库" },
   { from: "ccapstone-research-pipeline", to: "c10-plan-and-execute", type: "深化", note: "毕设主干即 Plan-and-Execute 的落地" },
   { from: "ccapstone-tool-registry", to: "c06-tool-registry", type: "组成", note: "毕设复用工具系统" },
   { from: "ccapstone-rag-corpus", to: "c09-rag-pipeline", type: "组成", note: "毕设复用 RAG 检索" },
@@ -940,6 +963,136 @@ export const ARTICLES: Article[] = [
   { title: "Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory", url: "https://arxiv.org/abs/2504.19413", kind: "paper", source: "arXiv", chapters: ["19"], ecosystemLayer: "data-memory", note: "可外挂的记忆层：从对话动态抽取/合并/检索关键信息（含图变体），LOCOMO 上比满上下文省 90%+ token 与延迟，生产记忆的工程权衡样本" },
   { title: "Letta · Benchmarking AI Agent Memory", url: "https://www.letta.com/blog/benchmarking-ai-agent-memory/", kind: "blog", source: "Letta", chapters: ["19"], ecosystemLayer: "data-memory", note: "Letta（MemGPT 团队）用基准对比文件系统记忆 vs 各类记忆框架，给「agent 记忆到底该怎么存/取」提供可量化对照" },
   { title: "Anthropic Engineering · Effective harnesses for long-running agents", url: "https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents", kind: "blog", source: "Anthropic", chapters: ["19"], ecosystemLayer: "data-memory", note: "长跑 agent 的上下文工程：跨多个 context window 的 compaction、记忆落盘与首窗特殊 prompt，承接 context engineering 的实操篇" },
+  {
+    title: "OpenAI Agents Python v0.17.5 release notes",
+    url: "https://github.com/openai/openai-agents-python/releases/tag/v0.17.5",
+    kind: "doc",
+    source: "OpenAI",
+    publishedAt: "2026-06-12",
+    institution: "OpenAI",
+    chapters: ["19"],
+    ecosystemLayer: "model-platform",
+    note: "官方 release notes：新增可重试 sandbox_tool 错误、MongoDBSession memory 示例与 ModelSettings.truncation，让托管工具、会话存储和上下文截断的工程边界更明确。",
+    applicableModules: [
+      "lessons/12-intro-to-frameworks",
+      "lessons/16-observability-and-cost",
+      "lessons/20-agent-frontier-news",
+    ],
+    confidence: "high",
+    credibilityNote: "一手 GitHub release；直接来自 OpenAI 官方仓库变更记录。",
+  },
+  {
+    title: "Microsoft Agent Framework .NET 1.10.0 release notes",
+    url: "https://github.com/microsoft/agent-framework/releases/tag/dotnet-1.10.0",
+    kind: "doc",
+    source: "Microsoft",
+    publishedAt: "2026-06-11",
+    institution: "Microsoft",
+    chapters: ["19"],
+    ecosystemLayer: "runtime",
+    note: "官方 release notes：加入 Authorization Toolbox、Azure AI Foundry deployment docs、上下文 compaction opt-in 与 auto-approval rule 增强，直接影响企业 agent 的授权、部署和长上下文治理。",
+    applicableModules: [
+      "lessons/12-intro-to-frameworks",
+      "lessons/17-safety-and-guardrails",
+      "lessons/18-deployment",
+      "lessons/20-agent-frontier-news",
+    ],
+    confidence: "high",
+    credibilityNote: "一手 GitHub release；由 Microsoft 官方仓库维护者发布。",
+  },
+  {
+    title: "Google ADK Python v1.35.0 release notes",
+    url: "https://github.com/google/adk-python/releases/tag/v1.35.0",
+    kind: "doc",
+    source: "Google",
+    publishedAt: "2026-06-10",
+    institution: "Google",
+    chapters: ["19"],
+    ecosystemLayer: "runtime",
+    note: "官方 release notes：加入 OpenTelemetry 自动 tracing、trajectory evaluator、A2A auth vs input required 区分、history compaction summaries 与 request_input 标准化，适合观察多 agent runtime 的工程收敛方向。",
+    applicableModules: [
+      "lessons/11-multi-agent-orchestration",
+      "lessons/14-streaming-and-ux",
+      "lessons/16-observability-and-cost",
+      "lessons/20-agent-frontier-news",
+    ],
+    confidence: "high",
+    credibilityNote: "一手 GitHub release；来自 Google ADK 官方仓库。",
+  },
+  {
+    title: "StreamMemBench: Towards Better Long-Context Evaluation for Memory Agents",
+    url: "https://arxiv.org/abs/2509.16490",
+    kind: "paper",
+    source: "arXiv",
+    publishedAt: "2026-06-12",
+    institution: "arXiv preprint",
+    chapters: ["19"],
+    ecosystemLayer: "data-memory",
+    note: "提出 streaming long-context benchmark，把 observations、user feedback、knowledge archive 与 follow-up reuse 放到同一条评测线上，适合校正“只看 recall 不看真实复用”的记忆评测偏差。",
+    applicableModules: [
+      "lessons/07-short-term-memory",
+      "lessons/15-evaluation-and-testing",
+      "lessons/20-agent-frontier-news",
+    ],
+    confidence: "medium",
+    credibilityNote: "一手 arXiv 新稿；适合趋势跟踪，但尚未成为行业通用基准。",
+  },
+  {
+    title: "What makes a harness a harness? Model-free foundation for agentic AI",
+    url: "https://arxiv.org/abs/2606.10666",
+    kind: "paper",
+    source: "arXiv",
+    publishedAt: "2026-06-11",
+    author: "Nish Gandhi",
+    institution: "arXiv preprint",
+    chapters: ["19"],
+    ecosystemLayer: "runtime",
+    note: "把 harness 定义为不依赖模型能力、只负责状态、权限、审批、重试与回放的工程壳层，正好补上『agent framework ≠ harness』这层实践边界。",
+    applicableModules: [
+      "capstone/code-review-crew",
+      "capstone/agent-eval-harness",
+      "lessons/16-observability-and-cost",
+      "lessons/20-agent-frontier-news",
+    ],
+    confidence: "medium",
+    credibilityNote: "一手 arXiv 观点稿；工程抽象很强，但仍需结合生产经验验证普适性。",
+  },
+  {
+    title: "WorkBench Revisited: Towards a Scalable Benchmark for Evaluating Agents in Realistic Enterprise Workflows",
+    url: "https://arxiv.org/abs/2606.13715",
+    kind: "paper",
+    source: "arXiv",
+    publishedAt: "2026-06",
+    institution: "arXiv preprint",
+    chapters: ["19"],
+    ecosystemLayer: "evaluation",
+    note: "面向真实企业 workflow 的 agent benchmark，强调 success 之外还要统计 unintended / harmful action，适合补齐 workplace agent 的安全型评测口径。",
+    applicableModules: [
+      "lessons/15-evaluation-and-testing",
+      "lessons/17-safety-and-guardrails",
+      "lessons/20-agent-frontier-news",
+    ],
+    confidence: "medium",
+    credibilityNote: "一手 arXiv 新 benchmark；方向重要，但发布日期精确日未在当前采集里核实。",
+  },
+  {
+    title: "SciAgentArena: Benchmarking Scientific Agents from Paper to Experiment",
+    url: "https://arxiv.org/abs/2508.21126",
+    kind: "paper",
+    source: "arXiv",
+    publishedAt: "2026-06-10",
+    institution: "Allen Institute for AI et al.",
+    chapters: ["19"],
+    ecosystemLayer: "evaluation",
+    note: "把 scientific agents 的任务从 paper comprehension 拉到 experiment design / execution planning，适合校验研究型 agent 是否真的能从『读』走到『做』。",
+    applicableModules: [
+      "capstone/deep-research-agent",
+      "lessons/15-evaluation-and-testing",
+      "lessons/20-agent-frontier-news",
+    ],
+    confidence: "medium",
+    credibilityNote: "一手 arXiv 新 benchmark；研究场景强相关，但仍需观察社区复用度。",
+  },
   { title: "Introducing Contextual Retrieval", url: "https://www.anthropic.com/news/contextual-retrieval", kind: "blog", chapters: ["rag-chunk", "rag-hybrid", "rag-contextual"], note: "Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读" },
   { title: "Okapi BM25 - Wikipedia", url: "https://en.wikipedia.org/wiki/Okapi_BM25", kind: "doc", chapters: ["rag-hybrid"], note: "BM25 打分公式与 k1/b 参数的权威说明，对应本章 BM25Index" },
   { title: "Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods", url: "https://dl.acm.org/doi/10.1145/1571941.1572114", kind: "paper", chapters: ["rag-hybrid"], note: "RRF 原始论文 (Cormack et al., SIGIR 2009)，混合检索融合法的来源" },

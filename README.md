@@ -79,7 +79,7 @@ pnpm site:live
 
 ## 全局导航
 
-想直接跳到具体课程，走 [**全局课程导航**](./docs/navigation.md)。它按顺序、按主题同时整理了第 00–19 章、毕业项目、RAG 架构蓝图和 RAG 系统实战项目。
+想直接跳到具体课程，走 [**全局课程导航**](./docs/navigation.md)。它按顺序、按主题同时整理了第 00–20 章、毕业项目、RAG 架构蓝图和 RAG 系统实战项目。
 
 ---
 
@@ -124,6 +124,7 @@ pnpm site:live
    ▼
 第七部分 · 前沿与生态
  19 Agent 前沿发展与生态拆解
+ 20 Agent 前沿文章库
    │
    ▼
 🎓 毕业项目 · Deep Research Agent（综合实战）
@@ -179,6 +180,7 @@ pnpm site:live
 | 18 | [部署：变成服务](./lessons/18-deployment/) | ⭐⭐⭐ | HTTP API、SSE、部署清单 |
 | **第七部分** | **前沿与生态** | | |
 | 19 | [Agent 前沿发展与生态拆解](./lessons/19-agent-ecosystem-and-frontier/) | ⭐⭐⭐ | MCP、A2A、Agents SDK、LangGraph、生态选型 |
+| 20 | [Agent 前沿文章库](./lessons/20-agent-frontier-news/) | ⭐⭐ | 按日期和体系层浏览 agent 前沿资料、摘要与原文 |
 | 🎓 | [毕业项目 · Deep Research Agent](./capstone/deep-research-agent/) | ⭐⭐⭐⭐ | 综合所有能力的实战项目 |
 | **进阶专题** | **RAG 生产化（rag-advanced）** | | |
 | R1 | [进阶分块策略](./rag-advanced/01-chunking-strategies/) | ⭐⭐⭐ | 递归语义切分、Markdown 感知、按 token 控大小（纯函数，免 key 可跑） |
@@ -211,7 +213,7 @@ agent/
 │   ├── agent/                 #   工具系统 (tool) + 可复用 agent 循环 (loop)
 │   ├── rag/                   #   内存向量库
 │   └── util/                  #   env / logger / ui
-├── lessons/                   # 19 章课程，每章 README + 可运行代码
+├── lessons/                   # 20 章课程，每章 README + 可运行代码
 │   ├── 01-what-is-an-agent/
 │   └── ...
 └── capstone/

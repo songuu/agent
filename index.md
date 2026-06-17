@@ -48,9 +48,9 @@ features:
     linkText: 15–18 章
   - icon: 🌐
     title: 第七部分 · 前沿与生态
-    details: MCP、A2A、Agents SDK、编排 runtime——把零件放回 2026 年真实生态。
+    details: MCP、A2A、Agents SDK、编排 runtime，再用文章库按日期追踪前沿资料。
     link: /lessons/19-agent-ecosystem-and-frontier/
-    linkText: 第 19 章
+    linkText: 19–20 章
   - icon: 🎓
     title: 毕业项目 · Deep Research Agent
     details: 综合循环、工具、RAG、结构化输出、可观测的实战项目，可直接放进作品集。
@@ -90,7 +90,8 @@ flowchart LR
   E --> F["12–14 工程化与框架"]
   F --> G["15–18 生产化"]
   G --> H["19 前沿与生态"]
-  H --> I["🎓 毕业项目"]
+  H --> H2["20 前沿文章库"]
+  H2 --> I["🎓 毕业项目"]
   I --> J["🔬 进阶 RAG 专题"]
   J --> K["💼 求职 / 🚀 创业"]
 ```

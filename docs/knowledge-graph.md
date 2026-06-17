@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **39** 个单元、**238** 个概念、**381** 条关系、**124** 篇关联文章。
+共 **40** 个单元、**242** 个概念、**387** 条关系、**124** 篇关联文章。
 
 ## 章节地图
 
@@ -42,6 +42,7 @@ flowchart LR
   end
   subgraph P6["第七部分 · 前沿与生态"]
     C_19["19 Agent 前沿发展与生态拆解"]
+    C_20["20 Agent 前沿文章库"]
   end
   subgraph P7["毕业项目"]
     C_capstone["capstone 毕业项目 · Deep Research Agent"]
@@ -87,7 +88,8 @@ flowchart LR
   C_16 --> C_17
   C_17 --> C_18
   C_18 --> C_19
-  C_19 --> C_capstone
+  C_19 --> C_20
+  C_20 --> C_capstone
   C_capstone --> C_cap-support
   C_cap-support --> C_cap-review
   C_cap-review --> C_cap-eval
@@ -264,6 +266,10 @@ graph LR
     n_c19_hosted_tools["Hosted tools 与 sandbox"]
     n_c19_stack_selection["需求倒推选型"]
     n_c19_governance["可观测与安全治理"]
+    n_c20_news_archive["前沿文章库"]
+    n_c20_date_filter["日期筛选"]
+    n_c20_layer_filter["体系层筛选"]
+    n_c20_article_detail["文章详情卡"]
   end
   subgraph G7["毕业项目"]
     n_ccapstone_plan_and_execute["Plan-and-Execute 架构"]
@@ -528,6 +534,11 @@ graph LR
   n_c19_stack_selection -->|应用| n_c19_ecosystem_layers
   n_c19_stack_selection -->|应用| n_c19_agent_sdk
   n_c19_governance -->|应用| n_c19_orchestration_runtime
+  n_c20_news_archive -->|组成| n_c20_date_filter
+  n_c20_news_archive -->|组成| n_c20_layer_filter
+  n_c20_news_archive -->|组成| n_c20_article_detail
+  n_c20_layer_filter -->|应用| n_c19_ecosystem_layers
+  n_c20_article_detail -->|应用| n_c19_stack_selection
   n_ccapstone_plan_and_execute -->|组成| n_ccapstone_research_pipeline
   n_ccapstone_research_pipeline -->|应用| n_ccapstone_tool_registry
   n_ccapstone_tool_registry -->|组成| n_ccapstone_rag_corpus
@@ -566,6 +577,7 @@ graph LR
   n_c18_agent_as_service -->|应用| n_c06_run_agent_loop
   n_c19_ecosystem_layers -->|深化| n_c12_framework_choice
   n_c19_mcp -->|应用| n_c05_native_tool_use
+  n_c20_news_archive -->|深化| n_c19_ecosystem_layers
   n_ccapstone_research_pipeline -->|深化| n_c10_plan_and_execute
   n_ccapstone_tool_registry -->|组成| n_c06_tool_registry
   n_ccapstone_rag_corpus -->|组成| n_c09_rag_pipeline
@@ -896,6 +908,10 @@ graph LR
 | Hosted tools 与 sandbox | [19 Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | 平台内置的 web/file search、computer use、代码沙箱执行能力 |
 | 需求倒推选型 | [19 Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | 从约束出发判断手写还是选 SDK/runtime/协议的决策方法 |
 | 可观测与安全治理 | [19 Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | tracing/eval/cost/guardrails/HITL 作为上线门槛与一等部件 |
+| 前沿文章库 | [20 Agent 前沿文章库](../lessons/20-agent-frontier-news/README.md) | 把 agent 前沿资料按日期、体系层和详情组织成可扫描资讯页 |
+| 日期筛选 | [20 Agent 前沿文章库](../lessons/20-agent-frontier-news/README.md) | 按收集日期浏览文章批次，避免长列表失去时间上下文 |
+| 体系层筛选 | [20 Agent 前沿文章库](../lessons/20-agent-frontier-news/README.md) | 用八层生态分类快速定位模型、协议、runtime、评测与安全资料 |
+| 文章详情卡 | [20 Agent 前沿文章库](../lessons/20-agent-frontier-news/README.md) | 列表中选中资料后展示摘要、来源、标签和阅读入口 |
 | Plan-and-Execute 架构 | [capstone 毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md) | 先规划拆子问题再多步执行，减少无效工具调用且可审计 |
 | research() 研究主干 | [capstone 毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md) | 规划→检索推理→结构化汇总→成本统计的端到端纯逻辑 |
 | 工具系统 (search/calc/saveNote) | [capstone 毕业项目 · Deep Research Agent](../capstone/deep-research-agent/README.md) | 工厂函数+闭包注入状态，zod schema 同管描述与校验 |
@@ -1005,12 +1021,12 @@ graph LR
 
 | 文章 | 来源 | 类型 | 关联章节 | 说明 |
 | --- | --- | --- | --- | --- |
-| [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) | Anthropic | doc | 01, 19 | Anthropic 官方工程博客，系统讲解 Agent 的循环、工具与何时该用 Agent，与本章心智模型高度对应 |
+| [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) | Anthropic | doc | 01, 19, cap-support | Anthropic 官方工程博客，系统讲解 Agent 的循环、工具与何时该用 Agent，与本章心智模型高度对应 |
 | [OpenAI Agents SDK for TypeScript](https://openai.github.io/openai-agents-js/) | OpenAI | doc | 19 | OpenAI 官方 TypeScript Agents SDK 文档，对应 agent、tool、handoff、guardrail、session、tracing、MCP 等 SDK 层能力 |
 | [OpenAI Responses API Reference](https://platform.openai.com/docs/api-reference/responses) | OpenAI | doc | 19 | OpenAI 官方 Responses API 参考，对应模型原生输入输出、工具调用与状态化交互接口层 |
 | [OpenAI: The next evolution of the Agents SDK](https://openai.com/index/the-next-evolution-of-the-agents-sdk/) | OpenAI | blog | 19 | OpenAI 官方产品文章：Agents SDK 向 sandbox execution、long-horizon tasks、durable harness 演进，是前沿趋势来源 |
 | [OpenAI Docs · Sandbox agents](https://developers.openai.com/api/docs/guides/agents/sandboxes) | OpenAI | doc | 19 | Agents SDK sandbox 文档，对应 code execution / long-running task 的隔离执行与生产化边界 |
-| [OpenAI Docs · Evaluate agent workflows](https://developers.openai.com/api/docs/guides/agent-evals) | OpenAI | doc | 19 | OpenAI 官方 agent workflow eval 指南，对应第 19 章评估治理层 |
+| [OpenAI Docs · Evaluate agent workflows](https://developers.openai.com/api/docs/guides/agent-evals) | OpenAI | doc | 19, cap-eval | OpenAI 官方 agent workflow eval 指南，对应第 19 章评估治理层 |
 | [OpenAI Docs · MCP and Connectors](https://developers.openai.com/api/docs/guides/tools-connectors-mcp) | OpenAI | doc | 19 | OpenAI 官方 MCP/connectors 文档，对应 hosted platform 如何接入远程工具协议 |
 | [OpenAI Docs · Web search](https://developers.openai.com/api/docs/guides/tools-web-search) | OpenAI | doc | 19 | OpenAI 官方 web search 工具文档，对应 hosted tools 层的网页检索能力 |
 | [OpenAI Docs · File search](https://developers.openai.com/api/docs/guides/tools-file-search) | OpenAI | doc | 19 | OpenAI 官方 file search 工具文档，对应 hosted tools / 私有资料检索能力 |
@@ -1031,7 +1047,7 @@ graph LR
 | [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366) | arxiv.org | paper | 10 | Reflection/自我反思修正的代表性论文 |
 | [Claude Code Docs · Orchestrate teams of Claude Code sessions](https://code.claude.com/docs/en/agent-teams) | code.claude.com | doc | 11 | Claude Code 官方 agent teams 文档：team lead、teammates、共享任务列表、mailbox、hooks 与限制 |
 | [Codex Docs · Subagents](https://developers.openai.com/codex/subagents) | developers.openai.com | doc | 11 | OpenAI Codex 官方 subagent workflows 文档：显式 spawn、线程管理、sandbox/approval 继承与 custom agents |
-| [OpenAI Agents SDK · Orchestration and handoffs](https://developers.openai.com/api/docs/guides/agents/orchestration) | developers.openai.com | doc | 11 | OpenAI 官方 Agents SDK 编排文档：handoff 与 agent-as-tool 的选择边界 |
+| [OpenAI Agents SDK · Orchestration and handoffs](https://developers.openai.com/api/docs/guides/agents/orchestration) | developers.openai.com | doc | 11, cap-review | OpenAI 官方 Agents SDK 编排文档：handoff 与 agent-as-tool 的选择边界 |
 | [Claude Code Docs · Create custom subagents](https://code.claude.com/docs/en/sub-agents) | code.claude.com | doc | 11 | Claude Code 官方 subagents 文档：独立上下文、工具权限、自动/显式委派与上下文隔离 |
 | [Codex Docs · Custom instructions with AGENTS.md](https://developers.openai.com/codex/guides/agents-md) | developers.openai.com | doc | 11 | OpenAI Codex 官方 AGENTS.md 文档：全局、项目、子目录指令链与覆盖规则 |
 | [OpenAI Agents SDK · Guardrails and human review](https://developers.openai.com/api/docs/guides/agents/guardrails-approvals) | OpenAI | doc | 11, 19 | OpenAI 官方：guardrails 与 human-in-the-loop approvals 控制敏感工具和副作用 |

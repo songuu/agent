@@ -1,21 +1,21 @@
 :root {
-  --vp-c-brand-1: #6366f1;
-  --vp-c-brand-2: #7c7ff3;
-  --vp-c-brand-3: #8b8df6;
-  --vp-c-brand-soft: rgba(99, 102, 241, 0.14);
+  --vp-c-brand-1: #1e80ff;
+  --vp-c-brand-2: #4593ff;
+  --vp-c-brand-3: #6aa6ff;
+  --vp-c-brand-soft: rgba(30, 128, 255, 0.14);
   --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: linear-gradient(120deg, #6366f1 20%, #a855f7 55%, #ec4899 90%);
-  --vp-home-hero-image-background-image: linear-gradient(-45deg, #6366f1 40%, #ec4899 60%);
+  --vp-home-hero-name-background: linear-gradient(120deg, #1e80ff 25%, #00b8d4 95%);
+  --vp-home-hero-image-background-image: linear-gradient(-45deg, #1e80ff 40%, #36cfff 60%);
   --vp-home-hero-image-filter: blur(56px);
   --vp-font-family-base: "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
     "Noto Sans SC", system-ui, -apple-system, sans-serif;
 }
 
 .dark {
-  --vp-c-brand-1: #818cf8;
-  --vp-c-brand-2: #8b8df6;
-  --vp-c-brand-3: #a5b4fc;
-  --vp-c-brand-soft: rgba(129, 140, 248, 0.16);
+  --vp-c-brand-1: #4593ff;
+  --vp-c-brand-2: #6aa6ff;
+  --vp-c-brand-3: #8fbdff;
+  --vp-c-brand-soft: rgba(69, 147, 255, 0.16);
 }
 
 .VPFeature {
@@ -25,7 +25,7 @@
 
 .VPFeature:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(99, 102, 241, 0.16);
+  box-shadow: 0 12px 32px rgba(30, 128, 255, 0.18);
   border-color: var(--vp-c-brand-2);
 }
 
@@ -1125,6 +1125,105 @@
   background: var(--frontier-bg);
 }
 
+.frontier-news-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: end;
+  margin-bottom: 18px;
+  padding: 16px;
+  border: 1px solid var(--frontier-card-border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--frontier-card-bg) 88%, var(--frontier-accent-soft));
+}
+
+.frontier-news-title {
+  min-width: 0;
+}
+
+.vp-doc .frontier-news-title p {
+  margin: 0;
+  line-height: 1.6;
+  color: var(--frontier-text);
+}
+
+.vp-doc .frontier-news-title p:first-child {
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+  color: var(--frontier-accent);
+  text-transform: uppercase;
+}
+
+.vp-doc .frontier-news-title h2 {
+  margin: 0 0 6px;
+  border-top: 0;
+  padding-top: 0;
+  font-size: 28px;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+
+.frontier-news-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(64px, 1fr));
+  gap: 8px;
+}
+
+.frontier-news-stat {
+  min-width: 64px;
+  padding: 10px 12px;
+  border: 1px solid var(--frontier-card-border);
+  border-radius: 8px;
+  text-align: center;
+  background: var(--frontier-card-bg);
+}
+
+.frontier-news-stat strong,
+.frontier-news-stat span {
+  display: block;
+}
+
+.frontier-news-stat strong {
+  font-size: 19px;
+  line-height: 1.2;
+  color: var(--frontier-text-strong);
+}
+
+.frontier-news-stat span {
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--frontier-text-muted);
+}
+
+.frontier-news-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+  gap: 18px;
+  align-items: start;
+}
+
+.frontier-news-list-panel,
+.frontier-news-side-panel {
+  min-width: 0;
+}
+
+.frontier-news-list-panel {
+  padding: 16px;
+  border: 1px solid var(--frontier-card-border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--frontier-card-bg) 92%, var(--vp-c-bg-soft));
+}
+
+.frontier-news-side-panel {
+  display: grid;
+  gap: 14px;
+  position: sticky;
+  top: 82px;
+}
+
 .frontier-layer-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -1252,6 +1351,11 @@
   max-width: 100%;
 }
 
+.frontier-news-list-panel .frontier-article-timeline {
+  margin-top: 16px;
+  padding-left: 0;
+}
+
 .frontier-article-timeline::before {
   position: absolute;
   top: 8px;
@@ -1259,6 +1363,10 @@
   left: 13px;
   border-left: 2px dashed color-mix(in srgb, var(--frontier-accent) 28%, var(--frontier-card-border));
   content: "";
+}
+
+.frontier-news-list-panel .frontier-article-timeline::before {
+  content: none;
 }
 
 .frontier-timeline-date {
@@ -1272,6 +1380,11 @@
   color: var(--frontier-accent);
 }
 
+.frontier-news-list-panel .frontier-timeline-date {
+  margin-bottom: 12px;
+  padding: 0 2px;
+}
+
 .frontier-timeline-date span {
   width: 0;
   height: 0;
@@ -1279,6 +1392,10 @@
   border-top: 8px solid transparent;
   border-bottom: 8px solid transparent;
   border-left: 8px solid var(--frontier-accent);
+}
+
+.frontier-news-list-panel .frontier-timeline-date span {
+  display: none;
 }
 
 .frontier-timeline-date strong {
@@ -1293,6 +1410,10 @@
   max-width: 100%;
 }
 
+.frontier-news-list-panel .frontier-timeline-list {
+  gap: 10px;
+}
+
 .frontier-timeline-item {
   position: relative;
   display: grid;
@@ -1303,6 +1424,10 @@
   max-width: 100%;
   cursor: pointer;
   outline: none;
+}
+
+.frontier-news-list-panel .frontier-timeline-item {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .frontier-timeline-marker {
@@ -1317,6 +1442,10 @@
   background: var(--frontier-card-bg);
 }
 
+.frontier-news-list-panel .frontier-timeline-marker {
+  display: none;
+}
+
 .frontier-timeline-card {
   box-sizing: border-box;
   min-width: 0;
@@ -1328,6 +1457,10 @@
   overflow: hidden;
   background: var(--frontier-card-bg);
   transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+.frontier-news-list-panel .frontier-timeline-card {
+  border-color: var(--frontier-card-border);
 }
 
 .frontier-timeline-item:hover .frontier-timeline-card,
@@ -1460,6 +1593,37 @@
     width: 100%;
     margin: 20px 0 28px;
     padding: 14px;
+  }
+
+  .frontier-news-hero,
+  .frontier-news-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .frontier-news-hero,
+  .frontier-news-list-panel {
+    padding: 14px;
+  }
+
+  .vp-doc .frontier-news-title h2 {
+    font-size: 24px;
+  }
+
+  .frontier-news-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .frontier-news-stat {
+    min-width: 0;
+    padding: 9px 7px;
+  }
+
+  .frontier-news-stat strong {
+    font-size: 17px;
+  }
+
+  .frontier-news-side-panel {
+    position: static;
   }
 
   .frontier-layer-tabs {
@@ -1605,7 +1769,7 @@
   margin: 1rem 0 1.25rem;
   padding: 0.85rem 1rem 1rem;
   border: 1px solid var(--vp-c-divider);
-  border-radius: 12px;
+  border-radius: 8px;
   background: var(--vp-c-bg-soft);
 }
 

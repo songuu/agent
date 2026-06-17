@@ -387,26 +387,9 @@ npx tsx lessons/19-agent-ecosystem-and-frontier/index.ts
 
 ---
 
-## 十一、前沿文章归档
+> 想按日期浏览完整前沿资料库，见 [第 20 章 · Agent 前沿文章库](../20-agent-frontier-news/README.md)。
 
-> 下方文章归档由页面直接从 Supabase `frontier_ecosystem_articles` 读取；`knowledge-graph/data/graph.ts` 仍是生成与同步数据的唯一事实源。标题和来源均可点击查看原文。
-
-| 体系层 | 收集重点 |
-|--------|----------|
-| 基础综述 | agent taxonomy、human-agent、多 agent、computer-use 总览 |
-| 模型与托管平台 | Responses API、Agents SDK、Hosted tools、sandbox |
-| 协议与互操作 | MCP、A2A、Apps SDK、AAIF、生命周期与兼容性 |
-| 编排 Runtime | LangGraph、CrewAI、AutoGen、Semantic Kernel、Bedrock Agents |
-| 产品与交互 | Operator、deep research、Codex、ChatGPT agent、GUI agent |
-| 数据与记忆 | file search、conversation state、context engineering、agent memory |
-| 评测与基准 | WebArena、OSWorld、MacArena、tau-bench、SWE-agent、PaperBench |
-| 安全与治理 | OWASP、MCP authorization、prompt injection、identity、secrets |
-
-<div data-frontier-articles></div>
-
----
-
-## 十二、小结与延伸
+## 十一、小结与延伸
 
 你现在可以把 agent 生态拆成 8 层，而不是只记一堆框架名：
 
@@ -444,8 +427,11 @@ graph TB
   n_c19_hosted_tools["Hosted tools 与 sandbox"]
   n_c19_stack_selection["需求倒推选型"]
   n_c19_governance["可观测与安全治理"]
+  n_c20_layer_filter["体系层筛选（第20章）"]
+  n_c20_article_detail["文章详情卡（第20章）"]
   n_c12_framework_choice["框架选型决策（第12章）"]
   n_c05_native_tool_use["原生工具调用 (Function Calling)（第05章）"]
+  n_c20_news_archive["前沿文章库（第20章）"]
   n_c19_ecosystem_layers -->|组成| n_c19_mcp
   n_c19_ecosystem_layers -->|组成| n_c19_agent_sdk
   n_c19_ecosystem_layers -->|组成| n_c19_orchestration_runtime
@@ -456,10 +442,13 @@ graph TB
   n_c19_stack_selection -->|应用| n_c19_ecosystem_layers
   n_c19_stack_selection -->|应用| n_c19_agent_sdk
   n_c19_governance -->|应用| n_c19_orchestration_runtime
+  n_c20_layer_filter -->|应用| n_c19_ecosystem_layers
+  n_c20_article_detail -->|应用| n_c19_stack_selection
   n_c19_ecosystem_layers -->|深化| n_c12_framework_choice
   n_c19_mcp -->|应用| n_c05_native_tool_use
+  n_c20_news_archive -->|深化| n_c19_ecosystem_layers
   class n_c19_ecosystem_layers,n_c19_mcp,n_c19_a2a,n_c19_agent_sdk,n_c19_orchestration_runtime,n_c19_hosted_tools,n_c19_stack_selection,n_c19_governance own;
-  class n_c12_framework_choice,n_c05_native_tool_use cross;
+  class n_c20_layer_filter,n_c20_article_detail,n_c12_framework_choice,n_c05_native_tool_use,n_c20_news_archive cross;
   linkStyle 0 stroke:#d97706,stroke-width:2px;
   linkStyle 1 stroke:#d97706,stroke-width:2px;
   linkStyle 2 stroke:#d97706,stroke-width:2px;
@@ -470,14 +459,20 @@ graph TB
   linkStyle 7 stroke:#059669,stroke-width:2px;
   linkStyle 8 stroke:#059669,stroke-width:2px;
   linkStyle 9 stroke:#059669,stroke-width:2px;
-  linkStyle 10 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 10 stroke:#059669,stroke-width:2px;
   linkStyle 11 stroke:#059669,stroke-width:2px;
+  linkStyle 12 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 13 stroke:#059669,stroke-width:2px;
+  linkStyle 14 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
 
+- `体系层筛选` —**应用**→ `Agent 生态分层`（第 20 章）
+- `文章详情卡` —**应用**→ `需求倒推选型`（第 20 章）
 - `Agent 生态分层` —**深化**→ `框架选型决策`（第 12 章）
 - `MCP (模型上下文协议)` —**应用**→ `原生工具调用 (Function Calling)`（第 05 章）
+- `前沿文章库` —**深化**→ `Agent 生态分层`（第 20 章）
 
 ### 延伸阅读
 

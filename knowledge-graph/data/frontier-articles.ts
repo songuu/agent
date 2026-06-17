@@ -1,6 +1,6 @@
-import { ARTICLES, CHAPTERS, type Article, type FrontierEcosystemLayer } from "./graph";
-import { FRONTIER_ECOSYSTEM_LAYERS } from "./frontier-ecosystem-layers";
-export { FRONTIER_ECOSYSTEM_LAYERS } from "./frontier-ecosystem-layers";
+import { ARTICLES, CHAPTERS, type Article, type FrontierEcosystemLayer } from "./graph.ts";
+import { FRONTIER_ECOSYSTEM_LAYERS } from "./frontier-ecosystem-layers.ts";
+export { FRONTIER_ECOSYSTEM_LAYERS } from "./frontier-ecosystem-layers.ts";
 
 export interface FrontierArticle {
   id: string;
@@ -17,16 +17,24 @@ export interface FrontierArticle {
   collectedDate: string;
   collectedAt: string;
   displayDateLabel: string;
+  publishedAt?: string;
+  author?: string;
+  institution?: string;
   readCount: number;
   sortOrder: number;
   tags: string[];
+  applicableModules: string[];
+  confidence?: "high" | "medium" | "low";
+  credibilityNote?: string;
   detailParagraphs: string[];
 }
 
-const FRONTIER_CHAPTER_ID = "19";
-const FRONTIER_COLLECTED_DATE = "2026-06-16";
+// 第 20 章是文章库承载页；资料集合沿用第 19 章生态资料，避免复制 70 篇文章清单。
+const FRONTIER_SOURCE_CHAPTER_ID = "19";
+const FRONTIER_CHAPTER_ID = "20";
+const FRONTIER_COLLECTED_DATE = "2026-06-17";
 const FRONTIER_COLLECTED_AT = `${FRONTIER_COLLECTED_DATE}T09:00:00+08:00`;
-const FRONTIER_DISPLAY_DATE_LABEL = "6月16日 · 周二";
+const FRONTIER_DISPLAY_DATE_LABEL = "6月17日 · 周三";
 const READ_COUNT_BASE = 73;
 
 const chapter = CHAPTERS.find((item) => item.id === FRONTIER_CHAPTER_ID);
@@ -88,11 +96,28 @@ function articleLayerLabel(layer: FrontierEcosystemLayer): string {
   return FRONTIER_ECOSYSTEM_LAYERS.find((item) => item.id === layer)?.label ?? layer;
 }
 
+function applicableModules(article: Article): string[] {
+  if (article.applicableModules && article.applicableModules.length > 0) {
+    return article.applicableModules;
+  }
+  return [
+    "lessons/19-agent-ecosystem-and-frontier",
+    "lessons/20-agent-frontier-news",
+  ];
+}
+
 function buildDetailParagraphs(article: Article, source: string, layerLabel: string): string[] {
-  const summary = article.note?.trim() || "本条资料用于补充第 19 章 Agent 前沿与生态的选型与趋势判断。";
+  const summary = article.note?.trim() || "本条资料用于补充第 20 章 Agent 前沿文章库的选型与趋势判断。";
+  const publishBits = [
+    article.publishedAt ? `发布时间：${article.publishedAt}` : "发布时间：待原文复核",
+    article.author ? `作者：${article.author}` : undefined,
+    article.institution ? `机构：${article.institution}` : undefined,
+  ].filter(Boolean);
+  const confidence = article.confidence ? `可信度：${article.confidence}` : undefined;
   return [
     summary,
-    `体系层：${layerLabel}。来源：${source}。这条资料被收录到“前沿与生态”章节，用来帮助读者把框架、协议、runtime、UI、评估与治理层放回同一张生态地图中理解。`,
+    `${publishBits.join("。")}。体系层：${layerLabel}。来源：${source}。${confidence ? `${confidence}。` : ""}${article.credibilityNote ?? "保留原文入口供读者自行复核。"} `,
+    `适用模块：${applicableModules(article).join("、")}。选择依据：按仓库现有课程结构，把这条资料挂到最直接会消费它的章节或项目模块。`,
     `查看原文可以进一步核对发布日期、API 细节、协议术语与实现边界；课程页只保留可追溯摘要，不复制原文全文。`,
   ];
 }
@@ -100,7 +125,7 @@ function buildDetailParagraphs(article: Article, source: string, layerLabel: str
 const usedSlugs = new Set<string>();
 
 export const FRONTIER_ARTICLES: FrontierArticle[] = ARTICLES
-  .filter((article) => article.chapters.includes(FRONTIER_CHAPTER_ID))
+  .filter((article) => article.chapters.includes(FRONTIER_SOURCE_CHAPTER_ID))
   .map((article, index) => {
     const source = articleSource(article);
     const baseTags = articleTags(article);
@@ -124,9 +149,15 @@ export const FRONTIER_ARTICLES: FrontierArticle[] = ARTICLES
       collectedDate: FRONTIER_COLLECTED_DATE,
       collectedAt: FRONTIER_COLLECTED_AT,
       displayDateLabel: FRONTIER_DISPLAY_DATE_LABEL,
+      publishedAt: article.publishedAt,
+      author: article.author,
+      institution: article.institution,
       readCount: READ_COUNT_BASE + index * 7,
       sortOrder: index + 1,
       tags: [...new Set([...baseTags, ecosystemLayer])],
+      applicableModules: applicableModules(article),
+      confidence: article.confidence,
+      credibilityNote: article.credibilityNote,
       detailParagraphs: buildDetailParagraphs(article, source, ecosystemLayerLabel),
     };
   });

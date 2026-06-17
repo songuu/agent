@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { FRONTIER_ARTICLES } from "../knowledge-graph/data/frontier-articles";
+import { FRONTIER_ARTICLES } from "../knowledge-graph/data/frontier-articles.ts";
 
 const outputPath = join(
   import.meta.dirname,
@@ -29,6 +29,12 @@ const rows = FRONTIER_ARTICLES.map((article) => {
     displayDateLabel: article.displayDateLabel,
     originalKind: article.kind,
     ecosystemLayer: article.ecosystemLayer,
+    publishedAt: article.publishedAt ?? null,
+    author: article.author ?? null,
+    institution: article.institution ?? null,
+    applicableModules: article.applicableModules,
+    confidence: article.confidence ?? null,
+    credibilityNote: article.credibilityNote ?? null,
   };
   return [
     article.id,

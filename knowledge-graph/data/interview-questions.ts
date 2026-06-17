@@ -25,6 +25,10 @@ export interface InterviewQuestion {
   collectedAt: string;
   sortOrder: number;
   tags: string[];
+  sourceTitles: string[];
+  sourceUrls: string[];
+  confidence?: "high" | "medium" | "low";
+  rationale?: string;
 }
 
 const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
@@ -33,7 +37,7 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   project: "项目深挖类",
 };
 
-const COLLECTED_DATE = "2026-06-16";
+const COLLECTED_DATE = "2026-06-17";
 const COLLECTED_AT = `${COLLECTED_DATE}T09:00:00+08:00`;
 
 interface RawInterviewQuestion {
@@ -41,6 +45,10 @@ interface RawInterviewQuestion {
   category: InterviewQuestionCategory;
   question: string;
   relatedChapters: string[];
+  sourceTitles?: string[];
+  sourceUrls?: string[];
+  confidence?: "high" | "medium" | "low";
+  rationale?: string;
 }
 
 // 题干与 docs/career-guide.md 第四节保持一致（去掉「（→ 章节）」括注，章节关系由 relatedChapters 承载）。
@@ -165,6 +173,68 @@ const RAW_QUESTIONS: RawInterviewQuestion[] = [
     question: "什么场景不该用 Agent？",
     relatedChapters: ["01"],
   },
+  {
+    slug: "computer-use-agent-success-vs-harm-metrics",
+    category: "engineering",
+    question:
+      "评测 computer-use / workplace agent 时，为什么不能只看任务成功率？unintended / harmful action 指标分别在兜什么风险？",
+    relatedChapters: ["15", "17", "19"],
+    sourceTitles: [
+      "WorkBench Revisited: Towards a Scalable Benchmark for Evaluating Agents in Realistic Enterprise Workflows",
+    ],
+    sourceUrls: ["https://arxiv.org/abs/2606.13715"],
+    confidence: "medium",
+    rationale: "本题直接来自 2026 新 benchmark 对 success 与 harmful action 双指标的强调。",
+  },
+  {
+    slug: "memory-agent-recall-vs-reuse-evaluation",
+    category: "engineering",
+    question:
+      "长期记忆 agent 为何不能只测 recall？为什么 observation stream、user feedback、knowledge archive 与 follow-up reuse 要分开评估？",
+    relatedChapters: ["07", "15", "19"],
+    sourceTitles: [
+      "StreamMemBench: Towards Better Long-Context Evaluation for Memory Agents",
+    ],
+    sourceUrls: ["https://arxiv.org/abs/2509.16490"],
+    confidence: "medium",
+    rationale: "本题覆盖 2026 新 memory benchmark 的核心口径变化，适合补齐记忆评测高频追问。",
+  },
+  {
+    slug: "harness-vs-framework-boundary",
+    category: "engineering",
+    question:
+      "什么是 agent harness？它和 agent framework / SDK 的边界怎么划？为什么审批、重试、回放、权限壳层最好放在 harness 而不是模型里？",
+    relatedChapters: ["04", "12", "16", "19"],
+    sourceTitles: [
+      "What makes a harness a harness? Model-free foundation for agentic AI",
+      "Anthropic Engineering · Effective harnesses for long-running agents",
+    ],
+    sourceUrls: [
+      "https://arxiv.org/abs/2606.10666",
+      "https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents",
+    ],
+    confidence: "medium",
+    rationale: "本题对应 2026 对 harness 抽象的集中讨论，兼顾论文观点与工程实操。",
+  },
+  {
+    slug: "runtime-upgrade-auth-compaction-boundaries",
+    category: "engineering",
+    question:
+      "Agent runtime / tool 协议升级时，为什么要单独审查 auth-required vs input-required、history compaction、auto-approval 规则和 tracing 注入边界？",
+    relatedChapters: ["05", "11", "17", "18", "19"],
+    sourceTitles: [
+      "Microsoft Agent Framework .NET 1.10.0 release notes",
+      "Google ADK Python v1.35.0 release notes",
+      "OpenAI Agents Python v0.17.5 release notes",
+    ],
+    sourceUrls: [
+      "https://github.com/microsoft/agent-framework/releases/tag/dotnet-1.10.0",
+      "https://github.com/google/adk-python/releases/tag/v1.35.0",
+      "https://github.com/openai/openai-agents-python/releases/tag/v0.17.5",
+    ],
+    confidence: "high",
+    rationale: "本题来自多个官方 release notes 的共同趋势：生产 agent 的问题越来越集中在授权、压缩、审批和可观测边界。",
+  },
   // C. 项目深挖类
   {
     slug: "project-why-multi-agent",
@@ -250,6 +320,9 @@ function questionTags(raw: RawInterviewQuestion): string[] {
   if (text.includes("langgraph") || text.includes("框架")) tags.add("framework");
   if (text.includes("幻觉")) tags.add("hallucination");
   if (text.includes("窗口") || text.includes("记忆") || text.includes("上下文")) tags.add("context");
+  if (text.includes("computer-use") || text.includes("harmful action") || text.includes("权限")) tags.add("safety");
+  if (text.includes("harness") || text.includes("回放") || text.includes("审批")) tags.add("observability");
+  if (text.includes("auth-required") || text.includes("auto-approval") || text.includes("compaction")) tags.add("runtime");
   return [...tags];
 }
 
@@ -265,6 +338,10 @@ export const INTERVIEW_QUESTIONS: InterviewQuestion[] = RAW_QUESTIONS.map((raw, 
   collectedAt: COLLECTED_AT,
   sortOrder: index + 1,
   tags: questionTags(raw),
+  sourceTitles: raw.sourceTitles ?? [],
+  sourceUrls: raw.sourceUrls ?? [],
+  confidence: raw.confidence,
+  rationale: raw.rationale,
 }));
 
 // 身份完整性：slug 必须唯一（它是 Supabase upsert 的 on-conflict 目标）。
