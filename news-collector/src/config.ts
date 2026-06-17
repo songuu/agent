@@ -1,9 +1,22 @@
 // 运行配置：全部从环境变量读取并用 zod 校验。
 //
-// 密钥纪律（见 [[secret-never-in-tracked-file]]）：SUPABASE_SERVICE_ROLE_KEY / ANTHROPIC_API_KEY
+// 密钥纪律（见 [[secret-never-in-tracked-file]]）：SUPABASE_SERVICE_ROLE_KEY / LLM API key
 // 只走环境变量（配合 `--env-file=.env`），绝不写入任何 tracked 文件。
 
+import type { ProviderName } from "../../src/shared/llm/index.ts";
 import { z } from "zod";
+
+const llmProviderSchema = z.enum(["anthropic", "openai", "ollama"]);
+
+const optionalEnvString = z.preprocess((value) => {
+  if (value === undefined || value === "") return undefined;
+  return value;
+}, z.string().min(1).optional());
+
+const optionalEnvUrl = z.preprocess((value) => {
+  if (value === undefined || value === "") return undefined;
+  return value;
+}, z.string().url().optional());
 
 function boolFromEnv(defaultValue: boolean) {
   return z.preprocess((value) => {
@@ -14,10 +27,18 @@ function boolFromEnv(defaultValue: boolean) {
 }
 
 const envSchema = z.object({
-  SUPABASE_URL: z.string().url().optional(),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
+  SUPABASE_URL: optionalEnvUrl,
+  SUPABASE_SERVICE_ROLE_KEY: optionalEnvString,
   SUPABASE_SCHEMA: z.string().min(1).default("public"),
-  ANTHROPIC_API_KEY: z.string().min(1).optional(),
+  LLM_PROVIDER: llmProviderSchema.default("anthropic"),
+  ANTHROPIC_API_KEY: optionalEnvString,
+  ANTHROPIC_MODEL: optionalEnvString,
+  OPENAI_API_KEY: optionalEnvString,
+  OPENAI_MODEL: optionalEnvString,
+  OPENAI_BASE_URL: optionalEnvString,
+  OLLAMA_API_KEY: optionalEnvString,
+  OLLAMA_MODEL: optionalEnvString,
+  OLLAMA_BASE_URL: optionalEnvString,
   // node-cron 表达式（配合 NEWS_TZ 时区解释）。默认每日 08:00 Asia/Shanghai。
   NEWS_CRON: z.string().min(1).default("0 8 * * *"),
   NEWS_TZ: z.string().min(1).default("Asia/Shanghai"),
@@ -28,7 +49,8 @@ const envSchema = z.object({
   NEWS_MAX_PER_SOURCE: z.coerce.number().int().positive().default(30),
   // 富化条数上限；0 = 不富化（即便配了 key 也需显式开，避免默认烧 token）。
   NEWS_ENRICH_MAX: z.coerce.number().int().min(0).default(0),
-  NEWS_ENRICH_MODEL: z.string().min(1).default("claude-haiku-4-5-20251001"),
+  // 兼容旧 collector 配置；优先建议使用 ANTHROPIC_MODEL / OPENAI_MODEL。
+  NEWS_ENRICH_MODEL: optionalEnvString,
 });
 
 export type NewsEnv = z.infer<typeof envSchema>;
@@ -46,10 +68,22 @@ export interface RunConfig {
   readonly feedTimeoutMs: number;
   readonly maxPerSource: number;
   readonly enrichMax: number;
-  readonly enrichModel: string;
+  readonly enrichProvider: ProviderName;
+  readonly enrichModel?: string;
   readonly cron: string;
   readonly timezone: string;
   readonly runAtBoot: boolean;
+}
+
+function hasProviderCredential(env: NewsEnv): boolean {
+  switch (env.LLM_PROVIDER) {
+    case "anthropic":
+      return Boolean(env.ANTHROPIC_API_KEY);
+    case "openai":
+      return Boolean(env.OPENAI_API_KEY);
+    case "ollama":
+      return true;
+  }
 }
 
 /** 解析并校验环境；缺 Supabase 凭据时自动退回 dryRun（不写库）。 */
@@ -74,7 +108,8 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): RunConfig {
     supabase,
     feedTimeoutMs: env.NEWS_FEED_TIMEOUT_MS,
     maxPerSource: env.NEWS_MAX_PER_SOURCE,
-    enrichMax: env.ANTHROPIC_API_KEY ? env.NEWS_ENRICH_MAX : 0,
+    enrichMax: hasProviderCredential(env) ? env.NEWS_ENRICH_MAX : 0,
+    enrichProvider: env.LLM_PROVIDER,
     enrichModel: env.NEWS_ENRICH_MODEL,
     cron: env.NEWS_CRON,
     timezone: env.NEWS_TZ,

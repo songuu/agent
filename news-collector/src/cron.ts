@@ -38,7 +38,7 @@ function main(): void {
 
   log(
     `[news-collector] daemon up. cron="${config.cron}" tz=${config.timezone} ` +
-      `dryRun=${config.dryRun} enrichMax=${config.enrichMax}`,
+      `dryRun=${config.dryRun} enrichProvider=${config.enrichProvider} enrichMax=${config.enrichMax}`,
   );
 
   const task = cron.schedule(

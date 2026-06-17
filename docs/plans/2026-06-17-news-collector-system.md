@@ -12,7 +12,7 @@ invariants:
   - "单源故障必须隔离：任一 feed 502/超时/返回HTML 只 skip+log，绝不让整批收集崩溃"
   - "活密钥只进 .env / 环境变量，绝不写入任何 tracked 文件；service_role 不进前端 bundle"
   - "规则分类纯函数、确定性：同输入恒定同层/标签，无 Date/随机依赖"
-  - "无 ANTHROPIC_API_KEY 时整条管道仍可完整离线跑（enrich 优雅降级为规则结果）"
+  - "无所选 LLM provider key 时整条管道仍可完整离线跑（enrich 优雅降级为规则结果）"
   - "news_items 与第20章 frontier_ecosystem_articles 物理隔离：机器写入不污染 graph.ts 唯一事实源"
   - "收集身份 = canonical URL 的 sha256；on_conflict=external_id 幂等 upsert"
 invariant_tests:
@@ -116,7 +116,7 @@ deadcode_until: []
 |------|------|------|
 | T1 | 数据模型：`news_items` 迁移 + `types.ts`(8层/zod) | L2 |
 | T2 | 源注册表 + RSS 抓取/解析(rss-parser, 故障隔离) + 归一化 | L2 |
-| T3 | 规则分类(8层+标签+语言, 纯函数) + 可选 Claude 富化(降级) | L3 |
+| T3 | 规则分类(8层+标签+语言, 纯函数) + 可选 LLM 富化(Anthropic/OpenAI，降级) | L3 |
 | T4 | 去重 + Supabase upsert(service_role) + collectOnce 编排 | L3 |
 | T5 | node-cron 常驻服务 + config(zod) + 部署资产(pm2/systemd) + README | L2 |
 | T6 | fixtures + 5 单测 + 离线 smoke | L2 |
@@ -135,6 +135,7 @@ deadcode_until: []
 - T6 完成：fixtures（RSS2.0×2/Atom/malformed）+ `fixtures.ts`（离线 fetchFeedImpl）+ 5 单测（classify/normalize/dedupe/rss/collect 共 34 例）+ `smoke.ts`（离线端到端）。
 - T7 完成：`scripts/generate-news-items-seed.ts`（离线 fixtures 派生确定性 SQL）+ package.json 脚本（news:smoke/collect/cron/test、supabase:news-seed）。
 - T8 完成：`.vitepress/theme/daily-news-feed.ts`（仿 codefather /news，复用 frontier-* CSS + date-filter + 8层数据，anon 只读 news_items）+ `news/index.md` + nav「AI 资讯」+ srcExclude 挡 news-collector/README。
+- 配置对齐补充：`news-collector` 富化配置改为复用仓库统一 `LLM_PROVIDER` / `ANTHROPIC_*` / `OPENAI_*` / `OPENAI_BASE_URL`；`enrich.ts` 从 Anthropic 直连改为统一 `LLMClient`；保留 `NEWS_ENRICH_MODEL` 作为兼容覆盖。
 
 ### Validation
 
@@ -147,6 +148,10 @@ deadcode_until: []
 | `pnpm supabase:news-seed` | pass | 生成 8 条确定性 seed SQL |
 | `pnpm site:build` | pass | 17.27s；`/news/index.html` 含 data-daily-news，bundle 含 news_items，无野生 news-collector 页 |
 | `.env` in .gitignore | pass | 密钥不变量；`.env.example` 模板可提交 |
+| `pnpm news:test` | pass | 沙箱内 `spawn EPERM`，沙箱外 40/40 pass；新增 provider/config/enrich 覆盖 |
+| `pnpm news:smoke` | pass | 沙箱内 `spawn EPERM`，沙箱外 dryRun 8 items / 8 layers / enriched=0 |
+| `pnpm typecheck` | pass | 共享 LLM 工厂 model override 类型通过 |
+| 密钥扫描 | pass | `.env` 未 tracked；tracked 文件无真实 key 形状命中 |
 
 ### 实网验证暴露并修复的真问题
 
@@ -158,6 +163,24 @@ deadcode_until: []
 
 （多视角 5+1 对抗复核 workflow 进行中，结果写入此处）
 
+### 2026-06-17 配置对齐补充复核
+
+| 视角 | 结论 | 证据 |
+|------|------|------|
+| 架构 | pass | `news-collector` 复用共享 `LLMClient` / `getLLM`，不再绑定 Anthropic SDK |
+| 安全 | pass | key 仍只走 env；`.env` 未 tracked；tracked 密钥形状扫描无命中 |
+| 质量 | pass | 空字符串 env 归一为 undefined，避免 `.env.example` 空 key 触发 zod 失败 |
+| 测试 | pass | `pnpm news:test` 沙箱外 40/40，新增 config/enrich 覆盖 |
+| 集成连续性 | pass | `LLM_PROVIDER=openai` + `OPENAI_BASE_URL` 与根配置口径一致；OpenAI-compatible provider 可复用 |
+
+P0/P1：无。
+
 ## Phase 5: Compound
 
 （复利记录）
+
+### 2026-06-17 配置对齐补充
+
+- 经验：子系统配置不要另造 `NEWS_*` provider 口径；优先复用根 `.env.example` 的 provider contract。
+- 经验：测试 provider 降级逻辑时必须隔离真实 `.env`，否则本机 key 会让离线测试误打真实模型。
+- Skill 信号：`spawn EPERM` 仍按 sandbox 外同命令复跑判定源码真伪。

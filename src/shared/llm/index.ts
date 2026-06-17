@@ -11,19 +11,23 @@ import type { LLMClient } from "./types";
 
 export type ProviderName = "anthropic" | "openai" | "ollama";
 
+export interface GetLLMOptions {
+  readonly model?: string;
+}
+
 /**
  * 取得一个 LLMClient。
  * @param provider 显式指定厂商；不传则读 .env 的 LLM_PROVIDER（默认 anthropic）。
  */
-export function getLLM(provider?: ProviderName): LLMClient {
+export function getLLM(provider?: ProviderName, options: GetLLMOptions = {}): LLMClient {
   const name = (provider ?? getEnv("LLM_PROVIDER", "anthropic")) as ProviderName;
   switch (name) {
     case "anthropic":
-      return createAnthropicClient();
+      return createAnthropicClient({ model: options.model });
     case "openai":
-      return createOpenAIClient();
+      return createOpenAIClient({ model: options.model });
     case "ollama":
-      return createOllamaClient();
+      return createOllamaClient({ model: options.model });
     default:
       throw new Error(
         `未知的 LLM_PROVIDER: "${name}"。支持的值：anthropic | openai | ollama。`,

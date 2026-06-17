@@ -7,6 +7,7 @@
 // - dryRun 跳过出库
 
 import { classify } from "./classify.ts";
+import type { ProviderName } from "../../src/shared/llm/index.ts";
 import type { RunConfig, SupabaseConfig } from "./config.ts";
 import { dedupe } from "./dedupe.ts";
 import { enrichItems } from "./enrich.ts";
@@ -52,6 +53,7 @@ export interface CollectOptions {
   /** 每源最多保留多少条（按 feed 顺序）；缺省不限。 */
   readonly maxPerSource?: number;
   readonly enrichMax?: number;
+  readonly enrichProvider?: ProviderName;
   readonly enrichModel?: string;
   readonly fetchFeedImpl?: FetchFeedImpl;
 }
@@ -108,7 +110,11 @@ export async function collectOnce(options: CollectOptions = {}): Promise<Collect
 
   const enrichMax = options.enrichMax ?? 0;
   if (enrichMax > 0) {
-    items = await enrichItems(items, { maxItems: enrichMax, model: options.enrichModel });
+    items = await enrichItems(items, {
+      maxItems: enrichMax,
+      provider: options.enrichProvider,
+      model: options.enrichModel,
+    });
   }
   const enrichedCount = items.filter((item) => item.enriched).length;
 
@@ -147,6 +153,7 @@ export async function collectFromConfig(
     feedTimeoutMs: config.feedTimeoutMs,
     maxPerSource: config.maxPerSource,
     enrichMax: config.enrichMax,
+    enrichProvider: config.enrichProvider,
     enrichModel: config.enrichModel,
     ...overrides,
   });

@@ -31,7 +31,12 @@ interface OpenAIStyleClientOptions {
   provider: "openai" | "ollama";
   modelEnv: string;
   defaultModel: string;
+  model?: string;
   compatibleClient: OpenAICompatibleClientOptions;
+}
+
+export interface OpenAIClientOptions {
+  readonly model?: string;
 }
 
 /** 统一 Message[] → OpenAI ChatCompletionMessageParam[]。 */
@@ -103,7 +108,7 @@ function readReasoningText(value: unknown): string {
 
 function createOpenAIStyleClient(options: OpenAIStyleClientOptions): LLMClient {
   const client = createOpenAICompatibleClient(options.compatibleClient);
-  const model = getEnv(options.modelEnv, options.defaultModel)!;
+  const model = options.model ?? getEnv(options.modelEnv, options.defaultModel)!;
 
   function buildParams(
     options: ChatOptions,
@@ -208,20 +213,22 @@ function createOpenAIStyleClient(options: OpenAIStyleClientOptions): LLMClient {
   };
 }
 
-export function createOpenAIClient(): LLMClient {
+export function createOpenAIClient(options: OpenAIClientOptions = {}): LLMClient {
   return createOpenAIStyleClient({
     provider: "openai",
     modelEnv: "OPENAI_MODEL",
     defaultModel: DEFAULT_MODEL,
+    model: options.model,
     compatibleClient: {},
   });
 }
 
-export function createOllamaClient(): LLMClient {
+export function createOllamaClient(options: OpenAIClientOptions = {}): LLMClient {
   return createOpenAIStyleClient({
     provider: "ollama",
     modelEnv: "OLLAMA_MODEL",
     defaultModel: DEFAULT_OLLAMA_MODEL,
+    model: options.model,
     compatibleClient: {
       apiKeyEnv: "OLLAMA_API_KEY",
       apiKeyFallback: "ollama",

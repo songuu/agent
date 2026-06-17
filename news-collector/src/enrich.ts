@@ -1,25 +1,48 @@
-// 可选的 LLM 富化：用 Claude 把摘要重写成 1 句中文 + 校正体系层。
+// 可选的 LLM 富化：用仓库统一 LLM 配置把摘要重写成 1 句中文 + 校正体系层。
 //
-// 优雅降级是硬约束：无 ANTHROPIC_API_KEY 时原样返回规则结果，整条管道照常离线跑；
+// 优雅降级是硬约束：所选 provider 无 key 时原样返回规则结果，整条管道照常离线跑；
 // 即便配了 key，也需 enrichMax > 0 显式开启，避免默认烧 token。任一条富化失败都保留规则结果，
 // 不让单条 LLM 错误影响整批。
 
-import Anthropic from "@anthropic-ai/sdk";
+import { getLLM, type ProviderName } from "../../src/shared/llm/index.ts";
+import type { LLMClient } from "../../src/shared/llm/types.ts";
 import type { EcosystemLayer, NewsItem } from "./types.ts";
 import { ECOSYSTEM_LAYERS, LAYER_LABELS } from "./types.ts";
 
 export interface EnrichOptions {
   readonly maxItems?: number;
   readonly model?: string;
+  readonly provider?: ProviderName;
   readonly concurrency?: number;
-  readonly client?: Anthropic;
+  readonly client?: Pick<LLMClient, "chat">;
+  readonly env?: NodeJS.ProcessEnv;
 }
 
-export function enrichmentAvailable(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY);
+function readProviderFromEnv(): ProviderName {
+  const provider = process.env.LLM_PROVIDER;
+  if (provider === "openai" || provider === "ollama" || provider === "anthropic") {
+    return provider;
+  }
+  return "anthropic";
 }
 
-const DEFAULT_MODEL = "claude-haiku-4-5-20251001";
+function hasValue(value: string | undefined): boolean {
+  return Boolean(value && value.trim());
+}
+
+export function enrichmentAvailable(
+  provider: ProviderName = readProviderFromEnv(),
+  env: NodeJS.ProcessEnv = process.env,
+): boolean {
+  switch (provider) {
+    case "anthropic":
+      return hasValue(env.ANTHROPIC_API_KEY);
+    case "openai":
+      return hasValue(env.OPENAI_API_KEY);
+    case "ollama":
+      return true;
+  }
+}
 
 function isEcosystemLayer(value: unknown): value is EcosystemLayer {
   return (
@@ -59,22 +82,15 @@ function parseEnrichResponse(text: string): { summary?: string; layer?: Ecosyste
 }
 
 async function enrichOne(
-  client: Anthropic,
+  client: Pick<LLMClient, "chat">,
   item: NewsItem,
-  model: string,
 ): Promise<NewsItem> {
   try {
-    const message = await client.messages.create({
-      model,
-      max_tokens: 200,
+    const message = await client.chat({
+      maxTokens: 200,
       messages: [{ role: "user", content: buildPrompt(item) }],
     });
-    // 结构化收窄：discriminated union 上 type==='text' 即收窄到含 .text 的块，
-    // 不必引用 Anthropic.TextBlock（规避 namespace 重导出差异）。
-    const text = message.content
-      .map((block) => (block.type === "text" ? block.text : ""))
-      .join("");
-    const { summary, layer } = parseEnrichResponse(text);
+    const { summary, layer } = parseEnrichResponse(message.text);
     if (!summary && !layer) return item;
     return {
       ...item,
@@ -112,16 +128,18 @@ export async function enrichItems(
   options: EnrichOptions = {},
 ): Promise<NewsItem[]> {
   const maxItems = options.maxItems ?? 0;
-  if (maxItems <= 0 || !enrichmentAvailable()) return [...items];
+  const provider = options.provider ?? readProviderFromEnv();
+  const env = options.env ?? process.env;
+  if (maxItems <= 0) return [...items];
+  if (!options.client && !enrichmentAvailable(provider, env)) return [...items];
 
-  const client = options.client ?? new Anthropic();
-  const model = options.model ?? DEFAULT_MODEL;
+  const client = options.client ?? getLLM(provider, { model: options.model });
   const concurrency = options.concurrency ?? 3;
 
   const head = items.slice(0, maxItems);
   const tail = items.slice(maxItems);
   const enrichedHead = await mapWithConcurrency(head, concurrency, (item) =>
-    enrichOne(client, item, model),
+    enrichOne(client, item),
   );
   return [...enrichedHead, ...tail];
 }

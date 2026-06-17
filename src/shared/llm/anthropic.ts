@@ -23,6 +23,10 @@ import type {
 const DEFAULT_MODEL = "claude-opus-4-8";
 const DEFAULT_MAX_TOKENS = 4096;
 
+export interface AnthropicClientOptions {
+  readonly model?: string;
+}
+
 /** 把统一 Message[] 拆成 Claude 需要的 system 字符串 + messages 数组。 */
 function splitSystem(options: ChatOptions): {
   system: string | undefined;
@@ -122,9 +126,9 @@ function readAnthropicThinkingDelta(event: unknown): string {
   return typeof deltaRecord.thinking === "string" ? deltaRecord.thinking : "";
 }
 
-export function createAnthropicClient(): LLMClient {
+export function createAnthropicClient(options: AnthropicClientOptions = {}): LLMClient {
   const client = new Anthropic({ apiKey: requireEnv("ANTHROPIC_API_KEY") });
-  const model = getEnv("ANTHROPIC_MODEL", DEFAULT_MODEL)!;
+  const model = options.model ?? getEnv("ANTHROPIC_MODEL", DEFAULT_MODEL)!;
 
   function buildParams(options: ChatOptions): Anthropic.MessageCreateParamsNonStreaming {
     const { system, messages } = splitSystem(options);

@@ -31,7 +31,7 @@
     "news:smoke": "tsx news-collector/smoke.ts",
     "news:collect": "tsx --env-file=.env news-collector/src/cli-collect.ts",
     "news:cron": "tsx --env-file=.env news-collector/src/cron.ts",
-    "news:test": "tsx --test news-collector/__tests__/classify.test.mts news-collector/__tests__/normalize.test.mts news-collector/__tests__/dedupe.test.mts news-collector/__tests__/rss.test.mts news-collector/__tests__/collect.test.mts",
+    "news:test": "tsx --test news-collector/__tests__/classify.test.mts news-collector/__tests__/normalize.test.mts news-collector/__tests__/dedupe.test.mts news-collector/__tests__/rss.test.mts news-collector/__tests__/collect.test.mts news-collector/__tests__/config.test.mts news-collector/__tests__/enrich.test.mts",
     "rag:smoke": "tsx rag-advanced/smoke.ts",
     "rag:eval": "tsx rag-advanced/05-rag-evaluation/eval-gate.ts",
     "lg:smoke": "tsx langgraph-advanced/smoke.ts",

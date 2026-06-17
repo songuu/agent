@@ -1,7 +1,7 @@
 # news-collector · AI 资讯定时收集系统
 
 仿 [ai.codefather.cn/news](https://ai.codefather.cn/news) 的**多源 AI 资讯定时聚合**子系统：
-按计划从多个公开 RSS/Atom 源抓取 → 归一 → 规则分类（8 层生态）→ 可选 LLM 富化 → 去重 → 幂等写入 Supabase。
+按计划从多个公开 RSS/Atom 源抓取 → 归一 → 规则分类（8 层生态）→ 可选 LLM 富化（Anthropic / OpenAI）→ 去重 → 幂等写入 Supabase。
 
 第 20 章「前沿文章库」直接展示本系统写入的 `news_items` 表；旧的手工策展资料仍保留在知识图谱中，但不再作为文章日历的数据源。
 
@@ -17,7 +17,7 @@ RawFeedItem
    ▼
 NewsItem
    │  dedupe     —— 批内按 externalId + url 双重去重
-   │  enrich?    —— 可选 Claude 摘要+分层；无 key 优雅降级为规则结果
+   │  enrich?    —— 可选 LLM 摘要+分层；无所选 provider key 时优雅降级为规则结果
    ▼
 store(upsert)   —— PostgREST service_role，on_conflict=external_id 幂等
 ```
@@ -32,7 +32,7 @@ news-collector/
     rss.ts          抓取/解析（rss-parser），单源故障隔离
     normalize.ts    归一化（canonical URL / sha256 身份 / 清洗）
     classify.ts     规则分类（纯函数、确定性）
-    enrich.ts       可选 Claude 富化（降级）
+    enrich.ts       可选 LLM 富化（降级）
     dedupe.ts       批内去重
     store.ts        Supabase PostgREST upsert（service_role）
     config.ts       env 配置（zod 校验）
@@ -101,7 +101,11 @@ pnpm supabase:news-seed
 见 [.env.example](./.env.example)。要点：
 
 - `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`：写库必填；**缺失则自动退回 dryRun**（只抓取不写库）。
-- `ANTHROPIC_API_KEY` + `NEWS_ENRICH_MAX>0`：两者同时满足才启用 Claude 富化；否则用规则分类，整条管道仍可离线跑。
+- `LLM_PROVIDER`：与仓库根 `.env.example` 保持同一套值，支持 `anthropic` / `openai` / `ollama`。
+- `ANTHROPIC_API_KEY` + `ANTHROPIC_MODEL`：`LLM_PROVIDER=anthropic` 时使用。
+- `OPENAI_API_KEY` + `OPENAI_MODEL` + 可选 `OPENAI_BASE_URL`：`LLM_PROVIDER=openai` 时使用；SiliconFlow 等 OpenAI-compatible 平台也走这组配置。
+- `NEWS_ENRICH_MAX>0` 且所选 provider 可用时才启用 LLM 富化；否则用规则分类，整条管道仍可离线跑。
+- `NEWS_ENRICH_MODEL`：兼容旧 collector 配置的专用模型覆盖；通常优先用 `ANTHROPIC_MODEL` / `OPENAI_MODEL`。
 - `NEWS_CRON`（默认 `0 8 * * *`）+ `NEWS_TZ`（默认 `Asia/Shanghai`）：调度时刻。
 - `NEWS_RUN_AT_BOOT`（默认 true）：启动时先跑一次。
 
