@@ -1,11 +1,11 @@
 ---
 title: "AI 资讯定时收集系统（仿 ai.codefather.cn/news）"
 type: sprint
-status: in-progress
+status: completed
 created: "2026-06-17"
 updated: "2026-06-17"
-tasks_total: 8
-tasks_completed: 0
+tasks_total: 9
+tasks_completed: 9
 tags: [sprint, feature, news, collector, cron, supabase]
 aliases: ["news collector", "定时收集系统", "daily-news"]
 invariants:
@@ -20,6 +20,7 @@ invariant_tests:
   - "node node_modules/tsx/dist/cli.mjs news-collector/__tests__/normalize.test.mts"
   - "node node_modules/tsx/dist/cli.mjs news-collector/__tests__/dedupe.test.mts"
   - "node node_modules/tsx/dist/cli.mjs news-collector/__tests__/rss.test.mts"
+  - "node node_modules/tsx/dist/cli.mjs news-collector/__tests__/sources.test.mts"
   - "node node_modules/tsx/dist/cli.mjs news-collector/smoke.ts"
   - "pnpm typecheck"
 deferred: []
@@ -122,6 +123,7 @@ deadcode_until: []
 | T6 | fixtures + 5 单测 + 离线 smoke | L2 |
 | T7 | seed 生成器(离线派生) + package.json 脚本接线 | L2 |
 | T8 | 展示页(daily-news-feed theme + /news 页) | L2 |
+| T9 | 来源扩容：新增高信噪 RSS 源 + registry 测试 + 生产收集补库 | L2 |
 
 ## Phase 3: Work
 
@@ -136,6 +138,7 @@ deadcode_until: []
 - T7 完成：`scripts/generate-news-items-seed.ts`（离线 fixtures 派生确定性 SQL）+ package.json 脚本（news:smoke/collect/cron/test、supabase:news-seed）。
 - T8 完成：`.vitepress/theme/daily-news-feed.ts`（仿 codefather /news，复用 frontier-* CSS + date-filter + 8层数据，anon 只读 news_items）+ `news/index.md` + nav「AI 资讯」+ srcExclude 挡 news-collector/README。
 - 配置对齐补充：`news-collector` 富化配置改为复用仓库统一 `LLM_PROVIDER` / `ANTHROPIC_*` / `OPENAI_*` / `OPENAI_BASE_URL`；`enrich.ts` 从 Anthropic 直连改为统一 `LLMClient`；保留 `NEWS_ENRICH_MODEL` 作为兼容覆盖。
+- T9 完成：新增 8 个实测可用 RSS 源（Google DeepMind、Microsoft Source AI、AWS ML、NVIDIA Deep Learning、InfoQ AI/ML/Data Engineering、VentureBeat AI、MIT Technology Review、Ahead of AI）；`rss.ts` 增加 `Accept` feed header 修复 InfoQ 406；新增 `sources.test.mts` 防 source key 重复和扩容源误关；生产库补齐到 347 篇，`/news/` 与第20章同源读取。
 
 ### Validation
 
@@ -152,6 +155,12 @@ deadcode_until: []
 | `pnpm news:smoke` | pass | 沙箱内 `spawn EPERM`，沙箱外 dryRun 8 items / 8 layers / enriched=0 |
 | `pnpm typecheck` | pass | 共享 LLM 工厂 model override 类型通过 |
 | 密钥扫描 | pass | `.env` 未 tracked；tracked 文件无真实 key 形状命中 |
+| `pnpm news:test` | pass | 沙箱内 `spawn EPERM`，沙箱外 42/42 pass；新增 sources registry 测试 |
+| `pnpm news:smoke` | pass | 沙箱内 `spawn EPERM`，沙箱外离线 8 items / 8 layers |
+| 实网 dry-run collect（15 真源） | pass | 本地 13/15 OK，`fetched=230 dedupe=229`；远端 15/15 OK，`fetched=290 dedupe=289` |
+| 生产真实 collect | pass | 远端执行，新源幂等写入；`stored=289 table=0-0/347` |
+| PM2 常驻 reload | pass | `news-collector` online，远端源码含 `deepmind`，systemd inactive（当前实际常驻方式为 PM2） |
+| 线上浏览器验证 | pass | `/news/` 与 `/lessons/20-agent-frontier-news/` 均显示 `347文章84日期8体系层16来源`，分页请求 offset=0/100/200/300 |
 
 ### 实网验证暴露并修复的真问题
 
@@ -175,6 +184,18 @@ deadcode_until: []
 
 P0/P1：无。
 
+### 2026-06-17 来源扩容复核
+
+| 视角 | 结论 | 证据 |
+|------|------|------|
+| 架构 | pass | 仍只扩 `SOURCES` 注册表与抓取 header；不改 schema、不污染 `frontier_ecosystem_articles` |
+| 安全 | pass | 真实写库仍走服务器/本机 `.env`，未把 service_role 或模型 key 写入 tracked 文件 |
+| 质量 | pass | 新增 `sources.test.mts` 锁定 key 唯一、URL 格式、layerHint 合法和 8 个扩容源 enabled |
+| 测试 | pass | `pnpm news:test` 42/42、`pnpm news:smoke`、`pnpm typecheck`、实网 dry-run、远端真实 collect |
+| 集成连续性 | pass | PM2 常驻服务已 reload；线上页面读取 `news_items` 后自动显示 347 篇，无需 UI 额外接线 |
+
+P0/P1：无。
+
 ## Phase 5: Compound
 
 （复利记录）
@@ -184,3 +205,10 @@ P0/P1：无。
 - 经验：子系统配置不要另造 `NEWS_*` provider 口径；优先复用根 `.env.example` 的 provider contract。
 - 经验：测试 provider 降级逻辑时必须隔离真实 `.env`，否则本机 key 会让离线测试误打真实模型。
 - Skill 信号：`spawn EPERM` 仍按 sandbox 外同命令复跑判定源码真伪。
+
+### 2026-06-17 来源扩容补充
+
+- 经验：RSS 源进入 registry 前必须先用实际 collector 栈 dry-run 验证；单纯 `fetch` 能拿到 XML 不等于 `rss-parser` 可稳定解析。
+- 经验：部分 feed 会因缺 `Accept` header 返回 406；收集器应声明 RSS/Atom/XML 接受类型。
+- 经验：静态页读取 `news_items` 时，扩库优先通过幂等 upsert 和分页验证闭环；不需要为数据增加重新部署 UI。
+- Skill 信号：生产常驻方式以 `pm2 describe news-collector` 为准；当前 systemd inactive，实际 owner 是 PM2。

@@ -9,6 +9,7 @@ import {
   yearMonthOf,
   type YearMonth,
 } from "./frontier-date-filter";
+import { fetchAllPostgrestRows } from "./postgrest-pagination";
 
 const WEEKDAY_LABELS = ["一", "二", "三", "四", "五", "六", "日"] as const;
 
@@ -125,29 +126,18 @@ async function loadFrontierArticlesFromSupabase(): Promise<FrontierArticle[]> {
     throw new Error("缺少 NEXT_PUBLIC_SUPABASE_URL 或 NEXT_PUBLIC_SUPABASE_ANON_KEY");
   }
 
-  const baseUrl = config.url.replace(/\/+$/, "");
-  const endpoint =
-    `${baseUrl}/rest/v1/frontier_ecosystem_articles` +
-    `?select=${FRONTIER_COLUMNS}` +
-    `&chapter_id=eq.${FRONTIER_CHAPTER_ID}` +
-    "&order=sort_order.asc";
-  const response = await fetch(endpoint, {
-    headers: {
-      apikey: config.anonKey,
-      Authorization: `Bearer ${config.anonKey}`,
-      "Accept-Profile": config.schema || "public",
+  const rows = await fetchAllPostgrestRows<FrontierArticleRow>({
+    config: {
+      url: config.url,
+      anonKey: config.anonKey,
+      schema: config.schema || "public",
     },
+    table: "frontier_ecosystem_articles",
+    select: FRONTIER_COLUMNS,
+    filters: [`chapter_id=eq.${FRONTIER_CHAPTER_ID}`],
+    order: ["sort_order.asc"],
+    pageSize: 100,
   });
-
-  if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`HTTP ${response.status} ${detail.slice(0, 180)}`);
-  }
-
-  const rows = (await response.json()) as unknown;
-  if (!Array.isArray(rows)) {
-    throw new Error("返回数据不是数组");
-  }
 
   return rows.map(normalizeArticleRow).filter((article) => article.title && article.url);
 }

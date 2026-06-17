@@ -72,6 +72,35 @@ If users report "initial diagram is still too small", do not keep optimizing ful
 
 If a Mermaid diagram is still unreadable at 135% or higher, inspect the SVG element itself. VitePress/global SVG rules can clamp the rendered `<svg>` to container width before the zoom transform runs, so the transform is only enlarging an already-shrunk drawing. Inside the zoom wrapper, restore the SVG to native `viewBox` pixel size and set `max-width: none`; then apply pan/zoom to that native vector surface.
 
+## 2026-06-17 @notionhq/client@5 removed `client.databases.query`
+
+Symptom: code compiles, 42 fake-injected tests pass, esbuild `site:build` succeeds, bundle grep passes — yet the real Notion sync would crash at runtime with `databases.query is not a function`.
+
+Root cause: `@notionhq/client@5` defaults to Notion-Version `2025-09-03` and migrated to the **data source model**. At runtime `client.databases.query === undefined`; only `client.dataSources.query` is a function. Pinning the Notion-Version header (`notionVersion: "2022-06-28"`) does NOT bring the method back — the header only changes the request contract, not whether the method exists on the SDK class.
+
+Fix: deliberately pin `@notionhq/client@^2.3.0` (v2 natively exposes `databases.query` and defaults to `2022-06-28`), the proven combo with `notion-to-md@3.1.9`. Before calling any SDK method, verify it actually exists in the installed version:
+
+```bash
+node -e "const{Client}=require('@notionhq/client');const c=new Client({auth:'x'});console.log(typeof c.databases.query)"
+# v2.x -> "function" ; v5 -> "undefined"
+```
+
+To upgrade to v5 later, switch `databases.query` to `databases.retrieve` (to read the DB) + `dataSources.query` (to page rows).
+
+## 2026-06-17 `pnpm typecheck` does not cover news-collector/ or .vitepress/
+
+The root `tsconfig.json` `include` is only `["src","lessons","capstone","knowledge-graph","rag-advanced"]`. Code under `news-collector/` and `.vitepress/` is **never type-checked** — `pnpm typecheck` reporting 0 errors is a false signal for them. tsx runs without type checks; esbuild `site:build` does not type-check either. So nothing in the default toolchain catches a wrong/removed dependency API in those dirs.
+
+Fix: add a scoped tsconfig that extends the root and lists the new files, plus a dedicated script. `tsconfig.notion.json` adds `lib:["ES2022","DOM","DOM.Iterable"]` (for HTMLElement/window/document in theme files) and `types:["node","vite/client"]` (for `import.meta.env`), wired as `pnpm notion:typecheck`. Note TS5.7: a `Uint8Array` passed as fetch body must be typed `Uint8Array<ArrayBuffer>` to match `BodyInit`.
+
+## 2026-06-17 double unique constraint + single-key upsert = whole-batch abort -> incremental stall
+
+`notion_articles` has BOTH `unique(notion_page_id)` (the upsert conflict key) AND `unique(slug)`. PostgREST `on_conflict=notion_page_id` only merges the first constraint; two pages that derive the same slug collide on `unique(slug)`, raising **23505** and failing the **entire batch** upsert. Because the stateless incremental watermark is `max(notion_last_edited_time)` read back **from the table**, a failed batch never advances the watermark → next run re-fetches the same batch → fails again → the source is permanently stuck.
+
+Fix: make every derived key constructively globally unique. The slug always appends a short pageId prefix — `slug = slugBase ? \`${slugBase}-${shortPageId(id)}\` : shortPageId(id)` (`map.ts`) — eliminating `unique(slug)` collisions at the source. Add a regression test asserting two pages with the same explicit slug get distinct final slugs.
+
+Meta-lesson: fake-everywhere unit tests + a build that does not type-check give ZERO protection against real-dependency API/type drift. A pre-commit adversarial review must include one pass that checks the actually-installed package's runtime API/types, not just the injected fakes.
+
 ## 2026-06-11 diagram zoom: getBoundingClientRect is polluted by the element's own transform
 
 Symptom: zoomable Mermaid diagram opens offset — empty top-left, content pushed bottom-right and clipped. Root cause is NOT the fit math: `getDiagramBounds` derives a pixel scale from `svg.getBoundingClientRect()`, which **includes the element's current CSS transform** (`getBBox()` does not). Once `fit()` has applied `scale(S)`, the next measurement is inflated by S; and because `fit()` writes `surface.style.height`, the `ResizeObserver` re-enters `fit()`, compounding the error each round (non-idempotent loop).

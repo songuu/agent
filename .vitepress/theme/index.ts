@@ -6,6 +6,8 @@ import "./diagram-zoom";
 import "./frontier-article-archive";
 import "./glossary-explorer";
 import "./interview-clinic";
+import "./notion-article-detail";
+import "./notion-articles-list";
 import "./selection-chat";
 
 export default DefaultTheme;

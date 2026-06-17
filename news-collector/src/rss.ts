@@ -9,6 +9,8 @@ import type { NewsSource, RawFeedItem } from "./types.ts";
 const DEFAULT_TIMEOUT_MS = 15_000;
 const USER_AGENT =
   "agent-build-news-collector/1.0 (+https://github.com/songuu/agent)";
+const ACCEPT_FEED =
+  "application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.1";
 
 export interface FeedResult {
   readonly source: NewsSource;
@@ -20,7 +22,7 @@ export interface FeedResult {
 function createParser(timeoutMs: number): Parser {
   return new Parser({
     timeout: timeoutMs,
-    headers: { "User-Agent": USER_AGENT },
+    headers: { "User-Agent": USER_AGENT, Accept: ACCEPT_FEED },
   });
 }
 

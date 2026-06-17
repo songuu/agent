@@ -58,6 +58,14 @@ news-collector/
 | arxiv-cs-ai | arXiv cs.AI | 论文 | ✅ |
 | hn-ai | Hacker News · AI | 社区 | ✅ |
 | google-ai | Google AI Blog | 厂商 | ✅ |
+| deepmind | Google DeepMind Blog | 厂商 | ✅ |
+| microsoft-ai-source | Microsoft Source · AI | 厂商 | ✅ |
+| aws-ml | AWS Machine Learning Blog | 厂商 | ✅ |
+| nvidia-deep-learning | NVIDIA Deep Learning | 厂商 | ✅ |
+| infoq-ai | InfoQ AI/ML/Data Engineering | 英文媒体 | ✅ |
+| venturebeat-ai | VentureBeat AI | 英文媒体 | ✅ |
+| mit-tr | MIT Technology Review | 英文媒体 | ✅ |
+| ahead-of-ai | Ahead of AI | 英文媒体 | ✅ |
 | huggingface | Hugging Face Blog | 厂商 | ⚠️ 间歇 502（故障隔离兜底）|
 | openai | OpenAI News | 厂商 | ⚠️ 间歇 502 |
 | anthropic | Anthropic News | 厂商 | ⚠️ best-effort |
@@ -95,6 +103,18 @@ pnpm supabase:news-seed
 ```
 
 页面侧用公开 anon 配置只读 `news_items`；service_role 仅在 Node 收集端使用，绝不进前端 bundle。文章日历按 `published_date` 过滤，`collected_date` 只用于审计采集批次。
+
+## Notion 文件夹同步
+
+`pnpm notion:sync` 只同步 `news-collector/src/notion/notion-sources.ts` 中启用的来源。默认推荐 `kind: "folder"`：填目标 Notion 文件夹/根页面的 `rootPageId`，同步范围限定为这个页面下的 `child_page` 子树，不搜索整个 workspace。若确实需要数据库同步，可启用 `kind: "database"` 模板并配置属性映射。
+
+```bash
+# DDL：直接执行 notion_articles 建表 migration
+supabase/migrations/20260617140000_create_notion_articles.sql
+
+# 同步：需仓库根 .env 中配置 NOTION_TOKEN + Supabase 写入凭据
+pnpm notion:sync
+```
 
 ## 环境变量
 

@@ -1,0 +1,20 @@
+{
+  "//": "Notion 子系统的真实 typecheck（主 tsconfig 的 include 不含 news-collector/.vitepress，见 pnpm notion:typecheck）。",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node", "vite/client"]
+  },
+  "include": [
+    "news-collector/src/notion/**/*.ts",
+    "news-collector/__tests__/notion-*.test.mts",
+    ".vitepress/theme/notion-markdown.ts",
+    ".vitepress/theme/notion-articles-filter.ts",
+    ".vitepress/theme/notion-articles-list.ts",
+    ".vitepress/theme/notion-article-detail.ts",
+    ".vitepress/theme/notion-articles-filter.test.mts",
+    ".vitepress/theme/notion-markdown.test.mts",
+    "scripts/generate-notion-articles-seed.ts",
+    "scripts/push-notion-articles-to-supabase.ts"
+  ]
+}

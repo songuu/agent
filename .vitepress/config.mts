@@ -362,6 +362,7 @@ export default withMermaid(
         { text: "开始学习", link: "/docs/setup" },
         { text: "课程总览", link: "/docs/navigation" },
         { text: "AI 资讯", link: "/news/" },
+        { text: "Notion 文章", link: "/notion/" },
         {
           text: "知识图谱",
           items: [
