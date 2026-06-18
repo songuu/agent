@@ -207,6 +207,10 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 11. 长期记忆 agent 为何不能只测 recall？为什么 `observation stream / user feedback / knowledge archive / follow-up reuse` 要分开评估？（→ 07 / 15 / 19）
 12. 什么是 agent harness？它和 agent framework / SDK 的边界怎么划？为什么审批、重试、回放、权限壳层最好放在 harness 而不是模型里？（→ 04 / 12 / 16 / 19）
 13. Agent runtime / tool 协议升级时，为什么要单独审查 `auth-required vs input-required`、`history compaction`、`auto-approval` 规则和 tracing 注入边界？（→ 05 / 11 / 17 / 18 / 19）
+14. 研究型 agent 的 benchmark 为什么要强调 clean-room synthesis 和 strategic generalization？如果 agent 只是拼接原文句子，为什么高分也不可信？（→ 10 / 15 / capstone / 19）
+15. 为什么长周期 agent 评测不能只看单步 reward 或单回合成功率？RetailBench 这类 benchmark 在检验什么长期策略能力？（→ 10 / 15 / 19）
+16. 监控/告警 agent 为什么要同时测反应时效、误报/漏报和后续行动链，而不是只看“能否识别异常”？（→ 16 / 17 / 18 / 19）
+17. 评测记忆 agent 时，为什么要单独测补充关系、矛盾关系和无关关系的区分？只看关键词召回会漏掉什么记忆一致性问题？（→ 07 / 15 / 19）
 
 ### C. 项目深挖类（考你是不是真做过）
 

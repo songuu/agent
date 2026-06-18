@@ -13,8 +13,15 @@ import {
   type CategoryFilter,
   type ChapterFilter,
 } from "./interview-clinic-filter";
+import {
+  clampPageIndex,
+  nearestPagedIndex,
+  nextPagedIndex,
+} from "./interview-clinic-paging";
 
 const initialized = new WeakSet<HTMLElement>();
+const WHEEL_PAGE_LOCK_MS = 380;
+const WHEEL_PAGE_THRESHOLD = 24;
 
 const CATEGORY_TABS: Array<{ id: CategoryFilter; label: string }> = [
   { id: "all", label: "全部" },
@@ -82,8 +89,40 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
   const summary = document.createElement("p");
   summary.className = "interview-clinic-summary";
 
+  const viewport = document.createElement("section");
+  viewport.className = "interview-clinic-viewport";
+  viewport.tabIndex = 0;
+  viewport.setAttribute("aria-label", "面试题滚动翻页区");
+
   const list = document.createElement("ol");
   list.className = "interview-clinic-list";
+
+  const pager = document.createElement("p");
+  pager.className = "interview-clinic-pager";
+
+  let currentPage = 0;
+  let wheelLocked = false;
+  let scrollSyncToken = 0;
+
+  function listItems(): HTMLElement[] {
+    return Array.from(list.querySelectorAll<HTMLElement>(".interview-clinic-item"));
+  }
+
+  function syncPager(total: number): void {
+    if (total <= 0) {
+      pager.textContent = "暂无可翻页题目";
+      return;
+    }
+    pager.textContent = `第 ${currentPage + 1} / ${total} 页 · 可用滚轮、方向键、PageUp/PageDown 翻页`;
+  }
+
+  function scrollToPage(index: number, behavior: ScrollBehavior = "smooth"): void {
+    const items = listItems();
+    if (items.length === 0) return;
+    currentPage = clampPageIndex(index, items.length);
+    syncPager(items.length);
+    items[currentPage]?.scrollIntoView({ block: "start", inline: "nearest", behavior });
+  }
 
   function renderTabs(): void {
     tabs.replaceChildren();
@@ -104,6 +143,7 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
 
   function renderList(): void {
     const filtered = filterQuestions(questions, selectedCategory, selectedChapter);
+    currentPage = 0;
     summary.textContent = `共 ${filtered.length} 题${selectedChapter === "all" ? "" : ` · 章节 ${chapterDisplay(selectedChapter)}`}`;
     list.replaceChildren();
 
@@ -112,6 +152,7 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
       empty.className = "interview-clinic-empty";
       empty.textContent = "该筛选条件下暂无面试题。";
       list.append(empty);
+      syncPager(0);
       return;
     }
 
@@ -140,11 +181,66 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
       item.append(text, meta);
       list.append(item);
     }
+
+    syncPager(filtered.length);
+    requestAnimationFrame(() => scrollToPage(0, "auto"));
   }
+
+  viewport.addEventListener(
+    "wheel",
+    (event) => {
+      const items = listItems();
+      if (items.length <= 1) return;
+      if (Math.abs(event.deltaY) < WHEEL_PAGE_THRESHOLD) return;
+      event.preventDefault();
+      if (wheelLocked) return;
+
+      wheelLocked = true;
+      scrollToPage(nextPagedIndex(currentPage, event.deltaY, items.length));
+      window.setTimeout(() => {
+        wheelLocked = false;
+      }, WHEEL_PAGE_LOCK_MS);
+    },
+    { passive: false },
+  );
+
+  viewport.addEventListener("keydown", (event) => {
+    const items = listItems();
+    if (items.length <= 1) return;
+
+    if (event.key === "ArrowDown" || event.key === "PageDown" || event.key === " ") {
+      event.preventDefault();
+      scrollToPage(currentPage + 1);
+      return;
+    }
+
+    if (event.key === "ArrowUp" || event.key === "PageUp") {
+      event.preventDefault();
+      scrollToPage(currentPage - 1);
+    }
+  });
+
+  list.addEventListener(
+    "scroll",
+    () => {
+      const token = window.setTimeout(() => {
+        if (token !== scrollSyncToken) return;
+        const items = listItems();
+        currentPage = nearestPagedIndex(
+          list.scrollTop,
+          items.map((item) => item.offsetTop),
+        );
+        syncPager(items.length);
+      }, 80);
+      scrollSyncToken = token;
+    },
+    { passive: true },
+  );
 
   renderTabs();
   renderList();
-  root.append(tabs, controls, summary, list);
+  viewport.append(list);
+  root.append(tabs, controls, summary, viewport, pager);
 }
 
 /** 章节标签展示：数字章节加「第 N 章」，毕设等非数字原样。 */

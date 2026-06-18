@@ -44,6 +44,13 @@ export type SourceKind =
   | "vendor-blog"
   | "release";
 
+export interface SourceRetryPolicy {
+  /** 总尝试次数（含首次），默认普通源 3，重点源 5。 */
+  readonly maxAttempts?: number;
+  /** 首次退避毫秒数；后续按指数退避。 */
+  readonly baseDelayMs?: number;
+}
+
 /** 单个 RSS/Atom 新闻源的注册信息。 */
 export interface NewsSource {
   /** 稳定的注册键，写入存储用于溯源，改名也不变，例如 "qbitai"。 */
@@ -56,6 +63,10 @@ export interface NewsSource {
   readonly lang: SourceLang;
   /** 分类器无法命中关键词时的兜底体系层；缺省退回 foundation。 */
   readonly layerHint?: EcosystemLayer;
+  /** 重点站点：失败时更积极重试，也在日志里单独强调。 */
+  readonly critical?: boolean;
+  /** 可按源覆盖重试策略。 */
+  readonly retry?: SourceRetryPolicy;
   /** 是否参与收集；间歇不稳定的源仍可保留 enabled，由抓取层做故障隔离。 */
   readonly enabled: boolean;
 }

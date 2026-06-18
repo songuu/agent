@@ -22,7 +22,10 @@ export interface SourceOutcome {
   readonly name: string;
   readonly ok: boolean;
   readonly fetched: number;
+  readonly attempts: number;
+  readonly critical?: boolean;
   readonly error?: string;
+  readonly diagnostics?: string;
 }
 
 export interface CollectReport {
@@ -79,7 +82,10 @@ export async function collectOnce(options: CollectOptions = {}): Promise<Collect
         name: result.source.name,
         ok: false,
         fetched: 0,
+        attempts: result.attempts,
+        critical: result.source.critical,
         error: result.error,
+        diagnostics: result.diagnostics,
       });
       continue;
     }
@@ -93,6 +99,9 @@ export async function collectOnce(options: CollectOptions = {}): Promise<Collect
       name: result.source.name,
       ok: true,
       fetched: capped.length,
+      attempts: result.attempts,
+      critical: result.source.critical,
+      diagnostics: result.diagnostics,
     });
     for (const rawItem of capped) {
       const classification = classify(

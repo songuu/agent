@@ -1,46 +1,298 @@
+/* ============================================================
+   Aurora Glass 设计系统 · token 层
+   WHY: 整站玻璃质感/光晕统一从这里取，组件只引用变量不写死颜色，
+        换主题/调饱和度只动这一处。oklch 走 @supports 兜底；color-mix 视为基线
+        （Baseline Widely Available 2023起，与 backdrop-filter 同代，不再单独 guard）。
+   ============================================================ */
 :root {
   --vp-c-brand-1: #1e80ff;
   --vp-c-brand-2: #4593ff;
   --vp-c-brand-3: #6aa6ff;
   --vp-c-brand-soft: rgba(30, 128, 255, 0.14);
+  /* 品牌色作「小字文本」专用：浅色下 --vp-c-brand-1(#1e80ff) 仅 ~3.6:1 不达 AA，
+     故文本场景用更深的 --brand-text；暗色沿用亮品牌色（暗底上对比足够）。 */
+  --brand-text: #0b5cc4;
   --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: linear-gradient(120deg, #1e80ff 25%, #00b8d4 95%);
-  --vp-home-hero-image-background-image: linear-gradient(-45deg, #1e80ff 40%, #36cfff 60%);
-  --vp-home-hero-image-filter: blur(56px);
+  --vp-home-hero-name-background: linear-gradient(120deg, #1e80ff 0%, #00b8d4 48%, #7c5cff 100%);
+  --vp-home-hero-image-background-image: linear-gradient(-45deg, #1e80ff 30%, #36cfff 55%, #7c5cff 90%);
+  --vp-home-hero-image-filter: blur(64px);
   --vp-font-family-base: "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
     "Noto Sans SC", system-ui, -apple-system, sans-serif;
+
+  /* 极光光晕调色板（浅色：克制、低饱和；见 .dark 提亮） */
+  --aurora-1: rgba(30, 128, 255, 0.18);
+  --aurora-2: rgba(0, 184, 212, 0.16);
+  --aurora-3: rgba(124, 92, 255, 0.15);
+  --aurora-4: rgba(255, 99, 173, 0.10);
+  --aurora-veil: rgba(255, 255, 255, 0);
+
+  /* 玻璃面：半透明底 + 描边 + 顶部高光 + 模糊半径 */
+  --glass-bg: rgba(255, 255, 255, 0.66);
+  --glass-bg-strong: rgba(255, 255, 255, 0.82);
+  /* 更轻的玻璃层：用于嵌套在玻璃壳内的结构面板，让极光背景透出形成景深。 */
+  --glass-bg-soft: rgba(255, 255, 255, 0.5);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --glass-hairline: color-mix(in srgb, var(--vp-c-divider) 80%, transparent);
+  --glass-highlight: rgba(255, 255, 255, 0.75);
+  --glass-blur: 14px;
+  --glass-blur-strong: 22px;
+
+  /* 阴影/光晕刻度 */
+  --elev-1: 0 1px 2px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(15, 23, 42, 0.05);
+  --elev-2: 0 10px 30px rgba(15, 23, 42, 0.1), 0 2px 8px rgba(15, 23, 42, 0.05);
+  --elev-3: 0 28px 70px rgba(15, 23, 42, 0.2);
+  --glow-brand: 0 12px 38px color-mix(in srgb, var(--vp-c-brand-1) 28%, transparent);
+
+  /* 圆角刻度 */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
 }
 
 .dark {
   --vp-c-brand-1: #4593ff;
   --vp-c-brand-2: #6aa6ff;
   --vp-c-brand-3: #8fbdff;
-  --vp-c-brand-soft: rgba(69, 147, 255, 0.16);
+  --vp-c-brand-soft: rgba(69, 147, 255, 0.18);
+  /* 暗底上亮品牌色作文本对比足够，沿用之。 */
+  --brand-text: var(--vp-c-brand-1);
+
+  /* 暗色极光：高饱和、更亮，撑起「惊艳」观感 */
+  --aurora-1: rgba(56, 150, 255, 0.34);
+  --aurora-2: rgba(0, 209, 255, 0.26);
+  --aurora-3: rgba(139, 110, 255, 0.3);
+  --aurora-4: rgba(255, 110, 196, 0.18);
+  --aurora-veil: rgba(8, 12, 24, 0);
+
+  --glass-bg: rgba(22, 28, 46, 0.52);
+  --glass-bg-strong: rgba(24, 31, 51, 0.72);
+  --glass-bg-soft: rgba(22, 28, 46, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-hairline: rgba(255, 255, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.1);
+
+  --elev-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 10px rgba(0, 0, 0, 0.32);
+  --elev-2: 0 12px 34px rgba(0, 0, 0, 0.46);
+  --elev-3: 0 30px 80px rgba(0, 0, 0, 0.6);
+  --glow-brand: 0 14px 44px color-mix(in srgb, var(--vp-c-brand-1) 36%, transparent);
 }
 
+/* ── 前沿暗色基底下沉 ──
+   WHY: 2026 前沿暗色站（alike/ponder/qount/revone/backgrounds.supply…）用「冷调近黑」
+        而非 VitePress 默认 #1b1b1f 灰黑。基底越深，极光 mesh 与玻璃面对比越强 → 暗色更惊艳。
+        仅覆盖 .dark；浅色保持 VitePress 默认（克制）。文字对比随基底变深只增不减 AA 余量。 */
+.dark {
+  --vp-c-bg: #0a0c12;
+  --vp-c-bg-alt: #06070d;
+  --vp-c-bg-soft: #10131c;
+  --vp-c-bg-elv: #151823;
+  --vp-c-bg-mute: #1b1f2b;
+}
+
+/* 宽色域显示器上用 oklch 让极光更通透鲜亮；不支持则用上面的 rgb 兜底。 */
+@supports (color: oklch(0.7 0.2 250)) {
+  :root {
+    --aurora-1: oklch(0.72 0.16 250 / 0.2);
+    --aurora-2: oklch(0.78 0.13 210 / 0.18);
+    --aurora-3: oklch(0.66 0.18 295 / 0.16);
+    --aurora-4: oklch(0.74 0.17 350 / 0.12);
+  }
+  .dark {
+    --aurora-1: oklch(0.68 0.19 250 / 0.36);
+    --aurora-2: oklch(0.78 0.16 205 / 0.28);
+    --aurora-3: oklch(0.62 0.22 295 / 0.32);
+    --aurora-4: oklch(0.7 0.2 350 / 0.2);
+  }
+}
+
+/* 玻璃面工具类：组件容器加 .glass-surface 即获得「半透明+模糊+描边+顶部高光」。
+   仅在支持 backdrop-filter 时开启模糊；否则用更高不透明度的底色兜底可读性。 */
+.glass-surface {
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg-strong);
+  box-shadow: var(--elev-2), inset 0 1px 0 var(--glass-highlight);
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-surface {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  }
+}
+
+/* ── 全站极光氛围背景 ──
+   fixed 伪元素挂在 body 上、z-index:-1（在 root canvas 底色之上、内容之下）。
+   filter/transform 只作用于伪元素自身，不改变 body 的 containing block，
+   故 body 内 append 的 fixed 覆盖层(selection-chat/diagram-zoom overlay)仍锚定视口。 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -18% -12% auto -12%;
+  z-index: -1;
+  height: 135vh;
+  pointer-events: none;
+  background:
+    radial-gradient(42% 52% at 14% 10%, var(--aurora-1), transparent 72%),
+    radial-gradient(40% 46% at 86% 6%, var(--aurora-3), transparent 74%),
+    radial-gradient(52% 58% at 72% 36%, var(--aurora-2), transparent 76%),
+    radial-gradient(46% 52% at 22% 58%, var(--aurora-4), transparent 76%);
+  background-repeat: no-repeat;
+  animation: auroraDrift 28s ease-in-out infinite alternate;
+}
+
+/* 暗色再叠一层细噪点感的暗角，让极光更有「景深」。 */
+.dark body::before {
+  background:
+    radial-gradient(42% 52% at 14% 10%, var(--aurora-1), transparent 72%),
+    radial-gradient(40% 46% at 86% 6%, var(--aurora-3), transparent 74%),
+    radial-gradient(52% 58% at 72% 36%, var(--aurora-2), transparent 76%),
+    radial-gradient(46% 52% at 22% 58%, var(--aurora-4), transparent 76%),
+    radial-gradient(120% 120% at 50% 0%, transparent 60%, rgba(3, 6, 14, 0.55));
+  background-repeat: no-repeat;
+}
+
+/* ── 胶片噪点纹理 ──
+   WHY: 前沿暗色站普遍叠一层极淡颗粒（backgrounds.supply 等），消除大色块「塑料感」、
+        给玻璃/渐变加质地。静态单层位图重复、pointer-events:none、置于内容之下，
+        不糊文字、无逐帧重绘、无 animation（无需 reduced-motion 镜像）。
+   安全性：SVG 内部的 feTurbulence/filter 只作用于该图像位图本身，不是作用在 DOM 祖先上的
+        CSS filter，故不改变 body 的 containing block，body 内 append 的 fixed 覆盖层仍锚视口。 */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.022;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='120'%20height='120'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.85'%20numOctaves='2'%20stitchTiles='stitch'/%3E%3C/filter%3E%3Crect%20width='100%25'%20height='100%25'%20filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 120px 120px;
+}
+
+.dark body::after {
+  opacity: 0.05;
+}
+
+/* ── 玻璃导航栏 ── nav 是 fixed 元素本身、其子级非 fixed，加 backdrop-filter 安全。 */
+:root {
+  --vp-nav-bg-color: rgba(255, 255, 255, 0.72);
+}
+.dark {
+  --vp-nav-bg-color: rgba(18, 24, 40, 0.62);
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .VPNavBar:not(.has-sidebar),
+  .VPNavBar {
+    -webkit-backdrop-filter: blur(16px) saturate(165%);
+    backdrop-filter: blur(16px) saturate(165%);
+  }
+  .VPLocalNav {
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    backdrop-filter: blur(14px) saturate(160%);
+    background-color: var(--vp-nav-bg-color);
+  }
+}
+
+/* ── 统一 focus 环 ── :where() 零特异性，组件可随时覆盖。 */
+:where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--vp-c-brand-1) 72%, transparent);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--vp-c-brand-1) 26%, transparent);
+}
+
+/* webkit 细滚动条，呼应极光主题（不影响 Firefox 默认）。 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--vp-c-brand-1) 40%, transparent) transparent;
+}
+
+/* ── 首页 feature 卡：玻璃化 + 光晕悬浮 ── */
 .VPFeature {
-  border-radius: 14px;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  position: relative;
+  border-radius: var(--radius-lg);
+  border-color: var(--glass-border);
+  background-color: var(--glass-bg-strong);
+  /* spotlight-lite：顶部居中径向辉光，静止全透明、hover 提升 brand 浓度绽放。
+     同结构 gradient（2 色标）可过渡；放卡片自身 background-image，随 border-radius 自动裁切，
+     无伪元素堆叠/z-index 纠葛。 */
+  background-image: radial-gradient(130% 90% at 50% -10%,
+    color-mix(in srgb, var(--vp-c-brand-1) 0%, transparent), transparent 60%);
+  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-highlight);
+  transition: transform 0.28s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.28s ease,
+    border-color 0.28s ease, background-color 0.28s ease, background-image 0.28s ease;
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .VPFeature {
+    background-color: var(--glass-bg);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  }
 }
 
 .VPFeature:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(30, 128, 255, 0.18);
-  border-color: var(--vp-c-brand-2);
+  transform: translateY(-6px);
+  background-image: radial-gradient(130% 90% at 50% -10%,
+    color-mix(in srgb, var(--vp-c-brand-1) 16%, transparent), transparent 62%);
+  box-shadow: var(--elev-3), var(--glow-brand), inset 0 1px 0 var(--glass-highlight);
+  border-color: color-mix(in srgb, var(--vp-c-brand-2) 60%, var(--glass-border));
 }
 
 .VPFeature .icon {
-  border-radius: 10px;
-  background: var(--vp-c-brand-soft);
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--vp-c-brand-soft),
+    color-mix(in srgb, var(--vp-c-brand-1) 6%, transparent));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--vp-c-brand-1) 18%, transparent);
 }
 
 .VPHero .action .VPButton {
-  border-radius: 999px;
-  transition: transform 0.2s ease;
+  border-radius: var(--radius-pill);
+  transition: transform 0.2s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+.VPHero .action .VPButton.brand {
+  box-shadow: var(--glow-brand);
 }
 
 .VPHero .action .VPButton:hover {
   transform: translateY(-2px);
+  box-shadow: var(--glow-brand), var(--elev-2);
+}
+
+/* alt 按钮玻璃化，呼应 hero 的极光背景。 */
+.VPHero .action .VPButton.alt {
+  border-color: var(--glass-border);
+  background: var(--glass-bg);
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .VPHero .action .VPButton.alt {
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    backdrop-filter: blur(10px) saturate(140%);
+  }
+}
+
+/* ── 展示级排版：前沿站标志性紧字距 + hero 暗色辉光 ──
+   仅施于 hero 与 h1/h2 展示文本；CJK 正文段落不收紧（CJK 过紧反伤可读）。 */
+.VPHero .name,
+.VPHero .text {
+  letter-spacing: -0.02em;
+}
+.vp-doc h1 {
+  letter-spacing: -0.015em;
+}
+.vp-doc h2 {
+  letter-spacing: -0.01em;
+}
+/* 近黑底上让渐变标题发光（仅暗色；drop-shadow 作用于 hero 文本自身，非 fixed 覆盖层祖先）。 */
+.dark .VPHero .name .clip {
+  filter: drop-shadow(0 0 28px color-mix(in srgb, var(--vp-c-brand-1) 30%, transparent));
 }
 
 .vp-doc table {
@@ -123,10 +375,12 @@
   display: inline-flex;
   gap: 4px;
   padding: 4px;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--vp-c-bg) 92%, transparent);
-  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.1);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: var(--glass-bg-strong);
+  box-shadow: var(--elev-2), inset 0 1px 0 var(--glass-highlight);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
   opacity: 0;
   pointer-events: none;
   transform: translateY(-4px);
@@ -240,7 +494,9 @@
   display: grid;
   place-items: center;
   padding: clamp(16px, 4vw, 48px);
-  background: color-mix(in srgb, var(--vp-c-bg) 68%, rgba(0, 0, 0, 0.74));
+  background: color-mix(in srgb, var(--vp-c-bg) 60%, rgba(0, 0, 0, 0.74));
+  -webkit-backdrop-filter: blur(6px) saturate(120%);
+  backdrop-filter: blur(6px) saturate(120%);
 }
 
 .diagram-zoom-overlay-panel {
@@ -249,10 +505,10 @@
   flex-direction: column;
   width: min(1400px, 96vw);
   height: min(900px, 90vh);
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 12px;
-  background: var(--vp-c-bg-soft);
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg-strong);
+  box-shadow: var(--elev-3), inset 0 1px 0 var(--glass-highlight);
   overflow: hidden;
 }
 
@@ -276,9 +532,12 @@
 .demo-runner-card {
   margin: 24px 0;
   padding: 16px;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
-  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg-strong);
+  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-highlight);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
 }
 
 .demo-runner-header {
@@ -335,6 +594,19 @@
   background: rgba(239, 68, 68, 0.12);
 }
 
+/* 暗色：原浅色深文字色在暗玻璃卡上仅 ~2.3-2.8:1，提亮到达 AA(>=4.5:1)。 */
+.dark .demo-runner-badge[data-tone="ok"] {
+  color: #34d399;
+}
+
+.dark .demo-runner-badge[data-tone="warn"] {
+  color: #fbbf24;
+}
+
+.dark .demo-runner-badge[data-tone="bad"] {
+  color: #f87171;
+}
+
 .demo-runner-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -389,10 +661,12 @@
   display: inline-flex;
   gap: 6px;
   padding: 6px;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--vp-c-bg) 96%, transparent);
-  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: var(--glass-bg-strong);
+  box-shadow: var(--elev-2), inset 0 1px 0 var(--glass-highlight);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
 }
 
 .selection-chat-popover[hidden] {
@@ -433,9 +707,11 @@
   grid-template-rows: auto auto minmax(0, 1fr) auto auto;
   width: min(430px, calc(100vw - 24px));
   height: 100vh;
-  border-left: 1px solid var(--vp-c-divider);
-  background: var(--vp-c-bg);
-  box-shadow: -18px 0 42px rgba(15, 23, 42, 0.18);
+  border-left: 1px solid var(--glass-border);
+  background: var(--glass-bg-strong);
+  box-shadow: var(--elev-3), inset 1px 0 0 var(--glass-highlight);
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(160%);
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(160%);
   transform: translateX(102%);
   transition: transform 0.2s ease;
 }
@@ -586,6 +862,17 @@
   --concept-accent-3: #be123c;
   margin: 28px 0;
   padding: 22px 0;
+}
+
+/* 暗色：teal/crimson 深强调色作 eyebrow/label/badge 文本时仅 ~3:1，提亮到达 AA；
+   同时让 SVG 描边在暗底更通透。 */
+.dark .concept-visual {
+  --concept-accent: #5eead4;
+  --concept-accent-2: #fbbf24;
+  --concept-accent-3: #fda4af;
+}
+
+.concept-visual {
   border-top: 1px solid var(--vp-c-divider);
   border-bottom: 1px solid var(--vp-c-divider);
   background:
@@ -626,9 +913,11 @@
   overflow: hidden;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--vp-c-bg) 88%, var(--vp-c-bg-soft));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  /* 同 notion-card：concept 画框可能每页多个，去掉逐项实时模糊，避免叠加动画背景重绘。 */
+  background: var(--glass-bg-strong);
+  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-highlight);
 }
 
 .concept-visual-canvas {
@@ -1119,10 +1408,13 @@
   margin: 24px 0 34px;
   padding: 18px;
   overflow: clip;
-  border: 1px solid var(--frontier-card-border);
-  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
   color: var(--frontier-text-strong);
-  background: var(--frontier-bg);
+  background: var(--glass-bg-strong);
+  box-shadow: var(--elev-2), inset 0 1px 0 var(--glass-highlight);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
 }
 
 .frontier-news-hero {
@@ -1132,9 +1424,9 @@
   align-items: end;
   margin-bottom: 18px;
   padding: 16px;
-  border: 1px solid var(--frontier-card-border);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--frontier-card-bg) 88%, var(--frontier-accent-soft));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--glass-bg-soft) 80%, var(--frontier-accent-soft));
 }
 
 .frontier-news-title {
@@ -1174,10 +1466,10 @@
 .frontier-news-stat {
   min-width: 64px;
   padding: 10px 12px;
-  border: 1px solid var(--frontier-card-border);
-  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
   text-align: center;
-  background: var(--frontier-card-bg);
+  background: var(--glass-bg-soft);
 }
 
 .frontier-news-stat strong,
@@ -1212,7 +1504,7 @@
 .frontier-news-list-panel {
   padding: 18px;
   border: 1px solid var(--frontier-card-border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--frontier-accent-soft) 24%, transparent), transparent 220px),
     color-mix(in srgb, var(--frontier-card-bg) 92%, var(--vp-c-bg-soft));
@@ -1267,7 +1559,7 @@
 .frontier-layer-tab:focus-visible,
 .frontier-layer-tab[data-active="true"] {
   border-color: var(--frontier-accent);
-  color: var(--frontier-accent);
+  color: var(--brand-text);
   outline: none;
   background: var(--frontier-accent-soft);
 }
@@ -1276,9 +1568,9 @@
   box-sizing: border-box;
   min-height: 140px;
   padding: 28px 24px;
-  border: 1px solid var(--frontier-card-border);
-  border-radius: 8px;
-  background: var(--frontier-card-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: var(--glass-bg-soft);
   color: var(--frontier-text);
   font-size: 15px;
   line-height: 1.7;
@@ -1290,9 +1582,9 @@
   max-width: 100%;
   margin: 0;
   padding: 14px;
-  border: 1px solid var(--frontier-card-border);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--frontier-card-bg) 90%, var(--vp-c-bg-soft));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--glass-bg-soft) 88%, var(--frontier-accent-soft));
 }
 
 .frontier-cal-head {
@@ -1426,8 +1718,9 @@
 }
 
 .frontier-cal-cell[data-active="true"] {
+  /* 加深品牌底，让 #fff 日号在明暗两主题都 >=4.5:1（原纯 brand 蓝仅 3.0-3.8:1）。 */
   border-color: var(--frontier-accent);
-  background: var(--frontier-accent);
+  background: color-mix(in srgb, var(--frontier-accent) 70%, #000);
   color: #fff;
 }
 
@@ -1621,12 +1914,91 @@
   border-color: var(--frontier-card-border);
 }
 
+.frontier-timeline-status {
+  margin: 0.7rem 0 0;
+  font-size: 0.78rem;
+  color: var(--frontier-text-muted);
+}
+
+.frontier-news-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.frontier-pagination-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.frontier-pagination-button,
+.frontier-page-size-select {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--frontier-card-border);
+  border-radius: 10px;
+  background: var(--frontier-card-bg);
+  color: var(--frontier-text-strong);
+  font-size: 13px;
+  font-weight: 700;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+.frontier-pagination-button {
+  min-width: 36px;
+}
+
+.frontier-pagination-button:hover:not(:disabled),
+.frontier-page-size-select:hover {
+  border-color: color-mix(in srgb, var(--frontier-accent) 42%, transparent);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--frontier-accent) 16%, transparent);
+  transform: translateY(-1px);
+}
+
+.frontier-pagination-button[data-active="true"] {
+  border-color: color-mix(in srgb, var(--frontier-accent) 50%, transparent);
+  background: color-mix(in srgb, var(--frontier-accent-soft) 56%, white);
+  color: var(--frontier-accent);
+}
+
+.frontier-pagination-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.frontier-pagination-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  color: var(--frontier-text-muted);
+  font-weight: 700;
+}
+
+.frontier-page-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--frontier-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.frontier-page-size-select {
+  padding-right: 30px;
+}
+
 .frontier-timeline-item:hover .frontier-timeline-card,
 .frontier-timeline-item:focus-visible .frontier-timeline-card,
 .frontier-timeline-item[data-active="true"] .frontier-timeline-card {
   border-color: color-mix(in srgb, var(--frontier-accent) 42%, transparent);
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.14);
-  transform: translateY(-1px);
+  box-shadow: var(--elev-2), 0 10px 30px color-mix(in srgb, var(--frontier-accent) 22%, transparent);
+  transform: translateY(-2px);
 }
 
 .frontier-timeline-item[data-active="true"] .frontier-timeline-card {
@@ -1814,6 +2186,19 @@
   }
 }
 
+/* 极光背景缓慢漂移；用 transform 触发合成层，故必须镜像进 prefers-reduced-motion 关停。 */
+@keyframes auroraDrift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-3%, 2.5%, 0) scale(1.08);
+  }
+  100% {
+    transform: translate3d(2.5%, -2%, 0) scale(1.05);
+  }
+}
+
 @media (max-width: 640px) {
   .vp-doc .frontier-archive-shell {
     width: 100%;
@@ -1996,9 +2381,12 @@
 .interview-clinic {
   margin: 1rem 0 1.5rem;
   padding: 1rem;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 12px;
-  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg-strong);
+  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-highlight);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
 }
 
 .interview-clinic-tabs {
@@ -2055,26 +2443,61 @@
   color: var(--vp-c-text-3);
 }
 
+.interview-clinic-viewport {
+  position: relative;
+  min-height: 24rem;
+  max-height: min(72vh, 42rem);
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-bg-soft) 84%, transparent), transparent 22%),
+    color-mix(in srgb, var(--vp-c-bg) 92%, var(--glass-bg-soft));
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+.interview-clinic-viewport:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 3px;
+}
+
 .interview-clinic-list {
   margin: 0;
   padding: 0;
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
 }
 
 .interview-clinic-item {
-  padding: 0.65rem 0.8rem;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 10px;
-  background: var(--vp-c-bg);
+  display: flex;
+  min-height: min(72vh, 42rem);
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1rem 1rem 1.1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--glass-border) 76%, transparent);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--vp-c-brand-1) 10%, transparent), transparent 32%),
+    color-mix(in srgb, var(--vp-c-bg) 94%, transparent);
+}
+
+.interview-clinic-item:last-child {
+  border-bottom: 0;
 }
 
 .interview-clinic-question {
   display: block;
+  font-size: 1rem;
   color: var(--vp-c-text-1);
-  line-height: 1.55;
+  line-height: 1.65;
 }
 
 .interview-clinic-meta {
@@ -2090,7 +2513,7 @@
   border-radius: 999px;
   font-size: 0.74rem;
   background: var(--vp-c-brand-soft);
-  color: var(--vp-c-brand-1);
+  color: var(--brand-text);
 }
 
 .interview-clinic-chapter-tag {
@@ -2104,13 +2527,22 @@
   list-style: none;
 }
 
+.interview-clinic-pager {
+  margin: 0.7rem 0 0;
+  font-size: 0.78rem;
+  color: var(--vp-c-text-3);
+}
+
 /* 术语表「可筛 + 可搜」渲染器（glossary-explorer.ts）。仅用 transition/静态样式，不引关键帧动画。 */
 .glossary-explorer {
   margin: 1rem 0 1.5rem;
   padding: 1rem;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 12px;
-  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg-strong);
+  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-highlight);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
 }
 
 .glossary-search {
@@ -2199,7 +2631,7 @@
   border-radius: 999px;
   font-size: 0.72rem;
   background: var(--vp-c-brand-soft);
-  color: var(--vp-c-brand-1);
+  color: var(--brand-text);
 }
 
 .glossary-definition {
@@ -2235,6 +2667,16 @@
     font-size: 0.8rem;
   }
 
+  .interview-clinic-viewport {
+    min-height: 21rem;
+    max-height: 68vh;
+  }
+
+  .interview-clinic-item {
+    min-height: 68vh;
+    padding: 0.9rem;
+  }
+
   .glossary-tab {
     padding: 0.3rem 0.6rem;
     font-size: 0.8rem;
@@ -2242,6 +2684,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  body::before {
+    animation: none;
+  }
+
   .selection-chat-drawer {
     transition: none;
   }
@@ -2338,12 +2784,12 @@
 }
 .notion-tag-tab:hover {
   border-color: var(--vp-c-brand-1);
-  color: var(--vp-c-brand-1);
+  color: var(--brand-text);
 }
 .notion-tag-tab.is-active {
   background: var(--vp-c-brand-soft);
   border-color: var(--vp-c-brand-1);
-  color: var(--vp-c-brand-1);
+  color: var(--brand-text);
   font-weight: 600;
 }
 .notion-card-grid {
@@ -2354,17 +2800,22 @@
 .notion-card {
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
   overflow: hidden;
-  background: var(--vp-c-bg-soft);
+  /* 不用 backdrop-filter：卡片在 auto-fill 网格里一屏 12-30 张，每张实时模糊叠在
+     动画极光背景上会触发逐帧重绘 jank。半透明底+描边+顶高光已足够玻璃感。 */
+  background: var(--glass-bg-strong);
+  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-highlight);
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.22s ease, box-shadow 0.22s ease,
+    transform 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
 }
 .notion-card:hover {
-  border-color: var(--vp-c-brand-1);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border-color: color-mix(in srgb, var(--vp-c-brand-1) 60%, var(--glass-border));
+  box-shadow: var(--elev-3), var(--glow-brand), inset 0 1px 0 var(--glass-highlight);
+  transform: translateY(-4px);
 }
 .notion-card-cover {
   width: 100%;

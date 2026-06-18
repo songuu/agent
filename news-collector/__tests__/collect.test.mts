@@ -18,7 +18,7 @@ test("invariant #1: a single source failure is isolated, batch survives", async 
   };
   const impl = async (source: NewsSource): Promise<FeedResult> => {
     if (source.key === "boom") {
-      return { source, ok: false, items: [], error: "simulated 502" };
+      return { source, ok: false, items: [], attempts: 3, error: "simulated 502" };
     }
     return fixtureFetchFeed(source);
   };

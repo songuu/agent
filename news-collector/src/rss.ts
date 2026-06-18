@@ -7,6 +7,9 @@ import Parser from "rss-parser";
 import type { NewsSource, RawFeedItem } from "./types.ts";
 
 const DEFAULT_TIMEOUT_MS = 15_000;
+const DEFAULT_MAX_ATTEMPTS = 3;
+const CRITICAL_MAX_ATTEMPTS = 5;
+const DEFAULT_BASE_DELAY_MS = 750;
 const USER_AGENT =
   "agent-build-news-collector/1.0 (+https://github.com/songuu/agent)";
 const ACCEPT_FEED =
@@ -16,7 +19,9 @@ export interface FeedResult {
   readonly source: NewsSource;
   readonly ok: boolean;
   readonly items: readonly RawFeedItem[];
+  readonly attempts: number;
   readonly error?: string;
+  readonly diagnostics?: string;
 }
 
 function createParser(timeoutMs: number): Parser {
@@ -56,6 +61,63 @@ function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isRetryableFeedError(error: unknown): boolean {
+  const message = getErrorMessage(error);
+  const code =
+    error && typeof error === "object" && "code" in error
+      ? (error as { code?: unknown }).code
+      : undefined;
+
+  if (
+    typeof code === "string" &&
+    ["ECONNRESET", "ETIMEDOUT", "ECONNREFUSED", "EAI_AGAIN"].includes(code)
+  ) {
+    return true;
+  }
+
+  return [
+    /\b429\b/,
+    /\b500\b/,
+    /\b502\b/,
+    /\b503\b/,
+    /\b504\b/,
+    /timed out/i,
+    /timeout/i,
+    /socket/i,
+    /TLS connection/i,
+    /temporar/i,
+    /network/i,
+    /ECONNRESET/i,
+    /ETIMEDOUT/i,
+    /EAI_AGAIN/i,
+  ].some((pattern) => pattern.test(message));
+}
+
+function retryConfigFor(source: NewsSource): { maxAttempts: number; baseDelayMs: number } {
+  return {
+    maxAttempts:
+      source.retry?.maxAttempts ??
+      (source.critical ? CRITICAL_MAX_ATTEMPTS : DEFAULT_MAX_ATTEMPTS),
+    baseDelayMs: source.retry?.baseDelayMs ?? DEFAULT_BASE_DELAY_MS,
+  };
+}
+
+function summarizeDiagnostics(
+  source: NewsSource,
+  attempts: number,
+  maxAttempts: number,
+  errors: readonly string[],
+): string {
+  const criticalTag = source.critical ? "critical" : "normal";
+  const lastError = errors.at(-1) ?? "unknown";
+  const retryTag = attempts >= maxAttempts ? "retry-exhausted" : "stopped-early";
+  return `${criticalTag}; attempts=${attempts}/${maxAttempts}; ${retryTag}; last=${lastError}`;
+}
+
 function usableItems(items: readonly RawFeedItem[]): RawFeedItem[] {
   return items.filter((item) => item.title.length > 0 && item.link.length > 0);
 }
@@ -76,10 +138,45 @@ export async function fetchFeed(
   opts: { timeoutMs?: number } = {},
 ): Promise<FeedResult> {
   const parser = createParser(opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
-  try {
-    const feed = await parser.parseURL(source.url);
-    return { source, ok: true, items: usableItems((feed.items ?? []).map(toRawItem)) };
-  } catch (error: unknown) {
-    return { source, ok: false, items: [], error: getErrorMessage(error) };
+  const { maxAttempts, baseDelayMs } = retryConfigFor(source);
+  const errors: string[] = [];
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const feed = await parser.parseURL(source.url);
+      return {
+        source,
+        ok: true,
+        items: usableItems((feed.items ?? []).map(toRawItem)),
+        attempts: attempt,
+        diagnostics: summarizeDiagnostics(source, attempt, maxAttempts, errors),
+      };
+    } catch (error: unknown) {
+      const message = getErrorMessage(error);
+      errors.push(message);
+
+      const shouldRetry = attempt < maxAttempts && isRetryableFeedError(error);
+      if (!shouldRetry) {
+        return {
+          source,
+          ok: false,
+          items: [],
+          attempts: attempt,
+          error: message,
+          diagnostics: summarizeDiagnostics(source, attempt, maxAttempts, errors),
+        };
+      }
+
+      await sleep(baseDelayMs * 2 ** (attempt - 1));
+    }
   }
+
+  return {
+    source,
+    ok: false,
+    items: [],
+    attempts: maxAttempts,
+    error: errors.at(-1) ?? "failed",
+    diagnostics: summarizeDiagnostics(source, maxAttempts, maxAttempts, errors),
+  };
 }

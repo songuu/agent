@@ -37,7 +37,7 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   project: "项目深挖类",
 };
 
-const COLLECTED_DATE = "2026-06-17";
+const COLLECTED_DATE = "2026-06-18";
 const COLLECTED_AT = `${COLLECTED_DATE}T09:00:00+08:00`;
 
 interface RawInterviewQuestion {
@@ -234,6 +234,58 @@ const RAW_QUESTIONS: RawInterviewQuestion[] = [
     ],
     confidence: "high",
     rationale: "本题来自多个官方 release notes 的共同趋势：生产 agent 的问题越来越集中在授权、压缩、审批和可观测边界。",
+  },
+  {
+    slug: "scientific-synthesis-clean-room-generalization",
+    category: "engineering",
+    question:
+      "研究型 agent 的 benchmark 为什么要强调 clean-room synthesis 和 strategic generalization？如果 agent 只是拼接原文句子，为什么高分也不可信？",
+    relatedChapters: ["10", "15", "capstone", "19"],
+    sourceTitles: [
+      "Can AI Agents Synthesize Scientific Conclusions? Understanding Strategic Generalization on SciConBench",
+    ],
+    sourceUrls: ["https://arxiv.org/abs/2606.11337"],
+    confidence: "medium",
+    rationale: "本题对应 SciConBench 对『跨文献综合』与『避免原句泄露』的双重要求，适合深挖 deep research agent 的真实泛化能力。",
+  },
+  {
+    slug: "long-horizon-agent-benchmark-vs-single-step-score",
+    category: "engineering",
+    question:
+      "为什么长周期 agent 评测不能只看单步 reward 或单回合成功率？RetailBench 这类 benchmark 在检验什么长期策略能力？",
+    relatedChapters: ["10", "15", "19"],
+    sourceTitles: [
+      "RetailBench: A Long-Horizon Benchmark for AI Agents in Retail Management",
+    ],
+    sourceUrls: ["https://arxiv.org/abs/2606.14545"],
+    confidence: "medium",
+    rationale: "本题来自长周期零售 benchmark 对策略一致性、跨天反馈链和收益稳定性的强调，适合补齐 long-horizon agent 高频追问。",
+  },
+  {
+    slug: "monitoring-agent-timeliness-false-alert-action-chain",
+    category: "engineering",
+    question:
+      "监控/告警 agent 为什么要同时测反应时效、误报/漏报和后续行动链，而不是只看『能否识别异常』？",
+    relatedChapters: ["16", "17", "18", "19"],
+    sourceTitles: [
+      "SentinelBench: Benchmarking Monitoring Agents in Dynamic Environments",
+    ],
+    sourceUrls: ["https://arxiv.org/abs/2606.05342"],
+    confidence: "medium",
+    rationale: "本题来自 monitoring agent benchmark，对 observability、告警治理和自动处置边界都很贴近生产场景。",
+  },
+  {
+    slug: "memory-agent-relational-consistency-vs-keyword-recall",
+    category: "engineering",
+    question:
+      "评测记忆 agent 时，为什么要单独测补充关系、矛盾关系和无关关系的区分？只看关键词召回会漏掉什么记忆一致性问题？",
+    relatedChapters: ["07", "15", "19"],
+    sourceTitles: [
+      "SubtleMemory: Benchmarking Long-Term Relational Memory in LLM Agents",
+    ],
+    sourceUrls: ["https://arxiv.org/abs/2606.05761"],
+    confidence: "medium",
+    rationale: "本题覆盖 relational memory benchmark 的核心口径，适合补齐『记住了多少』之外的『记得是否一致』。",
   },
   // C. 项目深挖类
   {

@@ -15,8 +15,12 @@ export function formatReport(report: CollectReport): string {
   for (const source of report.sources) {
     lines.push(
       source.ok
-        ? `    ✓ ${source.name} (${source.key}) — ${source.fetched} items`
-        : `    ✗ ${source.name} (${source.key}) — ${source.error ?? "failed"}`,
+        ? `    ✓ ${source.name} (${source.key}) — ${source.fetched} items [attempts=${source.attempts}${
+            source.critical ? ", critical" : ""
+          }]`
+        : `    ✗ ${source.name} (${source.key}) — ${source.error ?? "failed"} [attempts=${source.attempts}${
+            source.critical ? ", critical" : ""
+          }]${source.diagnostics ? ` :: ${source.diagnostics}` : ""}`,
     );
   }
   lines.push(

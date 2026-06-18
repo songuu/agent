@@ -54,16 +54,23 @@ export function readFixture(file: string): string {
 export async function fixtureFetchFeed(source: NewsSource): Promise<FeedResult> {
   const fixture = FIXTURE_SOURCES.find((candidate) => candidate.key === source.key);
   if (!fixture) {
-    return { source, ok: false, items: [], error: `no fixture for ${source.key}` };
+    return {
+      source,
+      ok: false,
+      items: [],
+      attempts: 1,
+      error: `no fixture for ${source.key}`,
+    };
   }
   try {
     const items = await parseFeedString(readFixture(fixture.fixtureFile));
-    return { source, ok: true, items };
+    return { source, ok: true, items, attempts: 1 };
   } catch (error: unknown) {
     return {
       source,
       ok: false,
       items: [],
+      attempts: 1,
       error: error instanceof Error ? error.message : String(error),
     };
   }

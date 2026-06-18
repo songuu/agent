@@ -15,6 +15,12 @@ export interface PostgrestPagedReadOptions {
   fetchImpl?: typeof fetch;
 }
 
+export interface PostgrestPageResult<T> {
+  rows: T[];
+  totalCount: number | null;
+  hasMore: boolean;
+}
+
 const DEFAULT_PAGE_SIZE = 100;
 const MAX_PAGE_SIZE = 1000;
 const DEFAULT_MAX_PAGES = 100;
@@ -87,6 +93,60 @@ export async function fetchAllPostgrestRows<T = unknown>({
   throw new Error(`分页读取超过 ${normalizedMaxPages} 页，请缩小查询范围或提高 maxPages`);
 }
 
+export async function fetchPostgrestPage<T = unknown>({
+  config,
+  table,
+  select,
+  filters = [],
+  order = [],
+  pageSize = DEFAULT_PAGE_SIZE,
+  offset = 0,
+  fetchImpl = fetch,
+}: PostgrestPagedReadOptions & { offset?: number }): Promise<PostgrestPageResult<T>> {
+  const normalizedPageSize = normalizePageSize(pageSize);
+  const normalizedOffset = Number.isInteger(offset) && offset > 0 ? offset : 0;
+  const endpoint = buildPostgrestPageUrl(
+    config,
+    table,
+    select,
+    filters,
+    order,
+    normalizedPageSize,
+    normalizedOffset,
+  );
+
+  const response = await fetchImpl(endpoint, {
+    headers: {
+      apikey: config.anonKey,
+      Authorization: `Bearer ${config.anonKey}`,
+      "Accept-Profile": config.schema || "public",
+      Prefer: "count=exact",
+    },
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`HTTP ${response.status} ${detail.slice(0, 180)}`);
+  }
+
+  const pageRows = (await response.json()) as unknown;
+  if (!Array.isArray(pageRows)) {
+    throw new Error("返回数据不是数组");
+  }
+
+  const totalCount = parseContentRangeTotal(response.headers.get("content-range"));
+  const hasMore =
+    totalCount === null
+      ? pageRows.length === normalizedPageSize
+      : normalizedOffset + pageRows.length < totalCount;
+
+  return {
+    rows: pageRows as T[],
+    totalCount,
+    hasMore,
+  };
+}
+
 function appendRawQuery(search: URLSearchParams, raw: string): void {
   const separator = raw.indexOf("=");
   if (separator <= 0 || separator === raw.length - 1) {
@@ -103,4 +163,12 @@ function normalizePageSize(value: number): number {
 function normalizeMaxPages(value: number): number {
   if (!Number.isInteger(value) || value <= 0) return DEFAULT_MAX_PAGES;
   return value;
+}
+
+function parseContentRangeTotal(value: string | null): number | null {
+  if (!value) return null;
+  const match = /\/(\d+)$/.exec(value);
+  if (!match) return null;
+  const total = Number(match[1]);
+  return Number.isFinite(total) ? total : null;
 }

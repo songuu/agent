@@ -11,7 +11,7 @@ async function main(): Promise<void> {
 
   if (!base) throw new Error("Missing required env var: NEXT_PUBLIC_SUPABASE_URL or SUPABASE_URL");
 
-  const endpoint = `${base}/rest/v1/frontier_ecosystem_articles?select=slug,title,source,ecosystem_layer&chapter_id=eq.19&order=sort_order.asc`;
+  const endpoint = `${base}/rest/v1/frontier_ecosystem_articles?select=slug,title,source,ecosystem_layer&chapter_id=eq.20&order=sort_order.asc`;
   const response = await fetch(endpoint, {
     headers: {
       apikey: anonKey,

@@ -16,10 +16,12 @@ import {
   yearMonthOf,
   type YearMonth,
 } from "./frontier-date-filter";
-import { fetchAllPostgrestRows } from "./postgrest-pagination";
+import { fetchPostgrestPage } from "./postgrest-pagination";
 
 const WEEKDAY_LABELS = ["一", "二", "三", "四", "五", "六", "日"] as const;
 const DEFAULT_DATE_LABEL = "6月17日 · 周三";
+const DEFAULT_NEWS_PAGE_SIZE = 10;
+const NEWS_PAGE_SIZE_OPTIONS = [10, 20, 50] as const;
 
 declare const __FRONTIER_SUPABASE_CONFIG__:
   | { url: string; anonKey: string; schema: string }
@@ -101,22 +103,22 @@ function scanDailyNewsFeeds(): void {
 function createFeed(root: HTMLElement): void {
   root.classList.add("frontier-archive-shell");
   root.replaceChildren(statusBlock("正在读取每日资讯..."));
-
-  loadNewsFromSupabase()
-    .then((items) => renderFeed(root, items))
-    .catch((error: unknown) => {
-      const message = error instanceof Error ? error.message : String(error);
-      root.replaceChildren(statusBlock(`资讯读取失败：${message}`));
-    });
+  void renderFeed(root).catch((error: unknown) => {
+    const message = error instanceof Error ? error.message : String(error);
+    root.replaceChildren(statusBlock(`资讯读取失败：${message}`));
+  });
 }
 
-async function loadNewsFromSupabase(): Promise<NewsItemView[]> {
+async function fetchNewsPage(
+  offset: number,
+  pageSize: number = DEFAULT_NEWS_PAGE_SIZE,
+): Promise<{ items: NewsItemView[]; totalCount: number | null; hasMore: boolean }> {
   const config = __FRONTIER_SUPABASE_CONFIG__ ?? null;
   if (!config?.url || !config.anonKey) {
     throw new Error("缺少 NEXT_PUBLIC_SUPABASE_URL 或 NEXT_PUBLIC_SUPABASE_ANON_KEY");
   }
 
-  const rows = await fetchAllPostgrestRows<NewsItemRow>({
+  const page = await fetchPostgrestPage<NewsItemRow>({
     config: {
       url: config.url,
       anonKey: config.anonKey,
@@ -125,26 +127,30 @@ async function loadNewsFromSupabase(): Promise<NewsItemView[]> {
     table: "news_items",
     select: NEWS_COLUMNS,
     order: ["published_date.desc", "published_at.desc"],
-    pageSize: 100,
+    pageSize,
+    offset,
   });
 
-  return rows.map(normalizeRow).filter((item) => item.title && item.url);
+  return {
+    items: page.rows.map(normalizeRow).filter((item) => item.title && item.url),
+    totalCount: page.totalCount,
+    hasMore: page.hasMore,
+  };
 }
 
-function renderFeed(root: HTMLElement, items: NewsItemView[]): void {
+async function renderFeed(root: HTMLElement): Promise<void> {
   root.replaceChildren();
 
-  if (items.length === 0) {
-    root.append(
-      statusBlock("每日资讯暂无数据。先运行 news-collector（pnpm news:collect）或导入 news_items seed。"),
-    );
-    return;
-  }
-
   let selectedLayer: LayerFilter = "all";
-  let selectedDate: string | null = pickDefaultDate(items);
-  let calendarMonth: YearMonth =
-    yearMonthOf(selectedDate) ?? yearMonthOf(availableDates(items)[0] ?? null) ?? { year: 2026, month: 6 };
+  let selectedDate: string | null = null;
+  let calendarMonth: YearMonth = { year: 2026, month: 6 };
+  let items: NewsItemView[] = [];
+  let totalCount: number | null = null;
+  let currentPage = 1;
+  let pageSize = DEFAULT_NEWS_PAGE_SIZE;
+  let loadingPage = false;
+  let pageError: string | null = null;
+  let loadGeneration = 0;
 
   const overview = document.createElement("header");
   overview.className = "frontier-news-hero";
@@ -195,6 +201,10 @@ function renderFeed(root: HTMLElement, items: NewsItemView[]): void {
 
   const layout = document.createElement("div");
   layout.className = "frontier-news-layout";
+  const timelineStatus = document.createElement("div");
+  timelineStatus.className = "frontier-timeline-status";
+  const pagination = document.createElement("div");
+  pagination.className = "frontier-news-pagination";
 
   function layerScoped(layer: LayerFilter = selectedLayer): NewsItemView[] {
     if (layer === "all") return items;
@@ -227,10 +237,45 @@ function renderFeed(root: HTMLElement, items: NewsItemView[]): void {
     if (nextMonth) calendarMonth = nextMonth;
   }
 
+  function syncFilterState(): void {
+    if (selectedDate === null) {
+      selectedDate = pickDefaultDate(items);
+    }
+    alignDateToLayer();
+    calendarMonth =
+      yearMonthOf(selectedDate) ?? yearMonthOf(availableDates(items)[0] ?? null) ?? calendarMonth;
+  }
+
+  function renderStatus(): void {
+    const visibleCount = visible().length;
+    if (loadingPage) {
+      timelineStatus.textContent = `正在加载第 ${currentPage} 页… 当前页 ${items.length} 篇${totalCount ? ` / 总计 ${totalCount} 篇` : ""}`;
+      return;
+    }
+    if (pageError) {
+      timelineStatus.textContent = `分页加载失败：${pageError}`;
+      return;
+    }
+    const totalPages = resolveTotalPages(totalCount, pageSize);
+    timelineStatus.textContent =
+      totalPages > 0
+        ? `第 ${currentPage} / ${totalPages} 页 · 当前页 ${items.length} 篇${visibleCount !== items.length ? ` · 当前筛选命中 ${visibleCount} 篇` : ""}${totalCount ? ` · 总计 ${totalCount} 篇` : ""}`
+        : `当前页 ${items.length} 篇${visibleCount !== items.length ? ` · 当前筛选命中 ${visibleCount} 篇` : ""}`;
+  }
+
   function renderAll(): void {
+    syncFilterState();
+    stats.replaceChildren(
+      statItem(String(totalCount ?? items.length), "文章"),
+      statItem(String(availableDates(items).length), "日期"),
+      statItem(String(new Set(items.map((i) => i.ecosystemLayer)).size), "体系层"),
+      statItem(String(new Set(items.map((i) => i.sourceName)).size), "来源"),
+    );
     renderFilters();
     renderCalendar();
     renderTimeline();
+    renderStatus();
+    renderPagination();
   }
 
   function renderFilters(): void {
@@ -338,13 +383,14 @@ function renderFeed(root: HTMLElement, items: NewsItemView[]): void {
     if (rows.length === 0) {
       const empty = document.createElement("p");
       empty.className = "frontier-timeline-empty";
-      empty.textContent = "该筛选条件下暂无文章。";
+      empty.textContent = "该筛选条件下当前页暂无文章，可切换页码或调整筛选条件。";
       timeline.append(empty);
       return;
     }
 
+    const groups = groupByDate(rows);
     let rank = 1;
-    for (const group of groupByDate(rows)) {
+    for (const group of groups) {
       const section = document.createElement("section");
       section.className = "frontier-date-section";
       const dateHeader = document.createElement("div");
@@ -368,12 +414,171 @@ function renderFeed(root: HTMLElement, items: NewsItemView[]): void {
     }
   }
 
-  renderAll();
+  function renderPagination(): void {
+    pagination.replaceChildren();
+    const totalPages = resolveTotalPages(totalCount, pageSize);
+    if (totalPages <= 1 && totalCount !== null && totalCount <= pageSize) return;
+
+    const controls = document.createElement("div");
+    controls.className = "frontier-pagination-controls";
+
+    const prev = pageButton("‹", currentPage <= 1, () => {
+      void loadPage(currentPage - 1);
+    });
+    prev.setAttribute("aria-label", "上一页");
+    controls.append(prev);
+
+    for (const token of buildPaginationTokens(totalPages, currentPage)) {
+      if (token === "...") {
+        const ellipsis = document.createElement("span");
+        ellipsis.className = "frontier-pagination-ellipsis";
+        ellipsis.textContent = "…";
+        controls.append(ellipsis);
+        continue;
+      }
+
+      const button = pageButton(String(token), token === currentPage, () => {
+        void loadPage(token);
+      });
+      if (token === currentPage) button.dataset.active = "true";
+      controls.append(button);
+    }
+
+    const next = pageButton("›", totalPages > 0 && currentPage >= totalPages, () => {
+      void loadPage(currentPage + 1);
+    });
+    next.setAttribute("aria-label", "下一页");
+    controls.append(next);
+
+    const pageSizeWrap = document.createElement("label");
+    pageSizeWrap.className = "frontier-page-size";
+    const pageSizeLabel = document.createElement("span");
+    pageSizeLabel.textContent = "每页";
+    const pageSizeSelect = document.createElement("select");
+    pageSizeSelect.className = "frontier-page-size-select";
+    for (const optionValue of NEWS_PAGE_SIZE_OPTIONS) {
+      const option = document.createElement("option");
+      option.value = String(optionValue);
+      option.textContent = `${optionValue} 条`;
+      if (optionValue === pageSize) option.selected = true;
+      pageSizeSelect.append(option);
+    }
+    pageSizeSelect.addEventListener("change", () => {
+      const nextSize = Number(pageSizeSelect.value);
+      if (!Number.isInteger(nextSize) || nextSize <= 0 || nextSize === pageSize) return;
+      pageSize = nextSize;
+      currentPage = 1;
+      void loadPage(1);
+    });
+    pageSizeWrap.append(pageSizeLabel, pageSizeSelect);
+
+    pagination.append(controls, pageSizeWrap);
+  }
+
+  async function loadPage(targetPage: number): Promise<void> {
+    if (loadingPage) return;
+    const safeTargetPage = Math.max(1, targetPage);
+    loadingPage = true;
+    pageError = null;
+    renderStatus();
+    renderPagination();
+
+    const generation = ++loadGeneration;
+    try {
+      const page = await fetchNewsPage((safeTargetPage - 1) * pageSize, pageSize);
+      if (generation !== loadGeneration) return;
+      currentPage = safeTargetPage;
+      items = page.items;
+      totalCount = page.totalCount;
+      const totalPages = resolveTotalPages(totalCount, pageSize);
+      if (totalPages > 0 && currentPage > totalPages) {
+        currentPage = totalPages;
+      }
+      if (selectedDate === null) {
+        selectedDate = pickDefaultDate(items);
+      }
+      renderAll();
+    } catch (error: unknown) {
+      if (generation !== loadGeneration) return;
+      pageError = error instanceof Error ? error.message : String(error);
+      renderStatus();
+      renderPagination();
+    } finally {
+      if (generation === loadGeneration) {
+        loadingPage = false;
+        renderStatus();
+        renderPagination();
+      }
+    }
+  }
+
   layerFilterGroup.append(layerTitle, filters);
   filterBoard.append(layerFilterGroup, calendar);
-  listPanel.append(filterBoard, timeline);
+  listPanel.append(filterBoard, timeline, timelineStatus, pagination);
   layout.append(listPanel);
   root.append(overview, layout);
+
+  await loadPage(1);
+
+  if (items.length === 0) {
+    timeline.replaceChildren(
+      statusBlock("每日资讯暂无数据。先运行 news-collector（pnpm news:collect）或导入 news_items seed。"),
+    );
+    timelineStatus.textContent = "";
+    pagination.replaceChildren();
+  }
+}
+
+function pageButton(label: string, disabled: boolean, onClick: () => void): HTMLButtonElement {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "frontier-pagination-button";
+  button.textContent = label;
+  button.disabled = disabled;
+  button.addEventListener("click", onClick);
+  return button;
+}
+
+function resolveTotalPages(totalCount: number | null, pageSize: number): number {
+  if (totalCount === null || totalCount <= 0) return 0;
+  return Math.max(1, Math.ceil(totalCount / pageSize));
+}
+
+export function buildPaginationTokens(
+  totalPages: number,
+  currentPage: number,
+): Array<number | "..."> {
+  if (totalPages <= 0) return [];
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  const tokens = new Set<number>([1, totalPages, currentPage - 1, currentPage, currentPage + 1]);
+  if (currentPage <= 3) {
+    tokens.add(2);
+    tokens.add(3);
+    tokens.add(4);
+  }
+  if (currentPage >= totalPages - 2) {
+    tokens.add(totalPages - 1);
+    tokens.add(totalPages - 2);
+    tokens.add(totalPages - 3);
+  }
+
+  const pages = [...tokens]
+    .filter((page) => page >= 1 && page <= totalPages)
+    .sort((left, right) => left - right);
+
+  const result: Array<number | "..."> = [];
+  for (let index = 0; index < pages.length; index += 1) {
+    const page = pages[index];
+    const previous = pages[index - 1];
+    if (previous !== undefined && page - previous > 1) {
+      result.push("...");
+    }
+    result.push(page);
+  }
+  return result;
 }
 
 function calNavButton(symbol: string, label: string, onClick: () => void): HTMLButtonElement {

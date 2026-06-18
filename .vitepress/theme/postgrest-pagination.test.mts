@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   buildPostgrestPageUrl,
   fetchAllPostgrestRows,
+  fetchPostgrestPage,
   type PostgrestReadConfig,
 } from "./postgrest-pagination";
 
@@ -71,6 +72,21 @@ test("fetchAllPostgrestRows sends anon headers for every page", async () => {
   ]);
 });
 
+test("fetchPostgrestPage returns total count and hasMore from content-range", async () => {
+  const result = await fetchPostgrestPage<{ id: number }>({
+    config,
+    table: "news_items",
+    select: "external_id",
+    pageSize: 2,
+    offset: 2,
+    fetchImpl: async () => response([{ id: 3 }, { id: 4 }], { "content-range": "2-3/5" }),
+  });
+
+  assert.deepEqual(result.rows, [{ id: 3 }, { id: 4 }]);
+  assert.equal(result.totalCount, 5);
+  assert.equal(result.hasMore, true);
+});
+
 test("fetchAllPostgrestRows fails on non-array payload", async () => {
   await assert.rejects(
     fetchAllPostgrestRows({
@@ -97,10 +113,15 @@ test("fetchAllPostgrestRows stops runaway pagination at maxPages", async () => {
   );
 });
 
-function response(payload: unknown): Response {
+function response(payload: unknown, headers: Record<string, string> = {}): Response {
   return {
     ok: true,
     status: 200,
+    headers: {
+      get(name: string) {
+        return headers[name.toLowerCase()] ?? headers[name] ?? null;
+      },
+    } as Headers,
     text: async () => JSON.stringify(payload),
     json: async () => payload,
   } as Response;
