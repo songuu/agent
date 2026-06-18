@@ -188,6 +188,13 @@ body::after {
     -webkit-backdrop-filter: blur(16px) saturate(165%);
     backdrop-filter: blur(16px) saturate(165%);
   }
+  .VPNavBar.has-sidebar:not(.home.top) {
+    background-color: var(--vp-nav-bg-color);
+  }
+  .VPNavBar.has-sidebar:not(.home.top) .content-body,
+  .VPNavBar.has-sidebar:not(.home.top) .title {
+    background-color: transparent;
+  }
   .VPLocalNav {
     -webkit-backdrop-filter: blur(14px) saturate(160%);
     backdrop-filter: blur(14px) saturate(160%);
@@ -223,7 +230,8 @@ body::after {
   background-image: radial-gradient(130% 90% at 50% -10%,
     color-mix(in srgb, var(--vp-c-brand-1) 0%, transparent), transparent 60%);
   box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-highlight);
-  transition: transform 0.28s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.28s ease,
+  /* hover 用 translate 长属性（非 transform），与 scroll-driven 揭示动画的 transform 组合而非互相覆盖。 */
+  transition: translate 0.28s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.28s ease,
     border-color 0.28s ease, background-color 0.28s ease, background-image 0.28s ease;
 }
 
@@ -236,7 +244,7 @@ body::after {
 }
 
 .VPFeature:hover {
-  transform: translateY(-6px);
+  translate: 0 -6px;
   background-image: radial-gradient(130% 90% at 50% -10%,
     color-mix(in srgb, var(--vp-c-brand-1) 16%, transparent), transparent 62%);
   box-shadow: var(--elev-3), var(--glow-brand), inset 0 1px 0 var(--glass-highlight);
@@ -248,6 +256,29 @@ body::after {
   background: linear-gradient(135deg, var(--vp-c-brand-soft),
     color-mix(in srgb, var(--vp-c-brand-1) 6%, transparent));
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--vp-c-brand-1) 18%, transparent);
+  transition: transform 0.28s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.28s ease;
+}
+
+/* icon hover pop：卡片悬浮时图标轻微放大微旋 + 描边提亮（hover transition，减动免镜像）。 */
+.VPFeature:hover .icon {
+  transform: scale(1.08) rotate(-3deg);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--vp-c-brand-1) 36%, transparent);
+}
+
+/* ── Feature 卡滚动揭示 ──
+   WHY: 入视口时升起淡入是前沿站「活」的核心。用 CSS scroll-driven animation（零 JS、零 FOUC）：
+        支持的浏览器按视口位置驱动，已在视口的卡片直接是终态(可见)，下方卡片滚到才揭示；
+        不支持 animation-timeline 的浏览器 @supports 不命中 → 卡片照常显示（graceful 退化）。
+   安全：transform 仅作用 .VPFeature 自身（无 fixed 子级、非 body.append 覆盖层祖先），containing-block 安全；
+        hover 用 translate 长属性与此 transform 组合而非覆盖；no-preference 包裹 → 减动用户不触发。 */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .VPHome .VPFeatures .VPFeature {
+      animation: featureReveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 24%;
+    }
+  }
 }
 
 .VPHero .action .VPButton {
@@ -257,7 +288,25 @@ body::after {
 }
 
 .VPHero .action .VPButton.brand {
+  position: relative;
+  overflow: hidden;
   box-shadow: var(--glow-brand);
+}
+
+/* 主 CTA hover 扫光：斜向高光自左掠过（hover 触发的一次性 transition；减动下隐藏，见文末减动块）。
+   overflow:hidden 把 sheen 裁进 pill 形；不裁 box-shadow 辉光（阴影画在 border-box 外，不受 overflow 影响）。 */
+.VPHero .action .VPButton.brand::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 30%,
+    rgba(255, 255, 255, 0.38) 50%, transparent 70%);
+  transform: translateX(-130%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+.VPHero .action .VPButton.brand:hover::after {
+  transform: translateX(130%);
 }
 
 .VPHero .action .VPButton:hover {
@@ -290,9 +339,33 @@ body::after {
 .vp-doc h2 {
   letter-spacing: -0.01em;
 }
-/* 近黑底上让渐变标题发光（仅暗色；drop-shadow 作用于 hero 文本自身，非 fixed 覆盖层祖先）。 */
+
+/* ── Hero 入场编排：标题/副标题/标语/按钮依次升起淡入（加载一次，both 保终态）。
+   只动 opacity/transform 不涉对比；减动镜像见文末减动块。 */
+.VPHero .name {
+  animation: heroRise 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.VPHero .text {
+  animation: heroRise 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) 0.08s both;
+}
+.VPHero .tagline {
+  animation: heroRise 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) 0.16s both;
+}
+.VPHero .actions {
+  animation: heroRise 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) 0.24s both;
+}
+
+/* ── 暗色流动渐变标题 + 辉光呼吸 ──
+   渐变沿字面横向流动（首尾同色无缝循环）+ drop-shadow 缓慢明灭。仅暗色：近黑底 large text 对比充裕
+   (≥3:1)，浅色保持克制静态渐变（VitePress 默认）避免 cyan-on-white 低对比。
+   drop-shadow 作用 hero 文本自身（非 fixed 覆盖层祖先）；减动→animation:none，静态渐变 + 静态辉光仍在。 */
 .dark .VPHero .name .clip {
-  filter: drop-shadow(0 0 28px color-mix(in srgb, var(--vp-c-brand-1) 30%, transparent));
+  background-image: linear-gradient(120deg, #4593ff, #22d3ee, #a78bfa, #22d3ee, #4593ff);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 0 24px color-mix(in srgb, var(--vp-c-brand-1) 30%, transparent));
+  animation: heroGradientFlow 9s linear infinite, heroGlowPulse 6s ease-in-out infinite;
 }
 
 .vp-doc table {
@@ -2199,6 +2272,47 @@ body::after {
   }
 }
 
+/* ── 首页运动化 keyframes ──
+   heroRise/heroGradientFlow/heroGlowPulse 均镜像进 prefers-reduced-motion 关停；
+   featureReveal 由 scroll-driven @supports + no-preference 包裹驱动，天然不在减动下生效，故不入关停列表。 */
+@keyframes heroRise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroGradientFlow {
+  to {
+    background-position: 200% center;
+  }
+}
+
+@keyframes heroGlowPulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 20px color-mix(in srgb, var(--vp-c-brand-1) 24%, transparent));
+  }
+  50% {
+    filter: drop-shadow(0 0 34px color-mix(in srgb, var(--vp-c-brand-1) 40%, transparent));
+  }
+}
+
+@keyframes featureReveal {
+  from {
+    opacity: 0;
+    transform: translateY(34px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @media (max-width: 640px) {
   .vp-doc .frontier-archive-shell {
     width: 100%;
@@ -2718,6 +2832,21 @@ body::after {
   .concept-svg-dot,
   .concept-svg-ring {
     animation: none;
+  }
+
+  /* 首页运动化：hero 入场 / 流动渐变 / 辉光呼吸全部关停。
+     （scroll-driven featureReveal 已用 no-preference 包裹，天然不在减动下生效。） */
+  .VPHero .name,
+  .VPHero .text,
+  .VPHero .tagline,
+  .VPHero .actions,
+  .dark .VPHero .name .clip {
+    animation: none;
+  }
+
+  /* 主 CTA 扫光在减动下隐藏（避免掠过运动）。 */
+  .VPHero .action .VPButton.brand::after {
+    display: none;
   }
 }
 

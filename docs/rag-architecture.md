@@ -1,6 +1,6 @@
 # RAG 完整架构蓝图
 
-> 关联入口：[课程导航](./navigation.md) · [RAG 系统实战项目](./rag-system-project.md) · [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md)
+> 关联入口：[课程导航](./navigation.md) · [企业知识库 Agent 蓝图](./enterprise-knowledge-base-agent.md) · [RAG 系统实战项目](./rag-system-project.md) · [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md)
 
 这份文档回答一个问题：学完第 08/09 章和 `rag-advanced` 后，怎样把 RAG 从“能跑的教学 demo”升级成“可长期维护的知识库产品”。
 
@@ -10,6 +10,7 @@
 08/09 最小 RAG
   -> rag-advanced 进阶能力
   -> 本文档的系统架构
+  -> 企业知识库 Agent 蓝图
   -> songuu/rag-system 独立作品集项目
 ```
 
@@ -233,6 +234,27 @@ flowchart LR
 - eval worker 独立运行，避免评估流量影响线上问答。
 - trace 存储默认保留短周期；含敏感数据的 context 需要脱敏或按租户策略保留。
 
+## 基础设施选型矩阵
+
+先用课程里的内存实现把边界跑通，再按瓶颈替换基础设施。不要把 Milvus、ElasticSearch、Neo4j、Redis 一次性塞进入门路径。
+
+| 能力 | 课程版 | 作品集版 | 生产版 | 升级触发 |
+|------|--------|----------|--------|----------|
+| 文档元数据 | JSON / 内存对象 | PostgreSQL | PostgreSQL + migration + audit | 多 collection、多用户、需要审计 |
+| 向量索引 | `MemoryVectorStore` | pgvector / Milvus | Milvus / Qdrant / OpenSearch vector | 数据量超过内存、需要持久化和过滤 |
+| 全文检索 | 本地 BM25 | ElasticSearch / OpenSearch | ElasticSearch / OpenSearch | 精确术语、型号、中文分词影响召回 |
+| 关系图谱 | heading / metadata | Neo4j 可选 | Neo4j / Graph DB 可选 | 需要实体关系、路径推理、Graph RAG |
+| 会话记忆 | 进程内数组 | Redis | Redis cluster | 多实例部署、会话恢复、并发写入 |
+| 长期记忆 | 摘要 / JSON | Postgres + vector memory | Mem0-style memory service | 跨会话偏好、稳定事实、个性化 |
+| 原始文件 | 本地目录 | S3/R2/OSS | Object storage + lifecycle | 文件大、需回放、需保留策略 |
+| 异步任务 | 手动脚本 | queue + worker | queue + retry + DLQ | 解析/embedding 不该阻塞 API |
+
+选型顺序:
+
+1. **接口先行**: 先抽 `VectorIndex`、`DocumentStore`、`MemoryStore`,再替换具体服务。
+2. **检索先过滤**: tenant / collection / ACL 必须进入 retriever filter。
+3. **重依赖后置**: Milvus / ElasticSearch / Neo4j / Redis 放进作品集或企业知识库项目,不前置到基础章节。
+
 ## 安全与治理
 
 | 风险 | 设计约束 |
@@ -303,4 +325,3 @@ RAG 质量不要只看“答案像不像”。建议固定四类信号：
 - [ ] Eval 集能区分 retrieval 错、generation 错、citation 错。
 - [ ] ingestion 失败可重试，且不会生成半索引状态的可见文档。
 - [ ] 向量库/LLM/embedding provider 可替换，不影响上层业务接口。
-

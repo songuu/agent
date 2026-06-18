@@ -211,6 +211,46 @@ LLM_PROVIDER=openai npx tsx lessons/14-streaming-and-ux/index.ts
 
 ---
 
+## 五、真实项目：Agent UI 事件协议
+
+聊天流式输出不等于 Agent 产品体验。企业知识库 Agent 需要让用户看到：系统是否在改写问题、检索资料、调用工具、等待审批、还是已经失败。
+
+可以把所有过程归一成一组 UI event：
+
+```ts
+type AgentUiEvent =
+  | { type: "token"; text: string }
+  | { type: "status"; stage: "rewrite" | "retrieve" | "rerank" | "answer" }
+  | { type: "tool_call"; name: string; args: Record<string, unknown> }
+  | { type: "tool_result"; name: string; ok: boolean; preview: string }
+  | { type: "evidence"; chunkId: string; title: string; score: number }
+  | { type: "citation"; label: string; chunkId: string; uri: string }
+  | { type: "approval_required"; reason: string; payload: unknown }
+  | { type: "error"; code: string; message: string }
+  | { type: "done"; traceId: string };
+```
+
+映射关系：
+
+| 事件 | UI 应该怎么展示 | 生产意义 |
+|------|----------------|----------|
+| `status` | 顶部状态条/步骤条 | 降低等待焦虑 |
+| `tool_call` / `tool_result` | 可折叠过程日志 | 让用户知道 Agent 做了什么 |
+| `evidence` | 检索证据卡片 | 证明答案不是凭空编 |
+| `citation` | 答案脚注/来源列表 | 支撑引用核验 |
+| `approval_required` | 人工确认面板 | 防危险操作自动执行 |
+| `error` | 半路错误提示 + retry | 不让 stream 静默断掉 |
+| `done` | 关闭 loading,保留 trace id | 便于调试和反馈 |
+
+实现顺序：
+
+1. 本章先用 `llm.stream()` 和 `onStep` 跑通 token / progress。
+2. 第 18 章把这些 event 包成 SSE。
+3. 进阶 LangGraph L6 再把 `updates` / `values` / `custom` 归一成同一套事件。
+4. 企业知识库项目把 retrieval、citation、memory、approval 全部接进事件流。
+
+---
+
 <!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
 
 ## 知识图谱与延伸阅读
@@ -269,10 +309,10 @@ graph TB
 
 <!-- KG:END -->
 
-## 五、小结与延伸
+## 六、小结与延伸
 
 - 流式优化的是**首字延迟与体感**，不是总耗时。
-- agent 场景除了流**文本**，更要用 `onStep` 流**进度**——让多步工具调用不再"沉默卡死"。
+- agent 场景除了流**文本**，更要流**事件**：status、tool、evidence、citation、approval、error 都是产品体验的一部分。
 - 取消用 `AbortController` + **消费侧退出**（停止向生成器要数据），跨厂商通用；善后要区分"完成/取消"并清理定时器。
 - 上一章 [第 13 章 · 结构化输出](../13-structured-output/README.md)；下一章 [第 15 章 · 评估与测试](../15-evaluation-and-testing/README.md) 学习如何系统化地验证 agent 的质量。
 

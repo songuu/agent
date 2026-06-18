@@ -76,6 +76,11 @@ features:
     details: 机会判断、MVP 裁剪、成本控制、上线 checklist——从 demo 到产品。
     link: /docs/startup-guide
     linkText: 做产品
+  - icon: 🏢
+    title: 企业知识库 Agent 蓝图
+    details: 把 RAG、记忆、工具、事件流、定时任务和部署串成一个企业级作品集项目。
+    link: /docs/enterprise-knowledge-base-agent
+    linkText: 看蓝图
 ---
 
 ## 这门课怎么学
@@ -93,7 +98,8 @@ flowchart LR
   H --> H2["20 前沿文章库"]
   H2 --> I["🎓 毕业项目"]
   I --> J["🔬 进阶 RAG 专题"]
-  J --> K["💼 求职 / 🚀 创业"]
+  J --> K["🏢 企业知识库 Agent"]
+  K --> L["💼 求职 / 🚀 创业"]
 ```
 
 - **先手写，后框架**：先理解每一行为什么存在，再看框架帮你省了什么。

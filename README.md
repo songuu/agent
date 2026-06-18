@@ -79,7 +79,7 @@ pnpm site:live
 
 ## 全局导航
 
-想直接跳到具体课程，走 [**全局课程导航**](./docs/navigation.md)。它按顺序、按主题同时整理了第 00–20 章、毕业项目、RAG 架构蓝图和 RAG 系统实战项目。
+想直接跳到具体课程，走 [**全局课程导航**](./docs/navigation.md)。它按顺序、按主题同时整理了第 00–20 章、毕业项目、RAG 架构蓝图、企业知识库 Agent 蓝图和 RAG 系统实战项目。
 
 ---
 
@@ -136,6 +136,9 @@ pnpm site:live
 🧭 RAG 完整架构蓝图（写入/查询/eval/治理/部署）
    │
    ▼
+🏢 企业知识库 Agent 蓝图（记忆/RAG/事件/任务/部署纵向闭环）
+   │
+   ▼
 📚 进阶项目 · songuu/rag-system（生产级 RAG 系统）
    │
    ▼
@@ -190,6 +193,7 @@ pnpm site:live
 | R5 | [RAG 评估](./rag-advanced/05-rag-evaluation/) | ⭐⭐⭐ | 上下文相关性 / 忠实度 / 答案相关性 |
 | R6 | [生产化 RAG](./rag-advanced/06-production-rag/) | ⭐⭐⭐⭐ | metadata 过滤、持久化、增量、全链路 |
 | 🧭 | [RAG 完整架构蓝图](./docs/rag-architecture.md) | ⭐⭐⭐⭐ | ingestion、query、eval、governance、deployment 系统边界 |
+| 🏢 | [企业知识库 Agent 蓝图](./docs/enterprise-knowledge-base-agent.md) | ⭐⭐⭐⭐ | 把 RAG、记忆、工具、事件流、定时任务和部署串成企业级作品集 |
 | 📚 | [RAG 系统实战项目](./docs/rag-system-project.md) | ⭐⭐⭐⭐ | 连接到 `songuu/rag-system`，从课程最小 RAG 走向生产级知识库系统 |
 
 ---
@@ -207,6 +211,7 @@ agent/
 │   ├── career-guide.md        # 💼 求职指南
 │   ├── startup-guide.md       # 🚀 创业指南
 │   ├── rag-architecture.md    # 🧭 RAG 完整架构蓝图
+│   ├── enterprise-knowledge-base-agent.md # 🏢 企业知识库 Agent 蓝图
 │   └── rag-system-project.md  # 📚 RAG 系统实战项目
 ├── src/shared/                # 跨课程共享的「标准库」（provider 无关）
 │   ├── llm/                   #   统一 LLM 抽象 + Anthropic/OpenAI 实现 + embedding
@@ -232,6 +237,7 @@ agent/
 - 🚀 [**创业指南**](./docs/startup-guide.md)：机会判断、MVP 裁剪、成本控制、上线 checklist。
 - 🔬 [**进阶 RAG 专题**](./rag-advanced/01-chunking-strategies/)：分块策略、混合检索、重排、查询改写、评估、生产化六章，把第 08/09 章的最小 RAG 补成生产级，能力沉淀在 `src/shared/rag/`。
 - 🧭 [**RAG 完整架构蓝图**](./docs/rag-architecture.md)：把 RAG demo 升级成可维护系统，覆盖写入路径、查询路径、数据模型、API 边界、安全治理、质量闭环和部署拓扑。
+- 🏢 [**企业知识库 Agent 蓝图**](./docs/enterprise-knowledge-base-agent.md)：把 RAG、记忆、工具、流式事件、定时任务和部署组织成一条企业级作品集路线。
 - 📚 [**RAG 系统实战项目**](./docs/rag-system-project.md)：连接到 [songuu/rag-system](https://github.com/songuu/rag-system)，把第 08/09 章的最小 RAG 扩展成独立知识库系统。
 
 ---

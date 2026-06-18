@@ -15,6 +15,7 @@
 | 进阶 RAG 专题 | 想把最小 RAG 补成生产级（分块/混合/精排/改写/评估/生产化） | [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md) |
 | 进阶 LangGraph 专题 | 想把第 12 章的框架入门补成状态图、持久化、HITL、多 agent 与生产化路线 | [进阶 LangGraph 专题](../langgraph-advanced/README.md) |
 | RAG 完整架构 | 想把 RAG 从 demo 设计成可维护系统 | [RAG 完整架构蓝图](./rag-architecture.md) |
+| 企业知识库 Agent | 想把 RAG、记忆、工具、流式 UX、评估和部署串成一个企业级作品集 | [企业知识库 Agent 蓝图](./enterprise-knowledge-base-agent.md) |
 | RAG 实战项目 | 想从课程最小 RAG 走向生产级知识库系统 | [仓库内 checkpoint](../capstone/rag-system/README.md) · [songuu/rag-system 连接指南](./rag-system-project.md) |
 
 ## 按顺序学习
@@ -48,6 +49,7 @@
 | 🎓 | 综合实战 | [代码评审团](../capstone/code-review-crew/README.md) | 多智能体并行评审、结构化发现、严重度排序、critical 即 BLOCK 的评审门（离线可跑） |
 | 🎓 | 综合实战 | [Agent 评测与回归门](../capstone/agent-eval-harness/README.md) | golden 测试集、离线裁判、通过率/拒答准确率/成本指标、CI 回归门（离线可跑） |
 | 🧭 | 架构蓝图 | [RAG 完整架构蓝图](./rag-architecture.md) | ingestion、query、eval、governance、deployment 系统边界 |
+| 🏢 | 纵向蓝图 | [企业知识库 Agent 蓝图](./enterprise-knowledge-base-agent.md) | RAG、记忆、Agent runtime、事件流、定时任务、部署里程碑 |
 | 📚 | 进阶项目 | [RAG System Checkpoint](../capstone/rag-system/README.md) → [RAG 系统实战项目](./rag-system-project.md) | 仓库内验收最小 RAG 系统闭环，再连接 `songuu/rag-system` |
 
 ## 进阶 RAG 专题（rag-advanced）
@@ -97,7 +99,8 @@
 |------|--------------|
 | Agent 最小闭环 | [01](../lessons/01-what-is-an-agent/README.md) → [02](../lessons/02-first-llm-call/README.md) → [基础概念扩展](../agent-basics/README.md) → [04](../lessons/04-the-agent-loop/README.md) |
 | 工具调用与工具系统 | [04](../lessons/04-the-agent-loop/README.md) → [05](../lessons/05-tool-use-basics/README.md) → [06](../lessons/06-building-a-tool-system/README.md) |
-| 记忆与 RAG | [07](../lessons/07-short-term-memory/README.md) → [08](../lessons/08-embeddings-and-vector-search/README.md) → [09](../lessons/09-rag-from-scratch/README.md) → [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md) → [RAG 完整架构](./rag-architecture.md) → [RAG System Checkpoint](../capstone/rag-system/README.md) → [RAG 实战项目](./rag-system-project.md) |
+| 记忆与 RAG | [07](../lessons/07-short-term-memory/README.md) → [08](../lessons/08-embeddings-and-vector-search/README.md) → [09](../lessons/09-rag-from-scratch/README.md) → [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md) → [RAG 完整架构](./rag-architecture.md) → [企业知识库 Agent 蓝图](./enterprise-knowledge-base-agent.md) → [RAG System Checkpoint](../capstone/rag-system/README.md) → [RAG 实战项目](./rag-system-project.md) |
 | 多步推理与协作 | [10](../lessons/10-reasoning-patterns/README.md) → [11](../lessons/11-multi-agent-orchestration/README.md) → [12](../lessons/12-intro-to-frameworks/README.md) → [进阶 LangGraph 专题](../langgraph-advanced/README.md) |
 | 生产化上线 | [13](../lessons/13-structured-output/README.md) → [14](../lessons/14-streaming-and-ux/README.md) → [15](../lessons/15-evaluation-and-testing/README.md) → [16](../lessons/16-observability-and-cost/README.md) → [17](../lessons/17-safety-and-guardrails/README.md) → [18](../lessons/18-deployment/README.md) |
+| 企业知识库全栈 | [07](../lessons/07-short-term-memory/README.md) → [14](../lessons/14-streaming-and-ux/README.md) → [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md) → [进阶 LangGraph 专题](../langgraph-advanced/README.md) → [企业知识库 Agent 蓝图](./enterprise-knowledge-base-agent.md) → [RAG 系统实战项目](./rag-system-project.md) |
 | 生态选型 | [12](../lessons/12-intro-to-frameworks/README.md) → [18](../lessons/18-deployment/README.md) → [19](../lessons/19-agent-ecosystem-and-frontier/README.md) → [20](../lessons/20-agent-frontier-news/README.md) |

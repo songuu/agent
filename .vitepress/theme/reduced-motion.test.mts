@@ -50,4 +50,22 @@ assert.ok(
   "loop/pipeline/fusion rect nodes must be silenced under prefers-reduced-motion",
 );
 
+// 5) 首页运动化（2026-06-18 home-motion sprint）：hero 入场 / 流动渐变 / 辉光呼吸是 hero 区的真
+//    animation（非 concept 选择器，步骤 2 的 concept 过滤不覆盖），单独守门，防后续 sprint 漏镜像。
+const heroAnimatedSelectors = [
+  ".VPHero .name",
+  ".VPHero .text",
+  ".VPHero .tagline",
+  ".VPHero .actions",
+  ".dark .VPHero .name .clip",
+];
+const heroMissing = heroAnimatedSelectors.filter(
+  (selector) => !reducedMotionBlock.includes(selector),
+);
+assert.deepEqual(
+  heroMissing,
+  [],
+  `prefers-reduced-motion must disable hero motion for these selectors: ${heroMissing.join(" | ")}`,
+);
+
 console.log("reduced-motion.test.mts: ok");
