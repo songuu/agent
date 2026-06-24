@@ -23,6 +23,8 @@ test("expanded article sources stay enabled", () => {
 
   for (const key of [
     "deepmind",
+    "aibase-news",
+    "techweb-it",
     "microsoft-ai-source",
     "aws-ml",
     "nvidia-deep-learning",

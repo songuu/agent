@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">AICrew Studio production flow</title>
+  <desc id="desc">A swimlane production flow showing user, web app, API, orchestrator, workers, and data plane.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#111827"/>
+      <stop offset="1" stop-color="#172554"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#67e8f9"/>
+    </marker>
+    <style>
+      .cn { font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif; }
+      .title { fill: #f8fafc; font-size: 35px; font-weight: 850; letter-spacing: 0; }
+      .sub { fill: #cbd5e1; font-size: 16px; }
+      .lane { fill: rgba(255,255,255,0.055); stroke: rgba(255,255,255,0.12); stroke-width: 1; }
+      .laneText { fill: #dbeafe; font-size: 15px; font-weight: 800; }
+      .node { fill: rgba(255,255,255,0.94); stroke: rgba(148,163,184,0.85); stroke-width: 1.2; }
+      .nodeTitle { fill: #0f172a; font-size: 14px; font-weight: 800; }
+      .nodeText { fill: #475569; font-size: 12px; }
+      .arrow { stroke: #67e8f9; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+      .event { stroke: #facc15; stroke-width: 2; fill: none; stroke-dasharray: 6 7; marker-end: url(#arrow); }
+      .chip { fill: rgba(45,212,191,0.18); stroke: #2dd4bf; }
+      .chipText { fill: #ccfbf1; font-size: 12px; font-weight: 700; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="720" fill="url(#bg)"/>
+  <circle cx="1080" cy="90" r="190" fill="#38bdf8" opacity="0.11"/>
+  <circle cx="150" cy="640" r="220" fill="#f97316" opacity="0.10"/>
+
+  <g class="cn">
+    <text x="58" y="60" class="title">AICrew Studio 生产流程图</text>
+    <text x="58" y="91" class="sub">从 Brief 到导出包的可追踪、可重试、可计费流程</text>
+
+    <rect x="55" y="125" width="1090" height="76" rx="16" class="lane"/>
+    <rect x="55" y="214" width="1090" height="76" rx="16" class="lane"/>
+    <rect x="55" y="303" width="1090" height="76" rx="16" class="lane"/>
+    <rect x="55" y="392" width="1090" height="76" rx="16" class="lane"/>
+    <rect x="55" y="481" width="1090" height="76" rx="16" class="lane"/>
+    <rect x="55" y="570" width="1090" height="76" rx="16" class="lane"/>
+
+    <text x="78" y="170" class="laneText">User</text>
+    <text x="78" y="259" class="laneText">Web App</text>
+    <text x="78" y="348" class="laneText">API</text>
+    <text x="78" y="437" class="laneText">Orchestrator</text>
+    <text x="78" y="526" class="laneText">Workers</text>
+    <text x="78" y="615" class="laneText">Data Plane</text>
+
+    <rect x="175" y="140" width="135" height="46" rx="14" class="node"/>
+    <text x="195" y="160" class="nodeTitle">上传素材</text>
+    <text x="195" y="178" class="nodeText">商品图 / Logo</text>
+
+    <rect x="175" y="229" width="135" height="46" rx="14" class="node"/>
+    <text x="195" y="249" class="nodeTitle">创建项目</text>
+    <text x="195" y="267" class="nodeText">选择 Skill</text>
+
+    <rect x="365" y="229" width="145" height="46" rx="14" class="node"/>
+    <text x="386" y="249" class="nodeTitle">实时进度</text>
+    <text x="386" y="267" class="nodeText">SSE steps</text>
+
+    <rect x="175" y="318" width="135" height="46" rx="14" class="node"/>
+    <text x="195" y="338" class="nodeTitle">Asset API</text>
+    <text x="195" y="356" class="nodeText">签名上传</text>
+
+    <rect x="365" y="318" width="145" height="46" rx="14" class="node"/>
+    <text x="386" y="338" class="nodeTitle">Creative Task</text>
+    <text x="386" y="356" class="nodeText">预算 + 排队</text>
+
+    <rect x="570" y="407" width="150" height="46" rx="14" class="node"/>
+    <text x="592" y="427" class="nodeTitle">DAG 编排</text>
+    <text x="592" y="445" class="nodeText">Agent step plan</text>
+
+    <rect x="365" y="496" width="145" height="46" rx="14" class="node"/>
+    <text x="386" y="516" class="nodeTitle">Brief/Strategy</text>
+    <text x="386" y="534" class="nodeText">结构化目标</text>
+
+    <rect x="570" y="496" width="150" height="46" rx="14" class="node"/>
+    <text x="592" y="516" class="nodeTitle">Visual/Video</text>
+    <text x="592" y="534" class="nodeText">模型路由</text>
+
+    <rect x="780" y="496" width="145" height="46" rx="14" class="node"/>
+    <text x="802" y="516" class="nodeTitle">QA/Export</text>
+    <text x="802" y="534" class="nodeText">审核 + 渲染</text>
+
+    <rect x="970" y="140" width="135" height="46" rx="14" class="node"/>
+    <text x="991" y="160" class="nodeTitle">下载内容包</text>
+    <text x="991" y="178" class="nodeText">MP4/PNG/MD</text>
+
+    <rect x="175" y="585" width="135" height="46" rx="14" class="node"/>
+    <text x="197" y="605" class="nodeTitle">Object Store</text>
+    <text x="197" y="623" class="nodeText">素材/产物</text>
+
+    <rect x="365" y="585" width="145" height="46" rx="14" class="node"/>
+    <text x="388" y="605" class="nodeTitle">Postgres</text>
+    <text x="388" y="623" class="nodeText">任务/版本/账本</text>
+
+    <rect x="570" y="585" width="150" height="46" rx="14" class="node"/>
+    <text x="592" y="605" class="nodeTitle">Trace Store</text>
+    <text x="592" y="623" class="nodeText">事件/成本/错误</text>
+
+    <rect x="780" y="585" width="145" height="46" rx="14" class="node"/>
+    <text x="802" y="605" class="nodeTitle">Brand Memory</text>
+    <text x="802" y="623" class="nodeText">风格/禁用词</text>
+
+    <path d="M242 186 L242 229" class="arrow"/>
+    <path d="M310 252 L365 252" class="arrow"/>
+    <path d="M242 275 L242 318" class="arrow"/>
+    <path d="M310 341 L365 341" class="arrow"/>
+    <path d="M510 341 C590 345 642 360 645 407" class="arrow"/>
+    <path d="M645 453 C618 478 543 492 510 504" class="arrow"/>
+    <path d="M510 519 L570 519" class="arrow"/>
+    <path d="M720 519 L780 519" class="arrow"/>
+    <path d="M925 519 C1010 505 1040 430 1038 186" class="arrow"/>
+    <path d="M780 519 C735 565 710 584 645 585" class="event"/>
+    <path d="M570 519 C525 560 485 584 438 585" class="event"/>
+    <path d="M365 519 C310 565 280 584 242 585" class="event"/>
+    <path d="M645 585 L645 453" class="event"/>
+    <path d="M780 585 C760 495 730 440 720 430" class="event"/>
+    <path d="M925 519 C965 430 938 330 510 252" class="event"/>
+
+    <rect x="955" y="585" width="150" height="34" rx="17" class="chip"/>
+    <text x="983" y="607" class="chipText">every step traceable</text>
+    <rect x="955" y="626" width="150" height="34" rx="17" class="chip"/>
+    <text x="985" y="648" class="chipText">retry + refund path</text>
+  </g>
+</svg>

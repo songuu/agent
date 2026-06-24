@@ -79,7 +79,7 @@ pnpm site:live
 
 ## 全局导航
 
-想直接跳到具体课程，走 [**全局课程导航**](./docs/navigation.md)。它按顺序、按主题同时整理了第 00–20 章、毕业项目、RAG 架构蓝图、企业知识库 Agent 蓝图和 RAG 系统实战项目。
+想直接跳到具体课程，走 [**全局课程导航**](./docs/navigation.md)。它按顺序、按主题同时整理了第 00–20 章、毕业项目、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone 和 RAG 系统实战项目。
 
 ---
 
@@ -139,6 +139,9 @@ pnpm site:live
 🏢 企业知识库 Agent 蓝图（记忆/RAG/事件/任务/部署纵向闭环）
    │
    ▼
+🎓 毕业项目 · 企业知识库 Agent（纵向全栈实战）
+   │
+   ▼
 📚 进阶项目 · songuu/rag-system（生产级 RAG 系统）
    │
    ▼
@@ -185,6 +188,7 @@ pnpm site:live
 | 19 | [Agent 前沿发展与生态拆解](./lessons/19-agent-ecosystem-and-frontier/) | ⭐⭐⭐ | MCP、A2A、Agents SDK、LangGraph、生态选型 |
 | 20 | [Agent 前沿文章库](./lessons/20-agent-frontier-news/) | ⭐⭐ | 按日期和体系层浏览 agent 前沿资料、摘要与原文 |
 | 🎓 | [毕业项目 · Deep Research Agent](./capstone/deep-research-agent/) | ⭐⭐⭐⭐ | 综合所有能力的实战项目 |
+| 🎓 | [毕业项目 · 企业知识库 Agent](./capstone/enterprise-knowledge-base-agent/) | ⭐⭐⭐⭐⭐ | 企业知识库纵向全栈：ingestion、ACL、Agentic RAG、事件流、trace/eval、定时巡检 |
 | **进阶专题** | **RAG 生产化（rag-advanced）** | | |
 | R1 | [进阶分块策略](./rag-advanced/01-chunking-strategies/) | ⭐⭐⭐ | 递归语义切分、Markdown 感知、按 token 控大小（纯函数，免 key 可跑） |
 | R2 | [混合检索](./rag-advanced/02-hybrid-search/) | ⭐⭐⭐ | 向量 + BM25 + RRF 融合 |
@@ -222,7 +226,8 @@ agent/
 │   ├── 01-what-is-an-agent/
 │   └── ...
 └── capstone/
-    └── deep-research-agent/   # 🎓 毕业项目
+    ├── deep-research-agent/   # 🎓 毕业项目
+    └── enterprise-knowledge-base-agent/ # 🏢 企业知识库 Agent Capstone
 ```
 
 > 💡 **设计说明**：第二、三部分「从零手写」时，各章在自己目录里**亲手实现**核心逻辑以理解原理；
@@ -238,6 +243,7 @@ agent/
 - 🔬 [**进阶 RAG 专题**](./rag-advanced/01-chunking-strategies/)：分块策略、混合检索、重排、查询改写、评估、生产化六章，把第 08/09 章的最小 RAG 补成生产级，能力沉淀在 `src/shared/rag/`。
 - 🧭 [**RAG 完整架构蓝图**](./docs/rag-architecture.md)：把 RAG demo 升级成可维护系统，覆盖写入路径、查询路径、数据模型、API 边界、安全治理、质量闭环和部署拓扑。
 - 🏢 [**企业知识库 Agent 蓝图**](./docs/enterprise-knowledge-base-agent.md)：把 RAG、记忆、工具、流式事件、定时任务和部署组织成一条企业级作品集路线。
+- 🎓 [**企业知识库 Agent Capstone**](./capstone/enterprise-knowledge-base-agent/)：把蓝图拆成产品边界、数据模型、API、事件流、测试门和 4 周实现路线。
 - 📚 [**RAG 系统实战项目**](./docs/rag-system-project.md)：连接到 [songuu/rag-system](https://github.com/songuu/rag-system)，把第 08/09 章的最小 RAG 扩展成独立知识库系统。
 
 ---

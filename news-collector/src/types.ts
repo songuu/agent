@@ -44,6 +44,8 @@ export type SourceKind =
   | "vendor-blog"
   | "release";
 
+export type SourceFormat = "feed" | "aibase-html";
+
 export interface SourceRetryPolicy {
   /** 总尝试次数（含首次），默认普通源 3，重点源 5。 */
   readonly maxAttempts?: number;
@@ -51,14 +53,15 @@ export interface SourceRetryPolicy {
   readonly baseDelayMs?: number;
 }
 
-/** 单个 RSS/Atom 新闻源的注册信息。 */
+/** 单个新闻源的注册信息。默认按 RSS/Atom feed 解析。 */
 export interface NewsSource {
   /** 稳定的注册键，写入存储用于溯源，改名也不变，例如 "qbitai"。 */
   readonly key: string;
   /** 展示名，例如 "量子位"。 */
   readonly name: string;
-  /** feed 地址（RSS2.0 或 Atom）。 */
+  /** 来源地址。默认是 RSS2.0/Atom；少数无 feed 站点可用专用 format 适配。 */
   readonly url: string;
+  readonly format?: SourceFormat;
   readonly kind: SourceKind;
   readonly lang: SourceLang;
   /** 分类器无法命中关键词时的兜底体系层；缺省退回 foundation。 */

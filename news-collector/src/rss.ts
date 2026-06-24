@@ -1,6 +1,6 @@
-// RSS/Atom 抓取与解析，基于 rss-parser（同时支持 RSS2.0 与 Atom）。
+// 新闻源抓取与解析：默认基于 rss-parser 支持 RSS2.0/Atom；少数无 feed 站点走专用 HTML 适配。
 //
-// #1 不变量——单源故障隔离：fetchFeed 永不抛错，任一源 502/超时/返回HTML 只回 ok:false，
+// #1 不变量——单源故障隔离：fetchFeed 永不抛错，任一源 502/超时/返回坏内容只回 ok:false，
 // 让 collectOnce 跳过该源而不崩整批。这是真实聚合器最关键的健壮性（已被 HF/OpenAI 间歇 502 验证）。
 
 import Parser from "rss-parser";
@@ -14,6 +14,8 @@ const USER_AGENT =
   "agent-build-news-collector/1.0 (+https://github.com/songuu/agent)";
 const ACCEPT_FEED =
   "application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.1";
+const ACCEPT_HTML =
+  "text/html, application/xhtml+xml;q=0.9, application/xml;q=0.8, */*;q=0.1";
 
 export interface FeedResult {
   readonly source: NewsSource;
@@ -122,6 +124,94 @@ function usableItems(items: readonly RawFeedItem[]): RawFeedItem[] {
   return items.filter((item) => item.title.length > 0 && item.link.length > 0);
 }
 
+const HTML_ENTITIES: Readonly<Record<string, string>> = {
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+  nbsp: " ",
+};
+
+function decodeHtmlText(input: string): string {
+  return input
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&#(\d+);/g, (_, decimal: string) => {
+      const codePoint = Number(decimal);
+      if (!Number.isFinite(codePoint) || codePoint < 0 || codePoint > 0x10ffff) {
+        return "";
+      }
+      try {
+        return String.fromCodePoint(codePoint);
+      } catch {
+        return "";
+      }
+    })
+    .replace(/&([a-z][a-z0-9]*);/gi, (_, entity: string) => {
+      return HTML_ENTITIES[entity.toLowerCase()] ?? "";
+    })
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function absoluteUrl(pathOrUrl: string, baseUrl: string): string {
+  return new URL(pathOrUrl, baseUrl).toString();
+}
+
+/** 解析 AIBase 新闻列表页的 SSR 卡片。AIBase 暂无公开 RSS/Atom，故只取列表摘要，不抓正文。 */
+export function parseAIBaseNewsHtml(
+  html: string,
+  baseUrl = "https://news.aibase.com/zh/news",
+): RawFeedItem[] {
+  const items: RawFeedItem[] = [];
+  const seenLinks = new Set<string>();
+  const anchorPattern = /<a\s+href="(\/zh\/news\/\d+)"[^>]*>([\s\S]*?)<\/a>/g;
+
+  for (const match of html.matchAll(anchorPattern)) {
+    const [, href, block] = match;
+    if (!href || !block) continue;
+
+    const titleMatch =
+      block.match(/<img\b[^>]*\balt="([^"]+)"/) ??
+      block.match(/<div\b[^>]*\bclass="[^"]*\bfont600\b[^"]*"[^>]*>([\s\S]*?)<\/div>/);
+    const summaryMatch = block.match(
+      /<div\b[^>]*\bclass="[^"]*\btipColor\b[^"]*\btruncate2\b[^"]*"[^>]*>([\s\S]*?)<\/div>/,
+    );
+
+    const title = decodeHtmlText(titleMatch?.[1] ?? "");
+    const summary = decodeHtmlText(summaryMatch?.[1] ?? "");
+    const link = absoluteUrl(href, baseUrl);
+
+    if (!title || seenLinks.has(link)) continue;
+    seenLinks.add(link);
+    items.push({
+      title,
+      link,
+      contentSnippet: summary,
+      guid: link,
+    });
+  }
+
+  return usableItems(items);
+}
+
+async function fetchAIBaseHtml(source: NewsSource, timeoutMs: number): Promise<RawFeedItem[]> {
+  const response = await fetch(source.url, {
+    headers: { "User-Agent": USER_AGENT, Accept: ACCEPT_HTML },
+    signal: AbortSignal.timeout(timeoutMs),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Status code ${response.status}`);
+  }
+
+  const items = parseAIBaseNewsHtml(await response.text(), source.url);
+  if (items.length === 0) {
+    throw new Error("AIBase HTML parser found no usable news cards");
+  }
+  return items;
+}
+
 /** 离线解析 feed 字符串（供 fixtures 单测，不触网）。 */
 export async function parseFeedString(
   xml: string,
@@ -143,11 +233,14 @@ export async function fetchFeed(
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
-      const feed = await parser.parseURL(source.url);
+      const items =
+        source.format === "aibase-html"
+          ? await fetchAIBaseHtml(source, opts.timeoutMs ?? DEFAULT_TIMEOUT_MS)
+          : usableItems((await parser.parseURL(source.url)).items?.map(toRawItem) ?? []);
       return {
         source,
         ok: true,
-        items: usableItems((feed.items ?? []).map(toRawItem)),
+        items,
         attempts: attempt,
         diagnostics: summarizeDiagnostics(source, attempt, maxAttempts, errors),
       };

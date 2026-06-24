@@ -78,6 +78,18 @@ export function stripHtml(input: string): string {
     .trim();
 }
 
+/** 清理 RSS 摘要里混入的外部链接/评论数等元信息。 */
+export function cleanFeedSummary(input: string): string {
+  return stripHtml(input)
+    .replace(/\bArticle URL:\s*https?:\/\/\S+/gi, " ")
+    .replace(/\bComments URL:\s*https?:\/\/\S+/gi, " ")
+    .replace(/\bPoints:\s*\d+/gi, " ")
+    .replace(/#\s*Comments:\s*\d+/gi, " ")
+    .replace(/\bComments:\s*\d+/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /** 截断到 max 字符，超出加省略号。 */
 export function truncate(text: string, max = 200): string {
   if (text.length <= max) return text;
@@ -105,7 +117,7 @@ export function toNewsItem(args: NormalizeArgs): NewsItem {
   const url = canonicalUrl(rawItem.link);
   const summarySource =
     rawItem.contentSnippet ?? rawItem.content ?? rawItem.summary ?? "";
-  const summary = truncate(stripHtml(summarySource));
+  const summary = truncate(cleanFeedSummary(summarySource));
   const collectedAt = now.toISOString();
   const collectedDate = collectedAt.slice(0, 10);
   const publishedAt = parsePublishedAt(rawItem);

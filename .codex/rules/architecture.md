@@ -57,3 +57,11 @@
 - Security boundary (same model as the rest of the site): RLS lets anon read only `status = 'published'`; service_role does all writes; `NOTION_TOKEN` and `SUPABASE_SERVICE_ROLE_KEY` live only in `.env` and must never reach the front-end bundle (only the anon key may). DDL runs through SQL Editor or direct PG (`SUPABASE_DB_URL`), never PostgREST; for this sprint direct PG execution verified `notion_articles` exists with 19 columns and RLS enabled.
 - Front-end stays **no-Vue**: `notion-markdown.ts` renders body markdown with markdown-it (`html:false` escapes raw HTML) + DOMPurify (client-only dynamic import, SSR-safe) for layered XSS defense; pure `notion-articles-filter.ts` is unit-tested offline and the list/detail DOM glue stays thin. The list page fetches only card columns (not `body_markdown`); detail fetches a single row by `?slug=`.
 - Type safety for these out-of-include dirs is enforced by `tsconfig.notion.json` + `pnpm notion:typecheck` (see debugging-gotchas 2026-06-17), because the root `typecheck` does not cover `news-collector/` or `.vitepress/`.
+
+## 2026-06-24 multi-cloud container migration layer
+
+- Multi-cloud migration should use a container layer as the portability boundary, while keeping the existing SSH/static deploy as the rollback path until every public route has proven container parity.
+- The current cloud stack is route-based: root home (`/`), `agent-build` (`/agent-build/` plus runner/news jobs), `aicrew` (`/aicrew/`), and `deploy-management` (`/pipeline/`, `/api/`, `/oapi/`, auth routes).
+- `agent-build` owns the first implemented container slice: `Dockerfile` targets `site` and `app-runtime`, `deploy/compose/agent-build.compose.yml` runs site/runner/jobs, and `scripts/deploy-container.ps1` deploys via registry or SSH image transfer.
+- Host Nginx remains the TLS/auth/route fan-out layer during migration. Compose services should bind to loopback host ports.
+- Container cutover must be route-by-route: start container on a new local port, health check, switch Nginx, preserve PM2/static rollback until public HTTPS probes pass.

@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { classify } from "../src/classify.ts";
 import {
   canonicalUrl,
+  cleanFeedSummary,
   externalIdFor,
   parsePublishedAt,
   stripHtml,
@@ -43,6 +44,14 @@ test("stripHtml removes tags and decodes common entities", () => {
   assert.equal(stripHtml("<p>Hello &amp; <b>world</b></p>"), "Hello & world");
 });
 
+test("cleanFeedSummary removes Hacker News metadata links", () => {
+  assert.equal(
+    cleanFeedSummary(
+      "Article URL: https://example.com/story Comments URL: https://news.ycombinator.com/item?id=1 Points: 12 # Comments: 3",
+    ),
+    "",
+  );
+});
 test("truncate adds ellipsis only when over limit", () => {
   assert.equal(truncate("abcdef", 4), "abc…");
   assert.equal(truncate("abc", 4), "abc");

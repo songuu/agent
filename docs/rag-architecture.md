@@ -1,6 +1,6 @@
 # RAG 完整架构蓝图
 
-> 关联入口：[课程导航](./navigation.md) · [企业知识库 Agent 蓝图](./enterprise-knowledge-base-agent.md) · [RAG 系统实战项目](./rag-system-project.md) · [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md)
+> 关联入口：[课程导航](./navigation.md) · [企业知识库 Agent 蓝图](./enterprise-knowledge-base-agent.md) · [企业知识库 Agent Capstone](../capstone/enterprise-knowledge-base-agent/README.md) · [RAG 系统实战项目](./rag-system-project.md) · [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md)
 
 这份文档回答一个问题：学完第 08/09 章和 `rag-advanced` 后，怎样把 RAG 从“能跑的教学 demo”升级成“可长期维护的知识库产品”。
 
@@ -11,6 +11,7 @@
   -> rag-advanced 进阶能力
   -> 本文档的系统架构
   -> 企业知识库 Agent 蓝图
+  -> 企业知识库 Agent Capstone
   -> songuu/rag-system 独立作品集项目
 ```
 

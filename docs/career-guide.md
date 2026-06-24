@@ -211,6 +211,13 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 15. 为什么长周期 agent 评测不能只看单步 reward 或单回合成功率？RetailBench 这类 benchmark 在检验什么长期策略能力？（→ 10 / 15 / 19）
 16. 监控/告警 agent 为什么要同时测反应时效、误报/漏报和后续行动链，而不是只看“能否识别异常”？（→ 16 / 17 / 18 / 19）
 17. 评测记忆 agent 时，为什么要单独测补充关系、矛盾关系和无关关系的区分？只看关键词召回会漏掉什么记忆一致性问题？（→ 07 / 15 / 19）
+18. 为什么 tool guardrails 最好放在“真正执行前”的 pre-approval 边界，而不是等工具跑完再做事后检查？这对高权限工具有什么安全意义？（→ 05 / 17 / 18 / 19）
+19. 为什么生产变更权限不该直接放在 agent 推理进程里？`certificate-bound broker / scoped execution identity` 这种执行边界在兜什么风险？（→ 17 / 18 / 19）
+20. 当 `PII detector / declassifier` 这类安全判定本身带误差时，为什么 deterministic policy 不够？agent runtime 该怎么理解 probabilistic verification 的意义？（→ 15 / 17 / 19）
+21. 为什么高质量仓库指引（如 `AGENTS.md`）更主要提升 coding agent 的文件定位覆盖率，而不一定直接提升 patch 精度？步数预算变大时它为什么更重要？（→ 12 / 15 / 19 / capstone）
+22. 为什么共享基础设施的多租户 agent runtime 不能只靠“逻辑上分 tenant”就算隔离完成？state、identity、telemetry 和审批边界分别要隔离什么，什么时候还得回到 dedicated stack？（→ 16 / 17 / 18 / 19）
+23. 做研究型 copilot 时，为什么要把 structured query parsing、embedding retrieval 和 AI summary 三段拆开，而不是让一个大 prompt 端到端包办？这样拆分分别在兜什么准确性与可追溯风险？（→ 08 / 09 / 16 / 19）
+24. 为什么跨组织 agent 协作不能长期依赖“给每个 agent 发一把 API key”这种做法？独立的 agent identity / name service 在信任建立、权限撤销和跨平台互认上解决了什么问题？（→ 17 / 18 / 19）
 
 ### C. 项目深挖类（考你是不是真做过）
 
@@ -291,3 +298,4 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 ---
 
 > 配套阅读：[创业指南](./startup-guide.md)（如果你想的不是求职，而是把 demo 做成产品）。
+

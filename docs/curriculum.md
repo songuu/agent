@@ -43,7 +43,7 @@
 
 > 提示：全程用便宜模型（如 `gpt-4o-mini` / `claude-haiku`）跑完成本很低；第 16 章会专门教你怎么算账和省钱。
 
-想直接跳到任意课程，使用 [全局课程导航](./navigation.md)。它按顺序、按主题整理了第 00–20 章、毕业项目、RAG 架构蓝图、企业知识库 Agent 蓝图和 RAG 系统实战项目。
+想直接跳到任意课程，使用 [全局课程导航](./navigation.md)。它按顺序、按主题整理了第 00–20 章、毕业项目、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone 和 RAG 系统实战项目。
 
 ### 三层学习法
 
@@ -80,12 +80,12 @@
 | 第五部分 · 工程化与框架 | 12–14 | ~3.5 小时 |
 | 第六部分 · 生产化 | 15–18 | ~5 小时 |
 | 第七部分 · 前沿与生态 | 19–20 | ~1.5 小时 |
-| 🎓 毕业项目（4 个）· Deep Research / 客服 Copilot / 代码评审团 / Agent 评测 | 综合 | ~13–19 小时 |
+| 🎓 毕业项目（5 个）· Deep Research / 客服 Copilot / 代码评审团 / Agent 评测 / 企业知识库 Agent | 综合 | ~17–25 小时 |
 | 🔬 进阶 RAG 专题 | rag-advanced ×11 | ~7–9 小时 |
 | 🧩 进阶 LangGraph 专题 | langgraph-advanced ×5 + 生产化扩章地图 | ~4–6 小时 |
 | 🧭 RAG 完整架构蓝图 | 架构阅读 | ~1 小时 |
 | 🏢 企业知识库 Agent 蓝图 | 纵向项目设计 | ~1 小时 |
-| **合计** | **20 章 + 基础概念扩展 + 4 个毕业项目 + RAG 专题 + LangGraph 专题 + 架构蓝图 + 企业知识库蓝图** | **约 50.5–64.5 小时**（不含动手扩展） |
+| **合计** | **20 章 + 基础概念扩展 + 5 个毕业项目 + RAG 专题 + LangGraph 专题 + 架构蓝图 + 企业知识库蓝图** | **约 54.5–70.5 小时**（不含动手扩展） |
 
 > 按每天投入 1–1.5 小时算，大约 **3–4 周**可以完整走完一遍。建议分散学、多动手，比一口气刷完更扎实。
 
@@ -161,6 +161,11 @@
                   ┌──────────────────────────────────┐
                   │  🏢 企业知识库 Agent 蓝图          │
                   │  记忆/RAG/工具/UI/任务/部署纵向闭环 │
+                  └────────────────┬─────────────────┘
+                                   ▼
+                  ┌──────────────────────────────────┐
+                  │  🎓 企业知识库 Agent Capstone      │
+                  │     纵向全栈作品集实战             │
                   └────────────────┬─────────────────┘
                                    ▼
                   ┌──────────────────────────────────┐
@@ -253,9 +258,9 @@
 | 19 | Agent 前沿发展与生态拆解 | ⭐⭐⭐ | 70 分钟 | 从模型接口、工具协议、Agent SDK、编排 runtime、RAG、UI、观测、安全八层拆解当前生态，并练习按需求选型 | [../lessons/19-agent-ecosystem-and-frontier/README.md](../lessons/19-agent-ecosystem-and-frontier/README.md) |
 | 20 | Agent 前沿文章库 | ⭐⭐ | 45 分钟 | 按日期和体系层浏览前沿资料，查看摘要、来源、标签与原文入口 | [../lessons/20-agent-frontier-news/README.md](../lessons/20-agent-frontier-news/README.md) |
 
-### 🎓 毕业项目（4 个综合实战，可直接放进作品集）
+### 🎓 毕业项目（5 个综合实战，可直接放进作品集）
 
-> 4 个项目各展示一种完整架构，彼此互补：研究型 agent / 生产客服系统 / 多智能体评审 / Agent 评测。后三者**完全离线、零 key 可跑**，`pnpm <name>:smoke` 即可验证。
+> 5 个项目各展示一种完整架构，彼此互补：研究型 agent / 生产客服系统 / 多智能体评审 / Agent 评测 / 企业知识库纵向全栈。客服、评审、评测三者**完全离线、零 key 可跑**，`pnpm <name>:smoke` 即可验证。
 
 | # | 标题 | 难度 | 预计 | 一句话简介 | 链接 |
 |---|------|------|------|------------|------|
@@ -263,6 +268,7 @@
 | 🎓 | 客服 Copilot | ⭐⭐⭐⭐ | 3–4 小时 | 记忆 / RAG / 工具 / HITL 审批 / 注入·PII 安全 / 成本可观测，串成单轮纵深防御管线 | [../capstone/support-copilot/README.md](../capstone/support-copilot/README.md) |
 | 🎓 | 代码评审团 | ⭐⭐⭐ | 2–3 小时 | 安全/性能/风格多智能体并行评审，结构化发现 + 严重度排序 + critical 即 BLOCK 的评审门 | [../capstone/code-review-crew/README.md](../capstone/code-review-crew/README.md) |
 | 🎓 | Agent 评测与回归门 | ⭐⭐⭐ | 2–3 小时 | golden 测试集 + 离线裁判 + 通过率/拒答准确率/成本指标 + CI 回归门，自动拦下退化版本 | [../capstone/agent-eval-harness/README.md](../capstone/agent-eval-harness/README.md) |
+| 🎓 | 企业知识库 Agent | ⭐⭐⭐⭐⭐ | 4–6 小时 | 把 ingestion、ACL、Agentic RAG、事件流、trace/eval、定时巡检拆成企业级纵向作品集路线 | [../capstone/enterprise-knowledge-base-agent/README.md](../capstone/enterprise-knowledge-base-agent/README.md) |
 
 ### 🧭 RAG 完整架构蓝图
 
@@ -326,6 +332,7 @@
 - 🧩 **进阶 LangGraph（仓库内）** → 看 [进阶 LangGraph 专题](../langgraph-advanced/README.md)：从 StateGraph 机制走到 production runtime 的扩章地图。
 - 🧭 **RAG 架构设计** → 看 [RAG 完整架构蓝图](./rag-architecture.md)：把 demo 能力组织成写入路径、查询路径、数据模型、安全治理、质量闭环和部署拓扑。
 - 🏢 **企业知识库 Agent** → 看 [企业知识库 Agent 蓝图](./enterprise-knowledge-base-agent.md)：把 RAG、记忆、工具、流式 UX、定时任务和部署串成一个企业级作品集。
+- 🎓 **企业知识库 Agent Capstone** → 看 [毕业项目 · 企业知识库 Agent](../capstone/enterprise-knowledge-base-agent/README.md)：把蓝图拆成产品边界、数据模型、API、事件流、测试门和 4 周实现路线。
 - 📚 **深挖 RAG（独立项目）** → 看 [RAG 系统实战项目](./rag-system-project.md)：连接到 [songuu/rag-system](https://github.com/songuu/rag-system)，把课程里的 RAG 原理升级成独立系统。
 
 > 不确定走哪条？建议两份都读一遍——求职和创业需要的底层能力是同一套，区别只在你把它用在哪。

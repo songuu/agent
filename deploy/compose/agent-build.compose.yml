@@ -1,0 +1,55 @@
+services:
+  agent-build-site:
+    image: ${AGENT_BUILD_SITE_IMAGE}
+    container_name: agent-build-site
+    restart: unless-stopped
+    environment:
+      AGENT_BUILD_BASE_PATH: ${AGENT_BUILD_BASE_PATH:-/agent-build/}
+    ports:
+      - "127.0.0.1:${AGENT_BUILD_SITE_PORT:-8088}:8080"
+    depends_on:
+      - agent-build-runner
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  agent-build-runner:
+    image: ${AGENT_BUILD_RUNTIME_IMAGE}
+    container_name: agent-build-runner
+    restart: unless-stopped
+    command: ["pnpm", "run", "demo:server:prod"]
+    env_file:
+      - ./agent-build.runtime.env
+    environment:
+      NODE_ENV: production
+      DEMO_RUNNER_PORT: "5174"
+      DEMO_RUNNER_ALLOWED_HOSTS: ${AGENT_BUILD_DOMAIN:-songuu.top}
+      DEMO_RUNNER_ALLOWED_ORIGINS: ${AGENT_BUILD_ALLOWED_ORIGINS:-https://songuu.top}
+      DEMO_RUNNER_ALLOW_MISSING_ORIGIN: "1"
+      DEMO_RUNNER_REQUIRE_TOKEN: "0"
+    expose:
+      - "5174"
+
+  news-collector:
+    image: ${AGENT_BUILD_RUNTIME_IMAGE}
+    container_name: agent-build-news-collector
+    profiles: ["jobs"]
+    restart: unless-stopped
+    command: ["pnpm", "run", "news:cron"]
+    env_file:
+      - ./agent-build.runtime.env
+    environment:
+      NODE_ENV: production
+
+  notion-cron:
+    image: ${AGENT_BUILD_RUNTIME_IMAGE}
+    container_name: agent-build-notion-cron
+    profiles: ["jobs", "notion"]
+    restart: unless-stopped
+    command: ["pnpm", "run", "notion:cron"]
+    env_file:
+      - ./agent-build.runtime.env
+    environment:
+      NODE_ENV: production

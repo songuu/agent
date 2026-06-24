@@ -290,6 +290,9 @@ body::after {
 .VPHero .action .VPButton.brand {
   position: relative;
   overflow: hidden;
+  border-color: color-mix(in srgb, var(--vp-c-brand-1) 54%, transparent);
+  color: #fff;
+  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--vp-c-brand-2));
   box-shadow: var(--glow-brand);
 }
 
@@ -317,7 +320,18 @@ body::after {
 /* alt 按钮玻璃化，呼应 hero 的极光背景。 */
 .VPHero .action .VPButton.alt {
   border-color: var(--glass-border);
+  color: var(--vp-c-text-1);
   background: var(--glass-bg);
+}
+
+.dark .VPHero .tagline {
+  color: rgba(226, 232, 240, 0.82);
+}
+
+.dark .VPHero .action .VPButton.alt {
+  border-color: rgba(255, 255, 255, 0.14);
+  color: rgba(226, 232, 240, 0.86);
+  background: rgba(15, 23, 42, 0.42);
 }
 
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -331,13 +345,13 @@ body::after {
    仅施于 hero 与 h1/h2 展示文本；CJK 正文段落不收紧（CJK 过紧反伤可读）。 */
 .VPHero .name,
 .VPHero .text {
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 }
 .vp-doc h1 {
-  letter-spacing: -0.015em;
+  letter-spacing: 0;
 }
 .vp-doc h2 {
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 
 /* ── Hero 入场编排：标题/副标题/标语/按钮依次升起淡入（加载一次，both 保终态）。
@@ -1583,6 +1597,118 @@ body::after {
     color-mix(in srgb, var(--frontier-card-bg) 92%, var(--vp-c-bg-soft));
 }
 
+.frontier-news-layout-with-detail {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+}
+
+.frontier-news-detail-panel {
+  position: sticky;
+  top: calc(var(--vp-nav-height, 64px) + 18px);
+  min-width: 0;
+}
+
+.frontier-news-detail-card {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--frontier-card-border);
+  border-radius: 8px;
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--frontier-accent-soft) 30%, transparent), transparent 52%),
+    color-mix(in srgb, var(--frontier-card-bg) 94%, var(--vp-c-bg-soft));
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+.frontier-news-detail-eyebrow {
+  margin: 0 0 8px;
+  color: var(--frontier-accent);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.frontier-news-detail-title {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--frontier-text-strong);
+  font-size: 20px;
+  font-weight: 850;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+.frontier-news-detail-meta,
+.frontier-news-detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 13px;
+}
+
+.frontier-news-detail-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  min-height: 24px;
+  padding: 0 8px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--vp-c-bg-soft) 78%, transparent);
+  color: var(--frontier-text-muted);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.frontier-news-detail-body {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.frontier-news-detail-body p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--frontier-text);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.frontier-news-detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.frontier-news-detail-original {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid color-mix(in srgb, var(--frontier-accent) 45%, transparent);
+  border-radius: 6px;
+  color: var(--frontier-accent);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.frontier-news-detail-original::after {
+  margin-left: 5px;
+  content: "↗";
+}
+
+.frontier-news-detail-original:hover,
+.frontier-news-detail-original:focus-visible {
+  background: var(--frontier-accent-soft);
+  outline: none;
+  text-decoration: none;
+}
+
 .frontier-filter-board {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
@@ -2314,6 +2440,60 @@ body::after {
 }
 
 @media (max-width: 640px) {
+  .VPHero .main {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .VPHero .name,
+  .VPHero .text,
+  .VPHero .tagline {
+    width: min(100%, calc(100vw - 48px));
+    max-width: calc(100vw - 48px);
+    overflow-wrap: anywhere;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .VPHero .name .clip,
+  .VPHero .text > span,
+  .VPHero .tagline > span {
+    display: inline;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .VPHero .name,
+  .VPHero .text {
+    display: block;
+    font-size: 30px;
+    line-height: 1.18;
+  }
+
+  .VPHero .tagline {
+    font-size: 18px;
+    line-height: 1.62;
+  }
+
+  .VPHero .actions {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .VPHero .action {
+    padding: 0;
+  }
+
+  .VPHero .action,
+  .VPHero .action .VPButton {
+    max-width: 100%;
+  }
+
+  .VPHero .action .VPButton {
+    white-space: normal;
+    text-align: center;
+  }
+
   .vp-doc .frontier-archive-shell {
     width: 100%;
     margin: 20px 0 28px;
@@ -2395,6 +2575,18 @@ body::after {
   .frontier-timeline-excerpt {
     -webkit-line-clamp: 3;
     font-size: 14px;
+  }
+
+  .frontier-news-detail-panel {
+    position: static;
+  }
+
+  .frontier-news-detail-card {
+    padding: 14px;
+  }
+
+  .frontier-news-detail-title {
+    font-size: 18px;
   }
 
   .demo-runner-header {

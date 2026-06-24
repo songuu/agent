@@ -229,6 +229,14 @@ export const CONCEPT_VISUALS: ConceptVisual[] = [
     takeaway: "让 Agent 跑起来只是起点；能证明它没有变差，才适合持续迭代。",
   },
   {
+    chapter: "cap-enterprise-kb",
+    kind: "pipeline",
+    title: "企业知识库 Agent 是一条可审计的 RAG 产品线",
+    summary: "上传、索引、权限过滤、检索、引用核验、事件流和评估门串成闭环，才能从问答 demo 变成交付级知识库。",
+    steps: ["Ingest", "Index", "ACL Retrieve", "Answer/Refuse", "Citations", "Trace/Eval"],
+    takeaway: "企业知识库的关键不在会答，而在权限、引用、回放和退化防护都可证明。",
+  },
+  {
     chapter: "rag-chunk",
     kind: "pipeline",
     title: "分块策略决定 RAG 能不能先把证据切对",
@@ -454,6 +462,10 @@ const CONCEPT_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> =
   "cap-eval": [
     { tone: "core", label: "核心判断", body: "Agent 评测框架用 golden set、裁判、聚合指标和阈值，把质量变化变成可回归信号。" },
     { tone: "warning", label: "易错边界", body: "不要只靠人工抽查判断 Agent 变好；没有固定测试集，就无法证明改动没有退化。" },
+  ],
+  "cap-enterprise-kb": [
+    { tone: "core", label: "核心判断", body: "企业知识库 Agent 的价值在端到端证据链：文档版本、chunk、权限过滤、引用核验、trace/eval 必须同时成立。" },
+    { tone: "warning", label: "易错边界", body: "不要把企业知识库做成普通问答 demo；ACL 不能放在回答后处理，引用也不能只存当前 URL。" },
   ],
   "rag-chunk": [
     { tone: "core", label: "核心判断", body: "分块决定证据能否被召回；chunk 必须在完整性和大小之间取平衡。" },

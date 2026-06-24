@@ -1,15 +1,15 @@
 # news-collector · AI 资讯定时收集系统
 
 仿 [ai.codefather.cn/news](https://ai.codefather.cn/news) 的**多源 AI 资讯定时聚合**子系统：
-按计划从多个公开 RSS/Atom 源抓取 → 归一 → 规则分类（8 层生态）→ 可选 LLM 富化（Anthropic / OpenAI）→ 去重 → 幂等写入 Supabase。
+按计划从多个公开 RSS/Atom 源抓取；少数无公开 feed 的站点走专用 HTML 适配器 → 归一 → 规则分类（8 层生态）→ 可选 LLM 富化（Anthropic / OpenAI）→ 去重 → 幂等写入 Supabase。
 
 第 20 章「前沿文章库」直接展示本系统写入的 `news_items` 表；旧的手工策展资料仍保留在知识图谱中，但不再作为文章日历的数据源。
 
 ## 管道架构
 
 ```
-sources(RSS/Atom)
-   │  fetchFeed  —— 单源故障隔离：502/超时/坏feed 只 skip+log，绝不崩整批
+sources(RSS/Atom + selected HTML adapters)
+   │  fetchFeed  —— 单源故障隔离：502/超时/坏 feed/坏 HTML 只 skip+log，绝不崩整批
    ▼
 RawFeedItem
    │  classify   —— 纯函数：8层生态 + 实体标签 + 语言（确定性、可离线测）
@@ -29,7 +29,7 @@ news-collector/
   src/
     types.ts        类型 + zod 校验（8 层生态、NewsItem）
     sources.ts      源注册表（实测可用性见注释）
-    rss.ts          抓取/解析（rss-parser），单源故障隔离
+    rss.ts          抓取/解析（rss-parser + selected HTML adapters），单源故障隔离
     normalize.ts    归一化（canonical URL / sha256 身份 / 清洗）
     classify.ts     规则分类（纯函数、确定性）
     enrich.ts       可选 LLM 富化（降级）
@@ -41,8 +41,8 @@ news-collector/
     cli-collect.ts  一次性入口（pnpm news:collect）
     cron.ts         常驻守护入口（pnpm news:cron）
     fixtures.ts     离线 fixtures 装置（smoke/测试/seed 共用）
-  fixtures/         RSS/Atom/malformed 样本
-  __tests__/        5 个离线单测
+  fixtures/         RSS/Atom/HTML/malformed 样本
+  __tests__/        离线单测
   smoke.ts          离线端到端 smoke
   ecosystem.config.cjs   pm2 配置
   deploy/news-collector.service  systemd 单元模板
@@ -54,6 +54,8 @@ news-collector/
 | key | 源 | 类型 | 状态 |
 |-----|----|----|------|
 | qbitai | 量子位 | 中文媒体 | ✅ |
+| aibase-news | AIBase 新闻 | 中文媒体 | ✅ HTML 适配 |
+| techweb-it | TechWeb 业界 | 中文媒体 | ✅ 官方 RSS |
 | the-decoder | The Decoder | 英文媒体 | ✅ |
 | arxiv-cs-ai | arXiv cs.AI | 论文 | ✅ |
 | hn-ai | Hacker News · AI | 社区 | ✅ |
@@ -70,7 +72,7 @@ news-collector/
 | openai | OpenAI News | 厂商 | ⚠️ 间歇 502 |
 | anthropic | Anthropic News | 厂商 | ⚠️ best-effort |
 
-加源：编辑 `src/sources.ts` 的 `SOURCES` 数组（key / name / url / kind / lang / 可选 layerHint）。
+加源：编辑 `src/sources.ts` 的 `SOURCES` 数组（key / name / url / kind / lang / 可选 layerHint；无 RSS/Atom 时需补专用 `format` 适配）。
 
 ## 快速开始
 

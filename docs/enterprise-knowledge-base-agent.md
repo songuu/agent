@@ -1,10 +1,12 @@
 # 企业知识库 Agent 蓝图
 
-> 关联入口：[课程导航](./navigation.md) · [RAG 完整架构蓝图](./rag-architecture.md) · [RAG 系统实战项目](./rag-system-project.md) · [进阶 LangGraph 专题](../langgraph-advanced/README.md)
+> 关联入口：[课程导航](./navigation.md) · [企业知识库 Agent Capstone](../capstone/enterprise-knowledge-base-agent/README.md) · [RAG 完整架构蓝图](./rag-architecture.md) · [RAG 系统实战项目](./rag-system-project.md) · [进阶 LangGraph 专题](../langgraph-advanced/README.md)
 
 这份蓝图补齐一条纵向路线：把课程里的 agent loop、工具、记忆、RAG、流式 UX、评估、部署，串成一个“企业级知识库 Agent”作品集项目。
 
 它不替代主课。主课仍然是“先手写，后框架”。这份文档回答的是：学完之后，怎样把这些能力组合成一个接近真实产品的系统。
+
+如果你已经决定动手做，直接进入 [毕业项目 · 企业知识库 Agent](../capstone/enterprise-knowledge-base-agent/README.md)。蓝图负责“系统应该长什么样”，capstone 负责“怎么拆任务、怎么验收、怎么写进作品集”。
 
 ## 最小产品形态
 

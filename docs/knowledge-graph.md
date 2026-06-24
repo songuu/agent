@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **40** 个单元、**242** 个概念、**387** 条关系、**131** 篇关联文章。
+共 **41** 个单元、**242** 个概念、**387** 条关系、**136** 篇关联文章。
 
 ## 章节地图
 
@@ -49,6 +49,7 @@ flowchart LR
     C_cap-support["cap-support 毕业项目 · 客服 Copilot"]
     C_cap-review["cap-review 毕业项目 · 代码评审团"]
     C_cap-eval["cap-eval 毕业项目 · Agent 评测与回归门"]
+    C_cap-enterprise-kb["cap-enterprise-kb 毕业项目 · 企业知识库 Agent"]
   end
   subgraph P8["进阶 RAG 专题"]
     C_rag-chunk["rag-chunk 进阶分块策略"]
@@ -93,7 +94,8 @@ flowchart LR
   C_capstone --> C_cap-support
   C_cap-support --> C_cap-review
   C_cap-review --> C_cap-eval
-  C_cap-eval --> C_rag-chunk
+  C_cap-eval --> C_cap-enterprise-kb
+  C_cap-enterprise-kb --> C_rag-chunk
   C_rag-chunk --> C_rag-hybrid
   C_rag-hybrid --> C_rag-rerank
   C_rag-rerank --> C_rag-query
@@ -1127,6 +1129,11 @@ graph LR
 | [What makes a harness a harness? Model-free foundation for agentic AI](https://arxiv.org/abs/2606.10666) | arXiv | paper | 19 | 把 harness 定义为不依赖模型能力、只负责状态、权限、审批、重试与回放的工程壳层，正好补上『agent framework ≠ harness』这层实践边界。 |
 | [WorkBench Revisited: Towards a Scalable Benchmark for Evaluating Agents in Realistic Enterprise Workflows](https://arxiv.org/abs/2606.13715) | arXiv | paper | 19 | 面向真实企业 workflow 的 agent benchmark，强调 success 之外还要统计 unintended / harmful action，适合补齐 workplace agent 的安全型评测口径。 |
 | [SciAgentArena: Benchmarking Scientific Agents from Paper to Experiment](https://arxiv.org/abs/2508.21126) | arXiv | paper | 19 | 把 scientific agents 的任务从 paper comprehension 拉到 experiment design / execution planning，适合校验研究型 agent 是否真的能从『读』走到『做』。 |
+| [LangGraph CLI 0.4.30 release notes](https://github.com/langchain-ai/langgraph/releases/tag/langgraph-cli%3D%3D0.4.30) | LangChain | doc | 19 | 官方 release notes：CLI 开始校验 deployment 与 API version ranges 的兼容关系，并修复 config init 与 env 注入细节，说明 agent runtime tooling 正把部署契约前移到命令行阶段。 |
+| [RetailBench: A Long-Horizon Benchmark for AI Agents in Retail Management](https://arxiv.org/abs/2606.14545) | arXiv | paper | 19 | 把零售经营拆成跨天库存、定价、补货与促销决策，强调 agent 不能只会单步答题，还要在长周期里维持策略一致性与收益稳定。 |
+| [Can AI Agents Synthesize Scientific Conclusions? Understanding Strategic Generalization on SciConBench](https://arxiv.org/abs/2606.11337) | arXiv | paper | 19 | 提出 SciConBench，要求 agent 从多篇 scientific claims 做 clean-room 结论综合并避免直接搬运原句，适合检验研究型 agent 是否真的具备跨文献 synthesis 能力。 |
+| [SubtleMemory: Benchmarking Long-Term Relational Memory in LLM Agents](https://arxiv.org/abs/2606.05761) | arXiv | paper | 19 | 把长期记忆评测拆成补充关系、矛盾关系与无关关系判断，强调 agent 需要维护人物/事件关系一致性，而不是只做关键词 recall。 |
+| [SentinelBench: Benchmarking Monitoring Agents in Dynamic Environments](https://arxiv.org/abs/2606.05342) | arXiv | paper | 19 | 聚焦监控/告警场景，要求 agent 在动态环境中持续观测、解释异常并触发后续动作，补齐 monitoring agent 的时序反应与行动链评测。 |
 | [Introducing Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) | anthropic.com | blog | rag-chunk, rag-hybrid, rag-contextual | Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读 |
 | [Okapi BM25 - Wikipedia](https://en.wikipedia.org/wiki/Okapi_BM25) | en.wikipedia.org | doc | rag-hybrid | BM25 打分公式与 k1/b 参数的权威说明，对应本章 BM25Index |
 | [Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods](https://dl.acm.org/doi/10.1145/1571941.1572114) | dl.acm.org | paper | rag-hybrid | RRF 原始论文 (Cormack et al., SIGIR 2009)，混合检索融合法的来源 |

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { FIXTURE_SOURCES, fixtureFetchFeed, readFixture } from "../src/fixtures.ts";
-import { fetchFeed, parseFeedString } from "../src/rss.ts";
+import { fetchFeed, parseAIBaseNewsHtml, parseFeedString } from "../src/rss.ts";
 import type { NewsSource } from "../src/types.ts";
 
 test("parses an RSS 2.0 fixture", async () => {
@@ -42,6 +42,17 @@ test("fixtureFetchFeed parses a known fixture source", async () => {
   const result = await fixtureFetchFeed(FIXTURE_SOURCES[0]);
   assert.equal(result.ok, true);
   assert.ok(result.items.length >= 3);
+});
+
+test("parses AIBase SSR news list cards", () => {
+  const items = parseAIBaseNewsHtml(readFixture("aibase-news-sample.html"));
+  assert.equal(items.length, 2);
+  assert.equal(
+    items[0].title,
+    '火山引擎发布豆包音频生成模型1.0：一句话生成影视级音频，角色声音 10 分钟都不"串戏"',
+  );
+  assert.equal(items[0].link, "https://news.aibase.com/zh/news/29118");
+  assert.match(items[0].contentSnippet ?? "", /端到端生成完整音频作品/);
 });
 
 test("fetchFeed retries retryable failures up to source policy", async () => {

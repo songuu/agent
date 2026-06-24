@@ -1,0 +1,80 @@
+# Host Nginx example for containerized cutover.
+# Replace COOKIE_HASH before use. Keep real tokens/secrets outside this file.
+
+map_hash_bucket_size 128;
+map $cookie_dm_session $dm_authed {
+  default 0;
+  "COOKIE_HASH" 1;
+}
+
+server {
+  server_name songuu.top;
+  client_max_body_size 200m;
+
+  location = /agent-build {
+    return 301 /agent-build/;
+  }
+
+  location /agent-build/api/demo-runner/api/ {
+    if ($dm_authed = 0) { return 401; }
+    proxy_pass http://127.0.0.1:8088;
+    proxy_http_version 1.1;
+    proxy_buffering off;
+    proxy_cache off;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_read_timeout 300s;
+  }
+
+  location /agent-build/ {
+    proxy_pass http://127.0.0.1:8088;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  location = /aicrew {
+    return 301 /aicrew/;
+  }
+
+  location /aicrew/ {
+    proxy_pass http://127.0.0.1:3101/aicrew/;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+  }
+
+  location = /pipeline {
+    return 301 /pipeline/;
+  }
+
+  location /pipeline/ {
+    if ($dm_authed = 0) { return 302 https://songuu.top/login; }
+    proxy_pass http://127.0.0.1:3000/;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_read_timeout 300s;
+  }
+
+  location /api/webhooks/ {
+    proxy_pass http://127.0.0.1:4000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_read_timeout 300s;
+  }
+}

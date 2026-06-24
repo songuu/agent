@@ -1,6 +1,7 @@
 // 新闻源注册表。
 //
-// 每个源都是公开 RSS/Atom feed，2026-06-17 实测可用性见下方注释。
+// 多数源是公开 RSS/Atom feed；少数无公开 feed 的站点走专用 HTML 适配器。
+// 2026-06-17 实测可用性见下方注释；AIBase 2026-06-24 验证为 Nuxt SSR HTML。
 // 间歇不稳定的源（HF/OpenAI/Anthropic）仍保留 enabled，由 rss.ts 的故障隔离兜底：
 // 单源失败只 skip+log，不影响其它源——这是真实聚合器的核心健壮性。
 
@@ -12,6 +13,23 @@ export const SOURCES: readonly NewsSource[] = [
     key: "qbitai",
     name: "量子位",
     url: "https://www.qbitai.com/feed",
+    kind: "cn-media",
+    lang: "zh",
+    enabled: true,
+  },
+  {
+    key: "aibase-news",
+    name: "AIBase 新闻",
+    url: "https://news.aibase.com/zh/news",
+    format: "aibase-html",
+    kind: "cn-media",
+    lang: "zh",
+    enabled: true,
+  },
+  {
+    key: "techweb-it",
+    name: "TechWeb 业界",
+    url: "https://www.techweb.com.cn/rss/it.xml",
     kind: "cn-media",
     lang: "zh",
     enabled: true,

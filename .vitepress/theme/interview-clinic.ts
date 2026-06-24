@@ -2,10 +2,11 @@
  * 求职指南「高频面试题」可筛渲染器（No-Vue：vanilla TS + 挂载 div）。
  *
  * 挂载点：career-guide.md 里的 `<div data-interview-clinic></div>`。
- * 数据源：knowledge-graph/data/interview-questions.ts（构建期 bundle，无网络）。
+ * 数据源：优先读 Supabase `public.interview_questions`；失败时回退本地 bundle。
  * 交互：按分类（原理/工程/项目深挖）tab + 按章节下拉过滤；纯前端，逻辑见 interview-clinic-filter.ts。
  */
-import { INTERVIEW_QUESTIONS, type InterviewQuestion } from "../../knowledge-graph/data/interview-questions";
+import type { InterviewQuestion } from "../../knowledge-graph/data/interview-questions";
+import { loadInterviewClinicData } from "./interview-clinic-data";
 import {
   filterQuestions,
   categoryCounts,
@@ -44,11 +45,23 @@ function scanInterviewClinics(): void {
   document.querySelectorAll<HTMLElement>("[data-interview-clinic]").forEach((root) => {
     if (initialized.has(root)) return;
     initialized.add(root);
-    renderClinic(root, INTERVIEW_QUESTIONS);
+    createClinic(root);
   });
 }
 
-function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]): void {
+function createClinic(root: HTMLElement): void {
+  root.classList.add("interview-clinic");
+  root.replaceChildren(statusBlock("正在读取面试题题库..."));
+
+  loadInterviewClinicData()
+    .then((result) => renderClinic(root, result.questions, result.note))
+    .catch((error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      root.replaceChildren(statusBlock(`面试题读取失败：${message}`));
+    });
+}
+
+function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[], sourceNote: string): void {
   root.classList.add("interview-clinic");
   root.replaceChildren();
 
@@ -144,7 +157,9 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
   function renderList(): void {
     const filtered = filterQuestions(questions, selectedCategory, selectedChapter);
     currentPage = 0;
-    summary.textContent = `共 ${filtered.length} 题${selectedChapter === "all" ? "" : ` · 章节 ${chapterDisplay(selectedChapter)}`}`;
+    summary.textContent =
+      `共 ${filtered.length} 题${selectedChapter === "all" ? "" : ` · 章节 ${chapterDisplay(selectedChapter)}`}` +
+      ` · ${sourceNote}`;
     list.replaceChildren();
 
     if (filtered.length === 0) {
@@ -246,4 +261,11 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
 /** 章节标签展示：数字章节加「第 N 章」，毕设等非数字原样。 */
 function chapterDisplay(chapter: string): string {
   return /^\d+$/.test(chapter) ? `第 ${chapter} 章` : chapter;
+}
+
+function statusBlock(message: string): HTMLDivElement {
+  const status = document.createElement("div");
+  status.className = "frontier-archive-status";
+  status.textContent = message;
+  return status;
 }

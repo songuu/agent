@@ -81,6 +81,11 @@ features:
     details: 把 RAG、记忆、工具、事件流、定时任务和部署串成一个企业级作品集项目。
     link: /docs/enterprise-knowledge-base-agent
     linkText: 看蓝图
+  - icon: 🎓
+    title: 企业知识库 Agent Capstone
+    details: 把蓝图拆成产品边界、数据模型、API、事件流、测试门和 4 周实现路线。
+    link: /capstone/enterprise-knowledge-base-agent/
+    linkText: 做项目
 ---
 
 ## 这门课怎么学
@@ -98,8 +103,9 @@ flowchart LR
   H --> H2["20 前沿文章库"]
   H2 --> I["🎓 毕业项目"]
   I --> J["🔬 进阶 RAG 专题"]
-  J --> K["🏢 企业知识库 Agent"]
-  K --> L["💼 求职 / 🚀 创业"]
+  J --> K["🏢 企业知识库 Agent 蓝图"]
+  K --> K2["🎓 企业知识库 Agent Capstone"]
+  K2 --> L["💼 求职 / 🚀 创业"]
 ```
 
 - **先手写，后框架**：先理解每一行为什么存在，再看框架帮你省了什么。

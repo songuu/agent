@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">AICrew Studio current demo case</title>
+  <desc id="desc">A complete visual case from product input to agent planning, generation queue, and export package.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#07111f"/>
+      <stop offset="0.48" stop-color="#12253a"/>
+      <stop offset="1" stop-color="#0b1519"/>
+    </linearGradient>
+    <linearGradient id="teal" x1="0" x2="1">
+      <stop offset="0" stop-color="#2dd4bf"/>
+      <stop offset="1" stop-color="#38bdf8"/>
+    </linearGradient>
+    <linearGradient id="warm" x1="0" x2="1">
+      <stop offset="0" stop-color="#f97316"/>
+      <stop offset="1" stop-color="#facc15"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#000000" flood-opacity="0.32"/>
+    </filter>
+    <style>
+      .cn { font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif; }
+      .title { fill: #f8fafc; font-size: 38px; font-weight: 800; letter-spacing: 0; }
+      .subtitle { fill: #bfd4e8; font-size: 18px; }
+      .label { fill: #e5f3ff; font-size: 20px; font-weight: 700; }
+      .small { fill: #a8c2d8; font-size: 14px; }
+      .tiny { fill: #d6e5f2; font-size: 12px; }
+      .card { fill: rgba(255,255,255,0.075); stroke: rgba(255,255,255,0.16); stroke-width: 1.2; }
+      .panel { fill: rgba(255,255,255,0.055); stroke: rgba(255,255,255,0.12); stroke-width: 1; }
+      .line { stroke: #7dd3fc; stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+      .dash { stroke: #facc15; stroke-width: 2.4; stroke-dasharray: 7 7; fill: none; stroke-linecap: round; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="720" fill="url(#bg)"/>
+  <circle cx="190" cy="120" r="210" fill="#2dd4bf" opacity="0.13"/>
+  <circle cx="1000" cy="580" r="240" fill="#fb7185" opacity="0.11"/>
+  <circle cx="880" cy="110" r="150" fill="#facc15" opacity="0.08"/>
+
+  <g class="cn">
+    <text x="70" y="78" class="title">AICrew Studio 当前实现案例</text>
+    <text x="70" y="112" class="subtitle">Demo-first：一张商品图 + 一句话需求 → 脚本、封面、15 秒视频、文案包</text>
+    <rect x="910" y="58" width="220" height="42" rx="21" fill="url(#teal)" opacity="0.95"/>
+    <text x="939" y="85" fill="#05202c" font-size="16" font-weight="800">Current Demo Scope</text>
+
+    <g filter="url(#shadow)">
+      <rect x="70" y="165" width="245" height="390" rx="22" class="card"/>
+      <rect x="345" y="165" width="245" height="390" rx="22" class="card"/>
+      <rect x="620" y="165" width="245" height="390" rx="22" class="card"/>
+      <rect x="895" y="165" width="235" height="390" rx="22" class="card"/>
+    </g>
+
+    <text x="96" y="210" class="label">1. 输入</text>
+    <rect x="98" y="235" width="185" height="168" rx="18" fill="#f8fafc"/>
+    <rect x="126" y="270" width="128" height="82" rx="20" fill="#e0f2fe"/>
+    <path d="M146 330 C170 285 206 284 235 330" fill="#38bdf8" opacity="0.8"/>
+    <circle cx="190" cy="292" r="22" fill="#fb7185" opacity="0.85"/>
+    <rect x="98" y="426" width="185" height="30" rx="15" fill="rgba(45,212,191,0.25)" stroke="#2dd4bf"/>
+    <text x="118" y="447" class="tiny">商品图 / Logo / 卖点</text>
+    <rect x="98" y="468" width="185" height="52" rx="16" class="panel"/>
+    <text x="116" y="490" class="tiny">“为保湿面霜生成</text>
+    <text x="116" y="510" class="tiny">3 条 TikTok 广告”</text>
+
+    <text x="371" y="210" class="label">2. Agent 计划</text>
+    <rect x="372" y="238" width="170" height="46" rx="14" fill="rgba(56,189,248,0.18)" stroke="#38bdf8"/>
+    <text x="391" y="267" class="tiny">Brief JSON</text>
+    <rect x="372" y="302" width="170" height="46" rx="14" fill="rgba(45,212,191,0.18)" stroke="#2dd4bf"/>
+    <text x="391" y="331" class="tiny">Strategy + Angle</text>
+    <rect x="372" y="366" width="170" height="46" rx="14" fill="rgba(250,204,21,0.18)" stroke="#facc15"/>
+    <text x="391" y="395" class="tiny">3 Scripts</text>
+    <rect x="372" y="430" width="170" height="46" rx="14" fill="rgba(251,113,133,0.18)" stroke="#fb7185"/>
+    <text x="391" y="459" class="tiny">Storyboard</text>
+    <path d="M457 285 L457 302 M457 349 L457 366 M457 413 L457 430" class="dash"/>
+
+    <text x="646" y="210" class="label">3. 生成队列</text>
+    <rect x="651" y="240" width="178" height="74" rx="17" class="panel"/>
+    <text x="674" y="268" class="tiny">Visual Worker</text>
+    <rect x="674" y="284" width="120" height="9" rx="4" fill="url(#teal)"/>
+    <rect x="651" y="335" width="178" height="74" rx="17" class="panel"/>
+    <text x="674" y="363" class="tiny">Video Worker</text>
+    <rect x="674" y="379" width="96" height="9" rx="4" fill="url(#warm)"/>
+    <rect x="651" y="430" width="178" height="74" rx="17" class="panel"/>
+    <text x="674" y="458" class="tiny">QA + Export</text>
+    <rect x="674" y="474" width="134" height="9" rx="4" fill="#86efac"/>
+
+    <text x="921" y="210" class="label">4. 输出包</text>
+    <rect x="925" y="238" width="82" height="142" rx="16" fill="#111827" stroke="#38bdf8"/>
+    <rect x="939" y="255" width="54" height="96" rx="10" fill="#0ea5e9" opacity="0.55"/>
+    <polygon points="962,292 962,316 981,304" fill="#f8fafc"/>
+    <rect x="1023" y="238" width="74" height="74" rx="16" fill="#fff7ed"/>
+    <rect x="1038" y="253" width="44" height="44" rx="10" fill="#fb7185"/>
+    <rect x="1023" y="329" width="74" height="51" rx="14" fill="#ecfeff"/>
+    <text x="1040" y="360" fill="#0f172a" font-size="12" font-weight="700">Caption</text>
+    <rect x="925" y="408" width="172" height="37" rx="16" fill="rgba(45,212,191,0.22)" stroke="#2dd4bf"/>
+    <text x="946" y="432" class="tiny">3 × 9:16 MP4</text>
+    <rect x="925" y="458" width="172" height="37" rx="16" fill="rgba(56,189,248,0.18)" stroke="#38bdf8"/>
+    <text x="946" y="482" class="tiny">3 × Cover PNG</text>
+    <rect x="925" y="508" width="172" height="37" rx="16" fill="rgba(250,204,21,0.18)" stroke="#facc15"/>
+    <text x="946" y="532" class="tiny">Script + Copy MD</text>
+
+    <path d="M315 360 C330 360 330 360 345 360" class="line"/>
+    <path d="M590 360 C605 360 605 360 620 360" class="line"/>
+    <path d="M865 360 C880 360 880 360 895 360" class="line"/>
+
+    <rect x="70" y="600" width="1060" height="60" rx="22" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.14)"/>
+    <text x="96" y="626" class="small">演示验收：上传素材可见、Brief 可解析、Agent 步骤可追踪、至少 1 条内容包可导出、积分预估可展示。</text>
+    <text x="96" y="648" class="small">产品层扩展：真并行 Agent、Brand Memory、Skill Marketplace、数据反馈、团队协作。</text>
+  </g>
+</svg>

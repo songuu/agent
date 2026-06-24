@@ -37,7 +37,7 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   project: "项目深挖类",
 };
 
-const COLLECTED_DATE = "2026-06-18";
+const COLLECTED_DATE = "2026-06-24";
 const COLLECTED_AT = `${COLLECTED_DATE}T09:00:00+08:00`;
 
 interface RawInterviewQuestion {
@@ -287,7 +287,107 @@ const RAW_QUESTIONS: RawInterviewQuestion[] = [
     confidence: "medium",
     rationale: "本题覆盖 relational memory benchmark 的核心口径，适合补齐『记住了多少』之外的『记得是否一致』。",
   },
-  // C. 项目深挖类
+  {
+    slug: "pre-approval-tool-input-guardrails-vs-post-hoc-check",
+    category: "engineering",
+    question:
+      "为什么 tool guardrails 最好放在“真正执行前”的 pre-approval 边界，而不是等工具跑完再做事后检查？这对高权限工具有什么安全意义？",
+    relatedChapters: ["05", "17", "18", "19"],
+    sourceTitles: [
+      "OpenAI Agents Python v0.17.6 release notes",
+      "OpenAI Agents JS v0.11.8 release notes",
+    ],
+    sourceUrls: [
+      "https://github.com/openai/openai-agents-python/releases/tag/v0.17.6",
+      "https://github.com/openai/openai-agents-js/releases/tag/v0.11.8",
+    ],
+    confidence: "high",
+    rationale: "本题来自 OpenAI Agents 最新 py/js release 的共同变更：把 pre-approval tool input guardrails 前移到真实执行边界。",
+  },
+  {
+    slug: "brokered-execution-vs-agent-held-production-authority",
+    category: "engineering",
+    question:
+      "为什么生产变更权限不该直接放在 agent 推理进程里？certificate-bound broker / scoped execution identity 这种执行边界在兜什么风险？",
+    relatedChapters: ["17", "18", "19"],
+    sourceTitles: [
+      "Sovereign Execution Brokers: Enforcing Certificate-Bound Authority in Agentic Control Planes",
+    ],
+    sourceUrls: ["https://arxiv.org/abs/2606.20520"],
+    confidence: "medium",
+    rationale: "本题对应 2026 新 paper 对“proposal / admission / execution”分层的强调，贴近高权限 agent 落地。",
+  },
+  {
+    slug: "probabilistic-policy-verification-under-ambiguous-detectors",
+    category: "engineering",
+    question:
+      "当 PII detector / declassifier 这类安全判定本身带误差时，为什么 deterministic policy 不够？agent runtime 该怎么理解 probabilistic verification 的意义？",
+    relatedChapters: ["15", "17", "19"],
+    sourceTitles: [
+      "Efficient and Sound Probabilistic Verification for AI Agents",
+    ],
+    sourceUrls: ["https://arxiv.org/abs/2606.20510"],
+    confidence: "medium",
+    rationale: "本题覆盖安全策略在“检测器有误差”前提下的验证问题，适合补齐 agent security/eval 的高阶追问。",
+  },
+  {
+    slug: "repository-guidance-coverage-vs-precision-for-coding-agents",
+    category: "engineering",
+    question:
+      "为什么高质量仓库指引（如 AGENTS.md）更主要提升 coding agent 的文件定位覆盖率，而不一定直接提升 patch 精度？步数预算变大时它为什么更重要？",
+    relatedChapters: ["12", "15", "19", "capstone"],
+    sourceTitles: [
+      "Probe-and-Refine Tuning of Repository Guidance for Coding Agents",
+    ],
+    sourceUrls: ["https://arxiv.org/abs/2606.20512"],
+    confidence: "medium",
+    rationale: "本题直接来自 2026 新 paper 对 repository guidance 的实验结论，和本仓库 AGENTS/课程结构高度相关。",
+  },
+  {
+    slug: "multi-tenant-agent-runtime-isolation-vs-dedicated-stack",
+    category: "engineering",
+    question:
+      "为什么共享基础设施的多租户 agent runtime 不能只靠“逻辑上分 tenant”就算隔离完成？state、identity、telemetry 和审批边界分别要隔离什么，什么时候还得回到 dedicated stack？",
+    relatedChapters: ["16", "17", "18", "19"],
+    sourceTitles: [
+      "Shared infrastructure, isolated tenants: Pool model multi-tenancy with Amazon Bedrock AgentCore",
+    ],
+    sourceUrls: [
+      "https://aws.amazon.com/blogs/machine-learning/shared-infrastructure-isolated-tenants-pool-model-multi-tenancy-with-amazon-bedrock-agentcore/",
+    ],
+    confidence: "high",
+    rationale: "本题来自 AWS 对生产级多租户 AgentCore 隔离模式的官方实践，适合补齐 runtime / deployment / guardrail 的交叉追问。",
+  },
+  {
+    slug: "scientific-copilot-query-parse-retrieval-summary-boundary",
+    category: "engineering",
+    question:
+      "做研究型 copilot 时，为什么要把 structured query parsing、embedding retrieval 和 AI summary 三段拆开，而不是让一个大 prompt 端到端包办？这样拆分分别在兜什么准确性与可追溯风险？",
+    relatedChapters: ["08", "09", "16", "19"],
+    sourceTitles: [
+      "Build a protein research copilot with Amazon Bedrock AgentCore",
+    ],
+    sourceUrls: [
+      "https://aws.amazon.com/blogs/machine-learning/build-a-protein-research-copilot-with-amazon-bedrock-agentcore/",
+    ],
+    confidence: "high",
+    rationale: "本题来自 AWS 对 research copilot 的官方实现拆解，直接对应 query parsing / retrieval / summarization 的工程边界。",
+  },
+  {
+    slug: "agent-identity-infrastructure-vs-provider-account-mapping",
+    category: "engineering",
+    question:
+      "为什么跨组织 agent 协作不能长期依赖“给每个 agent 发一把 API key”这种做法？独立的 agent identity / name service 在信任建立、权限撤销和跨平台互认上解决了什么问题？",
+    relatedChapters: ["17", "18", "19"],
+    sourceTitles: [
+      "Linux Foundation Agent Name Service identity infrastructure announcement",
+    ],
+    sourceUrls: [
+      "https://www.linuxfoundation.org/press/linux-foundation-announces-intent-to-launch-agent-name-service-to-establish-trusted-identity-infrastructure-for-ai-agents",
+    ],
+    confidence: "high",
+    rationale: "本题对应 Linux Foundation 新提出的 agent identity 基础设施，适合补齐 protocol / trust / governance 的生产追问。",
+  },  // C. 项目深挖类
   {
     slug: "project-why-multi-agent",
     category: "project",
@@ -401,3 +501,4 @@ const slugs = new Set(INTERVIEW_QUESTIONS.map((q) => q.slug));
 if (slugs.size !== INTERVIEW_QUESTIONS.length) {
   throw new Error("Duplicate interview question slug detected in interview-questions.ts");
 }
+

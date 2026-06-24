@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "publicDomain": "songuu.top",
+  "migrationGoal": "Run the same project stack on Aliyun, Volcengine, or Tencent Cloud with Docker Compose plus a thin host Nginx layer.",
+  "projects": [
+    {
+      "key": "songuu-home",
+      "kind": "static-home",
+      "publicRoutes": ["/"],
+      "currentRuntime": {
+        "owner": "nginx",
+        "path": "/opt/songuu-home"
+      },
+      "containerPlan": {
+        "status": "inventory-only",
+        "target": "nginx static image",
+        "notes": "Keep as the last migration item because it owns the root route."
+      }
+    },
+    {
+      "key": "agent-build",
+      "kind": "vitepress-site-with-node-workers",
+      "publicRoutes": ["/agent-build/"],
+      "currentRuntime": {
+        "site": "nginx alias /opt/agent-build/current/.vitepress/dist",
+        "runner": "PM2 agent-build-runner on 127.0.0.1:5174",
+        "newsCollector": "PM2 news-collector",
+        "notionSync": "Node cron path in repo, optional runtime"
+      },
+      "containerPlan": {
+        "status": "implemented-in-this-repo",
+        "dockerfile": "Dockerfile",
+        "composeFile": "deploy/compose/agent-build.compose.yml",
+        "deployScript": "scripts/deploy-container.ps1"
+      }
+    },
+    {
+      "key": "aicrew",
+      "kind": "nextjs-app",
+      "publicRoutes": ["/aicrew/"],
+      "currentRuntime": {
+        "owner": "PM2 aicrew-studio",
+        "port": 3101,
+        "path": "/opt/aicrew/current-server"
+      },
+      "containerPlan": {
+        "status": "external-repo-required",
+        "target": "Next.js standalone runtime image",
+        "notes": "Keep /aicrew/ basePath and websocket proxy semantics."
+      }
+    },
+    {
+      "key": "deploy-management",
+      "kind": "nextjs-control-plane-plus-api",
+      "publicRoutes": ["/pipeline/", "/login", "/auth/", "/api/", "/oapi/"],
+      "currentRuntime": {
+        "web": "PM2 dm-web on 0.0.0.0:3000",
+        "api": "PM2 dm-api on 0.0.0.0:4000",
+        "tektonBridge": "PM2 dm-tekton-bridge currently stopped"
+      },
+      "containerPlan": {
+        "status": "external-repo-required",
+        "target": "compose services: dm-web, dm-api, optional dm-tekton-bridge",
+        "notes": "Keep auth cookie gate, webhook timeout, package upload/shared volumes."
+      }
+    }
+  ],
+  "sharedHostConcerns": [
+    "Host Nginx owns TLS, auth cookie checks, and route fan-out.",
+    "Compose services should bind to 127.0.0.1 host ports unless intentionally public.",
+    "Secrets stay in remote env files or cloud secret stores, never in repo.",
+    "Cutover should be route-by-route: start container on a new local port, health check, switch Nginx, keep PM2 rollback path."
+  ]
+}
