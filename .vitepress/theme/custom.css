@@ -3215,3 +3215,123 @@ body::after {
 .notion-detail-body {
   margin-top: 1rem;
 }
+
+.news-article-detail {
+  max-width: 920px;
+  margin: 0 auto 48px;
+}
+
+.news-detail-card {
+  padding: 28px;
+  border: 1px solid var(--frontier-card-border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--frontier-card-bg) 94%, var(--vp-c-bg));
+  box-shadow: var(--frontier-card-shadow);
+}
+
+.news-detail-header {
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--frontier-card-border);
+}
+
+.news-detail-eyebrow {
+  margin: 0 0 10px;
+  color: var(--frontier-accent);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.news-detail-title {
+  margin: 0;
+  color: var(--frontier-text-strong);
+  font-size: 34px;
+  line-height: 1.22;
+  letter-spacing: 0;
+}
+
+.news-detail-meta,
+.news-detail-tags,
+.news-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.news-detail-chip,
+.news-detail-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 9px;
+  border-radius: 6px;
+  color: var(--frontier-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--vp-c-bg-soft) 82%, transparent);
+}
+
+.news-detail-tag {
+  color: var(--frontier-text);
+  background: color-mix(in srgb, var(--frontier-accent-soft) 50%, var(--vp-c-bg-soft));
+}
+
+.news-detail-body {
+  margin-top: 24px;
+}
+
+.news-detail-body .news-detail-paragraph {
+  margin: 0 0 18px;
+  color: var(--frontier-text);
+  font-size: 17px;
+  line-height: 1.86;
+  overflow-wrap: anywhere;
+}
+
+.news-detail-original {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--frontier-accent);
+  border-radius: 6px;
+  color: var(--frontier-accent);
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.news-detail-original::after {
+  margin-left: 6px;
+  content: "↗";
+}
+
+.news-detail-original:hover {
+  color: var(--vp-c-bg);
+  background: var(--frontier-accent);
+}
+
+.news-detail-status {
+  padding: 24px;
+  border: 1px dashed var(--frontier-card-border);
+  border-radius: 8px;
+  color: var(--frontier-text-muted);
+  background: color-mix(in srgb, var(--frontier-card-bg) 88%, transparent);
+}
+
+@media (max-width: 640px) {
+  .news-detail-card {
+    padding: 18px;
+  }
+
+  .news-detail-title {
+    font-size: 24px;
+  }
+
+  .news-detail-body .news-detail-paragraph {
+    font-size: 15px;
+    line-height: 1.78;
+  }
+}

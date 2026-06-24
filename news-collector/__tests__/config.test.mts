@@ -38,3 +38,17 @@ test("legacy NEWS_ENRICH_MODEL remains an explicit collector override", () => {
   assert.equal(config.enrichModel, "claude-haiku-test");
   assert.equal(config.enrichMax, 1);
 });
+
+test("article content extraction config defaults to enabled with bounded limits", () => {
+  const config = loadConfig({});
+
+  assert.equal(config.articleContentEnabled, true);
+  assert.equal(config.articleContentTimeoutMs, 12000);
+  assert.equal(config.articleContentMaxItems, 80);
+});
+
+test("article content extraction can be disabled", () => {
+  const config = loadConfig({ NEWS_ARTICLE_CONTENT_ENABLED: "false" });
+
+  assert.equal(config.articleContentEnabled, false);
+});

@@ -33,7 +33,7 @@
     "news:smoke": "tsx news-collector/smoke.ts",
     "news:collect": "tsx --env-file=.env news-collector/src/cli-collect.ts",
     "news:cron": "tsx --env-file=.env news-collector/src/cron.ts",
-    "news:test": "tsx --test news-collector/__tests__/classify.test.mts news-collector/__tests__/normalize.test.mts news-collector/__tests__/dedupe.test.mts news-collector/__tests__/rss.test.mts news-collector/__tests__/collect.test.mts news-collector/__tests__/config.test.mts news-collector/__tests__/enrich.test.mts news-collector/__tests__/sources.test.mts",
+    "news:test": "tsx --test news-collector/__tests__/classify.test.mts news-collector/__tests__/article-content.test.mts news-collector/__tests__/normalize.test.mts news-collector/__tests__/dedupe.test.mts news-collector/__tests__/rss.test.mts news-collector/__tests__/collect.test.mts news-collector/__tests__/config.test.mts news-collector/__tests__/enrich.test.mts news-collector/__tests__/sources.test.mts",
     "notion:typecheck": "tsc -p tsconfig.notion.json --noEmit",
     "notion:smoke": "tsx news-collector/src/notion/smoke.ts",
     "notion:sync": "node --dns-result-order=ipv4first node_modules/tsx/dist/cli.mjs --env-file=news-collector/.env news-collector/src/notion/cli-sync.ts",

@@ -46,6 +46,8 @@ export type SourceKind =
 
 export type SourceFormat = "feed" | "aibase-html";
 
+export type ArticleContentStatus = "not_fetched" | "fetched" | "empty" | "failed";
+
 export interface SourceRetryPolicy {
   /** 总尝试次数（含首次），默认普通源 3，重点源 5。 */
   readonly maxAttempts?: number;
@@ -107,6 +109,12 @@ export interface NewsItem {
   /** 规范化后的原文链接（去 hash 与跟踪参数）。 */
   readonly url: string;
   readonly summary: string;
+  /** 站内详情正文：由 collector 从原文抽取并截断；抓取失败时为空。 */
+  readonly contentText: string;
+  /** 列表摘要：优先取 contentText 首段截断，回退 feed summary。 */
+  readonly contentExcerpt: string;
+  readonly contentStatus: ArticleContentStatus;
+  readonly contentFetchedAt: string | null;
   readonly ecosystemLayer: EcosystemLayer;
   readonly ecosystemLayerLabel: string;
   readonly tags: readonly string[];
@@ -140,6 +148,10 @@ export const newsItemSchema = z.object({
   title: z.string().min(1),
   url: z.string().url(),
   summary: z.string(),
+  contentText: z.string(),
+  contentExcerpt: z.string(),
+  contentStatus: z.enum(["not_fetched", "fetched", "empty", "failed"]),
+  contentFetchedAt: z.string().nullable(),
   ecosystemLayer: z.enum(ECOSYSTEM_LAYERS),
   ecosystemLayerLabel: z.string().min(1),
   tags: z.array(z.string()),

@@ -16,6 +16,12 @@ create table if not exists public.news_items (
   title text not null,
   url text not null,
   summary text not null default '',
+  content_text text not null default '',
+  content_excerpt text not null default '',
+  content_status text not null default 'not_fetched' check (
+    content_status in ('not_fetched', 'fetched', 'empty', 'failed')
+  ),
+  content_fetched_at timestamptz,
   ecosystem_layer text not null default 'foundation' check (
     ecosystem_layer in (
       'foundation',
@@ -39,7 +45,7 @@ create table if not exists public.news_items (
   read_count integer not null default 0 check (read_count >= 0),
   metadata jsonb not null default '{}'::jsonb,
   search_text tsvector generated always as (
-    to_tsvector('simple', coalesce(title, '') || ' ' || coalesce(source_name, '') || ' ' || coalesce(summary, ''))
+    to_tsvector('simple', coalesce(title, '') || ' ' || coalesce(source_name, '') || ' ' || coalesce(summary, '') || ' ' || coalesce(content_excerpt, '') || ' ' || coalesce(content_text, ''))
   ) stored,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -113,7 +119,11 @@ comment on table public.news_items is
 comment on column public.news_items.external_id is
   'sha256 of canonical URL; idempotent upsert conflict key.';
 comment on column public.news_items.summary is
-  'Feed-provided excerpt only, truncated. Never a copy of the original article body.';
+  'Feed-provided summary, cleaned and truncated. Used as fallback when original article body extraction is unavailable.';
+comment on column public.news_items.content_text is
+  'Bounded original-article text extracted by news-collector for station-side article detail rendering.';
+comment on column public.news_items.content_excerpt is
+  'Short list-card excerpt derived from content_text when available; falls back to cleaned feed summary.';
 comment on column public.news_items.published_date is
   'Article date used by the calendar filter. Falls back to collected_date when published_at is unknown.';
 

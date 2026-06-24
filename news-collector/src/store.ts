@@ -22,6 +22,10 @@ interface NewsItemRow {
   title: string;
   url: string;
   summary: string;
+  content_text: string;
+  content_excerpt: string;
+  content_status: string;
+  content_fetched_at: string | null;
   ecosystem_layer: string;
   ecosystem_layer_label: string;
   tags: readonly string[];
@@ -43,6 +47,10 @@ function toRow(item: NewsItem): NewsItemRow {
     title: item.title,
     url: item.url,
     summary: item.summary,
+    content_text: item.contentText,
+    content_excerpt: item.contentExcerpt,
+    content_status: item.contentStatus,
+    content_fetched_at: item.contentFetchedAt,
     ecosystem_layer: item.ecosystemLayer,
     ecosystem_layer_label: item.ecosystemLayerLabel,
     tags: item.tags,

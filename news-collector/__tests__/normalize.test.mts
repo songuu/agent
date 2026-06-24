@@ -93,6 +93,10 @@ test("toNewsItem maps fields deterministically", () => {
   assert.equal(item.url, "https://a.com/p");
   assert.equal(item.title, "Anthropic 发布 Claude 新模型");
   assert.equal(item.summary, "摘要内容");
+  assert.equal(item.contentText, "摘要内容");
+  assert.equal(item.contentExcerpt, "摘要内容");
+  assert.equal(item.contentStatus, "not_fetched");
+  assert.equal(item.contentFetchedAt, null);
   assert.equal(item.collectedAt, "2026-06-17T08:00:00.000Z");
   assert.equal(item.collectedDate, "2026-06-17");
   assert.equal(item.publishedAt, "2026-06-16T13:23:06.000Z");

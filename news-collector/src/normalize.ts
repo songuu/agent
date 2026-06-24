@@ -2,10 +2,11 @@
 //
 // 关键不变量：
 // - 收集身份 externalId = canonical URL 的 sha256（去 hash/跟踪参数后），保证跨次运行幂等。
-// - 不复制原文：summary 只取 feed 自带摘要并截断，标题/链接保留，正文不入库。
+// - feed 摘要只做最低回退；collector 后续会从原文 URL 抽取 bounded content_text。
 // - 纯转换：时间通过参数注入（now: Date），不在函数内读时钟，便于确定性单测。
 
 import { createHash } from "node:crypto";
+import { buildArticleExcerpt } from "./article-content.ts";
 import type {
   Classification,
   NewsItem,
@@ -118,6 +119,8 @@ export function toNewsItem(args: NormalizeArgs): NewsItem {
   const summarySource =
     rawItem.contentSnippet ?? rawItem.content ?? rawItem.summary ?? "";
   const summary = truncate(cleanFeedSummary(summarySource));
+  const fallbackContentText = summary;
+  const fallbackContentExcerpt = buildArticleExcerpt(fallbackContentText || summary);
   const collectedAt = now.toISOString();
   const collectedDate = collectedAt.slice(0, 10);
   const publishedAt = parsePublishedAt(rawItem);
@@ -131,6 +134,10 @@ export function toNewsItem(args: NormalizeArgs): NewsItem {
     title: stripHtml(rawItem.title).trim(),
     url,
     summary,
+    contentText: fallbackContentText,
+    contentExcerpt: fallbackContentExcerpt,
+    contentStatus: fallbackContentText ? "not_fetched" : "empty",
+    contentFetchedAt: null,
     ecosystemLayer: classification.ecosystemLayer,
     ecosystemLayerLabel: classification.ecosystemLayerLabel,
     tags: classification.tags,

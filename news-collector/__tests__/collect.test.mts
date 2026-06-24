@@ -65,3 +65,26 @@ test("dryRun does not attempt store; reports counts", async () => {
   const layers = new Set(report.items.map((i) => i.ecosystemLayer));
   assert.ok(layers.size >= 7, `expected broad layer coverage, got ${layers.size}`);
 });
+
+test("article content extraction attaches station-side body fields when enabled", async () => {
+  const report = await collectOnce({
+    sources: [FIXTURE_SOURCES[0]],
+    fetchFeedImpl: fixtureFetchFeed,
+    now: FIXED_NOW,
+    dryRun: true,
+    maxPerSource: 1,
+    articleContentEnabled: true,
+    articleContentMaxItems: 1,
+    fetchArticleContentImpl: async () => ({
+      text: "站内正文第一段。\n\n站内正文第二段。",
+      excerpt: "站内正文第一段。",
+      status: "fetched",
+      fetchedAt: FIXED_NOW.toISOString(),
+    }),
+  });
+
+  assert.equal(report.contentFetched, 1);
+  assert.equal(report.items[0]?.contentStatus, "fetched");
+  assert.equal(report.items[0]?.contentText, "站内正文第一段。\n\n站内正文第二段。");
+  assert.equal(report.items[0]?.contentExcerpt, "站内正文第一段。");
+});

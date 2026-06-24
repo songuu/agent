@@ -36,8 +36,8 @@ interface NewsItemView {
   url: string;
   summary: string;
   sourceName: string;
-  detailParagraphs: string[];
   sourceKind: string;
+  contentExcerpt: string;
   ecosystemLayer: FrontierEcosystemLayer;
   ecosystemLayerLabel: string;
   /** date-filter helper uses this field as the article date; it is sourced from published_date. */
@@ -63,6 +63,7 @@ interface NewsItemRow {
   title?: unknown;
   url?: unknown;
   summary?: unknown;
+  content_excerpt?: unknown;
   source_name?: unknown;
   source_kind?: unknown;
   ecosystem_layer?: unknown;
@@ -93,6 +94,7 @@ const NEWS_COLUMNS = [
   "title",
   "url",
   "summary",
+  "content_excerpt",
   "source_name",
   "source_kind",
   "ecosystem_layer",
@@ -105,6 +107,7 @@ const NEWS_COLUMNS = [
 ].join(",");
 
 const NEWS_FILTER_INDEX_COLUMNS = ["published_date", "ecosystem_layer", "source_name"].join(",");
+const BASE = (import.meta.env?.BASE_URL ?? "/") as string;
 
 const initialized = new WeakSet<HTMLElement>();
 
@@ -195,7 +198,6 @@ async function renderFeed(root: HTMLElement): Promise<void> {
   let calendarMonth: YearMonth = { year: 2026, month: 6 };
   let filterIndex: NewsFilterIndexItem[] = [];
   let items: NewsItemView[] = [];
-  let selectedItem: NewsItemView | null = null;
   let totalCount: number | null = null;
   let currentPage = 1;
   let pageSize = DEFAULT_NEWS_PAGE_SIZE;
@@ -251,14 +253,11 @@ async function renderFeed(root: HTMLElement): Promise<void> {
   listPanel.className = "frontier-news-list-panel";
 
   const layout = document.createElement("div");
-  layout.className = "frontier-news-layout frontier-news-layout-with-detail";
+  layout.className = "frontier-news-layout";
   const timelineStatus = document.createElement("div");
   timelineStatus.className = "frontier-timeline-status";
   const pagination = document.createElement("div");
   pagination.className = "frontier-news-pagination";
-  const detailPanel = document.createElement("aside");
-  detailPanel.className = "frontier-news-detail-panel";
-  detailPanel.setAttribute("aria-label", "文章详情");
 
   function indexLayerScoped(layer: LayerFilter = selectedLayer): NewsFilterIndexItem[] {
     if (layer === "all") return filterIndex;
@@ -317,18 +316,9 @@ async function renderFeed(root: HTMLElement): Promise<void> {
         : `当前页 ${items.length} 篇${visibleCount !== items.length ? ` · 当前筛选命中 ${visibleCount} 篇` : ""}`;
   }
 
-  function syncSelectedItem(): void {
-    const rows = currentPageItems();
-    if (rows.length === 0) {
-      selectedItem = null;
-      return;
-    }
-    selectedItem = rows.find((item) => item.externalId === selectedItem?.externalId) ?? rows[0];
-  }
 
   function renderAll(): void {
     syncFilterState();
-    syncSelectedItem();
     stats.replaceChildren(
       statItem(String(totalCount ?? items.length), "文章"),
       statItem(String(availableDates(indexLayerScoped()).length), "日期"),
@@ -338,7 +328,6 @@ async function renderFeed(root: HTMLElement): Promise<void> {
     renderFilters();
     renderCalendar();
     renderTimeline();
-    renderDetail();
     renderStatus();
     renderPagination();
   }
@@ -478,8 +467,8 @@ async function renderFeed(root: HTMLElement): Promise<void> {
           newsCard(
             item,
             rank,
-            selectedItem?.externalId === item.externalId,
-            () => selectItem(item),
+            false,
+            () => openArticleDetail(item),
           ),
         );
         rank += 1;
@@ -489,68 +478,8 @@ async function renderFeed(root: HTMLElement): Promise<void> {
     }
   }
 
-  function selectItem(item: NewsItemView): void {
-    selectedItem = item;
-    renderTimeline();
-    renderDetail();
-  }
-
-  function renderDetail(): void {
-    detailPanel.replaceChildren();
-    const item = selectedItem;
-    if (!item) {
-      detailPanel.append(statusBlock("选择一篇文章查看站内详情。"));
-      return;
-    }
-
-    const article = document.createElement("article");
-    article.className = "frontier-news-detail-card";
-
-    const eyebrow = document.createElement("p");
-    eyebrow.className = "frontier-news-detail-eyebrow";
-    eyebrow.textContent = "文章详情";
-
-    const title = document.createElement("h3");
-    title.className = "frontier-news-detail-title";
-    title.textContent = item.title;
-
-    const meta = document.createElement("div");
-    meta.className = "frontier-news-detail-meta";
-    meta.append(
-      detailChip(item.sourceName),
-      detailChip(item.ecosystemLayerLabel),
-      detailChip(formatArticleDate(item)),
-    );
-
-    const body = document.createElement("div");
-    body.className = "frontier-news-detail-body";
-    for (const paragraphText of item.detailParagraphs) {
-      const paragraph = document.createElement("p");
-      paragraph.textContent = paragraphText;
-      body.append(paragraph);
-    }
-
-    const tags = document.createElement("div");
-    tags.className = "frontier-news-detail-tags";
-    for (const tag of item.tags.slice(0, 6)) {
-      tags.append(detailChip(tag));
-    }
-
-    const actions = document.createElement("div");
-    actions.className = "frontier-news-detail-actions";
-    const original = document.createElement("a");
-    original.className = "frontier-news-detail-original";
-    original.href = item.url;
-    original.target = "_blank";
-    original.rel = "noreferrer";
-    original.textContent = "打开原文";
-    original.setAttribute("aria-label", `打开原文：${item.title}`);
-    actions.append(original);
-
-    article.append(eyebrow, title, meta, body);
-    if (item.tags.length > 0) article.append(tags);
-    article.append(actions);
-    detailPanel.append(article);
+  function openArticleDetail(item: NewsItemView): void {
+    window.location.href = newsArticleHref(item.externalId);
   }
 
   function activeQueryFilters(): string[] {
@@ -655,7 +584,7 @@ async function renderFeed(root: HTMLElement): Promise<void> {
   layerFilterGroup.append(layerTitle, filters);
   filterBoard.append(layerFilterGroup, calendar);
   listPanel.append(filterBoard, timeline, timelineStatus, pagination);
-  layout.append(listPanel, detailPanel);
+  layout.append(listPanel);
   root.append(overview, layout);
 
   filterIndex = await fetchNewsFilterIndex();
@@ -830,7 +759,7 @@ function newsCard(
   card.className = "frontier-timeline-item";
   card.tabIndex = 0;
   card.setAttribute("role", "button");
-  card.setAttribute("aria-label", `查看详情：${item.title}`);
+  card.setAttribute("aria-label", `阅读站内详情：${item.title}`);
   if (active) card.dataset.active = "true";
 
   const marker = document.createElement("span");
@@ -889,6 +818,10 @@ function newsCard(
   return card;
 }
 
+function newsArticleHref(externalId: string): string {
+  return `${BASE}news/article?id=${encodeURIComponent(externalId)}`;
+}
+
 function groupByDate(items: NewsItemView[]): Array<{ date: string; label: string; items: NewsItemView[] }> {
   const groups = new Map<string, { date: string; label: string; items: NewsItemView[] }>();
   for (const item of items) {
@@ -913,10 +846,11 @@ function normalizeRow(row: NewsItemRow): NewsItemView {
   const sourceKind = stringValue(row.source_kind, "news");
   const ecosystemLayerLabel = stringValue(row.ecosystem_layer_label, layerLabel(layer));
   const rawSummary = stringValue(row.summary, "");
+  const rawContentExcerpt = stringValue(row.content_excerpt, "");
   const tags = stringArrayValue(row.tags);
   const readableInput: ReadableNewsInput = {
     title,
-    summary: rawSummary,
+    summary: rawContentExcerpt || rawSummary,
     sourceName,
     sourceKind,
     ecosystemLayerLabel,
@@ -927,7 +861,7 @@ function normalizeRow(row: NewsItemRow): NewsItemView {
     title,
     url: stringValue(row.url, ""),
     summary: buildReadableNewsSummary(readableInput),
-    detailParagraphs: buildNewsDetailParagraphs(readableInput),
+    contentExcerpt: buildReadableNewsSummary(readableInput),
     sourceName,
     sourceKind,
     ecosystemLayer: layer,

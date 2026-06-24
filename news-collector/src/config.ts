@@ -49,6 +49,11 @@ const envSchema = z.object({
   NEWS_MAX_PER_SOURCE: z.coerce.number().int().positive().default(30),
   // 富化条数上限；0 = 不富化（即便配了 key 也需显式开，避免默认烧 token）。
   NEWS_ENRICH_MAX: z.coerce.number().int().min(0).default(0),
+  // 是否抓取原文正文并写入 content_text/content_excerpt。
+  NEWS_ARTICLE_CONTENT_ENABLED: boolFromEnv(true),
+  NEWS_ARTICLE_CONTENT_TIMEOUT_MS: z.coerce.number().int().positive().default(12_000),
+  // 每轮最多抓正文的文章数，避免首次/大批量运行拖垮采集。
+  NEWS_ARTICLE_CONTENT_MAX_ITEMS: z.coerce.number().int().min(0).default(80),
   // 兼容旧 collector 配置；优先建议使用 ANTHROPIC_MODEL / OPENAI_MODEL。
   NEWS_ENRICH_MODEL: optionalEnvString,
 });
@@ -70,6 +75,9 @@ export interface RunConfig {
   readonly enrichMax: number;
   readonly enrichProvider: ProviderName;
   readonly enrichModel?: string;
+  readonly articleContentEnabled: boolean;
+  readonly articleContentTimeoutMs: number;
+  readonly articleContentMaxItems: number;
   readonly cron: string;
   readonly timezone: string;
   readonly runAtBoot: boolean;
@@ -111,6 +119,9 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): RunConfig {
     enrichMax: hasProviderCredential(env) ? env.NEWS_ENRICH_MAX : 0,
     enrichProvider: env.LLM_PROVIDER,
     enrichModel: env.NEWS_ENRICH_MODEL,
+    articleContentEnabled: env.NEWS_ARTICLE_CONTENT_ENABLED,
+    articleContentTimeoutMs: env.NEWS_ARTICLE_CONTENT_TIMEOUT_MS,
+    articleContentMaxItems: env.NEWS_ARTICLE_CONTENT_MAX_ITEMS,
     cron: env.NEWS_CRON,
     timezone: env.NEWS_TZ,
     runAtBoot: env.NEWS_RUN_AT_BOOT,

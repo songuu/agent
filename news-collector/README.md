@@ -128,6 +128,8 @@ pnpm notion:sync
 - `OPENAI_API_KEY` + `OPENAI_MODEL` + 可选 `OPENAI_BASE_URL`：`LLM_PROVIDER=openai` 时使用；SiliconFlow 等 OpenAI-compatible 平台也走这组配置。
 - `NEWS_ENRICH_MAX>0` 且所选 provider 可用时才启用 LLM 富化；否则用规则分类，整条管道仍可离线跑。
 - `NEWS_ENRICH_MODEL`：兼容旧 collector 配置的专用模型覆盖；通常优先用 `ANTHROPIC_MODEL` / `OPENAI_MODEL`。
+- `NEWS_ARTICLE_CONTENT_ENABLED=true`：抓取原文 HTML 并抽取 bounded `content_text/content_excerpt`，供 `/news/article?id=...` 站内详情页使用。
+- `NEWS_ARTICLE_CONTENT_MAX_ITEMS` / `NEWS_ARTICLE_CONTENT_TIMEOUT_MS`：限制每轮正文抓取数量和单篇超时，防止慢站拖垮采集。
 - `NEWS_CRON`（默认 `0 8 * * *`）+ `NEWS_TZ`（默认 `Asia/Shanghai`）：调度时刻。
 - `NEWS_RUN_AT_BOOT`（默认 true）：启动时先跑一次。
 
