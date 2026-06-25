@@ -1,8 +1,8 @@
 // 新闻源注册表。
 //
-// 多数源是公开 RSS/Atom feed；少数无公开 feed 的站点走专用 HTML 适配器。
-// 2026-06-17 实测可用性见下方注释；AIBase 2026-06-24 验证为 Nuxt SSR HTML。
-// 间歇不稳定的源（HF/OpenAI/Anthropic）仍保留 enabled，由 rss.ts 的故障隔离兜底：
+// 启用源只保留公开 RSS/Atom feed；HTML 适配器只留作离线测试/后续候选，不直接订阅。
+// 2026-06-25 live probe 只保留可解析且能返回条目的订阅源。
+// 启用源必须经现有 fetchFeed live probe 可解析且能返回条目；已知不可用源不保留占位。
 // 单源失败只 skip+log，不影响其它源——这是真实聚合器的核心健壮性。
 
 import type { NewsSource } from "./types.ts";
@@ -17,21 +17,31 @@ export const SOURCES: readonly NewsSource[] = [
     lang: "zh",
     enabled: true,
   },
-  {
-    key: "aibase-news",
-    name: "AIBase 新闻",
-    url: "https://news.aibase.com/zh/news",
-    format: "aibase-html",
-    kind: "cn-media",
-    lang: "zh",
-    enabled: true,
-  },
+
   {
     key: "techweb-it",
     name: "TechWeb 业界",
     url: "https://www.techweb.com.cn/rss/it.xml",
     kind: "cn-media",
     lang: "zh",
+    enabled: true,
+  },
+  {
+    key: "ithome",
+    name: "IT之家",
+    url: "https://www.ithome.com/rss/",
+    kind: "cn-media",
+    lang: "zh",
+    layerHint: "product-ui",
+    enabled: true,
+  },
+  {
+    key: "sspai",
+    name: "少数派",
+    url: "https://sspai.com/feed",
+    kind: "cn-media",
+    lang: "zh",
+    layerHint: "product-ui",
     enabled: true,
   },
   {
@@ -53,11 +63,56 @@ export const SOURCES: readonly NewsSource[] = [
     enabled: true,
   },
   {
+    key: "arxiv-cs-lg",
+    name: "arXiv cs.LG",
+    url: "https://rss.arxiv.org/rss/cs.LG",
+    kind: "paper",
+    lang: "en",
+    layerHint: "foundation",
+    critical: true,
+    enabled: true,
+  },
+  {
     key: "hn-ai",
     name: "Hacker News · AI",
     url: "https://hnrss.org/newest?q=AI+OR+LLM+OR+agent&count=30",
     kind: "community",
     lang: "en",
+    enabled: true,
+  },
+  {
+    key: "hn-frontpage",
+    name: "Hacker News Front Page",
+    url: "https://hnrss.org/frontpage",
+    kind: "community",
+    lang: "en",
+    enabled: true,
+  },
+  {
+    key: "linuxdo-latest",
+    name: "LinuxDo 最新",
+    url: "https://linux.do/latest.rss",
+    kind: "community",
+    lang: "zh",
+    layerHint: "runtime",
+    enabled: true,
+  },
+  {
+    key: "github-engineering",
+    name: "GitHub Engineering Blog",
+    url: "https://github.blog/engineering/feed/",
+    kind: "vendor-blog",
+    lang: "en",
+    layerHint: "runtime",
+    enabled: true,
+  },
+  {
+    key: "github-changelog",
+    name: "GitHub Changelog",
+    url: "https://github.blog/changelog/feed/",
+    kind: "vendor-blog",
+    lang: "en",
+    layerHint: "runtime",
     enabled: true,
   },
   {
@@ -271,7 +326,7 @@ export const SOURCES: readonly NewsSource[] = [
     retry: { maxAttempts: 5, baseDelayMs: 1_000 },
     enabled: true,
   },
-  // —— best-effort（间歇 502，靠故障隔离兜底）——
+  // —— live probe verified feeds ——
   {
     key: "huggingface",
     name: "Hugging Face Blog",
@@ -292,18 +347,6 @@ export const SOURCES: readonly NewsSource[] = [
     critical: true,
     retry: { maxAttempts: 5, baseDelayMs: 1_000 },
     enabled: true,
-  },
-  {
-    key: "anthropic",
-    name: "Anthropic News",
-    // 无已验证的公开 RSS（旧 /rss.xml 返回 404）。默认关闭，待确认地址后再开。
-    url: "https://www.anthropic.com/rss.xml",
-    kind: "vendor-blog",
-    lang: "en",
-    layerHint: "model-platform",
-    critical: true,
-    retry: { maxAttempts: 5, baseDelayMs: 1_000 },
-    enabled: false,
   },
 ];
 

@@ -165,6 +165,8 @@ graph TB
   n_cragsec_citation_verification["引用可核验"]
   n_cragsec_defense_in_depth["RAG 纵深防御"]
   n_csup_security["注入检测 + PII 脱敏（第cap-support章）"]
+  n_cfb_quarantine["反馈注入隔离（第cap-feedback章）"]
+  n_cfb_redaction["反馈 PII 脱敏（第cap-feedback章）"]
   n_cragagentic_refuse["无答案拒答（第rag-agentic章）"]
   n_c17_trust_boundary["信任边界（第17章）"]
   n_c17_prompt_injection["提示注入 (Prompt Injection)（第17章）"]
@@ -174,6 +176,8 @@ graph TB
   n_c17_defense_in_depth["纵深防御（第17章）"]
   n_csup_security -->|组成| n_cragsec_injection_detection
   n_csup_security -->|组成| n_cragsec_pii_redaction
+  n_cfb_quarantine -->|组成| n_cragsec_injection_detection
+  n_cfb_redaction -->|组成| n_cragsec_pii_redaction
   n_cragagentic_refuse -->|应用| n_cragsec_defense_in_depth
   n_cragsec_untrusted_retrieval -->|应用| n_cragsec_injection_detection
   n_cragsec_untrusted_retrieval -->|应用| n_cragsec_pii_redaction
@@ -187,27 +191,31 @@ graph TB
   n_cragsec_citation_verification -->|深化| n_c09_citation
   n_cragsec_defense_in_depth -->|深化| n_c17_defense_in_depth
   class n_cragsec_untrusted_retrieval,n_cragsec_injection_detection,n_cragsec_pii_redaction,n_cragsec_citation_verification,n_cragsec_defense_in_depth own;
-  class n_csup_security,n_cragagentic_refuse,n_c17_trust_boundary,n_c17_prompt_injection,n_c17_isolate_and_label,n_c17_pii_redaction,n_c09_citation,n_c17_defense_in_depth cross;
+  class n_csup_security,n_cfb_quarantine,n_cfb_redaction,n_cragagentic_refuse,n_c17_trust_boundary,n_c17_prompt_injection,n_c17_isolate_and_label,n_c17_pii_redaction,n_c09_citation,n_c17_defense_in_depth cross;
   linkStyle 0 stroke:#d97706,stroke-width:2px;
   linkStyle 1 stroke:#d97706,stroke-width:2px;
-  linkStyle 2 stroke:#059669,stroke-width:2px;
-  linkStyle 3 stroke:#059669,stroke-width:2px;
+  linkStyle 2 stroke:#d97706,stroke-width:2px;
+  linkStyle 3 stroke:#d97706,stroke-width:2px;
   linkStyle 4 stroke:#059669,stroke-width:2px;
-  linkStyle 5 stroke:#d97706,stroke-width:2px;
-  linkStyle 6 stroke:#d97706,stroke-width:2px;
+  linkStyle 5 stroke:#059669,stroke-width:2px;
+  linkStyle 6 stroke:#059669,stroke-width:2px;
   linkStyle 7 stroke:#d97706,stroke-width:2px;
-  linkStyle 8 stroke:#059669,stroke-width:2px;
-  linkStyle 9 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 8 stroke:#d97706,stroke-width:2px;
+  linkStyle 9 stroke:#d97706,stroke-width:2px;
   linkStyle 10 stroke:#059669,stroke-width:2px;
   linkStyle 11 stroke:#7c3aed,stroke-width:2px;
-  linkStyle 12 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 12 stroke:#059669,stroke-width:2px;
   linkStyle 13 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 14 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 15 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
 
 - `注入检测 + PII 脱敏` —**组成**→ `注入检测与隔离`（第 cap-support 章）
 - `注入检测 + PII 脱敏` —**组成**→ `PII 出口脱敏`（第 cap-support 章）
+- `反馈注入隔离` —**组成**→ `注入检测与隔离`（第 cap-feedback 章）
+- `反馈 PII 脱敏` —**组成**→ `PII 出口脱敏`（第 cap-feedback 章）
 - `无答案拒答` —**应用**→ `RAG 纵深防御`（第 rag-agentic 章）
 - `检索内容即不可信数据` —**应用**→ `信任边界`（第 17 章）
 - `注入检测与隔离` —**深化**→ `提示注入 (Prompt Injection)`（第 17 章）

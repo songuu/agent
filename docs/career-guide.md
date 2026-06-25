@@ -218,6 +218,9 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 22. 为什么共享基础设施的多租户 agent runtime 不能只靠“逻辑上分 tenant”就算隔离完成？state、identity、telemetry 和审批边界分别要隔离什么，什么时候还得回到 dedicated stack？（→ 16 / 17 / 18 / 19）
 23. 做研究型 copilot 时，为什么要把 structured query parsing、embedding retrieval 和 AI summary 三段拆开，而不是让一个大 prompt 端到端包办？这样拆分分别在兜什么准确性与可追溯风险？（→ 08 / 09 / 16 / 19）
 24. 为什么跨组织 agent 协作不能长期依赖“给每个 agent 发一把 API key”这种做法？独立的 agent identity / name service 在信任建立、权限撤销和跨平台互认上解决了什么问题？（→ 17 / 18 / 19）
+25. 多 agent / realtime tool 执行里，为什么“已解决的 approval 不应被重复求值”，而 sibling guardrail/task 一旦失败就要立刻取消其它并发 guardrail？否则会出现什么竞态和副作用风险？（→ 11 / 14 / 17 / 18 / 19）
+26. 为什么即便是“read-only auto-approval”模式，file-access 工具仍可能要强制人工审批？当 loop 能力被集成进 harness agent 后，这条边界为什么会变得更关键？（→ 05 / 11 / 17 / 18 / 19）
+27. 声明式 workflow / skill archive 为什么要显式防 symlink path traversal 和非法 flow definition paths？这类问题看起来不是 prompt bug，却为什么能直接突破 agent runtime 的文件系统边界？（→ 11 / 17 / 18 / 19）
 
 ### C. 项目深挖类（考你是不是真做过）
 
@@ -298,4 +301,3 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 ---
 
 > 配套阅读：[创业指南](./startup-guide.md)（如果你想的不是求职，而是把 demo 做成产品）。
-

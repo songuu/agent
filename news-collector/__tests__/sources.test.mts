@@ -15,6 +15,11 @@ test("source registry keys are unique and enabled sources are well-formed", () =
     if (source.layerHint) assert.equal(layerSet.has(source.layerHint), true);
   }
 
+  assert.deepEqual(
+    enabledSources().map((source) => source.key),
+    SOURCES.map((source) => source.key),
+    "source registry should only keep directly subscribed, live-verified feeds",
+  );
   assert.ok(enabledSources().length >= 15, "expanded collector should keep broad coverage");
 });
 
@@ -22,9 +27,15 @@ test("expanded article sources stay enabled", () => {
   const enabled = new Set(enabledSources().map((source) => source.key));
 
   for (const key of [
+    "ithome",
+    "sspai",
     "deepmind",
-    "aibase-news",
     "techweb-it",
+    "arxiv-cs-lg",
+    "hn-frontpage",
+    "linuxdo-latest",
+    "github-engineering",
+    "github-changelog",
     "microsoft-ai-source",
     "aws-ml",
     "nvidia-deep-learning",

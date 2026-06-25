@@ -32,9 +32,9 @@ export interface FrontierArticle {
 // 第 20 章是文章库承载页；资料集合沿用第 19 章生态资料，避免复制 70 篇文章清单。
 const FRONTIER_SOURCE_CHAPTER_ID = "19";
 const FRONTIER_CHAPTER_ID = "20";
-const FRONTIER_COLLECTED_DATE = "2026-06-24";
+const FRONTIER_COLLECTED_DATE = "2026-06-25";
 const FRONTIER_COLLECTED_AT = `${FRONTIER_COLLECTED_DATE}T09:00:00+08:00`;
-const FRONTIER_DISPLAY_DATE_LABEL = "6月24日 · 星期三";
+const FRONTIER_DISPLAY_DATE_LABEL = "6月25日 · 星期四";
 const READ_COUNT_BASE = 73;
 
 const chapter = CHAPTERS.find((item) => item.id === FRONTIER_CHAPTER_ID);
@@ -161,4 +161,3 @@ export const FRONTIER_ARTICLES: FrontierArticle[] = ARTICLES
       detailParagraphs: buildDetailParagraphs(article, source, ecosystemLayerLabel),
     };
   });
-

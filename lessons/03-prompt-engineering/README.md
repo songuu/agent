@@ -214,6 +214,7 @@ graph TB
   n_c03_prompt_as_spec["提示即行为规格"]
   n_c04_text_protocol["文本协议 + 正则解析（第04章）"]
   n_c13_structured_output["结构化输出（第13章）"]
+  n_csales_talk_track["销售开场话术（第cap-sales章）"]
   n_c03_prompt_as_spec -->|组成| n_c03_system_vs_user
   n_c03_system_vs_user -->|应用| n_c03_role_instruction
   n_c03_role_instruction -->|深化| n_c03_few_shot
@@ -224,8 +225,9 @@ graph TB
   n_c03_prompt_as_spec -->|组成| n_c03_temperature
   n_c04_text_protocol -->|应用| n_c03_system_vs_user
   n_c13_structured_output -->|深化| n_c03_constrained_output
+  n_csales_talk_track -->|应用| n_c03_prompt_as_spec
   class n_c03_system_vs_user,n_c03_role_instruction,n_c03_few_shot,n_c03_cot,n_c03_constrained_output,n_c03_temperature,n_c03_prompt_as_spec own;
-  class n_c04_text_protocol,n_c13_structured_output cross;
+  class n_c04_text_protocol,n_c13_structured_output,n_csales_talk_track cross;
   linkStyle 0 stroke:#d97706,stroke-width:2px;
   linkStyle 1 stroke:#059669,stroke-width:2px;
   linkStyle 2 stroke:#7c3aed,stroke-width:2px;
@@ -236,12 +238,14 @@ graph TB
   linkStyle 7 stroke:#d97706,stroke-width:2px;
   linkStyle 8 stroke:#059669,stroke-width:2px;
   linkStyle 9 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 10 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
 
 - `文本协议 + 正则解析` —**应用**→ `system 提示 vs user 提示`（第 04 章）
 - `结构化输出` —**深化**→ `约束输出格式 (JSON)`（第 13 章）
+- `销售开场话术` —**应用**→ `提示即行为规格`（第 cap-sales 章）
 
 ### 延伸阅读
 

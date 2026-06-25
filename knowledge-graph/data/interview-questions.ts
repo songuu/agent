@@ -37,7 +37,7 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   project: "项目深挖类",
 };
 
-const COLLECTED_DATE = "2026-06-24";
+const COLLECTED_DATE = "2026-06-25";
 const COLLECTED_AT = `${COLLECTED_DATE}T09:00:00+08:00`;
 
 interface RawInterviewQuestion {
@@ -387,7 +387,57 @@ const RAW_QUESTIONS: RawInterviewQuestion[] = [
     ],
     confidence: "high",
     rationale: "本题对应 Linux Foundation 新提出的 agent identity 基础设施，适合补齐 protocol / trust / governance 的生产追问。",
-  },  // C. 项目深挖类
+  },
+  {
+    slug: "approval-state-idempotency-and-guardrail-race-cancellation",
+    category: "engineering",
+    question:
+      "多 agent / realtime tool 执行里，为什么“已解决的 approval 不应被重复求值”，而 sibling guardrail/task 一旦失败就要立刻取消其它并发 guardrail？否则会出现什么竞态和副作用风险？",
+    relatedChapters: ["11", "14", "17", "18", "19"],
+    sourceTitles: [
+      "OpenAI Agents Python v0.17.7 release notes",
+      "OpenAI Agents JS v0.12.0 release notes",
+    ],
+    sourceUrls: [
+      "https://github.com/openai/openai-agents-python/releases/tag/v0.17.7",
+      "https://github.com/openai/openai-agents-js/releases/tag/v0.12.0",
+    ],
+    confidence: "high",
+    rationale: "本题来自 OpenAI 最新 py/js release 对 approval state 与 guardrail 并发收尾的修复，直接对应生产 runtime 的竞态与重复副作用边界。",
+  },
+  {
+    slug: "read-only-file-access-still-needs-explicit-approval",
+    category: "engineering",
+    question:
+      "为什么即便是“read-only auto-approval”模式，file-access 工具仍可能要强制人工审批？当 loop 能力被集成进 harness agent 后，这条边界为什么会变得更关键？",
+    relatedChapters: ["05", "11", "17", "18", "19"],
+    sourceTitles: [
+      "Microsoft Agent Framework .NET 1.11.0 release notes",
+      "Microsoft Agent Framework Python 1.9.0 release notes",
+    ],
+    sourceUrls: [
+      "https://github.com/microsoft/agent-framework/releases/tag/dotnet-1.11.0",
+      "https://github.com/microsoft/agent-framework/releases/tag/python-1.9.0",
+    ],
+    confidence: "high",
+    rationale: "本题来自 Microsoft Agent Framework 最新 release：把审批边界前移到 file-access 与 harness loop 结合处，强调“读权限”在长流程里同样可能造成敏感外泄。",
+  },
+  {
+    slug: "declarative-workflow-path-validation-vs-runtime-filesystem-boundary",
+    category: "engineering",
+    question:
+      "声明式 workflow / skill archive 为什么要显式防 symlink path traversal 和非法 flow definition paths？这类问题看起来不是 prompt bug，却为什么能直接突破 agent runtime 的文件系统边界？",
+    relatedChapters: ["11", "17", "18", "19"],
+    sourceTitles: [
+      "CrewAI 1.14.8a4 release notes",
+    ],
+    sourceUrls: [
+      "https://github.com/crewAIInc/crewAI/releases/tag/1.14.8a4",
+    ],
+    confidence: "high",
+    rationale: "本题来自 CrewAI 最新 prerelease 对 skill archive 提取与 declarative flow path 的安全修复，适合补齐 workflow DSL 落地时的本地文件边界追问。",
+  },
+  // C. 项目深挖类
   {
     slug: "project-why-multi-agent",
     category: "project",
@@ -501,4 +551,3 @@ const slugs = new Set(INTERVIEW_QUESTIONS.map((q) => q.slug));
 if (slugs.size !== INTERVIEW_QUESTIONS.length) {
   throw new Error("Duplicate interview question slug detected in interview-questions.ts");
 }
-

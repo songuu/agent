@@ -1,7 +1,7 @@
 # news-collector · AI 资讯定时收集系统
 
 仿 [ai.codefather.cn/news](https://ai.codefather.cn/news) 的**多源 AI 资讯定时聚合**子系统：
-按计划从多个公开 RSS/Atom 源抓取；少数无公开 feed 的站点走专用 HTML 适配器 → 归一 → 规则分类（8 层生态）→ 可选 LLM 富化（Anthropic / OpenAI）→ 去重 → 幂等写入 Supabase。
+按计划从多个公开 RSS/Atom 源抓取；启用订阅源必须能被现有抓取器正确解析并返回条目 → 归一 → 规则分类（8 层生态）→ 可选 LLM 富化（Anthropic / OpenAI）→ 去重 → 幂等写入 Supabase。
 
 第 20 章「前沿文章库」直接展示本系统写入的 `news_items` 表；旧的手工策展资料仍保留在知识图谱中，但不再作为文章日历的数据源。
 
@@ -29,7 +29,7 @@ news-collector/
   src/
     types.ts        类型 + zod 校验（8 层生态、NewsItem）
     sources.ts      源注册表（实测可用性见注释）
-    rss.ts          抓取/解析（rss-parser + selected HTML adapters），单源故障隔离
+    rss.ts          抓取/解析（rss-parser；HTML adapter 仅作为候选/测试保留），单源故障隔离
     normalize.ts    归一化（canonical URL / sha256 身份 / 清洗）
     classify.ts     规则分类（纯函数、确定性）
     enrich.ts       可选 LLM 富化（降级）
@@ -54,11 +54,17 @@ news-collector/
 | key | 源 | 类型 | 状态 |
 |-----|----|----|------|
 | qbitai | 量子位 | 中文媒体 | ✅ |
-| aibase-news | AIBase 新闻 | 中文媒体 | ✅ HTML 适配 |
 | techweb-it | TechWeb 业界 | 中文媒体 | ✅ 官方 RSS |
+| ithome | IT之家 | 中文媒体 | ✅ 官方 RSS |
+| sspai | 少数派 | 中文媒体 | ✅ 官方 RSS |
 | the-decoder | The Decoder | 英文媒体 | ✅ |
 | arxiv-cs-ai | arXiv cs.AI | 论文 | ✅ |
+| arxiv-cs-lg | arXiv cs.LG | 论文 | ✅ |
 | hn-ai | Hacker News · AI | 社区 | ✅ |
+| hn-frontpage | Hacker News Front Page | 社区 | ✅ |
+| linuxdo-latest | LinuxDo 最新 | 社区 | ✅ 官方 RSS |
+| github-engineering | GitHub Engineering Blog | 厂商 | ✅ 官方 RSS |
+| github-changelog | GitHub Changelog | 厂商 | ✅ 官方 RSS |
 | google-ai | Google AI Blog | 厂商 | ✅ |
 | deepmind | Google DeepMind Blog | 厂商 | ✅ |
 | microsoft-ai-source | Microsoft Source · AI | 厂商 | ✅ |
@@ -68,11 +74,10 @@ news-collector/
 | venturebeat-ai | VentureBeat AI | 英文媒体 | ✅ |
 | mit-tr | MIT Technology Review | 英文媒体 | ✅ |
 | ahead-of-ai | Ahead of AI | 英文媒体 | ✅ |
-| huggingface | Hugging Face Blog | 厂商 | ⚠️ 间歇 502（故障隔离兜底）|
-| openai | OpenAI News | 厂商 | ⚠️ 间歇 502 |
-| anthropic | Anthropic News | 厂商 | ⚠️ best-effort |
+| huggingface | Hugging Face Blog | 厂商 | ✅ 官方 RSS |
+| openai | OpenAI News | 厂商 | ✅ 官方 RSS |
 
-加源：编辑 `src/sources.ts` 的 `SOURCES` 数组（key / name / url / kind / lang / 可选 layerHint；无 RSS/Atom 时需补专用 `format` 适配）。
+加源：编辑 `src/sources.ts` 的 `SOURCES` 数组（key / name / url / kind / lang / 可选 layerHint）。只加入现有 `fetchFeed` 能解析并返回条目的 RSS/Atom 源。
 
 ## 快速开始
 

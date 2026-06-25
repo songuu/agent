@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Songuu Gateway</title>
+    <style>
+      /* ============================================================
+         Songuu Gateway — heyorbi 风暗色导航厅
+         设计语言：冷 navy 近黑底 + 多状态 accent + 干净渐变(无噪点) +
+         hero + 管理入口面板（数据驱动，加入口=ENTRIES 加一项）。
+         ============================================================ */
+      :root {
+        color-scheme: dark;
+        --bg: #080b1a;
+        --bg-2: #05060f;
+        --surface: #10142b;
+        --surface-hi: #161c38;
+        --ink: #f3f6ff;
+        --muted: #aeb7cf;
+        --dim: #8b94ae; /* 小字元数据：在 --surface 上 ≥4.5:1（AA） */
+        --line: rgba(255, 255, 255, 0.08);
+        --line-hi: rgba(255, 255, 255, 0.16);
+        /* 默认电青 accent。rgb 三元组供 rgb(var()/alpha) 调透明；单卡可覆盖。 */
+        --accent: #1fd4ff;
+        --accent-rgb: 31 212 255;
+        --online: #5ee3a1;
+        --maxw: 1120px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", "Microsoft YaHei", sans-serif;
+        color: var(--ink);
+        /* 冷 navy 底 + 两处电青/蓝辉光（heyorbi 的 hero glow 感，干净无噪点）。 */
+        background:
+          radial-gradient(900px 520px at 16% -10%, rgba(31, 212, 255, 0.1), transparent 60%),
+          radial-gradient(760px 520px at 102% -4%, rgba(91, 140, 255, 0.08), transparent 56%),
+          linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+        /* 不用 background-attachment:fixed —— iOS Safari 已知坑(地址栏收合时抖动/失效)。
+           固定的环境辉光改由 .ambient 这层 position:fixed 提供。 */
+      }
+
+      /* 环境辉光层：极缓漂移，给静态背景注入呼吸感（z-index:-1：背景之上、内容之下）。 */
+      .ambient {
+        position: fixed;
+        inset: -20%;
+        z-index: -1;
+        pointer-events: none;
+        background:
+          radial-gradient(34% 40% at 22% 18%, rgba(31, 212, 255, 0.08), transparent 70%),
+          radial-gradient(38% 44% at 82% 78%, rgba(91, 140, 255, 0.07), transparent 72%);
+        animation: bgFloat 30s ease-in-out infinite alternate;
+      }
+
+      .wrap {
+        width: min(var(--maxw), 100%);
+        margin: 0 auto;
+        padding-inline: 20px;
+      }
+
+      /* ── 顶栏：品牌 + 在线状态（heyorbi 的 logo + CTA 位）── */
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 22px 0 0;
+      }
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--ink);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: -0.01em;
+      }
+      .brand-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 4px;
+        background: linear-gradient(135deg, var(--accent), #5b8cff);
+        box-shadow: 0 0 16px rgb(var(--accent-rgb) / 0.6);
+      }
+      .brand-accent {
+        color: var(--accent);
+      }
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 8px 14px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--muted);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      .status-short {
+        display: none;
+      }
+      .signal {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--online);
+        box-shadow: 0 0 14px var(--online);
+        animation: dotPulse 2.4s ease-in-out infinite;
+      }
+
+      /* ── 主壳：单屏纵向，feed 居中 ── */
+      .shell {
+        min-height: 100svh;
+        display: flex;
+        flex-direction: column;
+        padding: 0 0 40px;
+      }
+      .main {
+        flex: 1;
+        display: grid;
+        grid-template-columns: minmax(320px, 0.92fr) minmax(520px, 1.08fr);
+        align-items: center;
+        gap: 56px;
+        padding: 64px 0 48px;
+      }
+
+      /* ── Hero：左对齐、巨号紧排白字 + 单 accent 关键词（heyorbi/linear 风）── */
+      .hero {
+        display: grid;
+        gap: 18px;
+        max-width: 620px;
+      }
+      .eyebrow {
+        justify-self: start;
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 7px 13px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--muted);
+        font-size: 12.5px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .title {
+        margin: 0;
+        font-size: clamp(46px, 5.8vw, 76px);
+        font-weight: 800;
+        line-height: 1.02;
+        letter-spacing: -0.02em;
+      }
+      .title .hl {
+        display: inline-block;
+        color: var(--accent);
+        text-shadow: 0 0 34px rgb(var(--accent-rgb) / 0.45);
+      }
+      .lead {
+        margin: 0;
+        max-width: 640px;
+        color: var(--muted);
+        font-size: clamp(16px, 2vw, 19px);
+        line-height: 1.65;
+      }
+      .meta-strip {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        margin-top: 4px;
+        color: var(--dim);
+        font-size: 14px;
+      }
+      .meta-strip b {
+        color: var(--ink);
+        font-variant-numeric: tabular-nums;
+      }
+      .dot-sep {
+        width: 4px;
+        height: 4px;
+        border-radius: 999px;
+        background: var(--line-hi);
+      }
+
+      /* ── Feed：桌面管理入口面板。首项主入口横跨，后续入口并排。 ── */
+      .feed {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: stretch;
+        gap: 16px;
+        width: 100%;
+      }
+
+      .card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        min-height: 202px;
+        padding: 22px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        color: inherit;
+        text-decoration: none;
+        overflow: hidden;
+        /* 第一层=光标跟随 spotlight（--mx/--my 由 JS rAF 更新，--spot 由 hover 提升）；底为实色 navy（非重玻璃）。 */
+        background:
+          radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), rgb(var(--accent-rgb) / var(--spot, 0)), transparent 55%),
+          linear-gradient(145deg, rgb(var(--accent-rgb) / 0.055), transparent 48%),
+          var(--surface);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.05),
+          0 18px 50px rgba(0, 0, 0, 0.36);
+        /* hover lift 用 transform；reveal 用 translate 长属性——二者组合不互相覆盖。background 不入过渡(避免
+           pointermove 改 --mx/--my 时重启 radial 重绘 jank)。 */
+        transform: translateY(0);
+        transition:
+          transform 0.25s cubic-bezier(0.2, 0.7, 0.3, 1),
+          translate 0.6s cubic-bezier(0.2, 0.7, 0.3, 1),
+          opacity 0.6s ease,
+          border-color 0.25s ease,
+          box-shadow 0.25s ease;
+      }
+      .card:hover,
+      .card:focus-visible {
+        --spot: 0.16;
+        transform: translateY(-4px);
+        border-color: rgb(var(--accent-rgb) / 0.5);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.07),
+          0 26px 70px rgba(0, 0, 0, 0.5),
+          0 0 0 1px rgb(var(--accent-rgb) / 0.22),
+          0 16px 50px rgb(var(--accent-rgb) / 0.16);
+      }
+      .card:first-child {
+        grid-column: 1 / -1;
+        min-height: 184px;
+        background:
+          radial-gradient(520px circle at var(--mx, 50%) var(--my, 0%), rgb(var(--accent-rgb) / var(--spot, 0)), transparent 58%),
+          linear-gradient(135deg, rgb(var(--accent-rgb) / 0.12), rgba(91, 140, 255, 0.08) 42%, transparent 72%),
+          var(--surface-hi);
+      }
+      .card:first-child .card-title {
+        font-size: clamp(28px, 3vw, 36px);
+      }
+      .card:first-child .card-desc {
+        max-width: 420px;
+      }
+      .card:focus-visible {
+        outline: none;
+      }
+      .card:focus-visible {
+        box-shadow:
+          0 0 0 3px rgb(var(--accent-rgb) / 0.6),
+          0 26px 70px rgba(0, 0, 0, 0.5);
+      }
+
+      /* 顶部细 accent 线：静止暗、hover 点亮（heyorbi 卡的 accent 信号，克制）。 */
+      .card::before {
+        content: "";
+        position: absolute;
+        left: 22px;
+        right: 22px;
+        top: 0;
+        height: 2px;
+        border-radius: 0 0 3px 3px;
+        background: linear-gradient(90deg, transparent, rgb(var(--accent-rgb) / 0.55), transparent);
+        opacity: 0.35;
+        transition: opacity 0.25s ease;
+      }
+      .card:hover::before,
+      .card:focus-visible::before {
+        opacity: 1;
+      }
+
+      .card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+      }
+      .glyph {
+        flex: 0 0 auto;
+        width: 46px;
+        height: 46px;
+        display: grid;
+        place-items: center;
+        border-radius: 13px;
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--accent);
+        background: rgb(var(--accent-rgb) / 0.12);
+        border: 1px solid rgb(var(--accent-rgb) / 0.26);
+        transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.3, 1);
+      }
+      .card:hover .glyph {
+        transform: scale(1.06);
+      }
+      .badge {
+        flex: 0 0 auto;
+        padding: 5px 11px;
+        border-radius: 999px;
+        font-size: 12px;
+        letter-spacing: 0.02em;
+        color: var(--accent);
+        background: rgb(var(--accent-rgb) / 0.1);
+        border: 1px solid rgb(var(--accent-rgb) / 0.22);
+      }
+
+      .card-body {
+        display: grid;
+        gap: 7px;
+        margin-top: auto;
+      }
+      .kicker {
+        color: var(--dim);
+        font-size: 12.5px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .card-title {
+        margin: 0;
+        font-size: clamp(22px, 3vw, 27px);
+        font-weight: 700;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+      }
+      .card-desc {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14.5px;
+        line-height: 1.55;
+      }
+
+      .card-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .path {
+        padding: 6px 10px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.28);
+        color: var(--dim);
+        font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+        font-size: 12.5px;
+      }
+      .arrow {
+        flex: 0 0 auto;
+        width: 38px;
+        height: 38px;
+        display: grid;
+        place-items: center;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--ink);
+        font-size: 19px;
+        transition: transform 0.25s ease, background 0.25s ease, color 0.25s ease;
+      }
+      .card:hover .arrow,
+      .card:focus-visible .arrow {
+        transform: translateX(4px);
+        background: rgb(var(--accent-rgb) / 0.18);
+        color: var(--accent);
+      }
+
+      /* 滚动揭示初始隐藏态：仅 JS 在「支持 IO 且非减动」时加 .reveal；其余情况卡片照常显示（FOUC-safe）。 */
+      .card.reveal {
+        translate: 0 0;
+      }
+      .card.reveal.in {
+        translate: 0 0;
+      }
+
+      .footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding-top: 8px;
+        color: var(--dim);
+        font-size: 13px;
+      }
+      .footer .muted {
+        color: var(--dim);
+      }
+
+      /* 入场编排：依次升起淡入（backwards 填充：动画后回归常态，hover 位移照常）。 */
+      .eyebrow {
+        animation: heroUp 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) 0.05s backwards;
+      }
+      .title {
+        animation: heroUp 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) 0.12s backwards;
+      }
+      .lead {
+        animation: heroUp 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) 0.2s backwards;
+      }
+      .meta-strip {
+        animation: heroUp 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) 0.28s backwards;
+      }
+
+      @keyframes heroUp {
+        from {
+          translate: 0 18px;
+        }
+        to {
+          translate: 0 0;
+        }
+      }
+      @keyframes bgFloat {
+        from {
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+        to {
+          transform: translate3d(2%, -2.5%, 0) scale(1.08);
+        }
+      }
+      @keyframes dotPulse {
+        0%,
+        100% {
+          transform: scale(1);
+          box-shadow: 0 0 12px var(--online);
+        }
+        50% {
+          transform: scale(1.35);
+          box-shadow: 0 0 20px var(--online), 0 0 5px var(--online);
+        }
+      }
+
+      @media (max-width: 720px) {
+        .wrap {
+          padding-inline: 14px;
+        }
+        .topbar {
+          padding-top: 18px;
+        }
+        .status-pill {
+          padding: 7px 11px;
+          font-size: 12px;
+        }
+        .feed {
+          grid-template-columns: 1fr;
+        }
+        .card:first-child {
+          grid-column: auto;
+        }
+        .main {
+          display: flex;
+          flex-direction: column;
+          align-items: stretch;
+          padding: 36px 0;
+          gap: 30px;
+        }
+        .title {
+          font-size: clamp(38px, 12vw, 56px);
+        }
+        .footer {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 6px;
+        }
+      }
+
+      @media (max-width: 460px) {
+        .status-full {
+          display: none;
+        }
+        .status-short {
+          display: inline;
+        }
+      }
+
+      @media (min-width: 721px) and (max-width: 980px) {
+        .main {
+          grid-template-columns: 1fr;
+          gap: 34px;
+          padding: 46px 0;
+        }
+        .hero {
+          max-width: 760px;
+        }
+      }
+
+      /* 减动：统一关停所有动画/过渡（含 JS 端自身已 guard）。delay 归零避免 backwards 入场闪现。 */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition-duration: 0.001ms !important;
+          animation-duration: 0.001ms !important;
+          animation-delay: 0s !important;
+          animation-iteration-count: 1 !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="ambient" aria-hidden="true"></div>
+
+    <div class="shell wrap">
+      <header class="topbar">
+        <a class="brand" href="/">
+          <span class="brand-dot" aria-hidden="true"></span>
+          songuu<span class="brand-accent">.top</span>
+        </a>
+        <span class="status-pill"><span class="signal" aria-hidden="true"></span><span class="status-full">All systems online</span><span class="status-short">Online</span></span>
+      </header>
+
+      <div class="main">
+        <section class="hero">
+          <span class="eyebrow">Songuu · Navigation</span>
+          <h1 class="title">选择你的<br /><span class="hl">工作入口</span></h1>
+          <p class="lead">
+            主域名是统一导航厅。挑一个目的地进入——工作流控制台、学习与实验站，或更多正在接入的入口。
+          </p>
+          <div class="meta-strip">
+            <span><b id="entry-count">0</b> destinations</span>
+            <span class="dot-sep" aria-hidden="true"></span>
+            <span>实时在线 · 持续扩展中</span>
+          </div>
+        </section>
+
+        <nav class="feed" id="feed" aria-label="目的地入口"></nav>
+
+        <!-- 无 JS 兜底：不复制全部条目(那会与 ENTRIES desync)，只给诚实提示 + 核心直达链接。
+             JS 报错(非禁用)时的空白兜底由 script 里 try/catch 的 renderFallback 负责。 -->
+        <noscript>
+          <p class="lead" style="margin-top: 18px">
+            启用 JavaScript 查看全部入口。直达：
+            <a style="color: var(--accent)" href="/pipeline/">Pipeline</a> ·
+            <a style="color: var(--accent)" href="/agent-build/">Agent Build</a> ·
+            <a style="color: var(--accent)" href="/aicrew/">AICrew Studio</a>
+          </p>
+        </noscript>
+      </div>
+
+      <footer class="footer">
+        <span>songuu.top</span>
+        <span class="muted">Gateway · built for expansion</span>
+      </footer>
+    </div>
+
+    <script>
+      // ============================================================
+      //  入口数据（单一事实来源）。➕ 加入口 = 在 ENTRIES 末尾复制一段并改字段；
+      //  grid 自动排布、计数自动更新、滚动揭示自动接管。无需改其它任何地方。
+      //  字段：glyph(徽标字) / kicker(小标) / title(标题) / desc(一句话) / href(路径) / badge(状态药丸)
+      //       可选 accent: "R G B"（覆盖该卡 accent 色；用于区分入口状态）。
+      // ============================================================
+      var ENTRIES = [
+        {
+          glyph: "P",
+          kicker: "Workflow Console",
+          title: "Pipeline",
+          desc: "工作流编排与运行控制台。",
+          href: "/pipeline/",
+          badge: "Live",
+          accent: "31 212 255",
+        },
+        {
+          glyph: "A",
+          kicker: "AI Agent Curriculum",
+          title: "Agent Build",
+          desc: "从零手写到上框架的 AI Agent 开发学习与实验站。",
+          href: "/agent-build/",
+          badge: "Course",
+          accent: "255 196 87",
+        },
+        {
+          glyph: "C",
+          kicker: "AI Creative OS",
+          title: "AICrew Studio",
+          desc: "面向电商、社媒和短视频团队的 AI 多 Agent 内容生产平台。",
+          href: "/aicrew/",
+          badge: "Studio",
+          accent: "94 227 161",
+        },
+      ];
+
+      (function () {
+        var feed = document.getElementById("feed");
+        if (!feed) return;
+        var reduceMql = matchMedia("(prefers-reduced-motion: reduce)");
+        var fineMql = matchMedia("(pointer: fine)");
+        var supportsIO = "IntersectionObserver" in window;
+
+        function el(tag, cls, text) {
+          var e = document.createElement(tag);
+          if (cls) e.className = cls;
+          if (text != null) e.textContent = text;
+          return e;
+        }
+
+        function buildCard(entry, i) {
+          var a = el("a", "card");
+          a.href = entry.href;
+          a.setAttribute("aria-label", entry.title);
+          a.dataset.i = String(i);
+          if (entry.accent) a.style.setProperty("--accent-rgb", entry.accent);
+
+          var head = el("div", "card-head");
+          var glyph = el("span", "glyph", entry.glyph || "•");
+          glyph.setAttribute("aria-hidden", "true");
+          head.appendChild(glyph);
+          if (entry.badge) head.appendChild(el("span", "badge", entry.badge));
+          a.appendChild(head);
+
+          var body = el("div", "card-body");
+          if (entry.kicker) body.appendChild(el("span", "kicker", entry.kicker));
+          body.appendChild(el("h2", "card-title", entry.title));
+          if (entry.desc) body.appendChild(el("p", "card-desc", entry.desc));
+          a.appendChild(body);
+
+          var foot = el("div", "card-foot");
+          foot.appendChild(el("span", "path", entry.href));
+          var arrow = el("span", "arrow", "→");
+          arrow.setAttribute("aria-hidden", "true");
+          foot.appendChild(arrow);
+          a.appendChild(foot);
+          return a;
+        }
+
+        // ---- 渲染（render-first：导航是本页唯一职责，必须最先、最稳地产出；增强逻辑各自隔离）----
+        var animate = !reduceMql.matches && supportsIO;
+        function renderFallback() {
+          // 极简兜底：纯链接卡，不依赖任何增强，自身几乎不会再抛错。
+          feed.textContent = "";
+          ENTRIES.forEach(function (entry) {
+            var a = el("a", "card");
+            a.href = entry.href;
+            a.appendChild(el("h2", "card-title", entry.title));
+            a.appendChild(el("span", "path", entry.href));
+            feed.appendChild(a);
+          });
+        }
+        try {
+          var frag = document.createDocumentFragment();
+          ENTRIES.forEach(function (entry, i) {
+            var card = buildCard(entry, i);
+            if (animate) card.classList.add("reveal");
+            frag.appendChild(card);
+          });
+          feed.appendChild(frag);
+          var counter = document.getElementById("entry-count");
+          if (counter) counter.textContent = String(ENTRIES.length);
+        } catch (err) {
+          // 运行时报错也要保住入口（noscript 只在 JS 被禁用时显示、报错时不显示）。
+          if (window.console) console.error("[gateway] render failed, fallback to plain links", err);
+          try {
+            renderFallback();
+          } catch (_) {}
+          return;
+        }
+
+        // ---- 滚动揭示（增强；独立 try：失败则直接显示卡片，绝不卡在隐藏态）----
+        if (animate) {
+          try {
+            var io = new IntersectionObserver(
+              function (obs) {
+                obs.forEach(function (en) {
+                  if (!en.isIntersecting) return;
+                  var d = (Number(en.target.dataset.i) % 6) * 70;
+                  setTimeout(function () {
+                    en.target.classList.add("in");
+                  }, d);
+                  io.unobserve(en.target);
+                });
+              },
+              { threshold: 0.12, rootMargin: "0px 0px -8% 0px" }
+            );
+            feed.querySelectorAll(".card.reveal").forEach(function (c) {
+              io.observe(c);
+            });
+          } catch (_) {
+            feed.querySelectorAll(".card.reveal").forEach(function (c) {
+              c.classList.add("in");
+            });
+          }
+        }
+
+        // ---- 光标跟随 spotlight（rAF 节流：每帧最多读一次 rect → 既不卡顿，也不会因滚动而失准；media change 动态启停）----
+        var raf = 0;
+        var pending = null;
+        var active = false;
+
+        function onMove(e) {
+          pending = { card: e.currentTarget, x: e.clientX, y: e.clientY };
+          if (!raf) raf = requestAnimationFrame(apply);
+        }
+        function apply() {
+          raf = 0;
+          if (!pending) return;
+          var card = pending.card;
+          var r = card.getBoundingClientRect();
+          card.style.setProperty("--mx", (((pending.x - r.left) / r.width) * 100).toFixed(1) + "%");
+          card.style.setProperty("--my", (((pending.y - r.top) / r.height) * 100).toFixed(1) + "%");
+        }
+        function onLeave(e) {
+          e.currentTarget.style.removeProperty("--mx");
+          e.currentTarget.style.removeProperty("--my");
+        }
+        function enable() {
+          if (active) return;
+          active = true;
+          feed.querySelectorAll(".card").forEach(function (card) {
+            card.addEventListener("pointermove", onMove, { passive: true });
+            card.addEventListener("pointerleave", onLeave);
+          });
+        }
+        function disable() {
+          if (!active) return;
+          active = false;
+          feed.querySelectorAll(".card").forEach(function (card) {
+            card.removeEventListener("pointermove", onMove);
+            card.removeEventListener("pointerleave", onLeave);
+            onLeave({ currentTarget: card });
+          });
+        }
+        function syncSpot() {
+          if (!reduceMql.matches && fineMql.matches) enable();
+          else disable();
+        }
+        reduceMql.addEventListener("change", syncSpot);
+        fineMql.addEventListener("change", syncSpot);
+        syncSpot();
+      })();
+    </script>
+  </body>
+</html>

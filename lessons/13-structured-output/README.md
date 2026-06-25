@@ -215,6 +215,7 @@ graph TB
   n_c15_eval_dataset["离线评估数据集（第15章）"]
   n_ccapstone_structured_output["结构化输出 (zod 约束)（第capstone章）"]
   n_crev_structured["结构化发现 (zod schema)（第cap-review章）"]
+  n_cfb_roadmap["Roadmap Ticket 生成（第cap-feedback章）"]
   n_c13_structured_output -->|应用| n_c13_zod_schema
   n_c13_zod_schema -->|应用| n_c13_strict_prompt
   n_c13_zod_schema -->|应用| n_c13_runtime_validation
@@ -227,8 +228,9 @@ graph TB
   n_c15_eval_dataset -->|应用| n_c13_structured_output
   n_ccapstone_structured_output -->|组成| n_c13_structured_output
   n_crev_structured -->|组成| n_c13_structured_output
+  n_cfb_roadmap -->|应用| n_c13_structured_output
   class n_c13_structured_output,n_c13_zod_schema,n_c13_strict_prompt,n_c13_retry_repair,n_c13_extract_json,n_c13_runtime_validation,n_c13_generate_object own;
-  class n_c03_constrained_output,n_c15_eval_dataset,n_ccapstone_structured_output,n_crev_structured cross;
+  class n_c03_constrained_output,n_c15_eval_dataset,n_ccapstone_structured_output,n_crev_structured,n_cfb_roadmap cross;
   linkStyle 0 stroke:#059669,stroke-width:2px;
   linkStyle 1 stroke:#059669,stroke-width:2px;
   linkStyle 2 stroke:#059669,stroke-width:2px;
@@ -241,6 +243,7 @@ graph TB
   linkStyle 9 stroke:#059669,stroke-width:2px;
   linkStyle 10 stroke:#d97706,stroke-width:2px;
   linkStyle 11 stroke:#d97706,stroke-width:2px;
+  linkStyle 12 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -249,6 +252,7 @@ graph TB
 - `离线评估数据集` —**应用**→ `结构化输出`（第 15 章）
 - `结构化输出 (zod 约束)` —**组成**→ `结构化输出`（第 capstone 章）
 - `结构化发现 (zod schema)` —**组成**→ `结构化输出`（第 cap-review 章）
+- `Roadmap Ticket 生成` —**应用**→ `结构化输出`（第 cap-feedback 章）
 
 ### 延伸阅读
 

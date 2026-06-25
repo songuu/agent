@@ -271,6 +271,7 @@ graph TB
   n_ccapstone_tracer_cost["Tracer 可观测与成本（第capstone章）"]
   n_csup_observability["Tracer 估算 token 与成本（第cap-support章）"]
   n_cev_metrics["聚合指标（第cap-eval章）"]
+  n_cinc_severity["告警 SEV 分级（第cap-incident章）"]
   n_cragagentic_state_machine["RAG 状态机（第rag-agentic章）"]
   n_c16_observability -->|组成| n_c16_span_trace_tree
   n_c16_decorator_tracer -->|应用| n_c16_observability
@@ -284,9 +285,10 @@ graph TB
   n_ccapstone_tracer_cost -->|组成| n_c16_decorator_tracer
   n_csup_observability -->|组成| n_c16_cost_estimation
   n_cev_metrics -->|应用| n_c16_observability
+  n_cinc_severity -->|应用| n_c16_observability
   n_cragagentic_state_machine -->|应用| n_c16_decorator_tracer
   class n_c16_observability,n_c16_span_trace_tree,n_c16_decorator_tracer,n_c16_cost_estimation,n_c16_price_table,n_c16_bottleneck_location,n_c16_production_tooling own;
-  class n_c02_usage_token,n_c02_get_llm_abstraction,n_ccapstone_tracer_cost,n_csup_observability,n_cev_metrics,n_cragagentic_state_machine cross;
+  class n_c02_usage_token,n_c02_get_llm_abstraction,n_ccapstone_tracer_cost,n_csup_observability,n_cev_metrics,n_cinc_severity,n_cragagentic_state_machine cross;
   linkStyle 0 stroke:#d97706,stroke-width:2px;
   linkStyle 1 stroke:#059669,stroke-width:2px;
   linkStyle 2 stroke:#059669,stroke-width:2px;
@@ -300,6 +302,7 @@ graph TB
   linkStyle 10 stroke:#d97706,stroke-width:2px;
   linkStyle 11 stroke:#059669,stroke-width:2px;
   linkStyle 12 stroke:#059669,stroke-width:2px;
+  linkStyle 13 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -309,6 +312,7 @@ graph TB
 - `Tracer 可观测与成本` —**组成**→ `装饰器模式 Tracer`（第 capstone 章）
 - `Tracer 估算 token 与成本` —**组成**→ `费用估算公式`（第 cap-support 章）
 - `聚合指标` —**应用**→ `可观测性 (Observability)`（第 cap-eval 章）
+- `告警 SEV 分级` —**应用**→ `可观测性 (Observability)`（第 cap-incident 章）
 - `RAG 状态机` —**应用**→ `装饰器模式 Tracer`（第 rag-agentic 章）
 
 ### 延伸阅读
