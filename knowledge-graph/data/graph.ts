@@ -122,6 +122,9 @@ export const CHAPTERS: Chapter[] = [
   { id: "cap-support", slug: "support-copilot", title: "毕业项目 · 客服 Copilot", part: "毕业项目", dir: "capstone/support-copilot", demo: { entry: "capstone/support-copilot/src/cli.ts", needsKey: "none" } },
   { id: "cap-review", slug: "code-review-crew", title: "毕业项目 · 代码评审团", part: "毕业项目", dir: "capstone/code-review-crew", demo: { entry: "capstone/code-review-crew/src/cli.ts", needsKey: "none" } },
   { id: "cap-eval", slug: "agent-eval-harness", title: "毕业项目 · Agent 评测与回归门", part: "毕业项目", dir: "capstone/agent-eval-harness", demo: { entry: "capstone/agent-eval-harness/src/cli.ts", needsKey: "none" } },
+  { id: "cap-incident", slug: "incident-responder", title: "毕业项目 · 告警响应 Agent", part: "毕业项目", dir: "capstone/incident-responder", demo: { entry: "capstone/incident-responder/src/cli.ts", needsKey: "none" } },
+  { id: "cap-feedback", slug: "feedback-intelligence", title: "毕业项目 · 用户反馈洞察 Agent", part: "毕业项目", dir: "capstone/feedback-intelligence", demo: { entry: "capstone/feedback-intelligence/src/cli.ts", needsKey: "none" } },
+  { id: "cap-sales", slug: "sales-lead-researcher", title: "毕业项目 · 销售线索研究 Agent", part: "毕业项目", dir: "capstone/sales-lead-researcher", demo: { entry: "capstone/sales-lead-researcher/src/cli.ts", needsKey: "none" } },
   { id: "cap-enterprise-kb", slug: "enterprise-knowledge-base-agent", title: "毕业项目 · 企业知识库 Agent", part: "毕业项目", dir: "capstone/enterprise-knowledge-base-agent" },
   { id: "rag-chunk", slug: "01-chunking-strategies", title: "进阶分块策略", part: "进阶 RAG 专题", dir: "rag-advanced/01-chunking-strategies", demo: { needsKey: "none" } },
   { id: "rag-hybrid", slug: "02-hybrid-search", title: "混合检索 (向量+BM25+RRF)", part: "进阶 RAG 专题", dir: "rag-advanced/02-hybrid-search", demo: { needsKey: "embedding" } },
@@ -316,6 +319,27 @@ export const CONCEPTS: Concept[] = [
   { id: "cev-judges", label: "离线裁判 (tool/keyword/refusal)", chapter: "cap-eval", summary: "纯函数裁判逐条打分，复用 shared 的 isRefusalAnswer 规则" },
   { id: "cev-metrics", label: "聚合指标", chapter: "cap-eval", summary: "通过率/工具准确率/拒答准确率/成本，量化 Agent 质量" },
   { id: "cev-gate", label: "回归门 (CI exit code)", chapter: "cap-eval", summary: "指标跌破阈值即非零退出，自动拦下退化版本" },
+
+  // ── 毕业项目 · 告警响应 Agent ──
+  { id: "cinc-severity", label: "告警 SEV 分级", chapter: "cap-incident", summary: "把 5xx、延迟、队列积压等信号合成 SEV1/2/3 处置等级" },
+  { id: "cinc-runbook", label: "Runbook 匹配", chapter: "cap-incident", summary: "用日志关键词匹配最可能的处置手册，避免临场拍脑袋" },
+  { id: "cinc-evidence", label: "根因证据链", chapter: "cap-incident", summary: "把错误日志、指标和影响服务整理成可审计诊断" },
+  { id: "cinc-approval", label: "处置动作审批分层", chapter: "cap-incident", summary: "诊断命令可直接执行，扩容/暂停批处理等变更必须审批" },
+  { id: "cinc-postmortem", label: "复盘清单", chapter: "cap-incident", summary: "把告警、压测、审计和 runbook 改进固化成后续任务" },
+
+  // ── 毕业项目 · 用户反馈洞察 Agent ──
+  { id: "cfb-quarantine", label: "反馈注入隔离", chapter: "cap-feedback", summary: "把不可信用户反馈先过提示注入检测，可疑内容不进入分析" },
+  { id: "cfb-redaction", label: "反馈 PII 脱敏", chapter: "cap-feedback", summary: "邮箱、手机等个人信息在入库和展示前统一脱敏" },
+  { id: "cfb-clustering", label: "主题聚类", chapter: "cap-feedback", summary: "按导出、引导、集成等真实产品问题把反馈归类" },
+  { id: "cfb-weighting", label: "价值加权优先级", chapter: "cap-feedback", summary: "结合账号层级与严重度排序，避免只按数量排期" },
+  { id: "cfb-roadmap", label: "Roadmap Ticket 生成", chapter: "cap-feedback", summary: "把洞察输出成 owner 明确、样本可追溯的产品任务" },
+
+  // ── 毕业项目 · 销售线索研究 Agent ──
+  { id: "csales-icp", label: "ICP Fit 评分", chapter: "cap-sales", summary: "按行业、规模和技术栈判断客户是否适合当前 Agent 方案" },
+  { id: "csales-signals", label: "业务信号证据链", chapter: "cap-sales", summary: "从痛点、招聘、预算、合规等公开信号解释为什么值得跟进" },
+  { id: "csales-risk", label: "合规风险扣分", chapter: "cap-sales", summary: "金融、教育等敏感场景提高风险权重，先确认权限边界" },
+  { id: "csales-talk-track", label: "销售开场话术", chapter: "cap-sales", summary: "把证据链转成面向行业痛点的 discovery call 切入点" },
+  { id: "csales-next-action", label: "下一步动作", chapter: "cap-sales", summary: "按 priority/nurture/disqualify 输出可执行跟进策略" },
 
   // ── 进阶 RAG 专题 ──
   { id: "cragchunk-why-matters", label: "切块决定检索上限", chapter: "rag-chunk", summary: "检索质量的天花板很大程度由分块策略决定，太大太小都伤召回" },
@@ -662,6 +686,26 @@ export const RELATIONS: Relation[] = [
   { from: "cev-metrics", to: "c16-observability", type: "应用", note: "成本与调用统计沿用第16章可观测思路" },
   { from: "cev-judges", to: "crageval-llm-judge-rag", type: "对比", note: "RAG 用裁判模型 vs 这里用离线规则裁判" },
 
+  // ── 毕业项目 · 告警响应 Agent（内部组成 + 跨章复用）──
+  { from: "cinc-severity", to: "c16-observability", type: "应用", note: "告警分级依赖指标、日志和成本/延迟观测" },
+  { from: "cinc-runbook", to: "cinc-evidence", type: "前置", note: "先选 runbook 才能整理对应证据链" },
+  { from: "cinc-evidence", to: "cinc-approval", type: "前置", note: "高风险处置必须先有根因证据支撑" },
+  { from: "cinc-approval", to: "c17-human-in-the-loop", type: "组成", note: "扩容、暂停批处理等真实变更进入人工审批门" },
+  { from: "cinc-postmortem", to: "c15-regression-ci", type: "应用", note: "复盘项会回流为告警、压测和回归门" },
+
+  // ── 毕业项目 · 用户反馈洞察 Agent（内部组成 + 跨章复用）──
+  { from: "cfb-quarantine", to: "cragsec-injection-detection", type: "组成", note: "反馈文本同样是不可信输入，先复用注入检测" },
+  { from: "cfb-redaction", to: "cragsec-pii-redaction", type: "组成", note: "反馈入库与展示前复用 PII 脱敏" },
+  { from: "cfb-clustering", to: "cfb-weighting", type: "前置", note: "先归类主题再按账号价值与严重度加权" },
+  { from: "cfb-weighting", to: "cfb-roadmap", type: "前置", note: "加权后的主题转成 owner 明确的 roadmap ticket" },
+  { from: "cfb-roadmap", to: "c13-structured-output", type: "应用", note: "roadmap ticket 是结构化业务产物" },
+
+  // ── 毕业项目 · 销售线索研究 Agent（内部组成 + 跨章复用）──
+  { from: "csales-icp", to: "csales-signals", type: "前置", note: "ICP fit 和业务信号共同决定线索优先级" },
+  { from: "csales-signals", to: "csales-risk", type: "应用", note: "合规信号会提高风险扣分" },
+  { from: "csales-risk", to: "csales-next-action", type: "前置", note: "高风险线索先培育或确认边界，低风险高分才外呼" },
+  { from: "csales-talk-track", to: "csales-next-action", type: "组成", note: "销售话术服务于下一步 discovery call" },
+  { from: "csales-talk-track", to: "c03-prompt-as-spec", type: "应用", note: "把证据链转成受约束的外呼话术" },
   // ── 进阶 RAG 专题：章内关系 ──
   { from: "cragchunk-why-matters", to: "cragchunk-sliding-window", type: "深化", note: "从最朴素的滑窗基线出发理解切块" },
   { from: "cragchunk-sliding-window", to: "cragchunk-recursive", type: "对比", note: "盲按字符切 vs 在语义边界下刀" },
@@ -1315,6 +1359,9 @@ export const ARTICLES: Article[] = [
     confidence: "medium",
     credibilityNote: "一手 arXiv 新稿；实验针对 coding agent，很贴近仓库级实践，但还需更多复现验证外推性。",
   },
+
+
+
   {
     title: "CrewAI 1.14.8a3 release notes",
     url: "https://github.com/crewAIInc/crewAI/releases/tag/1.14.8a3",
@@ -1388,6 +1435,81 @@ export const ARTICLES: Article[] = [
     ],
     confidence: "high",
     credibilityNote: "一手 Linux Foundation 官方公告；对 agent identity / trust 基础设施的方向性价值高。",
+  },  {
+    title: "OpenAI Agents Python v0.17.7 release notes",
+    url: "https://github.com/openai/openai-agents-python/releases/tag/v0.17.7",
+    kind: "doc",
+    source: "OpenAI",
+    publishedAt: "2026-06-24",
+    institution: "OpenAI",
+    chapters: ["19"],
+    ecosystemLayer: "runtime",
+    note: "官方 release notes：新增可配置 websocket `max_size`、buffered Chat Completions tool-call streaming，并修复 sibling guardrail cancellation、ambiguous realtime multi-agent tool dispatch、sandbox sink buffering 等问题，信号是 agent runtime 正在补齐并发收尾、流式工具调用和沙箱 IO 的稳定性边界。",
+    applicableModules: [
+      "lessons/11-multi-agent-orchestration",
+      "lessons/14-streaming-and-ux",
+      "lessons/17-safety-and-guardrails",
+      "lessons/18-deployment",
+      "lessons/20-agent-frontier-news",
+    ],
+    confidence: "high",
+    credibilityNote: "一手 GitHub release；直接来自 OpenAI Agents Python 官方仓库。",
+  },  {
+    title: "OpenAI Agents JS v0.12.0 release notes",
+    url: "https://github.com/openai/openai-agents-js/releases/tag/v0.12.0",
+    kind: "doc",
+    source: "OpenAI",
+    publishedAt: "2026-06-24",
+    institution: "OpenAI",
+    chapters: ["19"],
+    ecosystemLayer: "security-governance",
+    note: "官方 release notes：修复 resolved tool approvals 被重复求值、guardrail failure 后 sibling 任务收尾、特殊 permission bits 解析与 realtime tool dispatch 歧义，说明 JS agent SDK 也在把审批状态机和并发 guardrail 清理做成硬边界。",
+    applicableModules: [
+      "lessons/05-tool-use-basics",
+      "lessons/11-multi-agent-orchestration",
+      "lessons/17-safety-and-guardrails",
+      "lessons/18-deployment",
+      "lessons/20-agent-frontier-news",
+    ],
+    confidence: "high",
+    credibilityNote: "一手 GitHub release；直接来自 OpenAI Agents JS 官方仓库。",
+  },  {
+    title: "Microsoft Agent Framework .NET 1.11.0 release notes",
+    url: "https://github.com/microsoft/agent-framework/releases/tag/dotnet-1.11.0",
+    kind: "doc",
+    source: "Microsoft",
+    publishedAt: "2026-06-23",
+    institution: "Microsoft",
+    chapters: ["19"],
+    ecosystemLayer: "runtime",
+    note: "官方 release notes：要求 file-access tools 在 read-only auto-approval 下也走显式审批，并把 looping、refreshable MCP auth headers、Foundry Hosting 对 MCP 的依赖与 durable worker hosting 进一步收敛到 harness/runtime 层，说明长流程 agent 的权限边界和协议基座正在继续下沉。",
+    applicableModules: [
+      "lessons/05-tool-use-basics",
+      "lessons/11-multi-agent-orchestration",
+      "lessons/17-safety-and-guardrails",
+      "lessons/18-deployment",
+      "lessons/20-agent-frontier-news",
+    ],
+    confidence: "high",
+    credibilityNote: "一手 GitHub release；直接来自 Microsoft Agent Framework 官方仓库。",
+  },  {
+    title: "CrewAI 1.14.8a4 release notes",
+    url: "https://github.com/crewAIInc/crewAI/releases/tag/1.14.8a4",
+    kind: "doc",
+    source: "CrewAI",
+    publishedAt: "2026-06-24",
+    institution: "CrewAI",
+    chapters: ["19"],
+    ecosystemLayer: "security-governance",
+    note: "官方 prerelease notes：在继续推进 conversational flows CLI 的同时，补上 skill archive symlink path traversal 修复与 declarative flow definition path 校验，说明 workflow DSL 与本地文件边界已经成为 agent runtime 的直接攻击面。",
+    applicableModules: [
+      "lessons/11-multi-agent-orchestration",
+      "lessons/17-safety-and-guardrails",
+      "lessons/18-deployment",
+      "lessons/20-agent-frontier-news",
+    ],
+    confidence: "medium",
+    credibilityNote: "一手 GitHub prerelease；直接来自 CrewAI 官方仓库。因仍是 alpha 版本，方向有效但需继续观察后续稳定版是否沿用同一安全边界。",
   },
   { title: "Introducing Contextual Retrieval", url: "https://www.anthropic.com/news/contextual-retrieval", kind: "blog", chapters: ["rag-chunk", "rag-hybrid", "rag-contextual"], note: "Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读" },
   { title: "Okapi BM25 - Wikipedia", url: "https://en.wikipedia.org/wiki/Okapi_BM25", kind: "doc", chapters: ["rag-hybrid"], note: "BM25 打分公式与 k1/b 参数的权威说明，对应本章 BM25Index" },
@@ -1415,4 +1537,3 @@ export const ARTICLES: Article[] = [
   { title: "LangGraph.js · Multi-agent systems（概念）", url: "https://langchain-ai.github.io/langgraphjs/concepts/multi_agent/", kind: "doc", chapters: ["lg-multiagent"], note: "官方多 agent 拓扑总览：supervisor、network、hierarchical 等——本章 supervisor / parallel team 的权威参考" },
   { title: "LangGraph.js · Agent supervisor（教程）", url: "https://langchain-ai.github.io/langgraphjs/tutorials/multi_agent/agent_supervisor/", kind: "doc", chapters: ["lg-multiagent"], note: "一个 supervisor 用条件边把任务派给多个 worker agent 的官方教程，对应本章图1 的中心化调度循环" },
 ];
-

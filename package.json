@@ -19,7 +19,7 @@
     "code-review-crew:smoke": "tsx capstone/code-review-crew/src/smoke.ts",
     "agent-eval-harness": "tsx capstone/agent-eval-harness/src/cli.ts",
     "agent-eval-harness:smoke": "tsx capstone/agent-eval-harness/src/smoke.ts",
-    "capstone:smoke": "pnpm support-copilot:smoke && pnpm code-review-crew:smoke && pnpm agent-eval-harness:smoke",
+    "capstone:smoke": "pnpm support-copilot:smoke && pnpm code-review-crew:smoke && pnpm agent-eval-harness:smoke && pnpm incident-responder:smoke && pnpm feedback-intelligence:smoke && pnpm sales-lead-researcher:smoke",
     "kg": "tsx knowledge-graph/generate.ts",
     "supabase:frontier-seed": "tsx scripts/generate-frontier-ecosystem-supabase-seed.ts",
     "supabase:interview-seed": "tsx scripts/generate-interview-questions-supabase-seed.ts",
@@ -50,7 +50,13 @@
     "demo:server:prod": "tsx scripts/demo-runner/start-production.mts",
     "demo:clear-token": "node scripts/demo-runner/clear-token.mjs",
     "demo:wait-token": "node scripts/demo-runner/wait-token.mjs",
-    "site:live": "pnpm demo:clear-token && concurrently --kill-others --names runner,site \"pnpm demo:server\" \"pnpm demo:wait-token && pnpm site:dev\""
+    "site:live": "pnpm demo:clear-token && concurrently --kill-others --names runner,site \"pnpm demo:server\" \"pnpm demo:wait-token && pnpm site:dev\"",
+    "incident-responder": "tsx capstone/incident-responder/src/cli.ts",
+    "incident-responder:smoke": "tsx capstone/incident-responder/src/smoke.ts",
+    "feedback-intelligence": "tsx capstone/feedback-intelligence/src/cli.ts",
+    "feedback-intelligence:smoke": "tsx capstone/feedback-intelligence/src/smoke.ts",
+    "sales-lead-researcher": "tsx capstone/sales-lead-researcher/src/cli.ts",
+    "sales-lead-researcher:smoke": "tsx capstone/sales-lead-researcher/src/smoke.ts"
   },
   "keywords": [
     "ai",

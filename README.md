@@ -79,7 +79,7 @@ pnpm site:live
 
 ## 全局导航
 
-想直接跳到具体课程，走 [**全局课程导航**](./docs/navigation.md)。它按顺序、按主题同时整理了第 00–20 章、毕业项目、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone 和 RAG 系统实战项目。
+想直接跳到具体课程，走 [**全局课程导航**](./docs/navigation.md)。如果你想按 agent 类型、岗位目标或生产能力倒推学习路线，走 [**Agent 学习指南与分类地图**](./docs/agent-learning-guides.md)。它们一起整理了第 00–20 章、B1-B12 基础指南、毕业项目、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone 和 RAG 系统实战项目。
 
 ---
 
@@ -163,7 +163,7 @@ pnpm site:live
 | 01 | [什么是 Agent](./lessons/01-what-is-an-agent/) | ⭐ | LLM vs Agent，循环心智模型 |
 | 02 | [第一次 LLM 调用](./lessons/02-first-llm-call/) | ⭐ | provider 无关客户端、chat/stream、token |
 | 03 | [提示工程](./lessons/03-prompt-engineering/) | ⭐ | system/few-shot/CoT/temperature |
-| B1-B12 | [基础概念扩展专题](./agent-basics/) | ⭐⭐ | messages、roles、token、tool calling、workflow vs agent、guardrails |
+| B1-B12 | [基础概念扩展专题](./agent-basics/) | ⭐⭐ | 12 篇详细指南：messages、roles、token、tool calling、workflow vs agent、guardrails、evaluation |
 | **第二部分** | **从零手写核心** | | |
 | 04 | [手写 Agent 循环 (ReAct)](./lessons/04-the-agent-loop/) | ⭐⭐ | Thought/Action/Observation 循环 |
 | 05 | [工具调用基础](./lessons/05-tool-use-basics/) | ⭐⭐ | 原生 function calling、tool 往返 |
@@ -188,6 +188,9 @@ pnpm site:live
 | 19 | [Agent 前沿发展与生态拆解](./lessons/19-agent-ecosystem-and-frontier/) | ⭐⭐⭐ | MCP、A2A、Agents SDK、LangGraph、生态选型 |
 | 20 | [Agent 前沿文章库](./lessons/20-agent-frontier-news/) | ⭐⭐ | 按日期和体系层浏览 agent 前沿资料、摘要与原文 |
 | 🎓 | [毕业项目 · Deep Research Agent](./capstone/deep-research-agent/) | ⭐⭐⭐⭐ | 综合所有能力的实战项目 |
+| 🎓 | [毕业项目 · 告警响应 Agent](./capstone/incident-responder/) | ⭐⭐⭐⭐ | 告警、日志、runbook、审批和复盘的运维实战项目 |
+| 🎓 | [毕业项目 · 用户反馈洞察 Agent](./capstone/feedback-intelligence/) | ⭐⭐⭐ | 反馈清洗、主题聚类、价值加权和 roadmap ticket 的产品实战项目 |
+| 🎓 | [毕业项目 · 销售线索研究 Agent](./capstone/sales-lead-researcher/) | ⭐⭐⭐ | ICP 评分、业务信号、合规风险和销售话术的增长实战项目 |
 | 🎓 | [毕业项目 · 企业知识库 Agent](./capstone/enterprise-knowledge-base-agent/) | ⭐⭐⭐⭐⭐ | 企业知识库纵向全栈：ingestion、ACL、Agentic RAG、事件流、trace/eval、定时巡检 |
 | **进阶专题** | **RAG 生产化（rag-advanced）** | | |
 | R1 | [进阶分块策略](./rag-advanced/01-chunking-strategies/) | ⭐⭐⭐ | 递归语义切分、Markdown 感知、按 token 控大小（纯函数，免 key 可跑） |
@@ -214,6 +217,7 @@ agent/
 │   ├── glossary.md            # 术语表
 │   ├── career-guide.md        # 💼 求职指南
 │   ├── startup-guide.md       # 🚀 创业指南
+│   ├── agent-learning-guides.md # Agent 学习指南与分类地图
 │   ├── rag-architecture.md    # 🧭 RAG 完整架构蓝图
 │   ├── enterprise-knowledge-base-agent.md # 🏢 企业知识库 Agent 蓝图
 │   └── rag-system-project.md  # 📚 RAG 系统实战项目
@@ -226,7 +230,10 @@ agent/
 │   ├── 01-what-is-an-agent/
 │   └── ...
 └── capstone/
-    ├── deep-research-agent/   # 🎓 毕业项目
+    ├── deep-research-agent/             # 🎓 Deep Research 综合实战
+    ├── incident-responder/              # 告警响应与复盘实战
+    ├── feedback-intelligence/           # 用户反馈洞察实战
+    ├── sales-lead-researcher/           # 销售线索研究实战
     └── enterprise-knowledge-base-agent/ # 🏢 企业知识库 Agent Capstone
 ```
 
@@ -240,6 +247,7 @@ agent/
 
 - 💼 [**求职指南**](./docs/career-guide.md)：岗位画像、技能清单、用本项目写简历、高频面试题。
 - 🚀 [**创业指南**](./docs/startup-guide.md)：机会判断、MVP 裁剪、成本控制、上线 checklist。
+- [**Agent 学习指南与分类地图**](./docs/agent-learning-guides.md)：按学习阶段、agent 类型、工程能力和岗位路线拆解全项目。
 - 🔬 [**进阶 RAG 专题**](./rag-advanced/01-chunking-strategies/)：分块策略、混合检索、重排、查询改写、评估、生产化六章，把第 08/09 章的最小 RAG 补成生产级，能力沉淀在 `src/shared/rag/`。
 - 🧭 [**RAG 完整架构蓝图**](./docs/rag-architecture.md)：把 RAG demo 升级成可维护系统，覆盖写入路径、查询路径、数据模型、API 边界、安全治理、质量闭环和部署拓扑。
 - 🏢 [**企业知识库 Agent 蓝图**](./docs/enterprise-knowledge-base-agent.md)：把 RAG、记忆、工具、流式事件、定时任务和部署组织成一条企业级作品集路线。

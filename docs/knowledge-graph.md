@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **41** 个单元、**242** 个概念、**387** 条关系、**136** 篇关联文章。
+共 **44** 个单元、**257** 个概念、**402** 条关系、**151** 篇关联文章。
 
 ## 章节地图
 
@@ -49,6 +49,9 @@ flowchart LR
     C_cap-support["cap-support 毕业项目 · 客服 Copilot"]
     C_cap-review["cap-review 毕业项目 · 代码评审团"]
     C_cap-eval["cap-eval 毕业项目 · Agent 评测与回归门"]
+    C_cap-incident["cap-incident 毕业项目 · 告警响应 Agent"]
+    C_cap-feedback["cap-feedback 毕业项目 · 用户反馈洞察 Agent"]
+    C_cap-sales["cap-sales 毕业项目 · 销售线索研究 Agent"]
     C_cap-enterprise-kb["cap-enterprise-kb 毕业项目 · 企业知识库 Agent"]
   end
   subgraph P8["进阶 RAG 专题"]
@@ -94,7 +97,10 @@ flowchart LR
   C_capstone --> C_cap-support
   C_cap-support --> C_cap-review
   C_cap-review --> C_cap-eval
-  C_cap-eval --> C_cap-enterprise-kb
+  C_cap-eval --> C_cap-incident
+  C_cap-incident --> C_cap-feedback
+  C_cap-feedback --> C_cap-sales
+  C_cap-sales --> C_cap-enterprise-kb
   C_cap-enterprise-kb --> C_rag-chunk
   C_rag-chunk --> C_rag-hybrid
   C_rag-hybrid --> C_rag-rerank
@@ -298,6 +304,21 @@ graph LR
     n_cev_judges["离线裁判 (tool/keyword/refusal)"]
     n_cev_metrics["聚合指标"]
     n_cev_gate["回归门 (CI exit code)"]
+    n_cinc_severity["告警 SEV 分级"]
+    n_cinc_runbook["Runbook 匹配"]
+    n_cinc_evidence["根因证据链"]
+    n_cinc_approval["处置动作审批分层"]
+    n_cinc_postmortem["复盘清单"]
+    n_cfb_quarantine["反馈注入隔离"]
+    n_cfb_redaction["反馈 PII 脱敏"]
+    n_cfb_clustering["主题聚类"]
+    n_cfb_weighting["价值加权优先级"]
+    n_cfb_roadmap["Roadmap Ticket 生成"]
+    n_csales_icp["ICP Fit 评分"]
+    n_csales_signals["业务信号证据链"]
+    n_csales_risk["合规风险扣分"]
+    n_csales_talk_track["销售开场话术"]
+    n_csales_next_action["下一步动作"]
   end
   subgraph G8["进阶 RAG 专题"]
     n_cragchunk_why_matters["切块决定检索上限"]
@@ -616,6 +637,21 @@ graph LR
   n_cev_gate -->|组成| n_c15_eval_harness
   n_cev_metrics -->|应用| n_c16_observability
   n_cev_judges -->|对比| n_crageval_llm_judge_rag
+  n_cinc_severity -->|应用| n_c16_observability
+  n_cinc_runbook -->|前置| n_cinc_evidence
+  n_cinc_evidence -->|前置| n_cinc_approval
+  n_cinc_approval -->|组成| n_c17_human_in_the_loop
+  n_cinc_postmortem -->|应用| n_c15_regression_ci
+  n_cfb_quarantine -->|组成| n_cragsec_injection_detection
+  n_cfb_redaction -->|组成| n_cragsec_pii_redaction
+  n_cfb_clustering -->|前置| n_cfb_weighting
+  n_cfb_weighting -->|前置| n_cfb_roadmap
+  n_cfb_roadmap -->|应用| n_c13_structured_output
+  n_csales_icp -->|前置| n_csales_signals
+  n_csales_signals -->|应用| n_csales_risk
+  n_csales_risk -->|前置| n_csales_next_action
+  n_csales_talk_track -->|组成| n_csales_next_action
+  n_csales_talk_track -->|应用| n_c03_prompt_as_spec
   n_cragchunk_why_matters -->|深化| n_cragchunk_sliding_window
   n_cragchunk_sliding_window -->|对比| n_cragchunk_recursive
   n_cragchunk_recursive -->|深化| n_cragchunk_markdown_aware
@@ -938,6 +974,21 @@ graph LR
 | 离线裁判 (tool/keyword/refusal) | [cap-eval 毕业项目 · Agent 评测与回归门](../capstone/agent-eval-harness/README.md) | 纯函数裁判逐条打分，复用 shared 的 isRefusalAnswer 规则 |
 | 聚合指标 | [cap-eval 毕业项目 · Agent 评测与回归门](../capstone/agent-eval-harness/README.md) | 通过率/工具准确率/拒答准确率/成本，量化 Agent 质量 |
 | 回归门 (CI exit code) | [cap-eval 毕业项目 · Agent 评测与回归门](../capstone/agent-eval-harness/README.md) | 指标跌破阈值即非零退出，自动拦下退化版本 |
+| 告警 SEV 分级 | [cap-incident 毕业项目 · 告警响应 Agent](../capstone/incident-responder/README.md) | 把 5xx、延迟、队列积压等信号合成 SEV1/2/3 处置等级 |
+| Runbook 匹配 | [cap-incident 毕业项目 · 告警响应 Agent](../capstone/incident-responder/README.md) | 用日志关键词匹配最可能的处置手册，避免临场拍脑袋 |
+| 根因证据链 | [cap-incident 毕业项目 · 告警响应 Agent](../capstone/incident-responder/README.md) | 把错误日志、指标和影响服务整理成可审计诊断 |
+| 处置动作审批分层 | [cap-incident 毕业项目 · 告警响应 Agent](../capstone/incident-responder/README.md) | 诊断命令可直接执行，扩容/暂停批处理等变更必须审批 |
+| 复盘清单 | [cap-incident 毕业项目 · 告警响应 Agent](../capstone/incident-responder/README.md) | 把告警、压测、审计和 runbook 改进固化成后续任务 |
+| 反馈注入隔离 | [cap-feedback 毕业项目 · 用户反馈洞察 Agent](../capstone/feedback-intelligence/README.md) | 把不可信用户反馈先过提示注入检测，可疑内容不进入分析 |
+| 反馈 PII 脱敏 | [cap-feedback 毕业项目 · 用户反馈洞察 Agent](../capstone/feedback-intelligence/README.md) | 邮箱、手机等个人信息在入库和展示前统一脱敏 |
+| 主题聚类 | [cap-feedback 毕业项目 · 用户反馈洞察 Agent](../capstone/feedback-intelligence/README.md) | 按导出、引导、集成等真实产品问题把反馈归类 |
+| 价值加权优先级 | [cap-feedback 毕业项目 · 用户反馈洞察 Agent](../capstone/feedback-intelligence/README.md) | 结合账号层级与严重度排序，避免只按数量排期 |
+| Roadmap Ticket 生成 | [cap-feedback 毕业项目 · 用户反馈洞察 Agent](../capstone/feedback-intelligence/README.md) | 把洞察输出成 owner 明确、样本可追溯的产品任务 |
+| ICP Fit 评分 | [cap-sales 毕业项目 · 销售线索研究 Agent](../capstone/sales-lead-researcher/README.md) | 按行业、规模和技术栈判断客户是否适合当前 Agent 方案 |
+| 业务信号证据链 | [cap-sales 毕业项目 · 销售线索研究 Agent](../capstone/sales-lead-researcher/README.md) | 从痛点、招聘、预算、合规等公开信号解释为什么值得跟进 |
+| 合规风险扣分 | [cap-sales 毕业项目 · 销售线索研究 Agent](../capstone/sales-lead-researcher/README.md) | 金融、教育等敏感场景提高风险权重，先确认权限边界 |
+| 销售开场话术 | [cap-sales 毕业项目 · 销售线索研究 Agent](../capstone/sales-lead-researcher/README.md) | 把证据链转成面向行业痛点的 discovery call 切入点 |
+| 下一步动作 | [cap-sales 毕业项目 · 销售线索研究 Agent](../capstone/sales-lead-researcher/README.md) | 按 priority/nurture/disqualify 输出可执行跟进策略 |
 | 切块决定检索上限 | [rag-chunk 进阶分块策略](../rag-advanced/01-chunking-strategies/README.md) | 检索质量的天花板很大程度由分块策略决定，太大太小都伤召回 |
 | 字符滑窗切分 | [rag-chunk 进阶分块策略](../rag-advanced/01-chunking-strategies/README.md) | 第09章基线：定长字符 + 重叠，简单但会盲切句子 |
 | 递归语义切分 | [rag-chunk 进阶分块策略](../rag-advanced/01-chunking-strategies/README.md) | 优先在段落/句子/词等语义边界下刀，按 token 控大小 |
@@ -1045,7 +1096,7 @@ graph LR
 | [Zod 官方文档](https://zod.dev) | zod.dev | doc | 06 | 本章 schema 校验与类型推断的基础库，README 前置知识引用 |
 | [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) | Anthropic | blog | 07, 19 | Anthropic 官方：上下文是有限资源，需主动裁剪与压缩，与本章窗口预算/摘要思路一致 |
 | [Vector embeddings - OpenAI API documentation](https://platform.openai.com/docs/guides/embeddings) | platform.openai.com | doc | 08 | 本章 embedding 默认调用 OpenAI text-embedding-3-small，官方指南 |
-| [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401) | arxiv.org | paper | 09, capstone | RAG 原始论文 (Lewis et al., 2020)，提出检索增强生成范式 |
+| [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401) | arxiv.org | paper | 09, capstone, cap-enterprise-kb | RAG 原始论文 (Lewis et al., 2020)，提出检索增强生成范式 |
 | [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366) | arxiv.org | paper | 10 | Reflection/自我反思修正的代表性论文 |
 | [Claude Code Docs · Orchestrate teams of Claude Code sessions](https://code.claude.com/docs/en/agent-teams) | code.claude.com | doc | 11 | Claude Code 官方 agent teams 文档：team lead、teammates、共享任务列表、mailbox、hooks 与限制 |
 | [Codex Docs · Subagents](https://developers.openai.com/codex/subagents) | developers.openai.com | doc | 11 | OpenAI Codex 官方 subagent workflows 文档：显式 spawn、线程管理、sandbox/approval 继承与 custom agents |
@@ -1134,6 +1185,21 @@ graph LR
 | [Can AI Agents Synthesize Scientific Conclusions? Understanding Strategic Generalization on SciConBench](https://arxiv.org/abs/2606.11337) | arXiv | paper | 19 | 提出 SciConBench，要求 agent 从多篇 scientific claims 做 clean-room 结论综合并避免直接搬运原句，适合检验研究型 agent 是否真的具备跨文献 synthesis 能力。 |
 | [SubtleMemory: Benchmarking Long-Term Relational Memory in LLM Agents](https://arxiv.org/abs/2606.05761) | arXiv | paper | 19 | 把长期记忆评测拆成补充关系、矛盾关系与无关关系判断，强调 agent 需要维护人物/事件关系一致性，而不是只做关键词 recall。 |
 | [SentinelBench: Benchmarking Monitoring Agents in Dynamic Environments](https://arxiv.org/abs/2606.05342) | arXiv | paper | 19 | 聚焦监控/告警场景，要求 agent 在动态环境中持续观测、解释异常并触发后续动作，补齐 monitoring agent 的时序反应与行动链评测。 |
+| [OpenAI Agents Python v0.17.6 release notes](https://github.com/openai/openai-agents-python/releases/tag/v0.17.6) | OpenAI | doc | 19 | 官方 release notes：新增 pre-approval tool input guardrails，并允许 SDK-only custom tool-output data，说明高权限工具的审批边界与工具输出契约正在前移、收紧。 |
+| [OpenAI Agents JS v0.11.8 release notes](https://github.com/openai/openai-agents-js/releases/tag/v0.11.8) | OpenAI | doc | 19 | 官方 release notes：JS 版同步加入 opt-in pre-approval tool input guardrails 与 SDK-only custom tool-output data，说明 py/js agent SDK 正在收敛到同一套安全执行边界。 |
+| [Google ADK Python v2.3.0 release notes](https://github.com/google/adk-python/releases/tag/v2.3.0) | Google | doc | 19 | 官方 release notes：引入 mTLS AgentRegistry、Remote sandbox workspaces、per-request OpenTelemetry 配置、enterprise 参数迁移与 compaction 修复，说明企业级 agent runtime 的 auth、telemetry 和 remote execution 正在快速工程化。 |
+| [LangGraph 1.2.6 release notes](https://github.com/langchain-ai/langgraph/releases/tag/1.2.6) | LangChain | doc | 19 | 官方 release notes：修复 nested subgraph 继承父 checkpoint namespace 回归，以及 v3 stream abort 时未取消运行中 subgraph 的问题，直接关系到 checkpoint 正确性与流式中断一致性。 |
+| [Sovereign Execution Brokers: Enforcing Certificate-Bound Authority in Agentic Control Planes](https://arxiv.org/abs/2606.20520) | arXiv | paper | 19 | 提出 Sovereign Execution Broker：把 agent 的 proposal、admission、execution 三层拆开，用证书绑定、撤销窗口、drift 检查和 scoped execution identity 把真实变更权限卡在独立执行边界。 |
+| [Efficient and Sound Probabilistic Verification for AI Agents](https://arxiv.org/abs/2606.20510) | arXiv | paper | 19 | 把 runtime monitoring 从 deterministic policy 推到 probabilistic verification：当 PII detector、declassifier 等工具本身有误差时，仍能给出 policy violation 的 sound 上界。 |
+| [Probe-and-Refine Tuning of Repository Guidance for Coding Agents](https://arxiv.org/abs/2606.20512) | arXiv | paper | 19 | 研究 repository guidance（如 AGENTS.md）如何影响 coding agent：结论不是“有说明就行”，而是要通过 probe-and-refine 迭代补齐仓库知识，主要提升 agent 找到正确文件的覆盖率。 |
+| [CrewAI 1.14.8a3 release notes](https://github.com/crewAIInc/crewAI/releases/tag/1.14.8a3) | CrewAI | doc | 19 | 官方 release notes：统一 declarative flow loading、收敛 `crewai run` / `crewai flow kickoff` 启动入口，并补上 nested crews 的进度可见性，说明多 agent workflow 的定义与运维体验正在继续向声明式和可观测靠拢。 |
+| [Shared infrastructure, isolated tenants: Pool model multi-tenancy with Amazon Bedrock AgentCore](https://aws.amazon.com/blogs/machine-learning/shared-infrastructure-isolated-tenants-pool-model-multi-tenancy-with-amazon-bedrock-agentcore/) | AWS | blog | 19 | AWS 官方实践：用 AgentCore 展示 pool-model 多租户模式，强调共享基础设施下仍要隔离 tenant state、identity、telemetry 与审批边界，适合拿来理解生产级 agent runtime 的隔离设计。 |
+| [Build a protein research copilot with Amazon Bedrock AgentCore](https://aws.amazon.com/blogs/machine-learning/build-a-protein-research-copilot-with-amazon-bedrock-agentcore/) | AWS | blog | 19 | AWS 官方实践：把自然语言参数抽取、protein embedding 检索和 AI scientific summaries 串成研究 copilot，说明垂类 agent 仍应拆开 query parsing、retrieval、summarization 三段，而不是用一个大 prompt 端到端硬做。 |
+| [Linux Foundation Agent Name Service identity infrastructure announcement](https://www.linuxfoundation.org/press/linux-foundation-announces-intent-to-launch-agent-name-service-to-establish-trusted-identity-infrastructure-for-ai-agents) | Linux Foundation | blog | 19 | Linux Foundation 官方公告：计划推出 Agent Name Service，为 AI agents 建 trusted identity infrastructure，信号是跨组织 agent 互认这件事正在从“各家自己做账号映射”走向独立身份层。 |
+| [OpenAI Agents Python v0.17.7 release notes](https://github.com/openai/openai-agents-python/releases/tag/v0.17.7) | OpenAI | doc | 19 | 官方 release notes：新增可配置 websocket `max_size`、buffered Chat Completions tool-call streaming，并修复 sibling guardrail cancellation、ambiguous realtime multi-agent tool dispatch、sandbox sink buffering 等问题，信号是 agent runtime 正在补齐并发收尾、流式工具调用和沙箱 IO 的稳定性边界。 |
+| [OpenAI Agents JS v0.12.0 release notes](https://github.com/openai/openai-agents-js/releases/tag/v0.12.0) | OpenAI | doc | 19 | 官方 release notes：修复 resolved tool approvals 被重复求值、guardrail failure 后 sibling 任务收尾、特殊 permission bits 解析与 realtime tool dispatch 歧义，说明 JS agent SDK 也在把审批状态机和并发 guardrail 清理做成硬边界。 |
+| [Microsoft Agent Framework .NET 1.11.0 release notes](https://github.com/microsoft/agent-framework/releases/tag/dotnet-1.11.0) | Microsoft | doc | 19 | 官方 release notes：要求 file-access tools 在 read-only auto-approval 下也走显式审批，并把 looping、refreshable MCP auth headers、Foundry Hosting 对 MCP 的依赖与 durable worker hosting 进一步收敛到 harness/runtime 层，说明长流程 agent 的权限边界和协议基座正在继续下沉。 |
+| [CrewAI 1.14.8a4 release notes](https://github.com/crewAIInc/crewAI/releases/tag/1.14.8a4) | CrewAI | doc | 19 | 官方 prerelease notes：在继续推进 conversational flows CLI 的同时，补上 skill archive symlink path traversal 修复与 declarative flow definition path 校验，说明 workflow DSL 与本地文件边界已经成为 agent runtime 的直接攻击面。 |
 | [Introducing Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) | anthropic.com | blog | rag-chunk, rag-hybrid, rag-contextual | Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读 |
 | [Okapi BM25 - Wikipedia](https://en.wikipedia.org/wiki/Okapi_BM25) | en.wikipedia.org | doc | rag-hybrid | BM25 打分公式与 k1/b 参数的权威说明，对应本章 BM25Index |
 | [Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods](https://dl.acm.org/doi/10.1145/1571941.1572114) | dl.acm.org | paper | rag-hybrid | RRF 原始论文 (Cormack et al., SIGIR 2009)，混合检索融合法的来源 |

@@ -10,8 +10,9 @@
 | 知识图谱 | 想看概念之间的依赖和延伸阅读 | [全局知识图谱](./knowledge-graph.md) |
 | 环境搭建 | 还没装依赖、没配 key、例子跑不起来 | [第 00 章 · 环境搭建](./setup.md) |
 | 基础概念扩展 | 01-03 学完后，想补 messages、token、tool calling、workflow vs agent 等底层词汇 | [基础概念扩展专题](../agent-basics/README.md) |
+| Agent 学习指南 | 想按 agent 类型、岗位目标或生产能力倒推学习路线 | [Agent 学习指南与分类地图](./agent-learning-guides.md) |
 | 前沿文章库 | 想按日期、体系层浏览 agent 前沿资料和原文入口 | [第 20 章 · Agent 前沿文章库](../lessons/20-agent-frontier-news/README.md) |
-| 毕业项目 | 想把前面能力组装成完整作品 | [Deep Research Agent](../capstone/deep-research-agent/README.md) · [客服 Copilot](../capstone/support-copilot/README.md) · [代码评审团](../capstone/code-review-crew/README.md) · [Agent 评测与回归门](../capstone/agent-eval-harness/README.md) · [企业知识库 Agent](../capstone/enterprise-knowledge-base-agent/README.md) |
+| 毕业项目 | 想把前面能力组装成完整作品 | [Deep Research Agent](../capstone/deep-research-agent/README.md) · [客服 Copilot](../capstone/support-copilot/README.md) · [代码评审团](../capstone/code-review-crew/README.md) · [Agent 评测与回归门](../capstone/agent-eval-harness/README.md) · [告警响应](../capstone/incident-responder/README.md) · [反馈洞察](../capstone/feedback-intelligence/README.md) · [销售线索研究](../capstone/sales-lead-researcher/README.md) · [企业知识库 Agent](../capstone/enterprise-knowledge-base-agent/README.md) |
 | 进阶 RAG 专题 | 想把最小 RAG 补成生产级（分块/混合/精排/改写/评估/生产化） | [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md) |
 | 进阶 LangGraph 专题 | 想把第 12 章的框架入门补成状态图、持久化、HITL、多 agent 与生产化路线 | [进阶 LangGraph 专题](../langgraph-advanced/README.md) |
 | RAG 完整架构 | 想把 RAG 从 demo 设计成可维护系统 | [RAG 完整架构蓝图](./rag-architecture.md) |
@@ -26,7 +27,7 @@
 | 01 | 基础概念 | [什么是 Agent](../lessons/01-what-is-an-agent/README.md) | LLM vs Agent、循环心智模型 |
 | 02 | 基础概念 | [第一次 LLM 调用](../lessons/02-first-llm-call/README.md) | provider 无关客户端、chat、stream、token |
 | 03 | 基础概念 | [提示工程](../lessons/03-prompt-engineering/README.md) | system prompt、few-shot、CoT、temperature |
-| B1-B12 | 基础概念扩展 | [基础概念扩章地图](../agent-basics/README.md) | messages、roles、context、sampling、tool calling、workflow vs agent、guardrails |
+| B1-B12 | 基础概念扩展 | [基础概念扩章地图](../agent-basics/README.md) | 12 篇详细指南：messages、roles、context、sampling、tool calling、workflow vs agent、guardrails、evaluation |
 | 04 | 从零手写核心 | [手写 Agent 循环](../lessons/04-the-agent-loop/README.md) | Thought / Action / Observation、ReAct loop |
 | 05 | 从零手写核心 | [工具调用基础](../lessons/05-tool-use-basics/README.md) | function calling、tool request、tool result |
 | 06 | 从零手写核心 | [从零构建工具系统](../lessons/06-building-a-tool-system/README.md) | zod schema、ToolRegistry、安全执行 |
@@ -48,6 +49,9 @@
 | 🎓 | 综合实战 | [客服 Copilot](../capstone/support-copilot/README.md) | 记忆、RAG、工具、HITL 审批、注入/PII 安全、成本可观测的纵深防御管线（离线可跑） |
 | 🎓 | 综合实战 | [代码评审团](../capstone/code-review-crew/README.md) | 多智能体并行评审、结构化发现、严重度排序、critical 即 BLOCK 的评审门（离线可跑） |
 | 🎓 | 综合实战 | [Agent 评测与回归门](../capstone/agent-eval-harness/README.md) | golden 测试集、离线裁判、通过率/拒答准确率/成本指标、CI 回归门（离线可跑） |
+| 🎓 | 运维实战 | [告警响应 Agent](../capstone/incident-responder/README.md) | 告警分级、runbook 匹配、审批分层、客户话术与 postmortem（离线可跑） |
+| 🎓 | 产品实战 | [用户反馈洞察 Agent](../capstone/feedback-intelligence/README.md) | 多渠道反馈安全清洗、主题聚类、价值加权、roadmap ticket（离线可跑） |
+| 🎓 | 增长实战 | [销售线索研究 Agent](../capstone/sales-lead-researcher/README.md) | ICP 评分、业务信号证据链、合规风险、销售下一步动作（离线可跑） |
 | 🎓 | 纵向全栈实战 | [企业知识库 Agent](../capstone/enterprise-knowledge-base-agent/README.md) | ingestion、ACL、Agentic RAG、事件流、trace/eval、定时知识巡检 |
 | 🧭 | 架构蓝图 | [RAG 完整架构蓝图](./rag-architecture.md) | ingestion、query、eval、governance、deployment 系统边界 |
 | 🏢 | 纵向蓝图 | [企业知识库 Agent 蓝图](./enterprise-knowledge-base-agent.md) | RAG、记忆、Agent runtime、事件流、定时任务、部署里程碑 |
@@ -90,9 +94,27 @@
 
 | # | 专题 | 链接 | 核心能力 |
 |---|------|------|----------|
-| B1-B4 | 模型调用底层 | [基础概念扩章地图](../agent-basics/README.md) | LLM 非数据库、messages/roles、token/cost、sampling |
-| B5-B8 | Agent 前置心智 | [基础概念扩章地图](../agent-basics/README.md) | 指令契约、tool calling、workflow vs agent、memory/RAG/context 边界 |
-| B9-B12 | 生产化预备词汇 | [基础概念扩章地图](../agent-basics/README.md) | structured output、guardrails、evaluation、framework runtime |
+| B1 | LLM 是预测器，不是数据库 | [阅读](../agent-basics/01-llm-as-predictor.md) | 事实性边界、引用、拒答 |
+| B2 | Messages、Roles 与上下文窗口 | [阅读](../agent-basics/02-messages-roles-context.md) | role 分工、message array、context 装配 |
+| B3 | Token、延迟与成本直觉 | [阅读](../agent-basics/03-token-latency-cost.md) | token budget、步骤成本、压缩策略 |
+| B4 | 采样参数与可重复性 | [阅读](../agent-basics/04-sampling-repeatability.md) | temperature、top_p、eval stability |
+| B5 | 指令、约束与输出契约 | [阅读](../agent-basics/05-instructions-output-contracts.md) | prompt 作为接口协议 |
+| B6 | Tool Calling 心智模型 | [阅读](../agent-basics/06-tool-calling-mental-model.md) | schema、参数校验、工具错误回传 |
+| B7 | Workflow vs Agent | [阅读](../agent-basics/07-workflow-vs-agent.md) | 固定流程、自主循环、混合模式 |
+| B8 | Memory、RAG 与 Context | [阅读](../agent-basics/08-memory-rag-context.md) | 记忆、检索、上下文打包边界 |
+| B9 | Structured Output 基础 | [阅读](../agent-basics/09-structured-output-basics.md) | parse、validate、repair、fallback |
+| B10 | Guardrails 入门 | [阅读](../agent-basics/10-guardrails-intro.md) | 输入、检索、工具、输出、人审护栏 |
+| B11 | Evaluation 先行 | [阅读](../agent-basics/11-evaluation-first.md) | golden set、失败分类、回归门 |
+| B12 | Framework 与 Runtime 地图 | [阅读](../agent-basics/12-framework-runtime-map.md) | runtime 部件、框架边界、迁移策略 |
+
+## Agent 学习指南与分类地图
+
+| 分类方式 | 链接 | 用途 |
+|----------|------|------|
+| 按学习阶段 | [Agent 学习指南](./agent-learning-guides.md#分类-1-按学习阶段) | 从模型接口到生产化逐层补能力 |
+| 按 Agent 类型 | [Agent 类型分类](./agent-learning-guides.md#分类-2-按-agent-类型) | Chat、Tool、Workflow、Research、Copilot、Multi-agent、Coding、Monitoring |
+| 按工程能力 | [工程能力拆解](./agent-learning-guides.md#分类-3-按工程能力拆解) | 输入、控制流、工具、知识、质量、生产六层拆解 |
+| 按角色路线 | [角色学习路线](./agent-learning-guides.md#角色学习路线) | 后端、前端、RAG、多 agent、生产负责人路线 |
 
 ## 按主题跳转
 
