@@ -248,6 +248,7 @@ graph TB
   n_c04_agent_loop["Agent 循环（第04章）"]
   n_c04_react["ReAct (Reasoning + Acting)（第04章）"]
   n_c19_ecosystem_layers["Agent 生态分层（第19章）"]
+  n_srca_reading_map["源码阅读路线（第21章）"]
   n_lgsg_vs_prebuilt["揭开 createReactAgent（第lg-stategraph章）"]
   n_lgsg_state_channels["State 与 channels（第lg-stategraph章）"]
   n_lgsg_edges_compile["边与 compile/invoke（第lg-stategraph章）"]
@@ -266,6 +267,7 @@ graph TB
   n_c12_langgraph -->|对比| n_c04_agent_loop
   n_c12_react_agent -->|应用| n_c04_react
   n_c19_ecosystem_layers -->|深化| n_c12_framework_choice
+  n_srca_reading_map -->|深化| n_c12_framework_choice
   n_lgsg_vs_prebuilt -->|深化| n_c12_react_agent
   n_lgsg_state_channels -->|深化| n_c12_state_graph
   n_lgsg_edges_compile -->|深化| n_c12_langgraph
@@ -273,7 +275,7 @@ graph TB
   n_lgrt_conditional_edge -->|应用| n_c12_react_agent
   n_lgcp_checkpointer -->|深化| n_c12_langgraph
   class n_c12_why_frameworks,n_c12_vercel_ai_sdk,n_c12_max_steps,n_c12_langgraph,n_c12_react_agent,n_c12_state_graph,n_c12_framework_choice own;
-  class n_c06_run_agent_loop,n_c04_agent_loop,n_c04_react,n_c19_ecosystem_layers,n_lgsg_vs_prebuilt,n_lgsg_state_channels,n_lgsg_edges_compile,n_lgrt_conditional_edge,n_lgcp_checkpointer cross;
+  class n_c06_run_agent_loop,n_c04_agent_loop,n_c04_react,n_c19_ecosystem_layers,n_srca_reading_map,n_lgsg_vs_prebuilt,n_lgsg_state_channels,n_lgsg_edges_compile,n_lgrt_conditional_edge,n_lgcp_checkpointer cross;
   linkStyle 0 stroke:#059669,stroke-width:2px;
   linkStyle 1 stroke:#059669,stroke-width:2px;
   linkStyle 2 stroke:#d97706,stroke-width:2px;
@@ -290,9 +292,10 @@ graph TB
   linkStyle 13 stroke:#7c3aed,stroke-width:2px;
   linkStyle 14 stroke:#7c3aed,stroke-width:2px;
   linkStyle 15 stroke:#7c3aed,stroke-width:2px;
-  linkStyle 16 stroke:#2563eb,stroke-width:2px;
-  linkStyle 17 stroke:#059669,stroke-width:2px;
-  linkStyle 18 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 16 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 17 stroke:#2563eb,stroke-width:2px;
+  linkStyle 18 stroke:#059669,stroke-width:2px;
+  linkStyle 19 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -301,6 +304,7 @@ graph TB
 - `LangGraph.js` —**对比**→ `Agent 循环`（第 04 章）
 - `createReactAgent 预制图` —**应用**→ `ReAct (Reasoning + Acting)`（第 04 章）
 - `Agent 生态分层` —**深化**→ `框架选型决策`（第 19 章）
+- `源码阅读路线` —**深化**→ `框架选型决策`（第 21 章）
 - `揭开 createReactAgent` —**深化**→ `createReactAgent 预制图`（第 lg-stategraph 章）
 - `State 与 channels` —**深化**→ `状态机图模型`（第 lg-stategraph 章）
 - `边与 compile/invoke` —**深化**→ `LangGraph.js`（第 lg-stategraph 章）

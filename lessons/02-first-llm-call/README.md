@@ -171,6 +171,7 @@ graph TB
   n_c14_token_streaming["Token 流式输出 (typewriter)（第14章）"]
   n_c16_cost_estimation["费用估算公式（第16章）"]
   n_c16_decorator_tracer["装饰器模式 Tracer（第16章）"]
+  n_srca_langchain_runnable["Runnable 调用协议（第21章）"]
   n_c02_llm_call_pure_function -->|应用| n_c02_get_llm_abstraction
   n_c02_get_llm_abstraction -->|组成| n_c02_chat
   n_c02_get_llm_abstraction -->|组成| n_c02_stream
@@ -183,8 +184,9 @@ graph TB
   n_c14_token_streaming -->|深化| n_c02_stream
   n_c16_cost_estimation -->|深化| n_c02_usage_token
   n_c16_decorator_tracer -->|应用| n_c02_get_llm_abstraction
+  n_srca_langchain_runnable -->|深化| n_c02_stream
   class n_c02_llm_call_pure_function,n_c02_get_llm_abstraction,n_c02_chat,n_c02_stream,n_c02_usage_token,n_c02_stop_reason own;
-  class n_c01_llm_vs_agent,n_c04_agent_loop,n_c07_context_window_budget,n_c14_token_streaming,n_c16_cost_estimation,n_c16_decorator_tracer cross;
+  class n_c01_llm_vs_agent,n_c04_agent_loop,n_c07_context_window_budget,n_c14_token_streaming,n_c16_cost_estimation,n_c16_decorator_tracer,n_srca_langchain_runnable cross;
   linkStyle 0 stroke:#059669,stroke-width:2px;
   linkStyle 1 stroke:#d97706,stroke-width:2px;
   linkStyle 2 stroke:#d97706,stroke-width:2px;
@@ -197,6 +199,7 @@ graph TB
   linkStyle 9 stroke:#7c3aed,stroke-width:2px;
   linkStyle 10 stroke:#7c3aed,stroke-width:2px;
   linkStyle 11 stroke:#059669,stroke-width:2px;
+  linkStyle 12 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -207,6 +210,7 @@ graph TB
 - `Token 流式输出 (typewriter)` —**深化**→ `stream() 流式输出`（第 14 章）
 - `费用估算公式` —**深化**→ `usage 与 token 成本`（第 16 章）
 - `装饰器模式 Tracer` —**应用**→ `provider 无关抽象 getLLM()`（第 16 章）
+- `Runnable 调用协议` —**深化**→ `stream() 流式输出`（第 21 章）
 
 ### 延伸阅读
 

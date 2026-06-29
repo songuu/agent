@@ -11,6 +11,7 @@
 | 环境搭建 | 还没装依赖、没配 key、例子跑不起来 | [第 00 章 · 环境搭建](./setup.md) |
 | 基础概念扩展 | 01-03 学完后，想补 messages、token、tool calling、workflow vs agent 等底层词汇 | [基础概念扩展专题](../agent-basics/README.md) |
 | Agent 学习指南 | 想按 agent 类型、岗位目标或生产能力倒推学习路线 | [Agent 学习指南与分类地图](./agent-learning-guides.md) |
+| 源码解析 | 想从调用框架升级到读懂 LangChain / LangGraph / LlamaIndex 源码 | [第 21 章 · 源码解析](../source-analysis/README.md) |
 | 前沿文章库 | 想按日期、体系层浏览 agent 前沿资料和原文入口 | [第 20 章 · Agent 前沿文章库](../lessons/20-agent-frontier-news/README.md) |
 | 毕业项目 | 想把前面能力组装成完整作品 | [Deep Research Agent](../capstone/deep-research-agent/README.md) · [客服 Copilot](../capstone/support-copilot/README.md) · [代码评审团](../capstone/code-review-crew/README.md) · [Agent 评测与回归门](../capstone/agent-eval-harness/README.md) · [告警响应](../capstone/incident-responder/README.md) · [反馈洞察](../capstone/feedback-intelligence/README.md) · [销售线索研究](../capstone/sales-lead-researcher/README.md) · [企业知识库 Agent](../capstone/enterprise-knowledge-base-agent/README.md) |
 | 进阶 RAG 专题 | 想把最小 RAG 补成生产级（分块/混合/精排/改写/评估/生产化） | [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md) |
@@ -45,6 +46,7 @@
 | 18 | 生产化 | [部署：变成服务](../lessons/18-deployment/README.md) | HTTP API、SSE、timeout、并发、部署清单 |
 | 19 | 前沿与生态 | [Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | MCP、A2A、Agents SDK、生态选型 |
 | 20 | 前沿与生态 | [Agent 前沿文章库](../lessons/20-agent-frontier-news/README.md) | 日期筛选、体系层列表、文章卡片、原文追踪 |
+| 21 | 源码解析 | [源码解析](../source-analysis/README.md) | 从入口函数、runtime、状态/工具/检索和停止条件读懂框架实现 |
 | 🎓 | 综合实战 | [Deep Research Agent](../capstone/deep-research-agent/README.md) | 工具、RAG、多智能体、评估、护栏端到端整合 |
 | 🎓 | 综合实战 | [客服 Copilot](../capstone/support-copilot/README.md) | 记忆、RAG、工具、HITL 审批、注入/PII 安全、成本可观测的纵深防御管线（离线可跑） |
 | 🎓 | 综合实战 | [代码评审团](../capstone/code-review-crew/README.md) | 多智能体并行评审、结构化发现、严重度排序、critical 即 BLOCK 的评审门（离线可跑） |
@@ -88,6 +90,17 @@
 | L5 | 多 Agent 编排 | [05-multi-agent-graph](../langgraph-advanced/05-multi-agent-graph/README.md) | supervisor、worker routing、parallel team |
 | L6-L11 | 生产化扩章地图 | [专题首页](../langgraph-advanced/README.md#生产化扩章地图) | event streaming、store、subgraph、fault tolerance、test/migration、deploy/observability |
 
+## 第 21 章 · 源码解析（source-analysis）
+
+> 第 12 章和 LangGraph 专题之后的源码阅读路线。目标不是背 API，而是看清主流框架如何实现 agent loop、状态图、RAG query engine 和 workflow runtime。
+
+| # | 专题 | 链接 | 核心能力 |
+|---|------|------|----------|
+| 21 | 源码解析 | [source-analysis](../source-analysis/README.md) | 建立“入口函数 -> runtime -> 状态/工具/检索 -> 停止条件”的读法 |
+| 21.1 | LangChain 源码解析 | [langchain](../source-analysis/langchain.md) | `create_agent`、Runnable、middleware、structured output |
+| 21.2 | LangGraph 源码解析 | [langgraph](../source-analysis/langgraph.md) | `StateGraph`、Pregel runtime、prebuilt ReAct agent、ToolNode |
+| 21.3 | LlamaIndex 源码解析 | [llamaindex](../source-analysis/llamaindex.md) | QueryEngine、Retriever、ResponseSynthesizer、Workflow / MultiAgentWorkflow |
+
 ## 基础概念扩展专题（agent-basics）
 
 > 第 01-03 章之后的概念补强层。它不重排主课编号，而是收集进入 agent loop 前最容易误解的底层概念。
@@ -126,4 +139,4 @@
 | 多步推理与协作 | [10](../lessons/10-reasoning-patterns/README.md) → [11](../lessons/11-multi-agent-orchestration/README.md) → [12](../lessons/12-intro-to-frameworks/README.md) → [进阶 LangGraph 专题](../langgraph-advanced/README.md) |
 | 生产化上线 | [13](../lessons/13-structured-output/README.md) → [14](../lessons/14-streaming-and-ux/README.md) → [15](../lessons/15-evaluation-and-testing/README.md) → [16](../lessons/16-observability-and-cost/README.md) → [17](../lessons/17-safety-and-guardrails/README.md) → [18](../lessons/18-deployment/README.md) |
 | 企业知识库全栈 | [07](../lessons/07-short-term-memory/README.md) → [14](../lessons/14-streaming-and-ux/README.md) → [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md) → [进阶 LangGraph 专题](../langgraph-advanced/README.md) → [企业知识库 Agent 蓝图](./enterprise-knowledge-base-agent.md) → [企业知识库 Agent Capstone](../capstone/enterprise-knowledge-base-agent/README.md) → [RAG 系统实战项目](./rag-system-project.md) |
-| 生态选型 | [12](../lessons/12-intro-to-frameworks/README.md) → [18](../lessons/18-deployment/README.md) → [19](../lessons/19-agent-ecosystem-and-frontier/README.md) → [20](../lessons/20-agent-frontier-news/README.md) |
+| 生态选型 | [12](../lessons/12-intro-to-frameworks/README.md) → [源码解析](../source-analysis/README.md) → [18](../lessons/18-deployment/README.md) → [19](../lessons/19-agent-ecosystem-and-frontier/README.md) → [20](../lessons/20-agent-frontier-news/README.md) |

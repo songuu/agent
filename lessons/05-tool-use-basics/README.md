@@ -238,6 +238,7 @@ graph TB
   n_c06_run_agent_loop["runAgent 循环（第06章）"]
   n_c06_self_correction_loop["LLM 自我纠错闭环（第06章）"]
   n_c19_mcp["MCP (模型上下文协议)（第19章）"]
+  n_srca_langgraph_tool_node["ToolNode 工具边界（第21章）"]
   n_c05_native_tool_use -->|组成| n_c05_request_execute_boundary
   n_c05_toolspec_schema -->|前置| n_c05_native_tool_use
   n_c05_native_tool_use -->|应用| n_c05_roundtrip_loop
@@ -251,8 +252,9 @@ graph TB
   n_c06_run_agent_loop -->|深化| n_c05_roundtrip_loop
   n_c06_self_correction_loop -->|深化| n_c05_error_feedback
   n_c19_mcp -->|应用| n_c05_native_tool_use
+  n_srca_langgraph_tool_node -->|应用| n_c05_roundtrip_loop
   class n_c05_native_tool_use,n_c05_request_execute_boundary,n_c05_toolspec_schema,n_c05_roundtrip_loop,n_c05_stop_reason,n_c05_tool_call_id,n_c05_error_feedback own;
-  class n_c04_text_protocol,n_c04_agent_loop,n_c06_define_tool,n_c06_run_agent_loop,n_c06_self_correction_loop,n_c19_mcp cross;
+  class n_c04_text_protocol,n_c04_agent_loop,n_c06_define_tool,n_c06_run_agent_loop,n_c06_self_correction_loop,n_c19_mcp,n_srca_langgraph_tool_node cross;
   linkStyle 0 stroke:#d97706,stroke-width:2px;
   linkStyle 1 stroke:#2563eb,stroke-width:2px;
   linkStyle 2 stroke:#059669,stroke-width:2px;
@@ -266,6 +268,7 @@ graph TB
   linkStyle 10 stroke:#7c3aed,stroke-width:2px;
   linkStyle 11 stroke:#7c3aed,stroke-width:2px;
   linkStyle 12 stroke:#059669,stroke-width:2px;
+  linkStyle 13 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -276,6 +279,7 @@ graph TB
 - `runAgent 循环` —**深化**→ `工具调用往返循环`（第 06 章）
 - `LLM 自我纠错闭环` —**深化**→ `工具错误回传`（第 06 章）
 - `MCP (模型上下文协议)` —**应用**→ `原生工具调用 (Function Calling)`（第 19 章）
+- `ToolNode 工具边界` —**应用**→ `工具调用往返循环`（第 21 章）
 
 ### 延伸阅读
 

@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **44** 个单元、**257** 个概念、**402** 条关系、**151** 篇关联文章。
+共 **45** 个单元、**264** 个概念、**409** 条关系、**154** 篇关联文章。
 
 ## 章节地图
 
@@ -44,7 +44,10 @@ flowchart LR
     C_19["19 Agent 前沿发展与生态拆解"]
     C_20["20 Agent 前沿文章库"]
   end
-  subgraph P7["毕业项目"]
+  subgraph P7["第八部分 · 源码解析"]
+    C_21["21 源码解析"]
+  end
+  subgraph P8["毕业项目"]
     C_capstone["capstone 毕业项目 · Deep Research Agent"]
     C_cap-support["cap-support 毕业项目 · 客服 Copilot"]
     C_cap-review["cap-review 毕业项目 · 代码评审团"]
@@ -54,7 +57,7 @@ flowchart LR
     C_cap-sales["cap-sales 毕业项目 · 销售线索研究 Agent"]
     C_cap-enterprise-kb["cap-enterprise-kb 毕业项目 · 企业知识库 Agent"]
   end
-  subgraph P8["进阶 RAG 专题"]
+  subgraph P9["进阶 RAG 专题"]
     C_rag-chunk["rag-chunk 进阶分块策略"]
     C_rag-hybrid["rag-hybrid 混合检索 (向量+BM25+RRF)"]
     C_rag-rerank["rag-rerank 召回-精排两段式"]
@@ -67,7 +70,7 @@ flowchart LR
     C_rag-index["rag-index 向量索引内部机制"]
     C_rag-context["rag-context 检索后上下文工程"]
   end
-  subgraph P9["进阶 LangGraph 专题"]
+  subgraph P10["进阶 LangGraph 专题"]
     C_lg-stategraph["lg-stategraph 手写 StateGraph"]
     C_lg-routing["lg-routing 条件边与路由"]
     C_lg-checkpoint["lg-checkpoint Checkpointer 持久化与时间旅行"]
@@ -93,7 +96,8 @@ flowchart LR
   C_17 --> C_18
   C_18 --> C_19
   C_19 --> C_20
-  C_20 --> C_capstone
+  C_20 --> C_21
+  C_21 --> C_capstone
   C_capstone --> C_cap-support
   C_cap-support --> C_cap-review
   C_cap-review --> C_cap-eval
@@ -279,7 +283,16 @@ graph LR
     n_c20_layer_filter["体系层筛选"]
     n_c20_article_detail["文章卡片与原文入口"]
   end
-  subgraph G7["毕业项目"]
+  subgraph G7["第八部分 · 源码解析"]
+    n_srca_reading_map["源码阅读路线"]
+    n_srca_langchain_agent_factory["LangChain create_agent"]
+    n_srca_langchain_runnable["Runnable 调用协议"]
+    n_srca_langgraph_runtime["LangGraph Pregel runtime"]
+    n_srca_langgraph_tool_node["ToolNode 工具边界"]
+    n_srca_llamaindex_query_engine["LlamaIndex QueryEngine"]
+    n_srca_llamaindex_workflow["LlamaIndex Workflow"]
+  end
+  subgraph G8["毕业项目"]
     n_ccapstone_plan_and_execute["Plan-and-Execute 架构"]
     n_ccapstone_research_pipeline["research() 研究主干"]
     n_ccapstone_tool_registry["工具系统 (search/calc/saveNote)"]
@@ -320,7 +333,7 @@ graph LR
     n_csales_talk_track["销售开场话术"]
     n_csales_next_action["下一步动作"]
   end
-  subgraph G8["进阶 RAG 专题"]
+  subgraph G9["进阶 RAG 专题"]
     n_cragchunk_why_matters["切块决定检索上限"]
     n_cragchunk_sliding_window["字符滑窗切分"]
     n_cragchunk_recursive["递归语义切分"]
@@ -375,7 +388,7 @@ graph LR
     n_cragctx_lost_in_middle["中间遗忘 (lost-in-the-middle)"]
     n_cragctx_reorder["注意力感知重排"]
   end
-  subgraph G9["进阶 LangGraph 专题"]
+  subgraph G10["进阶 LangGraph 专题"]
     n_lgsg_state_channels["State 与 channels"]
     n_lgsg_reducer["channel reducer"]
     n_lgsg_node_partial["节点返回 partial 更新"]
@@ -601,6 +614,13 @@ graph LR
   n_c19_ecosystem_layers -->|深化| n_c12_framework_choice
   n_c19_mcp -->|应用| n_c05_native_tool_use
   n_c20_news_archive -->|深化| n_c19_ecosystem_layers
+  n_srca_reading_map -->|深化| n_c12_framework_choice
+  n_srca_langchain_agent_factory -->|对比| n_c06_run_agent_loop
+  n_srca_langchain_runnable -->|深化| n_c02_stream
+  n_srca_langgraph_runtime -->|深化| n_lgsg_edges_compile
+  n_srca_langgraph_tool_node -->|应用| n_c05_roundtrip_loop
+  n_srca_llamaindex_query_engine -->|深化| n_c09_rag_pipeline
+  n_srca_llamaindex_workflow -->|对比| n_lgma_multi_agent
   n_ccapstone_research_pipeline -->|深化| n_c10_plan_and_execute
   n_ccapstone_tool_registry -->|组成| n_c06_tool_registry
   n_ccapstone_rag_corpus -->|组成| n_c09_rag_pipeline
@@ -1067,6 +1087,13 @@ graph LR
 | 按类型路由到 worker | [lg-multiagent 多 Agent 编排（supervisor / 并行 team）](../langgraph-advanced/05-multi-agent-graph/README.md) | supervisor 的条件边读队首任务类型，返回对应 worker 节点名（math/upper/echo）；队列空则返回 END 收工 |
 | 并行异构 team（fork/join） | [lg-multiagent 多 Agent 编排（supervisor / 并行 team）](../langgraph-advanced/05-multi-agent-graph/README.md) | 从 fork 点一次连出多条边，多个不同角色 agent 在同一 super-step 并行执行，结果汇入 join——并行、靠 reducer 合并 |
 | join 顺序无关聚合 | [lg-multiagent 多 Agent 编排（supervisor / 并行 team）](../langgraph-advanced/05-multi-agent-graph/README.md) | 并行产出的原始顺序不保证，append reducer 汇集后 join 先排序再聚合，使最终报告与各 agent 完成顺序无关、确定可回归 |
+| 源码阅读路线 | [21 源码解析](../source-analysis/README.md) | 按入口函数、runtime、状态/工具/检索、停止条件四层读框架源码 |
+| LangChain create_agent | [21 源码解析](../source-analysis/README.md) | 把模型、工具、middleware、structured output 组装成 agent runtime |
+| Runnable 调用协议 | [21 源码解析](../source-analysis/README.md) | invoke/batch/stream/composition 是 LangChain 组件统一接口 |
+| LangGraph Pregel runtime | [21 源码解析](../source-analysis/README.md) | compile 后按 super-step 执行节点、合并 state、输出 stream/checkpoint |
+| ToolNode 工具边界 | [21 源码解析](../source-analysis/README.md) | 读取 tool_calls、执行工具、把 ToolMessage 写回 messages |
+| LlamaIndex QueryEngine | [21 源码解析](../source-analysis/README.md) | retriever、postprocessor、response synthesizer 串成 data-first RAG 查询链路 |
+| LlamaIndex Workflow | [21 源码解析](../source-analysis/README.md) | 用 step、event、context、handoff 组织 agent 和多 agent 控制流 |
 
 ## 关联文章
 
@@ -1225,3 +1252,6 @@ graph LR
 | [LangGraph.js · How to wait for user input using interrupt](https://langchain-ai.github.io/langgraphjs/how-tos/wait-user-input-functional/) | langchain-ai.github.io | doc | lg-hitl | 用 interrupt 暂停等用户输入、再用 Command({resume}) 续跑的官方 how-to，对应本章审批门 demo |
 | [LangGraph.js · Multi-agent systems（概念）](https://langchain-ai.github.io/langgraphjs/concepts/multi_agent/) | langchain-ai.github.io | doc | lg-multiagent | 官方多 agent 拓扑总览：supervisor、network、hierarchical 等——本章 supervisor / parallel team 的权威参考 |
 | [LangGraph.js · Agent supervisor（教程）](https://langchain-ai.github.io/langgraphjs/tutorials/multi_agent/agent_supervisor/) | langchain-ai.github.io | doc | lg-multiagent | 一个 supervisor 用条件边把任务派给多个 worker agent 的官方教程，对应本章图1 的中心化调度循环 |
+| [LangChain v1 agents source](https://github.com/langchain-ai/langchain/blob/master/libs/langchain_v1/langchain/agents/factory.py) | LangChain | doc | 21 | LangChain 官方源码入口：create_agent 如何组装模型、工具、middleware、structured output 与 agent runtime |
+| [LangGraph StateGraph and Pregel runtime source](https://github.com/langchain-ai/langgraph/blob/main/libs/langgraph/langgraph/graph/state.py) | LangGraph | doc | 21 | LangGraph 官方源码入口：StateGraph 的 state schema、channel reducer、node、edge 与 compile |
+| [LlamaIndex RetrieverQueryEngine source](https://github.com/run-llama/llama_index/blob/main/llama-index-core/llama_index/core/query_engine/retriever_query_engine.py) | LlamaIndex | doc | 21 | LlamaIndex 官方源码入口：retriever、node postprocessor、response synthesizer 组成 data-first RAG 查询链路 |

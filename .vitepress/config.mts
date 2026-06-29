@@ -72,10 +72,21 @@ function buildCourseSidebar(): DefaultTheme.SidebarItem[] {
     return {
       text: part,
       collapsed: part !== parts[0],
-      items: chapters.map((c, i) => ({
-        text: chapterText(part, i, c.id, c.title),
-        link: `/${c.dir}/`,
-      })),
+      items: chapters.map((c, i) => {
+        const item: DefaultTheme.SidebarItem = {
+          text: chapterText(part, i, c.id, c.title),
+          link: `/${c.dir}/`,
+        };
+        if (c.id !== "21") return item;
+        return {
+          ...item,
+          items: [
+            { text: "LangChain 源码解析", link: "/source-analysis/langchain" },
+            { text: "LangGraph 源码解析", link: "/source-analysis/langgraph" },
+            { text: "LlamaIndex 源码解析", link: "/source-analysis/llamaindex" },
+          ],
+        };
+      }),
     };
   });
 }
@@ -264,6 +275,7 @@ export default withMermaid(
       "rag-advanced/:topic/README.md": "rag-advanced/:topic/index.md",
       "langgraph-advanced/README.md": "langgraph-advanced/index.md",
       "langgraph-advanced/:topic/README.md": "langgraph-advanced/:topic/index.md",
+      "source-analysis/README.md": "source-analysis/index.md",
       "capstone/:project/README.md": "capstone/:project/index.md",
       "knowledge-graph/README.md": "knowledge-graph/index.md",
     },

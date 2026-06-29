@@ -182,12 +182,14 @@ graph TB
   n_lgma_worker_routing["按类型路由到 worker"]
   n_lgma_parallel_team["并行异构 team（fork/join）"]
   n_lgma_order_independent_join["join 顺序无关聚合"]
+  n_srca_llamaindex_workflow["LlamaIndex Workflow（第21章）"]
   n_c11_supervisor_worker["Supervisor + Worker 模式（第11章）"]
   n_c11_supervisor_routing["Supervisor 路由决策（第11章）"]
   n_c11_scratchpad["Scratchpad 共享工作台（第11章）"]
   n_lgrt_loop["循环边（第lg-routing章）"]
   n_lgrt_send_fanout["Send 扇出 (map-reduce)（第lg-routing章）"]
   n_lgsg_reducer["channel reducer（第lg-stategraph章）"]
+  n_srca_llamaindex_workflow -->|对比| n_lgma_multi_agent
   n_lgma_multi_agent -->|组成| n_lgma_supervisor
   n_lgma_multi_agent -->|组成| n_lgma_parallel_team
   n_lgma_supervisor -->|组成| n_lgma_worker_routing
@@ -200,22 +202,24 @@ graph TB
   n_lgma_parallel_team -->|对比| n_lgrt_send_fanout
   n_lgma_order_independent_join -->|应用| n_lgsg_reducer
   class n_lgma_multi_agent,n_lgma_supervisor,n_lgma_worker_routing,n_lgma_parallel_team,n_lgma_order_independent_join own;
-  class n_c11_supervisor_worker,n_c11_supervisor_routing,n_c11_scratchpad,n_lgrt_loop,n_lgrt_send_fanout,n_lgsg_reducer cross;
-  linkStyle 0 stroke:#d97706,stroke-width:2px;
+  class n_srca_llamaindex_workflow,n_c11_supervisor_worker,n_c11_supervisor_routing,n_c11_scratchpad,n_lgrt_loop,n_lgrt_send_fanout,n_lgsg_reducer cross;
+  linkStyle 0 stroke:#db2777,stroke-width:2px;
   linkStyle 1 stroke:#d97706,stroke-width:2px;
   linkStyle 2 stroke:#d97706,stroke-width:2px;
   linkStyle 3 stroke:#d97706,stroke-width:2px;
-  linkStyle 4 stroke:#db2777,stroke-width:2px;
-  linkStyle 5 stroke:#7c3aed,stroke-width:2px;
-  linkStyle 6 stroke:#db2777,stroke-width:2px;
-  linkStyle 7 stroke:#7c3aed,stroke-width:2px;
-  linkStyle 8 stroke:#059669,stroke-width:2px;
-  linkStyle 9 stroke:#db2777,stroke-width:2px;
-  linkStyle 10 stroke:#059669,stroke-width:2px;
+  linkStyle 4 stroke:#d97706,stroke-width:2px;
+  linkStyle 5 stroke:#db2777,stroke-width:2px;
+  linkStyle 6 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 7 stroke:#db2777,stroke-width:2px;
+  linkStyle 8 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 9 stroke:#059669,stroke-width:2px;
+  linkStyle 10 stroke:#db2777,stroke-width:2px;
+  linkStyle 11 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
 
+- `LlamaIndex Workflow` —**对比**→ `多 Agent = 多专职节点编排`（第 21 章）
 - `supervisor 中心化调度` —**深化**→ `Supervisor + Worker 模式`（第 11 章）
 - `按类型路由到 worker` —**对比**→ `Supervisor 路由决策`（第 11 章）
 - `join 顺序无关聚合` —**深化**→ `Scratchpad 共享工作台`（第 11 章）

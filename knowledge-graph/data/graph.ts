@@ -118,6 +118,7 @@ export const CHAPTERS: Chapter[] = [
   { id: "18", slug: "18-deployment", title: "部署：把 Agent 变成服务", part: "第六部分 · 生产化", dir: "lessons/18-deployment", demo: { needsKey: "llm", needsServer: true } },
   { id: "19", slug: "19-agent-ecosystem-and-frontier", title: "Agent 前沿发展与生态拆解", part: "第七部分 · 前沿与生态", dir: "lessons/19-agent-ecosystem-and-frontier", demo: { needsKey: "none" } },
   { id: "20", slug: "20-agent-frontier-news", title: "Agent 前沿文章库", part: "第七部分 · 前沿与生态", dir: "lessons/20-agent-frontier-news", demo: { needsKey: "none" } },
+  { id: "21", slug: "source-analysis", title: "源码解析", part: "第八部分 · 源码解析", dir: "source-analysis" },
   { id: "capstone", slug: "deep-research-agent", title: "毕业项目 · Deep Research Agent", part: "毕业项目", dir: "capstone/deep-research-agent", demo: { entry: "capstone/deep-research-agent/src/cli.ts", needsKey: "embedding", interactive: true } },
   { id: "cap-support", slug: "support-copilot", title: "毕业项目 · 客服 Copilot", part: "毕业项目", dir: "capstone/support-copilot", demo: { entry: "capstone/support-copilot/src/cli.ts", needsKey: "none" } },
   { id: "cap-review", slug: "code-review-crew", title: "毕业项目 · 代码评审团", part: "毕业项目", dir: "capstone/code-review-crew", demo: { entry: "capstone/code-review-crew/src/cli.ts", needsKey: "none" } },
@@ -441,6 +442,15 @@ export const CONCEPTS: Concept[] = [
   { id: "lgma-worker-routing", label: "按类型路由到 worker", chapter: "lg-multiagent", summary: "supervisor 的条件边读队首任务类型，返回对应 worker 节点名（math/upper/echo）；队列空则返回 END 收工" },
   { id: "lgma-parallel-team", label: "并行异构 team（fork/join）", chapter: "lg-multiagent", summary: "从 fork 点一次连出多条边，多个不同角色 agent 在同一 super-step 并行执行，结果汇入 join——并行、靠 reducer 合并" },
   { id: "lgma-order-independent-join", label: "join 顺序无关聚合", chapter: "lg-multiagent", summary: "并行产出的原始顺序不保证，append reducer 汇集后 join 先排序再聚合，使最终报告与各 agent 完成顺序无关、确定可回归" },
+
+  // 第 21 章 · 源码解析
+  { id: "srca-reading-map", label: "源码阅读路线", chapter: "21", summary: "按入口函数、runtime、状态/工具/检索、停止条件四层读框架源码" },
+  { id: "srca-langchain-agent-factory", label: "LangChain create_agent", chapter: "21", summary: "把模型、工具、middleware、structured output 组装成 agent runtime" },
+  { id: "srca-langchain-runnable", label: "Runnable 调用协议", chapter: "21", summary: "invoke/batch/stream/composition 是 LangChain 组件统一接口" },
+  { id: "srca-langgraph-runtime", label: "LangGraph Pregel runtime", chapter: "21", summary: "compile 后按 super-step 执行节点、合并 state、输出 stream/checkpoint" },
+  { id: "srca-langgraph-tool-node", label: "ToolNode 工具边界", chapter: "21", summary: "读取 tool_calls、执行工具、把 ToolMessage 写回 messages" },
+  { id: "srca-llamaindex-query-engine", label: "LlamaIndex QueryEngine", chapter: "21", summary: "retriever、postprocessor、response synthesizer 串成 data-first RAG 查询链路" },
+  { id: "srca-llamaindex-workflow", label: "LlamaIndex Workflow", chapter: "21", summary: "用 step、event、context、handoff 组织 agent 和多 agent 控制流" },
 ];
 
 export const RELATIONS: Relation[] = [
@@ -643,6 +653,13 @@ export const RELATIONS: Relation[] = [
   { from: "c19-ecosystem-layers", to: "c12-framework-choice", type: "深化", note: "从单框架选型上升到全生态分层" },
   { from: "c19-mcp", to: "c05-native-tool-use", type: "应用", note: "MCP 把工具调用标准化为跨厂商协议" },
   { from: "c20-news-archive", to: "c19-ecosystem-layers", type: "深化", note: "把生态分层进一步落到可按日期阅读的资料库" },
+  { from: "srca-reading-map", to: "c12-framework-choice", type: "深化", note: "从框架选型进入源码级边界验证" },
+  { from: "srca-langchain-agent-factory", to: "c06-run-agent-loop", type: "对比", note: "create_agent 把手写工具循环包装成 agent runtime" },
+  { from: "srca-langchain-runnable", to: "c02-stream", type: "深化", note: "Runnable 把 chat/stream 扩展成所有组件统一调用协议" },
+  { from: "srca-langgraph-runtime", to: "lgsg-edges-compile", type: "深化", note: "StateGraph compile 后进入可执行 runtime" },
+  { from: "srca-langgraph-tool-node", to: "c05-roundtrip-loop", type: "应用", note: "ToolNode 落地 tool call -> tool result -> model 的回灌闭环" },
+  { from: "srca-llamaindex-query-engine", to: "c09-rag-pipeline", type: "深化", note: "QueryEngine 是手写 RAG 管线的框架化版本" },
+  { from: "srca-llamaindex-workflow", to: "lgma-multi-agent", type: "对比", note: "LlamaIndex 用 event workflow 表达多 agent handoff，LangGraph 用显式状态图表达拓扑" },
   { from: "ccapstone-research-pipeline", to: "c10-plan-and-execute", type: "深化", note: "毕设主干即 Plan-and-Execute 的落地" },
   { from: "ccapstone-tool-registry", to: "c06-tool-registry", type: "组成", note: "毕设复用工具系统" },
   { from: "ccapstone-rag-corpus", to: "c09-rag-pipeline", type: "组成", note: "毕设复用 RAG 检索" },
@@ -1536,4 +1553,7 @@ export const ARTICLES: Article[] = [
   { title: "LangGraph.js · How to wait for user input using interrupt", url: "https://langchain-ai.github.io/langgraphjs/how-tos/wait-user-input-functional/", kind: "doc", chapters: ["lg-hitl"], note: "用 interrupt 暂停等用户输入、再用 Command({resume}) 续跑的官方 how-to，对应本章审批门 demo" },
   { title: "LangGraph.js · Multi-agent systems（概念）", url: "https://langchain-ai.github.io/langgraphjs/concepts/multi_agent/", kind: "doc", chapters: ["lg-multiagent"], note: "官方多 agent 拓扑总览：supervisor、network、hierarchical 等——本章 supervisor / parallel team 的权威参考" },
   { title: "LangGraph.js · Agent supervisor（教程）", url: "https://langchain-ai.github.io/langgraphjs/tutorials/multi_agent/agent_supervisor/", kind: "doc", chapters: ["lg-multiagent"], note: "一个 supervisor 用条件边把任务派给多个 worker agent 的官方教程，对应本章图1 的中心化调度循环" },
+  { title: "LangChain v1 agents source", url: "https://github.com/langchain-ai/langchain/blob/master/libs/langchain_v1/langchain/agents/factory.py", kind: "doc", source: "LangChain", chapters: ["21"], note: "LangChain 官方源码入口：create_agent 如何组装模型、工具、middleware、structured output 与 agent runtime" },
+  { title: "LangGraph StateGraph and Pregel runtime source", url: "https://github.com/langchain-ai/langgraph/blob/main/libs/langgraph/langgraph/graph/state.py", kind: "doc", source: "LangGraph", chapters: ["21"], note: "LangGraph 官方源码入口：StateGraph 的 state schema、channel reducer、node、edge 与 compile" },
+  { title: "LlamaIndex RetrieverQueryEngine source", url: "https://github.com/run-llama/llama_index/blob/main/llama-index-core/llama_index/core/query_engine/retriever_query_engine.py", kind: "doc", source: "LlamaIndex", chapters: ["21"], note: "LlamaIndex 官方源码入口：retriever、node postprocessor、response synthesizer 组成 data-first RAG 查询链路" },
 ];

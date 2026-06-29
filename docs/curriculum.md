@@ -43,7 +43,7 @@
 
 > 提示：全程用便宜模型（如 `gpt-4o-mini` / `claude-haiku`）跑完成本很低；第 16 章会专门教你怎么算账和省钱。
 
-想直接跳到任意课程，使用 [全局课程导航](./navigation.md)。想按 agent 类型、岗位目标或生产能力倒推学习路线，使用 [Agent 学习指南与分类地图](./agent-learning-guides.md)。这两页按顺序、按主题整理了第 00–20 章、B1-B12 基础指南、毕业项目、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone 和 RAG 系统实战项目。
+想直接跳到任意课程，使用 [全局课程导航](./navigation.md)。想按 agent 类型、岗位目标或生产能力倒推学习路线，使用 [Agent 学习指南与分类地图](./agent-learning-guides.md)。这两页按顺序、按主题整理了第 00–21 章、B1-B12 基础指南、毕业项目、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone、RAG 系统实战项目和源码解析。
 
 ### 三层学习法
 
@@ -80,12 +80,13 @@
 | 第五部分 · 工程化与框架 | 12–14 | ~3.5 小时 |
 | 第六部分 · 生产化 | 15–18 | ~5 小时 |
 | 第七部分 · 前沿与生态 | 19–20 | ~1.5 小时 |
+| 第 21 章 · 源码解析 | source-analysis 章节 + 3 篇深入页 | ~3–4 小时 |
 | 🎓 毕业项目（8 个）· Deep Research / 客服 / 评审 / 评测 / 告警响应 / 反馈洞察 / 销售线索 / 企业知识库 | 综合 | ~23–34 小时 |
 | 🔬 进阶 RAG 专题 | rag-advanced ×11 | ~7–9 小时 |
 | 🧩 进阶 LangGraph 专题 | langgraph-advanced ×5 + 生产化扩章地图 | ~4–6 小时 |
 | 🧭 RAG 完整架构蓝图 | 架构阅读 | ~1 小时 |
 | 🏢 企业知识库 Agent 蓝图 | 纵向项目设计 | ~1 小时 |
-| **合计** | **20 章 + 基础概念扩展 + 8 个毕业项目 + RAG 专题 + LangGraph 专题 + 架构蓝图 + 企业知识库蓝图** | **约 60.5–79.5 小时**（不含动手扩展） |
+| **合计** | **21 章 + 基础概念扩展 + 8 个毕业项目 + RAG 专题 + LangGraph 专题 + 架构蓝图 + 企业知识库蓝图** | **约 63.5–83.5 小时**（不含动手扩展） |
 
 > 按每天投入 1–1.5 小时算，大约 **3–4 周**可以完整走完一遍。建议分散学、多动手，比一口气刷完更扎实。
 
@@ -138,6 +139,11 @@
         │  19 Agent 前沿发展与生态拆解 → 20 前沿文章库            │
         └────────────────────────────┬─────────────────────────┘
                                      ▼
+                  ┌──────────────────────────────────┐
+                  │  第 21 章 · 源码解析              │
+                  │  LangChain/LangGraph/LlamaIndex   │
+                  └────────────────┬─────────────────┘
+                                   ▼
                   ┌──────────────────────────────────┐
                   │  🎓 毕业项目 · Deep Research Agent │
                   │     综合所有能力的实战            │
@@ -258,6 +264,17 @@
 | 19 | Agent 前沿发展与生态拆解 | ⭐⭐⭐ | 70 分钟 | 从模型接口、工具协议、Agent SDK、编排 runtime、RAG、UI、观测、安全八层拆解当前生态，并练习按需求选型 | [../lessons/19-agent-ecosystem-and-frontier/README.md](../lessons/19-agent-ecosystem-and-frontier/README.md) |
 | 20 | Agent 前沿文章库 | ⭐⭐ | 45 分钟 | 按日期和体系层浏览前沿资料，查看摘要、来源、标签与原文入口 | [../lessons/20-agent-frontier-news/README.md](../lessons/20-agent-frontier-news/README.md) |
 
+### 第 21 章 · 源码解析（source-analysis）
+
+> 目标：把第 12 章“上框架”和进阶 LangGraph 专题继续下沉到源码层，读懂 LangChain、LangGraph、LlamaIndex 如何实现 agent loop、状态图、RAG query engine 和 workflow runtime。
+
+| # | 标题 | 难度 | 预计 | 一句话简介 | 链接 |
+|---|------|------|------|------------|------|
+| 21 | 源码解析 | ⭐⭐⭐⭐ | 30 分钟 | 建立“入口函数 -> runtime -> 状态/工具/检索 -> 停止条件”的读源码顺序 | [../source-analysis/README.md](../source-analysis/README.md) |
+| 21.1 | LangChain 源码解析 | ⭐⭐⭐⭐ | 60 分钟 | 从 `create_agent`、Runnable、middleware、structured output 读懂 agent factory | [../source-analysis/langchain.md](../source-analysis/langchain.md) |
+| 21.2 | LangGraph 源码解析 | ⭐⭐⭐⭐ | 75 分钟 | 从 `StateGraph`、Pregel runtime、ToolNode 读懂可恢复状态机 runtime | [../source-analysis/langgraph.md](../source-analysis/langgraph.md) |
+| 21.3 | LlamaIndex 源码解析 | ⭐⭐⭐⭐ | 60 分钟 | 从 QueryEngine、Retriever、ResponseSynthesizer、Workflow 读懂 data-first agent/RAG 框架 | [../source-analysis/llamaindex.md](../source-analysis/llamaindex.md) |
+
 ### 🎓 毕业项目（8 个综合实战，可直接放进作品集）
 
 > 8 个项目各展示一种完整架构，彼此互补：研究型 agent / 生产客服系统 / 多智能体评审 / Agent 评测 / 告警响应 / 用户反馈洞察 / 销售线索研究 / 企业知识库纵向全栈。新增的告警、反馈、销售三者都偏真实业务流程，**完全离线、零 key 可跑**，`pnpm <name>:smoke` 即可验证。
@@ -334,6 +351,7 @@
 - **按 Agent 类型选路线** → 看 [Agent 学习指南与分类地图](./agent-learning-guides.md)：按 Chat、Tool、Workflow、Research、Copilot、Multi-agent、Coding、Monitoring 等类型倒推能力清单。
 - 🔬 **进阶 RAG（仓库内）** → 看 [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md)：分块、混合检索、重排、查询改写、评估、生产化、安全、索引与上下文工程，把第 08/09 章的最小 RAG 补成生产级，能力沉淀在 `src/shared/rag/`。
 - 🧩 **进阶 LangGraph（仓库内）** → 看 [进阶 LangGraph 专题](../langgraph-advanced/README.md)：从 StateGraph 机制走到 production runtime 的扩章地图。
+- **源码解析** → 看 [源码解析路线](../source-analysis/README.md)：顺着 LangChain、LangGraph、LlamaIndex 官方源码入口读懂框架运行时。
 - 🧭 **RAG 架构设计** → 看 [RAG 完整架构蓝图](./rag-architecture.md)：把 demo 能力组织成写入路径、查询路径、数据模型、安全治理、质量闭环和部署拓扑。
 - 🏢 **企业知识库 Agent** → 看 [企业知识库 Agent 蓝图](./enterprise-knowledge-base-agent.md)：把 RAG、记忆、工具、流式 UX、定时任务和部署串成一个企业级作品集。
 - 🎓 **企业知识库 Agent Capstone** → 看 [毕业项目 · 企业知识库 Agent](../capstone/enterprise-knowledge-base-agent/README.md)：把蓝图拆成产品边界、数据模型、API、事件流、测试门和 4 周实现路线。

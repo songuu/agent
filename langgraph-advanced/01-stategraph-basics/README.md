@@ -178,6 +178,7 @@ graph TB
   n_lgsg_node_partial["节点返回 partial 更新"]
   n_lgsg_edges_compile["边与 compile/invoke"]
   n_lgsg_vs_prebuilt["揭开 createReactAgent"]
+  n_srca_langgraph_runtime["LangGraph Pregel runtime（第21章）"]
   n_c12_react_agent["createReactAgent 预制图（第12章）"]
   n_c12_state_graph["状态机图模型（第12章）"]
   n_c12_langgraph["LangGraph.js（第12章）"]
@@ -190,6 +191,7 @@ graph TB
   n_lgcp_checkpointer["Checkpointer 与 thread_id（第lg-checkpoint章）"]
   n_lgcp_persist_accumulate["跨 invoke 持久化累积（第lg-checkpoint章）"]
   n_lgma_order_independent_join["join 顺序无关聚合（第lg-multiagent章）"]
+  n_srca_langgraph_runtime -->|深化| n_lgsg_edges_compile
   n_lgsg_state_channels -->|组成| n_lgsg_reducer
   n_lgsg_state_channels -->|前置| n_lgsg_node_partial
   n_lgsg_node_partial -->|应用| n_lgsg_reducer
@@ -208,28 +210,30 @@ graph TB
   n_lgcp_persist_accumulate -->|应用| n_lgsg_reducer
   n_lgma_order_independent_join -->|应用| n_lgsg_reducer
   class n_lgsg_state_channels,n_lgsg_reducer,n_lgsg_node_partial,n_lgsg_edges_compile,n_lgsg_vs_prebuilt own;
-  class n_c12_react_agent,n_c12_state_graph,n_c12_langgraph,n_c06_run_agent_loop,n_c07_conversation_as_array,n_c12_framework_choice,n_lgrt_conditional_edge,n_lgrt_loop,n_lgrt_send_fanout,n_lgcp_checkpointer,n_lgcp_persist_accumulate,n_lgma_order_independent_join cross;
-  linkStyle 0 stroke:#d97706,stroke-width:2px;
-  linkStyle 1 stroke:#2563eb,stroke-width:2px;
-  linkStyle 2 stroke:#059669,stroke-width:2px;
-  linkStyle 3 stroke:#d97706,stroke-width:2px;
-  linkStyle 4 stroke:#059669,stroke-width:2px;
-  linkStyle 5 stroke:#7c3aed,stroke-width:2px;
+  class n_srca_langgraph_runtime,n_c12_react_agent,n_c12_state_graph,n_c12_langgraph,n_c06_run_agent_loop,n_c07_conversation_as_array,n_c12_framework_choice,n_lgrt_conditional_edge,n_lgrt_loop,n_lgrt_send_fanout,n_lgcp_checkpointer,n_lgcp_persist_accumulate,n_lgma_order_independent_join cross;
+  linkStyle 0 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 1 stroke:#d97706,stroke-width:2px;
+  linkStyle 2 stroke:#2563eb,stroke-width:2px;
+  linkStyle 3 stroke:#059669,stroke-width:2px;
+  linkStyle 4 stroke:#d97706,stroke-width:2px;
+  linkStyle 5 stroke:#059669,stroke-width:2px;
   linkStyle 6 stroke:#7c3aed,stroke-width:2px;
   linkStyle 7 stroke:#7c3aed,stroke-width:2px;
-  linkStyle 8 stroke:#db2777,stroke-width:2px;
-  linkStyle 9 stroke:#059669,stroke-width:2px;
-  linkStyle 10 stroke:#2563eb,stroke-width:2px;
-  linkStyle 11 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 8 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 9 stroke:#db2777,stroke-width:2px;
+  linkStyle 10 stroke:#059669,stroke-width:2px;
+  linkStyle 11 stroke:#2563eb,stroke-width:2px;
   linkStyle 12 stroke:#7c3aed,stroke-width:2px;
-  linkStyle 13 stroke:#059669,stroke-width:2px;
-  linkStyle 14 stroke:#7c3aed,stroke-width:2px;
-  linkStyle 15 stroke:#059669,stroke-width:2px;
+  linkStyle 13 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 14 stroke:#059669,stroke-width:2px;
+  linkStyle 15 stroke:#7c3aed,stroke-width:2px;
   linkStyle 16 stroke:#059669,stroke-width:2px;
+  linkStyle 17 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
 
+- `LangGraph Pregel runtime` —**深化**→ `边与 compile/invoke`（第 21 章）
 - `揭开 createReactAgent` —**深化**→ `createReactAgent 预制图`（第 12 章）
 - `State 与 channels` —**深化**→ `状态机图模型`（第 12 章）
 - `边与 compile/invoke` —**深化**→ `LangGraph.js`（第 12 章）

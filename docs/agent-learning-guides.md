@@ -10,6 +10,7 @@
 | 想做一个工具型 agent | [B6 Tool calling](../agent-basics/06-tool-calling-mental-model.md) | [第 05/06 章工具系统](../lessons/06-building-a-tool-system/) | 一个有 schema、校验、错误回传的工具注册表 |
 | 想做知识库 / Copilot | [B8 Memory/RAG/Context](../agent-basics/08-memory-rag-context.md) | [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/) | 一条可评估、可拒答、可引用的 RAG 管线 |
 | 想做多 agent 协作 | [B7 Workflow vs Agent](../agent-basics/07-workflow-vs-agent.md) | [第 11 章](../lessons/11-multi-agent-orchestration/) + [LangGraph 专题](../langgraph-advanced/) | supervisor/worker 拆分与失败处理协议 |
+| 想读框架源码 | [第 12 章上框架](../lessons/12-intro-to-frameworks/) | [第 21 章 · 源码解析](../source-analysis/) | 能沿入口函数读懂 LangChain / LangGraph / LlamaIndex runtime |
 | 想上线生产 | [B10 Guardrails](../agent-basics/10-guardrails-intro.md) + [B11 Evaluation](../agent-basics/11-evaluation-first.md) | [第 15-18 章](../lessons/15-evaluation-and-testing/) | 评估门、权限边界、成本与部署清单 |
 | 想做作品集 | [毕业项目总览](./curriculum.md#-毕业项目8-个综合实战可直接放进作品集) | 任选 capstone | 可演示的端到端项目 |
 
@@ -23,7 +24,7 @@
 | D. 知识与记忆 | agent 如何用外部知识和长期状态 | B8、08-09、rag-advanced | 能区分聊天历史、长期记忆、RAG、上下文打包 |
 | E. 编排与框架 | 复杂流程如何拆成可维护图 | B7、10-12、langgraph-advanced | 能说明 workflow、agent、graph、runtime 的取舍 |
 | F. 质量与生产 | 怎么知道 agent 没退化、可上线 | B9-B11、13-18 | 有 eval、guardrail、observability、deploy checklist |
-| G. 前沿与选型 | 当前生态各层解决什么问题 | B12、19-20 | 能按需求选择 SDK、协议、runtime、数据层 |
+| G. 前沿与选型 | 当前生态各层解决什么问题 | B12、source-analysis、19-20 | 能按需求选择 SDK、协议、runtime、数据层，并能读源码验证框架边界 |
 
 ## 分类 2: 按 Agent 类型
 
@@ -114,6 +115,13 @@
 4. code-review-crew: 多角色评审和合并策略。
 5. sales-lead-researcher: 用 B2B 线索研究练证据链、评分和受约束话术。
 
+### 框架源码路线
+
+1. 12: 先理解 LangGraph.js / Vercel AI SDK 帮你托管了哪些运行时能力。
+2. langgraph-advanced L1-L5: 先用可运行小例子看 StateGraph、checkpoint、HITL、多 agent。
+3. source-analysis: 顺着官方源码入口读 LangChain、LangGraph、LlamaIndex。
+4. 19-20: 回到生态地图和前沿文章库，用源码视角判断框架边界和选型风险。
+
 ### 生产负责人路线
 
 1. B9-B11: structured output、guardrails、evaluation。
@@ -142,4 +150,4 @@
 
 ## 下一步
 
-从 [基础概念扩展专题](../agent-basics/) 进入 B1-B12。每篇按“概念边界 → 工程拆解 → 常见误区 → 自检练习”组织，读完再回到主线第 04 章会更顺。
+从 [基础概念扩展专题](../agent-basics/) 进入 B1-B12。每篇按“概念边界 → 工程拆解 → 常见误区 → 自检练习”组织，读完再回到主线第 04 章会更顺。学完第 12 章后，再走 [源码解析](../source-analysis/) 把 LangChain / LangGraph / LlamaIndex 的框架黑盒打开。

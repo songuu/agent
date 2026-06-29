@@ -79,7 +79,7 @@ pnpm site:live
 
 ## 全局导航
 
-想直接跳到具体课程，走 [**全局课程导航**](./docs/navigation.md)。如果你想按 agent 类型、岗位目标或生产能力倒推学习路线，走 [**Agent 学习指南与分类地图**](./docs/agent-learning-guides.md)。它们一起整理了第 00–20 章、B1-B12 基础指南、毕业项目、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone 和 RAG 系统实战项目。
+想直接跳到具体课程，走 [**全局课程导航**](./docs/navigation.md)。如果你想按 agent 类型、岗位目标或生产能力倒推学习路线，走 [**Agent 学习指南与分类地图**](./docs/agent-learning-guides.md)。它们一起整理了第 00–21 章、B1-B12 基础指南、毕业项目、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone、RAG 系统实战项目和源码解析。
 
 ---
 
@@ -125,6 +125,9 @@ pnpm site:live
 第七部分 · 前沿与生态
  19 Agent 前沿发展与生态拆解
  20 Agent 前沿文章库
+   │
+   ▼
+第 21 章 · 源码解析（LangChain/LangGraph/LlamaIndex）
    │
    ▼
 🎓 毕业项目 · Deep Research Agent（综合实战）
@@ -187,6 +190,11 @@ pnpm site:live
 | **第七部分** | **前沿与生态** | | |
 | 19 | [Agent 前沿发展与生态拆解](./lessons/19-agent-ecosystem-and-frontier/) | ⭐⭐⭐ | MCP、A2A、Agents SDK、LangGraph、生态选型 |
 | 20 | [Agent 前沿文章库](./lessons/20-agent-frontier-news/) | ⭐⭐ | 按日期和体系层浏览 agent 前沿资料、摘要与原文 |
+| **第八部分** | **源码解析** | | |
+| 21 | [源码解析](./source-analysis/) | ⭐⭐⭐⭐ | 建立读框架源码的稳定顺序 |
+| 21.1 | [LangChain 源码解析](./source-analysis/langchain.md) | ⭐⭐⭐⭐ | `create_agent`、Runnable、middleware、structured output |
+| 21.2 | [LangGraph 源码解析](./source-analysis/langgraph.md) | ⭐⭐⭐⭐ | `StateGraph`、Pregel runtime、prebuilt ReAct agent、ToolNode |
+| 21.3 | [LlamaIndex 源码解析](./source-analysis/llamaindex.md) | ⭐⭐⭐⭐ | QueryEngine、Retriever、ResponseSynthesizer、Workflow |
 | 🎓 | [毕业项目 · Deep Research Agent](./capstone/deep-research-agent/) | ⭐⭐⭐⭐ | 综合所有能力的实战项目 |
 | 🎓 | [毕业项目 · 告警响应 Agent](./capstone/incident-responder/) | ⭐⭐⭐⭐ | 告警、日志、runbook、审批和复盘的运维实战项目 |
 | 🎓 | [毕业项目 · 用户反馈洞察 Agent](./capstone/feedback-intelligence/) | ⭐⭐⭐ | 反馈清洗、主题聚类、价值加权和 roadmap ticket 的产品实战项目 |
@@ -221,6 +229,7 @@ agent/
 │   ├── rag-architecture.md    # 🧭 RAG 完整架构蓝图
 │   ├── enterprise-knowledge-base-agent.md # 🏢 企业知识库 Agent 蓝图
 │   └── rag-system-project.md  # 📚 RAG 系统实战项目
+├── source-analysis/           # 第 21 章 · 源码解析
 ├── src/shared/                # 跨课程共享的「标准库」（provider 无关）
 │   ├── llm/                   #   统一 LLM 抽象 + Anthropic/OpenAI 实现 + embedding
 │   ├── agent/                 #   工具系统 (tool) + 可复用 agent 循环 (loop)
@@ -249,6 +258,7 @@ agent/
 - 🚀 [**创业指南**](./docs/startup-guide.md)：机会判断、MVP 裁剪、成本控制、上线 checklist。
 - [**Agent 学习指南与分类地图**](./docs/agent-learning-guides.md)：按学习阶段、agent 类型、工程能力和岗位路线拆解全项目。
 - 🔬 [**进阶 RAG 专题**](./rag-advanced/01-chunking-strategies/)：分块策略、混合检索、重排、查询改写、评估、生产化六章，把第 08/09 章的最小 RAG 补成生产级，能力沉淀在 `src/shared/rag/`。
+- [**源码解析**](./source-analysis/)：顺着官方源码入口读 LangChain、LangGraph、LlamaIndex，把“会用框架”推进到“能看懂和调试框架”。
 - 🧭 [**RAG 完整架构蓝图**](./docs/rag-architecture.md)：把 RAG demo 升级成可维护系统，覆盖写入路径、查询路径、数据模型、API 边界、安全治理、质量闭环和部署拓扑。
 - 🏢 [**企业知识库 Agent 蓝图**](./docs/enterprise-knowledge-base-agent.md)：把 RAG、记忆、工具、流式事件、定时任务和部署组织成一条企业级作品集路线。
 - 🎓 [**企业知识库 Agent Capstone**](./capstone/enterprise-knowledge-base-agent/)：把蓝图拆成产品边界、数据模型、API、事件流、测试门和 4 周实现路线。

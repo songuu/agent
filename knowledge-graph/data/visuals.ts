@@ -364,6 +364,14 @@ export const CONCEPT_VISUALS: ConceptVisual[] = [
     steps: ["多专职 agent = 多节点", "supervisor 条件边派活", "worker 干完回 supervisor", "fork 并行多角色", "join 排序聚合"],
     takeaway: "多 Agent 不是堆人数，而是选对拓扑——中心化调度还是并行协作，全建立在前四章的 channel/reducer/条件边/Send 之上。",
   },
+  {
+    chapter: "21",
+    kind: "layers",
+    title: "源码解析：从入口函数读到运行时边界",
+    summary: "LangChain、LangGraph、LlamaIndex 名字不同，但源码阅读都可以按入口函数、运行时对象、状态/工具/检索边界、停止条件四层展开。",
+    steps: ["入口函数", "runtime 对象", "状态/工具/检索", "停止条件", "课程手写对照"],
+    takeaway: "会用框架只是第一层；能读懂它把哪些复杂度托管了，才知道线上问题该从哪层下钻。",
+  },
 ];
 
 const CONCEPT_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> = {
@@ -530,6 +538,10 @@ const CONCEPT_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> =
   "lg-multiagent": [
     { tone: "core", label: "核心判断", body: "多 Agent 就是把多个专职节点编排进一张图：supervisor 用条件边中心化调度（串行、顺序可控），parallel team 用 fork/join 并行协作（并行、靠 append reducer 合并）；选哪种拓扑取决于任务能否并行、是否需要顺序与集中控制。" },
     { tone: "warning", label: "易错边界", body: "并行 agent 的产出顺序不保证（与完成顺序有关），跨 agent 聚合必须靠 reducer + 排序消除顺序依赖，别假设边的书写顺序就是执行/收集顺序；supervisor 的循环边必须有终止条件（队列空 → END），否则要靠 recursionLimit 兜底。" },
+  ],
+  "21": [
+    { tone: "core", label: "核心判断", body: "读框架源码先找入口函数和 runtime，再追状态、工具、检索、停止条件；不要停在公开 API 名字上。" },
+    { tone: "warning", label: "易错边界", body: "上游源码会变；文档只绑定 2026-06-29 核对过的官方主干路径，后续升级要重新复核。" },
   ],
 };
 
