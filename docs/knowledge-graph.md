@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **45** 个单元、**264** 个概念、**409** 条关系、**161** 篇关联文章。
+共 **45** 个单元、**264** 个概念、**409** 条关系、**164** 篇关联文章。
 
 ## 章节地图
 
@@ -1107,6 +1107,9 @@ graph LR
 | [OpenAI: The next evolution of the Agents SDK](https://openai.com/index/the-next-evolution-of-the-agents-sdk/) | OpenAI | blog | 19 | OpenAI 官方产品文章：Agents SDK 向 sandbox execution、long-horizon tasks、durable harness 演进，是前沿趋势来源 |
 | [OpenAI Docs · Sandbox agents](https://developers.openai.com/api/docs/guides/agents/sandboxes) | OpenAI | doc | 19 | Agents SDK sandbox 文档，对应 code execution / long-running task 的隔离执行与生产化边界 |
 | [OpenAI Docs · Evaluate agent workflows](https://developers.openai.com/api/docs/guides/agent-evals) | OpenAI | doc | 19, cap-eval | OpenAI 官方 agent workflow eval 指南，对应第 19 章评估治理层 |
+| [Google SRE Book · Managing Incidents](https://sre.google/sre-book/managing-incidents/) | Google SRE | doc | cap-incident | Google SRE 事件管理章节，对应告警分级、角色分工、沟通和复盘的生产化边界 |
+| [Voice of the customer](https://en.wikipedia.org/wiki/Voice_of_the_customer) | Wikipedia | doc | cap-feedback | Voice of Customer 方法入口，对应多渠道反馈收集、主题归纳和产品改进闭环 |
+| [Lead scoring](https://en.wikipedia.org/wiki/Lead_scoring) | Wikipedia | doc | cap-sales | Lead scoring 概念入口，对应 fit、行为信号、风险和销售优先级的结构化评分 |
 | [OpenAI Docs · MCP and Connectors](https://developers.openai.com/api/docs/guides/tools-connectors-mcp) | OpenAI | doc | 19 | OpenAI 官方 MCP/connectors 文档，对应 hosted platform 如何接入远程工具协议 |
 | [OpenAI Docs · Web search](https://developers.openai.com/api/docs/guides/tools-web-search) | OpenAI | doc | 19 | OpenAI 官方 web search 工具文档，对应 hosted tools 层的网页检索能力 |
 | [OpenAI Docs · File search](https://developers.openai.com/api/docs/guides/tools-file-search) | OpenAI | doc | 19 | OpenAI 官方 file search 工具文档，对应 hosted tools / 私有资料检索能力 |

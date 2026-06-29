@@ -90,7 +90,7 @@ graph LR
 
 ### 延伸阅读
 
-_暂无（可在 `graph.ts` 的 `ARTICLES` 中新增本章关联文章）。_
+- [Voice of the customer](https://en.wikipedia.org/wiki/Voice_of_the_customer) — Voice of Customer 方法入口，对应多渠道反馈收集、主题归纳和产品改进闭环 `doc`
 
 > 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
 

@@ -87,7 +87,7 @@ graph LR
 
 ### 延伸阅读
 
-_暂无（可在 `graph.ts` 的 `ARTICLES` 中新增本章关联文章）。_
+- [Lead scoring](https://en.wikipedia.org/wiki/Lead_scoring) — Lead scoring 概念入口，对应 fit、行为信号、风险和销售优先级的结构化评分 `doc`
 
 > 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
 

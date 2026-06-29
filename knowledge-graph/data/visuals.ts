@@ -229,6 +229,30 @@ export const CONCEPT_VISUALS: ConceptVisual[] = [
     takeaway: "让 Agent 跑起来只是起点；能证明它没有变差，才适合持续迭代。",
   },
   {
+    chapter: "cap-incident",
+    kind: "shield",
+    title: "告警响应 Agent 把诊断和变更分成两条权限边界",
+    summary: "告警先被分级和匹配 runbook，再组织证据链；真正会改变系统状态的动作必须进入审批层，最后沉淀复盘清单。",
+    steps: ["告警/日志", "SEV 分级", "Runbook 匹配", "证据链", "审批动作", "复盘清单"],
+    takeaway: "运维 Agent 的价值不是自动乱修，而是让诊断、变更、沟通和复盘都有边界。",
+  },
+  {
+    chapter: "cap-feedback",
+    kind: "pipeline",
+    title: "反馈洞察 Agent 把噪声变成可排期任务",
+    summary: "多渠道原始反馈先隔离注入和脱敏，再按主题聚类、按账号价值与严重度加权，最后输出 owner 明确的 roadmap ticket。",
+    steps: ["多渠道反馈", "注入隔离", "PII 脱敏", "主题聚类", "价值加权", "Roadmap ticket"],
+    takeaway: "产品反馈分析不是数评论，而是把不可信文本加工成可追溯的排期证据。",
+  },
+  {
+    chapter: "cap-sales",
+    kind: "compare",
+    title: "销售线索 Agent 在 fit、urgency、risk 之间做取舍",
+    summary: "公开资料和 CRM 线索被拆成 ICP fit、业务信号、合规风险和下一步动作，避免只按公司规模或单一热度排序。",
+    steps: ["公开资料", "ICP fit", "Urgency", "Risk", "Qualification", "Next action"],
+    takeaway: "好的销售 Agent 不是替人群发，而是给每个跟进动作附上证据、风险和合规边界。",
+  },
+  {
     chapter: "cap-enterprise-kb",
     kind: "pipeline",
     title: "企业知识库 Agent 是一条可审计的 RAG 产品线",
@@ -470,6 +494,18 @@ const CONCEPT_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> =
   "cap-eval": [
     { tone: "core", label: "核心判断", body: "Agent 评测框架用 golden set、裁判、聚合指标和阈值，把质量变化变成可回归信号。" },
     { tone: "warning", label: "易错边界", body: "不要只靠人工抽查判断 Agent 变好；没有固定测试集，就无法证明改动没有退化。" },
+  ],
+  "cap-incident": [
+    { tone: "core", label: "核心判断", body: "告警响应 Agent 必须先形成证据链，再区分安全诊断动作和需要审批的生产变更。" },
+    { tone: "warning", label: "易错边界", body: "不要让 Agent 自动执行高风险修复；扩容、回滚、暂停任务等副作用必须经过审批门。" },
+  ],
+  "cap-feedback": [
+    { tone: "core", label: "核心判断", body: "反馈洞察的主线是不可信输入治理：注入隔离、PII 脱敏、主题聚类和价值加权要串成闭环。" },
+    { tone: "warning", label: "易错边界", body: "只按反馈数量排序会放大噪声；企业账号、严重度和样本可追溯性必须参与优先级。" },
+  ],
+  "cap-sales": [
+    { tone: "core", label: "核心判断", body: "销售线索研究要把 fit、urgency、risk 和 talk track 分开打分，再合成下一步动作。" },
+    { tone: "warning", label: "易错边界", body: "不要把公开资料抓取等同于可联系许可；私人联系方式和敏感行业要先脱敏与降风险。" },
   ],
   "cap-enterprise-kb": [
     { tone: "core", label: "核心判断", body: "企业知识库 Agent 的价值在端到端证据链：文档版本、chunk、权限过滤、引用核验、trace/eval 必须同时成立。" },

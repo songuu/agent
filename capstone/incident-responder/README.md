@@ -91,7 +91,7 @@ graph LR
 
 ### 延伸阅读
 
-_暂无（可在 `graph.ts` 的 `ARTICLES` 中新增本章关联文章）。_
+- [Google SRE Book · Managing Incidents](https://sre.google/sre-book/managing-incidents/) — Google SRE 事件管理章节，对应告警分级、角色分工、沟通和复盘的生产化边界 `doc`
 
 > 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
 
