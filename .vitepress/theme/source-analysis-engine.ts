@@ -107,6 +107,32 @@ export interface SourceQuestionAnswer {
   missingFiles: string[];
   status: "answered" | "no-match" | "needs-source";
 }
+
+export interface RepositoryCodeMapFile extends RepositoryFileRow {
+  url: string;
+  questionMatched: boolean;
+}
+
+export interface RepositoryCodeMapLayer {
+  layer: RepositoryLayer;
+  signal: string;
+  areas: string[];
+  files: RepositoryCodeMapFile[];
+}
+
+export interface RepositoryCodeMapEdge {
+  from: string;
+  to: string;
+  relation: "read-first" | "reading-order" | "question-focus";
+  reason: string;
+}
+
+export interface RepositoryCodeMap {
+  question?: string;
+  summary: string;
+  layers: RepositoryCodeMapLayer[];
+  edges: RepositoryCodeMapEdge[];
+}
 export type RepositoryLayer =
   | "入口"
   | "运行时"
@@ -519,6 +545,95 @@ export function selectQuestionFiles(
     .slice(0, limit);
 }
 
+export function buildRepositoryCodeMap(
+  analysis: RepositoryAnalysis,
+  options: { question?: string; limitPerLayer?: number } = {},
+): RepositoryCodeMap {
+  const question = options.question?.trim();
+  const limitPerLayer = options.limitPerLayer ?? 5;
+  const focusFiles = question ? selectQuestionFiles(analysis, question, 8) : [];
+  const focusPaths = new Set(focusFiles.map((file) => file.path));
+  const filesByPath = new Map<string, RepositoryFileRow>();
+
+  const rememberFile = (file: RepositoryFileRow): void => {
+    const previous = filesByPath.get(file.path);
+    if (!previous || file.score > previous.score) filesByPath.set(file.path, file);
+  };
+
+  for (const file of analysis.keyFiles) rememberFile(file);
+  for (const area of analysis.areas) {
+    rememberFile({
+      path: area.readFirst,
+      layer: area.layer,
+      reason: `${area.area}: ${area.signal}`,
+      score: scorePath(area.readFirst),
+    });
+  }
+  for (const file of focusFiles) rememberFile(file);
+
+  const areasByLayer = new Map<RepositoryLayer, Set<string>>();
+  for (const area of analysis.areas) {
+    const areas = areasByLayer.get(area.layer) ?? new Set<string>();
+    areas.add(area.area);
+    areasByLayer.set(area.layer, areas);
+  }
+
+  const grouped = new Map<RepositoryLayer, RepositoryCodeMapFile[]>();
+  for (const file of filesByPath.values()) {
+    const mappedFile: RepositoryCodeMapFile = {
+      ...file,
+      url: buildGitHubFileUrl(analysis.slug, analysis.defaultBranch, file.path),
+      questionMatched: focusPaths.has(file.path),
+      score: file.score + (focusPaths.has(file.path) ? 80 : 0),
+    };
+    const files = grouped.get(mappedFile.layer) ?? [];
+    files.push(mappedFile);
+    grouped.set(mappedFile.layer, files);
+  }
+
+  const layers = [...grouped.entries()]
+    .map(([layer, files]) => ({
+      layer,
+      signal: signalForLayer(layer),
+      areas: [...(areasByLayer.get(layer) ?? new Set<string>())].sort(),
+      files: files.sort((a, b) => b.score - a.score || a.path.localeCompare(b.path)).slice(0, limitPerLayer),
+    }))
+    .sort((a, b) => layerOrder(a.layer) - layerOrder(b.layer) || a.layer.localeCompare(b.layer));
+
+  const edges: RepositoryCodeMapEdge[] = analysis.areas.slice(0, 10).map((area) => ({
+    from: area.area,
+    to: area.readFirst,
+    relation: "read-first",
+    reason: area.signal,
+  }));
+
+  const readingOrderFiles = analysis.keyFiles.slice(0, 5);
+  for (let index = 1; index < readingOrderFiles.length; index += 1) {
+    edges.push({
+      from: readingOrderFiles[index - 1]!.path,
+      to: readingOrderFiles[index]!.path,
+      relation: "reading-order",
+      reason: "按高信号文件顺序追 runtime 主链。",
+    });
+  }
+
+  for (const file of focusFiles.slice(0, 4)) {
+    edges.push({
+      from: question ?? "当前问题",
+      to: file.path,
+      relation: "question-focus",
+      reason: file.reason,
+    });
+  }
+
+  const focusText = focusFiles.length > 0 ? `，当前问题聚焦 ${focusFiles.slice(0, 3).map((file) => file.path).join("、")}` : "";
+  return {
+    question,
+    summary: `CodeMap 将 ${analysis.areas.length} 个区域映射到 ${layers.length} 个源码职责层${focusText}。所有节点都指向 GitHub 源码文件。`,
+    layers,
+    edges,
+  };
+}
 export function answerSourceQuestion(options: {
   analysis: RepositoryAnalysis;
   question: string;
@@ -731,6 +846,13 @@ function reasonForPath(path: string): string {
       return "高信号源码文件，适合纳入首轮扫描。";
   }
 }
+
+function layerOrder(layer: RepositoryLayer): number {
+  const index = CODEMAP_LAYER_ORDER.indexOf(layer);
+  return index === -1 ? CODEMAP_LAYER_ORDER.length : index;
+}
+
+const CODEMAP_LAYER_ORDER: RepositoryLayer[] = ["入口", "运行时", "状态", "工具", "检索", "配置", "测试", "示例", "文档", "通用"];
 
 function signalForLayer(layer: RepositoryLayer): string {
   switch (layer) {

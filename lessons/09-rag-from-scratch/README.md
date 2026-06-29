@@ -223,7 +223,7 @@ graph TB
   n_c08_rag_foundation["RAG 检索地基（第08章）"]
   n_c08_vector_store["内存向量库 (add/search)（第08章）"]
   n_c17_isolate_and_label["隔离 + 标注 (wrapUntrusted)（第17章）"]
-  n_srca_source_qa["源码问答检索（第21章）"]
+  n_srca_source_qa["源码对话检索（第21章）"]
   n_srca_llamaindex_query_engine["LlamaIndex QueryEngine（第21章）"]
   n_ccapstone_rag_corpus["RAG 内置语料检索（第capstone章）"]
   n_csup_rag["知识库检索 (BM25 带引用)（第cap-support章）"]
@@ -296,7 +296,7 @@ graph TB
 - `RAG 全流程` —**深化**→ `RAG 检索地基`（第 08 章）
 - `RAG 全流程` —**组成**→ `内存向量库 (add/search)`（第 08 章）
 - `隔离 + 标注 (wrapUntrusted)` —**应用**→ `上下文增强 (augment)`（第 17 章）
-- `源码问答检索` —**深化**→ `引用溯源`（第 21 章）
+- `源码对话检索` —**深化**→ `引用溯源`（第 21 章）
 - `LlamaIndex QueryEngine` —**深化**→ `RAG 全流程`（第 21 章）
 - `RAG 内置语料检索` —**组成**→ `RAG 全流程`（第 capstone 章）
 - `知识库检索 (BM25 带引用)` —**组成**→ `RAG 全流程`（第 cap-support 章）

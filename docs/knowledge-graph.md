@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **45** 个单元、**268** 个概念、**415** 条关系、**165** 篇关联文章。
+共 **45** 个单元、**269** 个概念、**417** 条关系、**165** 篇关联文章。
 
 ## 章节地图
 
@@ -288,7 +288,8 @@ graph LR
     n_srca_popular_repositories["热门库直接解读"]
     n_srca_repository_matrix["仓库矩阵解析器"]
     n_srca_relevant_source_files["Relevant Source Files"]
-    n_srca_source_qa["源码问答检索"]
+    n_srca_source_qa["源码对话检索"]
+    n_srca_codemap["CodeMap 源码地图"]
     n_srca_langchain_agent_factory["LangChain create_agent"]
     n_srca_langchain_runnable["Runnable 调用协议"]
     n_srca_langgraph_runtime["LangGraph Pregel runtime"]
@@ -623,6 +624,8 @@ graph LR
   n_srca_repository_matrix -->|组成| n_srca_reading_map
   n_srca_relevant_source_files -->|组成| n_srca_repository_matrix
   n_srca_source_qa -->|应用| n_srca_relevant_source_files
+  n_srca_codemap -->|组成| n_srca_repository_matrix
+  n_srca_codemap -->|应用| n_srca_source_qa
   n_srca_source_qa -->|深化| n_c09_citation
   n_srca_langchain_agent_factory -->|应用| n_srca_relevant_source_files
   n_srca_langchain_agent_factory -->|对比| n_c06_run_agent_loop
@@ -1099,9 +1102,10 @@ graph LR
 | join 顺序无关聚合 | [lg-multiagent 多 Agent 编排（supervisor / 并行 team）](../langgraph-advanced/05-multi-agent-graph/README.md) | 并行产出的原始顺序不保证，append reducer 汇集后 join 先排序再聚合，使最终报告与各 agent 完成顺序无关、确定可回归 |
 | 源码阅读路线 | [21 源码解析](../source-analysis/README.md) | 按入口函数、runtime、状态/工具/检索、停止条件四层读框架源码 |
 | 热门库直接解读 | [21 源码解析](../source-analysis/README.md) | 参照 DeepWiki 首页，把热门仓库做成可点击的源码解析入口 |
-| 仓库矩阵解析器 | [21 源码解析](../source-analysis/README.md) | 从热门库卡片或 GitHub 仓库输入后生成目录/包矩阵、Relevant Source Files、源码问答、语言分布和阅读路径 |
+| 仓库矩阵解析器 | [21 源码解析](../source-analysis/README.md) | 从热门库卡片或 GitHub 仓库输入后生成目录/包矩阵、Relevant Source Files、源码对话、CodeMap、语言分布和阅读路径 |
 | Relevant Source Files | [21 源码解析](../source-analysis/README.md) | 按路径和职责信号筛出首轮应该打开的源码入口 |
-| 源码问答检索 | [21 源码解析](../source-analysis/README.md) | 按问题检索候选源码，返回文件行号、源码片段和解释 |
+| 源码对话检索 | [21 源码解析](../source-analysis/README.md) | 连续提问时检索候选源码，返回文件行号、源码片段和解释 |
+| CodeMap 源码地图 | [21 源码解析](../source-analysis/README.md) | 把区域、职责层、高信号文件和当前问题焦点映射成可点击源码地图 |
 | LangChain create_agent | [21 源码解析](../source-analysis/README.md) | 把模型、工具、middleware、structured output 组装成 agent runtime |
 | Runnable 调用协议 | [21 源码解析](../source-analysis/README.md) | invoke/batch/stream/composition 是 LangChain 组件统一接口 |
 | LangGraph Pregel runtime | [21 源码解析](../source-analysis/README.md) | compile 后按 super-step 执行节点、合并 state、输出 stream/checkpoint |
@@ -1276,7 +1280,7 @@ graph LR
 | [LangGraph.js · How to wait for user input using interrupt](https://langchain-ai.github.io/langgraphjs/how-tos/wait-user-input-functional/) | langchain-ai.github.io | doc | lg-hitl | 用 interrupt 暂停等用户输入、再用 Command({resume}) 续跑的官方 how-to，对应本章审批门 demo |
 | [LangGraph.js · Multi-agent systems（概念）](https://langchain-ai.github.io/langgraphjs/concepts/multi_agent/) | langchain-ai.github.io | doc | lg-multiagent | 官方多 agent 拓扑总览：supervisor、network、hierarchical 等——本章 supervisor / parallel team 的权威参考 |
 | [LangGraph.js · Agent supervisor（教程）](https://langchain-ai.github.io/langgraphjs/tutorials/multi_agent/agent_supervisor/) | langchain-ai.github.io | doc | lg-multiagent | 一个 supervisor 用条件边把任务派给多个 worker agent 的官方教程，对应本章图1 的中心化调度循环 |
-| [DeepWiki](https://deepwiki.com/) | DeepWiki | doc | 21 | 源码仓库 Wiki 参考形态：热门仓库入口、目录化 Wiki、Relevant source files、源码问答和源码引用 |
+| [DeepWiki](https://deepwiki.com/) | DeepWiki | doc | 21 | 源码仓库 Wiki 参考形态：热门仓库入口、目录化 Wiki、Relevant source files、源码对话、CodeMap 和源码引用 |
 | [LangChain v1 agents source](https://github.com/langchain-ai/langchain/blob/master/libs/langchain_v1/langchain/agents/factory.py) | LangChain | doc | 21 | LangChain 官方源码入口：create_agent 如何组装模型、工具、middleware、structured output 与 agent runtime |
 | [LangGraph StateGraph and Pregel runtime source](https://github.com/langchain-ai/langgraph/blob/main/libs/langgraph/langgraph/graph/state.py) | LangGraph | doc | 21 | LangGraph 官方源码入口：StateGraph 的 state schema、channel reducer、node、edge 与 compile |
 | [LlamaIndex RetrieverQueryEngine source](https://github.com/run-llama/llama_index/blob/main/llama-index-core/llama_index/core/query_engine/retriever_query_engine.py) | LlamaIndex | doc | 21 | LlamaIndex 官方源码入口：retriever、node postprocessor、response synthesizer 组成 data-first RAG 查询链路 |

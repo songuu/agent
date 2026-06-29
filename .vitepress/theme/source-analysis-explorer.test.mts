@@ -6,6 +6,7 @@ import {
   analyzePreset,
   analyzeRepositoryTree,
   answerSourceQuestion,
+  buildRepositoryCodeMap,
   buildGitHubFileUrl,
   buildGitHubLineUrl,
   classifyRepositoryPath,
@@ -110,6 +111,22 @@ test("selectQuestionFiles prioritizes question-relevant source files", () => {
   assert.equal(files[0]?.layer, "工具");
 });
 
+test("buildRepositoryCodeMap creates source-linked layers and question focus", () => {
+  const analysis = analyzePreset(SOURCE_ANALYSIS_PRESETS.find((preset) => preset.slug === "langchain-ai/langgraph")!);
+  const codeMap = buildRepositoryCodeMap(analysis, { question: "ToolNode 如何执行工具调用？", limitPerLayer: 4 });
+
+  assert.match(codeMap.summary, /CodeMap/);
+  assert.ok(codeMap.edges.some((edge) => edge.relation === "question-focus"));
+  assert.ok(
+    codeMap.layers.some(
+      (layer) =>
+        layer.layer === "工具" &&
+        layer.files.some(
+          (file) => file.path.endsWith("tool_node.py") && file.questionMatched && file.url.includes("/blob/main/"),
+        ),
+    ),
+  );
+});
 test("answerSourceQuestion returns line citations and explanations from source text", () => {
   const analysis = analyzeRepositoryTree({
     slug: "example/repo",
@@ -148,6 +165,24 @@ test("answerSourceQuestion returns line citations and explanations from source t
   assert.match(answer.citations[0]?.explanation ?? "", /tool call/);
 });
 
+test("answerSourceQuestion refuses implementation claims without readable source", () => {
+  const analysis = analyzeRepositoryTree({
+    slug: "example/repo",
+    items: [{ path: "src/runtime/agent.ts", type: "file" }],
+    source: "github",
+  });
+
+  const answer = answerSourceQuestion({
+    analysis,
+    question: "agent runtime 如何循环？",
+    documents: [],
+    requestedFiles: ["src/runtime/agent.ts"],
+  });
+
+  assert.equal(answer.status, "needs-source");
+  assert.equal(answer.citations.length, 0);
+  assert.match(answer.summary, /还没有可检索的源码内容/);
+});
 test("buildGitHubLineUrl anchors exact source lines", () => {
   assert.equal(
     buildGitHubLineUrl("langchain-ai/langgraph", "main", "libs/prebuilt/langgraph/prebuilt/tool_node.py", 10, 18),

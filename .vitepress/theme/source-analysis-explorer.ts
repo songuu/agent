@@ -5,10 +5,13 @@ import {
   analyzeRepositoryTree,
   answerSourceQuestion,
   buildGitHubFileUrl,
+  buildRepositoryCodeMap,
   normalizeRepositoryInput,
   presetForSlug,
   selectQuestionFiles,
   type PopularRepository,
+  type RepositoryCodeMapEdge,
+  type RepositoryCodeMapLayer,
   type RepositoryAnalysis,
   type RepositoryAreaRow,
   type RepositoryFileRow,
@@ -29,6 +32,14 @@ interface GitHubRepoMeta {
 interface GitHubTreeResponse {
   tree?: Array<{ path?: string; type?: string; size?: number }>;
   truncated?: boolean;
+}
+
+type SourceConversationMode = "chat" | "codemap";
+
+interface SourceConversationTurn {
+  id: number;
+  question: string;
+  answer: SourceQuestionAnswer;
 }
 
 const initialized = new WeakSet<HTMLElement>();
@@ -496,7 +507,24 @@ function statCard(value: string, label: string): HTMLElement {
 function renderQuestionPanel(analysis: RepositoryAnalysis, sourceCache: Map<string, string>): HTMLElement {
   const section = document.createElement("section");
   section.className = "source-analysis-panel source-analysis-question-panel";
-  section.append(panelHeading("源码问答", "根据问题检索候选源码文件，返回 GitHub 行号、源码片段和解释。"));
+  section.append(panelHeading("源码对话与 CodeMap", "连续提问时只检索已读取的 GitHub raw source，并把命中的文件同步到 CodeMap。"));
+
+  let mode: SourceConversationMode = "chat";
+  let lastQuestion = "";
+  const turns: SourceConversationTurn[] = [];
+
+  const tabs = document.createElement("div");
+  tabs.className = "source-analysis-dialog-tabs";
+  const chatTab = dialogModeButton("对话", "chat");
+  const codeMapTab = dialogModeButton("CodeMap", "codemap");
+  tabs.append(chatTab, codeMapTab);
+
+  const guard = document.createElement("p");
+  guard.className = "source-analysis-answer-guard";
+  guard.textContent = "回答只来自已读取的源码行；没有源码证据时只给候选文件，不编造实现结论。";
+
+  const stage = document.createElement("div");
+  stage.className = "source-analysis-dialog-stage";
 
   const form = document.createElement("form");
   form.className = "source-analysis-question-form";
@@ -506,26 +534,42 @@ function renderQuestionPanel(analysis: RepositoryAnalysis, sourceCache: Map<stri
   input.setAttribute("aria-label", "源码问题");
   const submit = document.createElement("button");
   submit.type = "submit";
-  submit.textContent = "检索源码回答";
+  submit.textContent = "基于源码回答";
   form.append(input, submit);
 
   const status = document.createElement("p");
   status.className = "source-analysis-question-status";
-  const result = document.createElement("div");
-  result.className = "source-analysis-question-result";
+
+  chatTab.addEventListener("click", () => setMode("chat"));
+  codeMapTab.addEventListener("click", () => setMode("codemap"));
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const question = input.value.trim();
     if (!question) {
       status.textContent = "请输入源码问题。";
-      result.replaceChildren();
       return;
     }
+    input.value = "";
+    await askQuestion(question);
+  });
 
+  function dialogModeButton(label: string, value: SourceConversationMode): HTMLButtonElement {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    button.dataset.mode = value;
+    return button;
+  }
+
+  function setMode(nextMode: SourceConversationMode): void {
+    mode = nextMode;
+    renderConversationSurface();
+  }
+
+  async function askQuestion(question: string): Promise<void> {
     submit.disabled = true;
     status.textContent = "正在选择候选文件并读取源码...";
-    result.replaceChildren();
     const files = selectQuestionFiles(analysis, question, 8);
     try {
       const documents = await loadSourceDocuments(analysis, files.map((file) => file.path), sourceCache);
@@ -536,20 +580,155 @@ function renderQuestionPanel(analysis: RepositoryAnalysis, sourceCache: Map<stri
         requestedFiles: files.map((file) => file.path),
         maxCitations: 4,
       });
+      turns.push({ id: Date.now(), question, answer });
+      lastQuestion = question;
       status.textContent = `已检索 ${answer.searchedFiles.length} 个源码文件${answer.missingFiles.length ? `，${answer.missingFiles.length} 个读取失败` : ""}。`;
-      result.replaceChildren(renderQuestionAnswer(answer));
+      renderConversationSurface();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      status.textContent = `源码问答失败：${message}`;
+      status.textContent = `源码对话失败：${message}`;
     } finally {
       submit.disabled = false;
     }
-  });
+  }
 
-  section.append(form, status, result);
+  function renderConversationSurface(): void {
+    chatTab.dataset.active = mode === "chat" ? "true" : "false";
+    codeMapTab.dataset.active = mode === "codemap" ? "true" : "false";
+    if (mode === "chat") {
+      stage.replaceChildren(renderChatHistory(turns, (question) => {
+        input.value = question;
+        input.focus();
+      }));
+      return;
+    }
+    stage.replaceChildren(renderCodeMapView(analysis, lastQuestion));
+  }
+
+  renderConversationSurface();
+  section.append(tabs, guard, stage, form, status);
   return section;
 }
 
+function renderChatHistory(turns: readonly SourceConversationTurn[], onExample: (question: string) => void): HTMLElement {
+  const log = document.createElement("div");
+  log.className = "source-analysis-chat-log";
+
+  if (turns.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "source-analysis-chat-empty";
+    const title = document.createElement("strong");
+    title.textContent = "从源码问题开始";
+    const examples = document.createElement("div");
+    examples.className = "source-analysis-question-examples";
+    for (const question of ["入口函数如何接到 runtime？", "工具调用在哪里执行并回写消息？", "checkpoint 或状态在哪里保存？"]) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = question;
+      button.addEventListener("click", () => onExample(question));
+      examples.append(button);
+    }
+    empty.append(title, examples);
+    log.append(empty);
+    return log;
+  }
+
+  for (const turn of turns) {
+    const user = document.createElement("article");
+    user.className = "source-analysis-chat-turn source-analysis-chat-turn--user";
+    const question = document.createElement("p");
+    question.textContent = turn.question;
+    user.append(question);
+
+    const assistant = document.createElement("article");
+    assistant.className = "source-analysis-chat-turn source-analysis-chat-turn--assistant";
+    assistant.append(renderQuestionAnswer(turn.answer));
+
+    log.append(user, assistant);
+  }
+  return log;
+}
+
+function renderCodeMapView(analysis: RepositoryAnalysis, question: string): HTMLElement {
+  const codeMap = buildRepositoryCodeMap(analysis, { question: question || undefined, limitPerLayer: 5 });
+  const wrap = document.createElement("article");
+  wrap.className = "source-analysis-codemap";
+
+  const summary = document.createElement("p");
+  summary.className = "source-analysis-codemap-summary";
+  summary.textContent = codeMap.summary;
+  wrap.append(summary);
+
+  const grid = document.createElement("div");
+  grid.className = "source-analysis-codemap-grid";
+  for (const layer of codeMap.layers) grid.append(renderCodeMapLayer(layer));
+  wrap.append(grid);
+
+  if (codeMap.edges.length > 0) wrap.append(renderCodeMapEdges(codeMap.edges));
+  return wrap;
+}
+
+function renderCodeMapLayer(layer: RepositoryCodeMapLayer): HTMLElement {
+  const group = document.createElement("section");
+  group.className = "source-analysis-codemap-layer";
+
+  const head = document.createElement("header");
+  const badge = document.createElement("span");
+  badge.className = "source-analysis-layer-badge";
+  badge.textContent = layer.layer;
+  const count = document.createElement("span");
+  count.textContent = `${layer.files.length} files`;
+  head.append(badge, count);
+
+  const signal = document.createElement("p");
+  signal.textContent = layer.signal;
+  group.append(head, signal);
+
+  const list = document.createElement("ol");
+  for (const file of layer.files) {
+    const item = document.createElement("li");
+    item.dataset.focus = file.questionMatched ? "true" : "false";
+    const link = document.createElement("a");
+    link.href = file.url;
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    link.textContent = file.path;
+    const reason = document.createElement("p");
+    reason.textContent = file.reason;
+    item.append(link, reason);
+    list.append(item);
+  }
+  group.append(list);
+
+  if (layer.areas.length > 0) {
+    const areas = document.createElement("small");
+    areas.textContent = `区域：${layer.areas.slice(0, 3).join(" / ")}${layer.areas.length > 3 ? " ..." : ""}`;
+    group.append(areas);
+  }
+
+  return group;
+}
+
+function renderCodeMapEdges(edges: readonly RepositoryCodeMapEdge[]): HTMLElement {
+  const wrap = document.createElement("aside");
+  wrap.className = "source-analysis-codemap-edges";
+  const title = document.createElement("strong");
+  title.textContent = "关系线索";
+  const list = document.createElement("ul");
+  for (const edge of edges.slice(0, 14)) {
+    const item = document.createElement("li");
+    item.textContent = `${edge.from} -> ${edge.to} · ${relationLabel(edge.relation)} · ${edge.reason}`;
+    list.append(item);
+  }
+  wrap.append(title, list);
+  return wrap;
+}
+
+function relationLabel(relation: RepositoryCodeMapEdge["relation"]): string {
+  if (relation === "question-focus") return "问题聚焦";
+  if (relation === "reading-order") return "阅读顺序";
+  return "先读文件";
+}
 async function loadSourceDocuments(
   analysis: RepositoryAnalysis,
   paths: readonly string[],
