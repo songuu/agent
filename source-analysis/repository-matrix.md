@@ -1,0 +1,48 @@
+# 仓库矩阵解析器
+
+> 目标：参考 [DeepWiki](https://deepwiki.com/) 的“仓库 -> Wiki 目录 -> Relevant source files -> 架构矩阵”形态，把本章从三篇静态源码解析升级成可换仓库的源码阅读工具。
+
+这个解析器不会把仓库克隆到服务器，也不会调用模型自动总结。它在浏览器里读取公开 GitHub repo tree，然后用确定性规则生成四类结果：
+
+| 结果 | 用途 | 判断依据 |
+|------|------|----------|
+| 仓库总览 | 确认 repo、默认分支、索引时间、核心复杂度 | GitHub repo meta + 文件路径特征 |
+| 语言与文件构成 | 判断先看实现、测试还是文档 | 文件扩展名、docs/tests/config 规则 |
+| 仓库矩阵 | 把目录/包映射到入口、运行时、状态、工具、检索、测试、文档等层 | 路径关键词 + 文件计数 |
+| Relevant Source Files | 给出首轮应该读的高信号文件 | runtime/tool/retriever/state/test/config 评分 |
+
+## 直接解析
+
+<div data-source-analysis-explorer></div>
+
+## 矩阵字段怎么读
+
+| 字段 | 解释 |
+|------|------|
+| 区域 | top-level 目录、monorepo package，或核心源码目录。 |
+| 层 | 当前区域主要承担的工程职责。 |
+| 文件 / 代码 / 测试 / 文档 | 规模和验证密度。测试多的区域适合从断言反推契约。 |
+| 信号 | 读这层源码时最该搜索的关键对象。 |
+| 先读 | 第一批打开的 GitHub 文件入口。 |
+
+## 与三篇静态源码解析的关系
+
+| 内置仓库 | 矩阵作用 | 深入页 |
+|----------|----------|--------|
+| `langchain-ai/langchain` | 找 `create_agent`、Runnable、Tool、middleware 的装配边界。 | [LangChain 源码解析](./langchain.md) |
+| `langchain-ai/langgraph` | 找 `StateGraph`、Pregel runtime、ToolNode、checkpoint 的执行边界。 | [LangGraph 源码解析](./langgraph.md) |
+| `run-llama/llama_index` | 找 QueryEngine、Retriever、ResponseSynthesizer、Workflow 的 data-first 边界。 | [LlamaIndex 源码解析](./llamaindex.md) |
+
+## 边界
+
+- 输入必须是公开 GitHub 仓库：`owner/repo` 或 `https://github.com/owner/repo`。
+- GitHub API 限流或网络失败时，三套内置仓库回退到本地矩阵。
+- 动态仓库矩阵来自路径和文件名启发式，不等于 DeepWiki 的 LLM 索引结果；它负责“首轮源码定位”，不是最终结论。
+- 真正写报告时，仍要打开 GitHub 文件，沿函数调用和测试断言验证。
+
+## 练习
+
+1. 解析 `langchain-ai/langgraph`，先读 `StateGraph` 和 Pregel runtime 两行。
+2. 解析你自己的 GitHub 仓库，找出矩阵里“运行时”和“状态”层是否真的有测试。
+3. 对比 [LangChain 源码解析](./langchain.md) 的手写阅读路径，检查动态矩阵是否能定位同一批入口。
+

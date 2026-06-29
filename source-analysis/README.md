@@ -41,6 +41,23 @@
 | LangGraph | [`libs/langgraph/langgraph/graph/state.py`](https://github.com/langchain-ai/langgraph/blob/main/libs/langgraph/langgraph/graph/state.py) + [`libs/langgraph/langgraph/pregel/main.py`](https://github.com/langchain-ai/langgraph/blob/main/libs/langgraph/langgraph/pregel/main.py) | [LangGraph 源码解析](./langgraph.md) |
 | LlamaIndex | [`llama-index-core/llama_index/core/query_engine/retriever_query_engine.py`](https://github.com/run-llama/llama_index/blob/main/llama-index-core/llama_index/core/query_engine/retriever_query_engine.py) | [LlamaIndex 源码解析](./llamaindex.md) |
 
+## DeepWiki-style 仓库解析器
+
+> 参考 [DeepWiki](https://deepwiki.com/) 的仓库 Wiki / Relevant source files / 架构矩阵形态：先把指定仓库切成可读矩阵，再决定从哪个入口文件下钻。
+
+<dl>
+  <dt>支持输入</dt>
+  <dd>公开 GitHub 仓库 URL 或 <code>owner/repo</code>，例如 <code>langchain-ai/langgraph</code>。</dd>
+  <dt>输出</dt>
+  <dd>仓库总览、语言分布、目录/包矩阵、Relevant Source Files、阅读路径。</dd>
+  <dt>边界</dt>
+  <dd>浏览器端读取 GitHub 公开 tree；无 token、无服务器 clone。三套内置仓库提供离线矩阵。</dd>
+</dl>
+
+<div data-source-analysis-explorer></div>
+
+完整字段说明见 [仓库矩阵解析器](./repository-matrix.md)。
+
 ## 1. LangChain：从 agent factory 看组合式 runtime
 
 LangChain 的关键不是“某个神奇 Agent 类”，而是把模型、工具、结构化输出、middleware 和 runtime 组装成一个可调用对象。
@@ -183,6 +200,8 @@ graph TB
   classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
   classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
   n_srca_reading_map["源码阅读路线"]
+  n_srca_repository_matrix["仓库矩阵解析器"]
+  n_srca_relevant_source_files["Relevant Source Files"]
   n_srca_langchain_agent_factory["LangChain create_agent"]
   n_srca_langchain_runnable["Runnable 调用协议"]
   n_srca_langgraph_runtime["LangGraph Pregel runtime"]
@@ -197,21 +216,27 @@ graph TB
   n_c09_rag_pipeline["RAG 全流程（第09章）"]
   n_lgma_multi_agent["多 Agent = 多专职节点编排（第lg-multiagent章）"]
   n_srca_reading_map -->|深化| n_c12_framework_choice
+  n_srca_repository_matrix -->|组成| n_srca_reading_map
+  n_srca_relevant_source_files -->|组成| n_srca_repository_matrix
+  n_srca_langchain_agent_factory -->|应用| n_srca_relevant_source_files
   n_srca_langchain_agent_factory -->|对比| n_c06_run_agent_loop
   n_srca_langchain_runnable -->|深化| n_c02_stream
   n_srca_langgraph_runtime -->|深化| n_lgsg_edges_compile
   n_srca_langgraph_tool_node -->|应用| n_c05_roundtrip_loop
   n_srca_llamaindex_query_engine -->|深化| n_c09_rag_pipeline
   n_srca_llamaindex_workflow -->|对比| n_lgma_multi_agent
-  class n_srca_reading_map,n_srca_langchain_agent_factory,n_srca_langchain_runnable,n_srca_langgraph_runtime,n_srca_langgraph_tool_node,n_srca_llamaindex_query_engine,n_srca_llamaindex_workflow own;
+  class n_srca_reading_map,n_srca_repository_matrix,n_srca_relevant_source_files,n_srca_langchain_agent_factory,n_srca_langchain_runnable,n_srca_langgraph_runtime,n_srca_langgraph_tool_node,n_srca_llamaindex_query_engine,n_srca_llamaindex_workflow own;
   class n_c12_framework_choice,n_c06_run_agent_loop,n_c02_stream,n_lgsg_edges_compile,n_c05_roundtrip_loop,n_c09_rag_pipeline,n_lgma_multi_agent cross;
   linkStyle 0 stroke:#7c3aed,stroke-width:2px;
-  linkStyle 1 stroke:#db2777,stroke-width:2px;
-  linkStyle 2 stroke:#7c3aed,stroke-width:2px;
-  linkStyle 3 stroke:#7c3aed,stroke-width:2px;
-  linkStyle 4 stroke:#059669,stroke-width:2px;
+  linkStyle 1 stroke:#d97706,stroke-width:2px;
+  linkStyle 2 stroke:#d97706,stroke-width:2px;
+  linkStyle 3 stroke:#059669,stroke-width:2px;
+  linkStyle 4 stroke:#db2777,stroke-width:2px;
   linkStyle 5 stroke:#7c3aed,stroke-width:2px;
-  linkStyle 6 stroke:#db2777,stroke-width:2px;
+  linkStyle 6 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 7 stroke:#059669,stroke-width:2px;
+  linkStyle 8 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 9 stroke:#db2777,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -226,6 +251,7 @@ graph TB
 
 ### 延伸阅读
 
+- [DeepWiki](https://deepwiki.com/) — 源码仓库 Wiki 参考形态：仓库入口、目录化 Wiki、Relevant source files 和源码引用 `doc`
 - [LangChain v1 agents source](https://github.com/langchain-ai/langchain/blob/master/libs/langchain_v1/langchain/agents/factory.py) — LangChain 官方源码入口：create_agent 如何组装模型、工具、middleware、structured output 与 agent runtime `doc`
 - [LangGraph StateGraph and Pregel runtime source](https://github.com/langchain-ai/langgraph/blob/main/libs/langgraph/langgraph/graph/state.py) — LangGraph 官方源码入口：StateGraph 的 state schema、channel reducer、node、edge 与 compile `doc`
 - [LlamaIndex RetrieverQueryEngine source](https://github.com/run-llama/llama_index/blob/main/llama-index-core/llama_index/core/query_engine/retriever_query_engine.py) — LlamaIndex 官方源码入口：retriever、node postprocessor、response synthesizer 组成 data-first RAG 查询链路 `doc`

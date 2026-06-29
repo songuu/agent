@@ -80,7 +80,7 @@
 | 第五部分 · 工程化与框架 | 12–14 | ~3.5 小时 |
 | 第六部分 · 生产化 | 15–18 | ~5 小时 |
 | 第七部分 · 前沿与生态 | 19–20 | ~1.5 小时 |
-| 第 21 章 · 源码解析 | source-analysis 章节 + 3 篇深入页 | ~3–4 小时 |
+| 第 21 章 · 源码解析 | source-analysis 章节 + 仓库矩阵解析器 + 3 篇深入页 | ~4–5 小时 |
 | 🎓 毕业项目（8 个）· Deep Research / 客服 / 评审 / 评测 / 告警响应 / 反馈洞察 / 销售线索 / 企业知识库 | 综合 | ~23–34 小时 |
 | 🔬 进阶 RAG 专题 | rag-advanced ×11 | ~7–9 小时 |
 | 🧩 进阶 LangGraph 专题 | langgraph-advanced ×5 + 生产化扩章地图 | ~4–6 小时 |
@@ -271,6 +271,7 @@
 | # | 标题 | 难度 | 预计 | 一句话简介 | 链接 |
 |---|------|------|------|------------|------|
 | 21 | 源码解析 | ⭐⭐⭐⭐ | 30 分钟 | 建立“入口函数 -> runtime -> 状态/工具/检索 -> 停止条件”的读源码顺序 | [../source-analysis/README.md](../source-analysis/README.md) |
+| 21.0 | 仓库矩阵解析器 | ⭐⭐⭐⭐ | 45 分钟 | 指定 GitHub 仓库，生成仓库矩阵、Relevant Source Files 和阅读路径 | [../source-analysis/repository-matrix.md](../source-analysis/repository-matrix.md) |
 | 21.1 | LangChain 源码解析 | ⭐⭐⭐⭐ | 60 分钟 | 从 `create_agent`、Runnable、middleware、structured output 读懂 agent factory | [../source-analysis/langchain.md](../source-analysis/langchain.md) |
 | 21.2 | LangGraph 源码解析 | ⭐⭐⭐⭐ | 75 分钟 | 从 `StateGraph`、Pregel runtime、ToolNode 读懂可恢复状态机 runtime | [../source-analysis/langgraph.md](../source-analysis/langgraph.md) |
 | 21.3 | LlamaIndex 源码解析 | ⭐⭐⭐⭐ | 60 分钟 | 从 QueryEngine、Retriever、ResponseSynthesizer、Workflow 读懂 data-first agent/RAG 框架 | [../source-analysis/llamaindex.md](../source-analysis/llamaindex.md) |
@@ -351,7 +352,7 @@
 - **按 Agent 类型选路线** → 看 [Agent 学习指南与分类地图](./agent-learning-guides.md)：按 Chat、Tool、Workflow、Research、Copilot、Multi-agent、Coding、Monitoring 等类型倒推能力清单。
 - 🔬 **进阶 RAG（仓库内）** → 看 [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md)：分块、混合检索、重排、查询改写、评估、生产化、安全、索引与上下文工程，把第 08/09 章的最小 RAG 补成生产级，能力沉淀在 `src/shared/rag/`。
 - 🧩 **进阶 LangGraph（仓库内）** → 看 [进阶 LangGraph 专题](../langgraph-advanced/README.md)：从 StateGraph 机制走到 production runtime 的扩章地图。
-- **源码解析** → 看 [源码解析路线](../source-analysis/README.md)：顺着 LangChain、LangGraph、LlamaIndex 官方源码入口读懂框架运行时。
+- **源码解析** → 看 [源码解析路线](../source-analysis/README.md)：先用仓库矩阵定位源码边界，再顺着 LangChain、LangGraph、LlamaIndex 官方源码入口读懂框架运行时。
 - 🧭 **RAG 架构设计** → 看 [RAG 完整架构蓝图](./rag-architecture.md)：把 demo 能力组织成写入路径、查询路径、数据模型、安全治理、质量闭环和部署拓扑。
 - 🏢 **企业知识库 Agent** → 看 [企业知识库 Agent 蓝图](./enterprise-knowledge-base-agent.md)：把 RAG、记忆、工具、流式 UX、定时任务和部署串成一个企业级作品集。
 - 🎓 **企业知识库 Agent Capstone** → 看 [毕业项目 · 企业知识库 Agent](../capstone/enterprise-knowledge-base-agent/README.md)：把蓝图拆成产品边界、数据模型、API、事件流、测试门和 4 周实现路线。

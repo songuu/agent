@@ -10,5 +10,6 @@ import "./interview-clinic";
 import "./notion-article-detail";
 import "./notion-articles-list";
 import "./selection-chat";
+import "./source-analysis-explorer";
 
 export default DefaultTheme;
