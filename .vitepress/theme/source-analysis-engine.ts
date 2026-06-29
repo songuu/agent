@@ -75,6 +75,31 @@ export interface RepositoryAnalysis {
   truncated?: boolean;
 }
 
+export interface SourceDocument {
+  path: string;
+  content: string;
+}
+
+export interface SourceQuestionCitation {
+  path: string;
+  startLine: number;
+  endLine: number;
+  layer: RepositoryLayer;
+  score: number;
+  matchedTerms: string[];
+  excerpt: string;
+  explanation: string;
+  url: string;
+}
+
+export interface SourceQuestionAnswer {
+  question: string;
+  summary: string;
+  citations: SourceQuestionCitation[];
+  searchedFiles: string[];
+  missingFiles: string[];
+  status: "answered" | "no-match" | "needs-source";
+}
 export type RepositoryLayer =
   | "入口"
   | "运行时"
@@ -154,11 +179,11 @@ export const SOURCE_ANALYSIS_PRESETS: RepositoryPreset[] = [
       file("pyproject.toml", 9000),
     ],
     curatedAreas: [
-      area("libs/langchain_v1/langchain/agents", "运行时", 52, 46, 12, 0, "create_agent 装配模型、工具、middleware、structured output", "factory.py"),
-      area("libs/core/langchain_core/runnables", "运行时", 88, 74, 28, 0, "Runnable 统一 invoke/batch/stream/composition 调用协议", "base.py"),
-      area("libs/core/langchain_core/tools", "工具", 62, 50, 18, 0, "工具 schema、调用边界、错误回传", "base.py"),
-      area("libs/langchain/langchain", "检索", 140, 120, 32, 0, "chains/retrievers/vectorstores 等旧生态 glue code", "retrieval.py"),
-      area("docs/docs", "文档", 600, 0, 0, 600, "公开 API 使用法和概念解释", "concepts/runnables.mdx"),
+      area("libs/langchain_v1/langchain/agents", "运行时", 52, 46, 12, 0, "create_agent 装配模型、工具、middleware、structured output", "libs/langchain_v1/langchain/agents/factory.py"),
+      area("libs/core/langchain_core/runnables", "运行时", 88, 74, 28, 0, "Runnable 统一 invoke/batch/stream/composition 调用协议", "libs/core/langchain_core/runnables/base.py"),
+      area("libs/core/langchain_core/tools", "工具", 62, 50, 18, 0, "工具 schema、调用边界、错误回传", "libs/core/langchain_core/tools/base.py"),
+      area("libs/langchain/langchain", "检索", 140, 120, 32, 0, "chains/retrievers/vectorstores 等旧生态 glue code", "libs/langchain/langchain/chains/retrieval.py"),
+      area("docs/docs", "文档", 600, 0, 0, 600, "公开 API 使用法和概念解释", "docs/docs/concepts/runnables.mdx"),
     ],
     curatedFiles: [
       key("libs/langchain_v1/langchain/agents/factory.py", "运行时", "create_agent 主入口，追参数如何变成可调用 runtime", 100),
@@ -195,11 +220,11 @@ export const SOURCE_ANALYSIS_PRESETS: RepositoryPreset[] = [
       file("pyproject.toml", 8000),
     ],
     curatedAreas: [
-      area("libs/langgraph/langgraph/graph", "状态", 34, 30, 8, 0, "StateGraph 声明 state schema、node、edge、compile", "state.py"),
-      area("libs/langgraph/langgraph/pregel", "运行时", 56, 50, 18, 0, "super-step 调度、stream、interrupt、checkpoint 写入", "main.py"),
-      area("libs/langgraph/langgraph/checkpoint", "状态", 42, 36, 14, 0, "thread_id、state history、持久化恢复", "base/__init__.py"),
-      area("libs/prebuilt/langgraph/prebuilt", "工具", 38, 34, 10, 0, "create_react_agent 与 ToolNode 预制图", "tool_node.py"),
-      area("docs/docs/concepts", "文档", 120, 0, 0, 120, "低层概念、persistence、HITL、多 agent", "low_level.md"),
+      area("libs/langgraph/langgraph/graph", "状态", 34, 30, 8, 0, "StateGraph 声明 state schema、node、edge、compile", "libs/langgraph/langgraph/graph/state.py"),
+      area("libs/langgraph/langgraph/pregel", "运行时", 56, 50, 18, 0, "super-step 调度、stream、interrupt、checkpoint 写入", "libs/langgraph/langgraph/pregel/main.py"),
+      area("libs/langgraph/langgraph/checkpoint", "状态", 42, 36, 14, 0, "thread_id、state history、持久化恢复", "libs/langgraph/langgraph/checkpoint/base/__init__.py"),
+      area("libs/prebuilt/langgraph/prebuilt", "工具", 38, 34, 10, 0, "create_react_agent 与 ToolNode 预制图", "libs/prebuilt/langgraph/prebuilt/tool_node.py"),
+      area("docs/docs/concepts", "文档", 120, 0, 0, 120, "低层概念、persistence、HITL、多 agent", "docs/docs/concepts/low_level.md"),
     ],
     curatedFiles: [
       key("libs/langgraph/langgraph/graph/state.py", "状态", "StateGraph 声明层：schema、channel、node、edge、compile", 100),
@@ -236,11 +261,11 @@ export const SOURCE_ANALYSIS_PRESETS: RepositoryPreset[] = [
       file("pyproject.toml", 9000),
     ],
     curatedAreas: [
-      area("llama-index-core/llama_index/core/query_engine", "检索", 54, 48, 18, 0, "retriever、postprocessor、synthesizer 串成查询链路", "retriever_query_engine.py"),
-      area("llama-index-core/llama_index/core/indices", "检索", 80, 70, 20, 0, "文档如何变成 nodes/index/retriever", "base.py"),
-      area("llama-index-core/llama_index/core/response_synthesizers", "运行时", 42, 38, 14, 0, "检索结果如何被合成答案和 source nodes", "base.py"),
-      area("llama-index-core/llama_index/core/workflow", "运行时", 65, 58, 18, 0, "event、step、context、handoff 工作流", "workflow.py"),
-      area("llama-index-core/llama_index/core/agent", "工具", 72, 64, 22, 0, "agent workflow、multi-agent handoff、tool 调用", "multi_agent_workflow.py"),
+      area("llama-index-core/llama_index/core/query_engine", "检索", 54, 48, 18, 0, "retriever、postprocessor、synthesizer 串成查询链路", "llama-index-core/llama_index/core/query_engine/retriever_query_engine.py"),
+      area("llama-index-core/llama_index/core/indices", "检索", 80, 70, 20, 0, "文档如何变成 nodes/index/retriever", "llama-index-core/llama_index/core/indices/base.py"),
+      area("llama-index-core/llama_index/core/response_synthesizers", "运行时", 42, 38, 14, 0, "检索结果如何被合成答案和 source nodes", "llama-index-core/llama_index/core/response_synthesizers/base.py"),
+      area("llama-index-core/llama_index/core/workflow", "运行时", 65, 58, 18, 0, "event、step、context、handoff 工作流", "llama-index-core/llama_index/core/workflow/workflow.py"),
+      area("llama-index-core/llama_index/core/agent", "工具", 72, 64, 22, 0, "agent workflow、multi-agent handoff、tool 调用", "llama-index-core/llama_index/core/agent/workflow/multi_agent_workflow.py"),
     ],
     curatedFiles: [
       key("llama-index-core/llama_index/core/query_engine/retriever_query_engine.py", "检索", "QueryEngine 主线：retrieve -> postprocess -> synthesize", 100),
@@ -346,6 +371,124 @@ export function buildGitHubFileUrl(slug: string, branch: string, path: string): 
   return `https://github.com/${slug}/blob/${branch}/${path}`;
 }
 
+export function buildGitHubLineUrl(slug: string, branch: string, path: string, startLine: number, endLine: number): string {
+  const base = buildGitHubFileUrl(slug, branch, path);
+  return startLine === endLine ? `${base}#L${startLine}` : `${base}#L${startLine}-L${endLine}`;
+}
+
+export function selectQuestionFiles(
+  analysis: RepositoryAnalysis,
+  question: string,
+  limit = 8,
+): RepositoryFileRow[] {
+  const terms = questionTerms(question);
+  const candidates = new Map<string, RepositoryFileRow>();
+
+  for (const file of analysis.keyFiles) {
+    candidates.set(file.path, { ...file });
+  }
+
+  for (const area of analysis.areas) {
+    if (!candidates.has(area.readFirst)) {
+      candidates.set(area.readFirst, {
+        path: area.readFirst,
+        layer: area.layer,
+        reason: `${area.area}: ${area.signal}`,
+        score: scorePath(area.readFirst),
+      });
+    }
+  }
+
+  return [...candidates.values()]
+    .map((candidate) => ({
+      ...candidate,
+      score:
+        candidate.score +
+        scoreTextForTerms(`${candidate.path}\n${candidate.layer}\n${candidate.reason}`, terms) +
+        layerQuestionBonus(candidate.layer, question),
+    }))
+    .filter((candidate) => isCodeFile(candidate.path) || isDocsFile(candidate.path) || isConfigFile(candidate.path))
+    .sort((a, b) => b.score - a.score || a.path.localeCompare(b.path))
+    .slice(0, limit);
+}
+
+export function answerSourceQuestion(options: {
+  analysis: RepositoryAnalysis;
+  question: string;
+  documents: readonly SourceDocument[];
+  requestedFiles?: readonly string[];
+  maxCitations?: number;
+}): SourceQuestionAnswer {
+  const question = options.question.trim();
+  const requestedFiles = options.requestedFiles ?? options.documents.map((document) => document.path);
+  const documents = options.documents.filter((document) => document.content.trim().length > 0);
+  const missingFiles = requestedFiles.filter((path) => !documents.some((document) => document.path === path));
+
+  if (!question) {
+    return {
+      question,
+      summary: "先输入源码问题，再检索候选文件。",
+      citations: [],
+      searchedFiles: documents.map((document) => document.path),
+      missingFiles,
+      status: "needs-source",
+    };
+  }
+
+  if (documents.length === 0) {
+    return {
+      question,
+      summary: "还没有可检索的源码内容；需要先读取 GitHub raw 文件。",
+      citations: [],
+      searchedFiles: [],
+      missingFiles,
+      status: "needs-source",
+    };
+  }
+
+  const terms = questionTerms(question);
+  const citations = documents
+    .flatMap((document) => sourceCitationsForDocument(options.analysis, document, question, terms))
+    .sort((a, b) => b.score - a.score || a.path.localeCompare(b.path) || a.startLine - b.startLine)
+    .slice(0, options.maxCitations ?? 4)
+    .map((citation) => ({
+      ...citation,
+      url: buildGitHubLineUrl(options.analysis.slug, options.analysis.defaultBranch, citation.path, citation.startLine, citation.endLine),
+    }));
+
+  if (citations.length === 0) {
+    const fallbackFiles = selectQuestionFiles(options.analysis, question, options.maxCitations ?? 4);
+    return {
+      question,
+      summary: "源码已读取，但问题关键词没有命中具体行；先从候选文件继续下钻。",
+      citations: fallbackFiles.map((file) => ({
+        path: file.path,
+        startLine: 1,
+        endLine: 1,
+        layer: file.layer,
+        score: file.score,
+        matchedTerms: [],
+        excerpt: "",
+        explanation: file.reason,
+        url: buildGitHubLineUrl(options.analysis.slug, options.analysis.defaultBranch, file.path, 1, 1),
+      })),
+      searchedFiles: documents.map((document) => document.path),
+      missingFiles,
+      status: "no-match",
+    };
+  }
+
+  const top = citations[0]!;
+  const uniquePaths = [...new Set(citations.map((citation) => citation.path))];
+  return {
+    question,
+    summary: `最相关位置是 ${top.path}:${top.startLine}-${top.endLine}。${summaryForQuestion(question, top.layer)} 本次命中 ${uniquePaths.length} 个文件，优先沿这些源码引用继续追调用链。`,
+    citations,
+    searchedFiles: documents.map((document) => document.path),
+    missingFiles,
+    status: "answered",
+  };
+}
 export function classifyRepositoryPath(path: string): RepositoryLayer {
   const lower = path.toLowerCase();
   if (isDocsFile(lower)) return "文档";
@@ -507,6 +650,150 @@ function signalForLayer(layer: RepositoryLayer): string {
   }
 }
 
+function sourceCitationsForDocument(
+  analysis: RepositoryAnalysis,
+  document: SourceDocument,
+  question: string,
+  terms: readonly string[],
+): Array<Omit<SourceQuestionCitation, "url">> {
+  const lines = document.content.split(/\r?\n/);
+  const pathLower = document.path.toLowerCase();
+  const layer = classifyRepositoryPath(document.path);
+  const analysisBoost = analysis.keyFiles.some((file) => file.path === document.path) ? 6 : 0;
+  const lineScores = lines
+    .map((line, index) => {
+      const matchedTerms = matchedLineTerms(`${pathLower}\n${line}`, terms);
+      const textScore = scoreTextForTerms(`${pathLower}\n${line}`, terms);
+      const declarationBonus = /^\s*(class|def|async\s+def|function|export\s+function|export\s+class|const|interface|type)\b/.test(line)
+        ? 8
+        : 0;
+      const layerBonus = layerQuestionBonus(layer, question);
+      return {
+        lineNumber: index + 1,
+        score: textScore + declarationBonus + layerBonus,
+        matchedTerms,
+      };
+    })
+    .filter((item) => item.score > 0);
+
+  const windows: Array<Omit<SourceQuestionCitation, "url">> = [];
+  for (const lineScore of lineScores.sort((a, b) => b.score - a.score)) {
+    const startLine = Math.max(1, lineScore.lineNumber - 3);
+    const endLine = Math.min(lines.length, lineScore.lineNumber + 4);
+    const overlaps = windows.some((window) => window.path === document.path && startLine <= window.endLine && endLine >= window.startLine);
+    if (overlaps) continue;
+    const excerptLines = lines.slice(startLine - 1, endLine);
+    const excerpt = excerptLines.map((line, offset) => `${startLine + offset}: ${line}`).join("\n").trimEnd();
+    const windowText = `${document.path}\n${excerpt}`;
+    const matchedTerms = matchedLineTerms(windowText, terms);
+    const score = lineScore.score + analysisBoost + scoreTextForTerms(windowText, terms) + Math.min(20, scorePath(document.path) / 4);
+    windows.push({
+      path: document.path,
+      startLine,
+      endLine,
+      layer,
+      score,
+      matchedTerms,
+      excerpt,
+      explanation: explanationForCitation(layer, question, matchedTerms, document.path),
+    });
+    if (windows.length >= 3) break;
+  }
+
+  return windows.sort((a, b) => b.score - a.score);
+}
+
+function questionTerms(question: string): string[] {
+  const lower = question.toLowerCase();
+  const terms = new Set<string>();
+  for (const token of lower.match(/[a-z0-9_.$-]{3,}/g) ?? []) {
+    if (!QUESTION_STOP_WORDS.has(token)) terms.add(token);
+  }
+  for (const [pattern, expansions] of QUESTION_EXPANSIONS) {
+    if (pattern.test(question)) {
+      for (const expansion of expansions) terms.add(expansion.toLowerCase());
+    }
+  }
+  if (terms.size === 0) {
+    for (const token of lower.split(/\s+/).filter((item) => item.length >= 2)) terms.add(token);
+  }
+  return [...terms];
+}
+
+function scoreTextForTerms(text: string, terms: readonly string[]): number {
+  const lower = text.toLowerCase();
+  let score = 0;
+  for (const term of terms) {
+    if (!lower.includes(term)) continue;
+    score += term.length >= 8 ? 10 : 6;
+  }
+  return score;
+}
+
+function matchedLineTerms(text: string, terms: readonly string[]): string[] {
+  const lower = text.toLowerCase();
+  return terms.filter((term) => lower.includes(term)).slice(0, 8);
+}
+
+function layerQuestionBonus(layer: RepositoryLayer, question: string): number {
+  if (/工具|tool|function.?call/i.test(question) && layer === "工具") return 18;
+  if (/状态|checkpoint|memory|state|持久/i.test(question) && layer === "状态") return 18;
+  if (/检索|rag|retriev|query|索引|引用|source/i.test(question) && layer === "检索") return 18;
+  if (/运行|循环|runtime|agent|graph|workflow|pregel/i.test(question) && layer === "运行时") return 16;
+  if (/入口|api|开始|create|compile/i.test(question) && layer === "入口") return 12;
+  return 0;
+}
+
+function summaryForQuestion(question: string, layer: RepositoryLayer): string {
+  if (/工具|tool|function.?call/i.test(question)) return "这个问题主要看工具调用请求与本地执行边界。";
+  if (/状态|checkpoint|memory|持久|恢复/i.test(question)) return "这个问题主要看状态 schema、checkpoint、history 或 reducer。";
+  if (/检索|rag|query|引用|source/i.test(question)) return "这个问题主要看 retrieve、postprocess、synthesize 和 source node 回传。";
+  if (/循环|runtime|graph|workflow|pregel/i.test(question)) return "这个问题主要看 runtime 如何推进控制流。";
+  return `这个问题当前落在 ${layer} 层。`;
+}
+
+function explanationForCitation(layer: RepositoryLayer, question: string, matchedTerms: readonly string[], path: string): string {
+  const termText = matchedTerms.length > 0 ? `命中 ${matchedTerms.join(", ")}。` : "未命中显式关键词。";
+  const base = reasonForPath(path);
+  if (/工具|tool|function.?call/i.test(question)) {
+    return `${termText} 这段源码可用来确认模型 tool call 到本地工具执行/回传消息的边界。`;
+  }
+  if (/状态|checkpoint|memory|持久|恢复/i.test(question)) {
+    return `${termText} 这段源码可用来确认状态如何被声明、合并、保存或恢复。`;
+  }
+  if (/检索|rag|query|引用|source/i.test(question)) {
+    return `${termText} 这段源码可用来确认查询如何检索材料、合成答案并保留来源。`;
+  }
+  return `${termText} ${base} 当前职责层：${layer}。`;
+}
+
+const QUESTION_STOP_WORDS = new Set([
+  "the",
+  "and",
+  "for",
+  "with",
+  "how",
+  "what",
+  "where",
+  "does",
+  "this",
+  "that",
+  "from",
+  "into",
+  "为什么",
+  "怎么",
+  "如何",
+]);
+
+const QUESTION_EXPANSIONS: Array<[RegExp, string[]]> = [
+  [/工具|调用|tool|function.?call/i, ["tool", "tools", "tool_call", "tool_calls", "tool_node", "toolnode", "toolmessage", "invoke", "call", "execute"]],
+  [/状态|checkpoint|恢复|持久|memory|state/i, ["state", "checkpoint", "memory", "store", "history", "channel", "reducer", "resume"]],
+  [/检索|索引|引用|rag|query|source/i, ["retriev", "query_engine", "query", "synthesizer", "source", "source_nodes", "index", "nodes"]],
+  [/结构化|schema|structured/i, ["structured_output", "schema", "strategy", "response_format", "providerstrategy", "toolstrategy"]],
+  [/循环|图|运行|runtime|agent|workflow|pregel/i, ["agent", "runtime", "workflow", "graph", "pregel", "step", "edge", "compile", "invoke", "stream"]],
+  [/入口|开始|create|compile|factory/i, ["create_agent", "stategraph", "as_query_engine", "compile", "factory", "main"]],
+  [/错误|异常|error|exception/i, ["error", "exception", "handle", "fallback", "raise", "try"]],
+];
 function areaForPath(path: string): string {
   const parts = path.split("/");
   if (parts.length >= 3 && ["libs", "packages", "apps", "crates"].includes(parts[0]!)) {

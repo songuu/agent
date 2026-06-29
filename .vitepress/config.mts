@@ -81,7 +81,7 @@ function buildCourseSidebar(): DefaultTheme.SidebarItem[] {
         return {
           ...item,
           items: [
-            { text: "仓库矩阵解析器", link: "/source-analysis/repository-matrix" },
+            { text: "仓库矩阵与源码问答", link: "/source-analysis/repository-matrix" },
             { text: "LangChain 源码解析", link: "/source-analysis/langchain" },
             { text: "LangGraph 源码解析", link: "/source-analysis/langgraph" },
             { text: "LlamaIndex 源码解析", link: "/source-analysis/llamaindex" },

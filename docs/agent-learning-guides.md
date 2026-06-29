@@ -119,7 +119,7 @@
 
 1. 12: 先理解 LangGraph.js / Vercel AI SDK 帮你托管了哪些运行时能力。
 2. langgraph-advanced L1-L5: 先用可运行小例子看 StateGraph、checkpoint、HITL、多 agent。
-3. source-analysis: 先用仓库矩阵解析器定位任意 GitHub 仓库，再顺着官方源码入口读 LangChain、LangGraph、LlamaIndex。
+3. source-analysis: 先用仓库矩阵解析器定位任意 GitHub 仓库，再用源码问答检索源码行号证据，最后顺着官方源码入口读 LangChain、LangGraph、LlamaIndex。
 4. 19-20: 回到生态地图和前沿文章库，用源码视角判断框架边界和选型风险。
 
 ### 生产负责人路线

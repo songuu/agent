@@ -223,6 +223,7 @@ graph TB
   n_c08_rag_foundation["RAG 检索地基（第08章）"]
   n_c08_vector_store["内存向量库 (add/search)（第08章）"]
   n_c17_isolate_and_label["隔离 + 标注 (wrapUntrusted)（第17章）"]
+  n_srca_source_qa["源码问答检索（第21章）"]
   n_srca_llamaindex_query_engine["LlamaIndex QueryEngine（第21章）"]
   n_ccapstone_rag_corpus["RAG 内置语料检索（第capstone章）"]
   n_csup_rag["知识库检索 (BM25 带引用)（第cap-support章）"]
@@ -247,6 +248,7 @@ graph TB
   n_c09_rag_pipeline -->|深化| n_c08_rag_foundation
   n_c09_rag_pipeline -->|组成| n_c08_vector_store
   n_c17_isolate_and_label -->|应用| n_c09_augment_prompt
+  n_srca_source_qa -->|深化| n_c09_citation
   n_srca_llamaindex_query_engine -->|深化| n_c09_rag_pipeline
   n_ccapstone_rag_corpus -->|组成| n_c09_rag_pipeline
   n_csup_rag -->|组成| n_c09_rag_pipeline
@@ -261,7 +263,7 @@ graph TB
   n_cragsec_citation_verification -->|深化| n_c09_citation
   n_cragctx_context_budget -->|应用| n_c09_augment_prompt
   class n_c09_rag_pipeline,n_c09_chunk_overlap,n_c09_topk_retrieval,n_c09_augment_prompt,n_c09_citation,n_c09_hallucination_reduction own;
-  class n_c08_rag_foundation,n_c08_vector_store,n_c17_isolate_and_label,n_srca_llamaindex_query_engine,n_ccapstone_rag_corpus,n_csup_rag,n_cragchunk_why_matters,n_cragchunk_recursive,n_craghybrid_retriever,n_cragrerank_signal_to_noise,n_cragquery_multi_query,n_crageval_faithfulness,n_cragcontextual_title_recall,n_cragcontextual_raw_preserved,n_cragsec_citation_verification,n_cragctx_context_budget cross;
+  class n_c08_rag_foundation,n_c08_vector_store,n_c17_isolate_and_label,n_srca_source_qa,n_srca_llamaindex_query_engine,n_ccapstone_rag_corpus,n_csup_rag,n_cragchunk_why_matters,n_cragchunk_recursive,n_craghybrid_retriever,n_cragrerank_signal_to_noise,n_cragquery_multi_query,n_crageval_faithfulness,n_cragcontextual_title_recall,n_cragcontextual_raw_preserved,n_cragsec_citation_verification,n_cragctx_context_budget cross;
   linkStyle 0 stroke:#d97706,stroke-width:2px;
   linkStyle 1 stroke:#d97706,stroke-width:2px;
   linkStyle 2 stroke:#d97706,stroke-width:2px;
@@ -274,18 +276,19 @@ graph TB
   linkStyle 9 stroke:#d97706,stroke-width:2px;
   linkStyle 10 stroke:#059669,stroke-width:2px;
   linkStyle 11 stroke:#7c3aed,stroke-width:2px;
-  linkStyle 12 stroke:#d97706,stroke-width:2px;
+  linkStyle 12 stroke:#7c3aed,stroke-width:2px;
   linkStyle 13 stroke:#d97706,stroke-width:2px;
-  linkStyle 14 stroke:#7c3aed,stroke-width:2px;
-  linkStyle 15 stroke:#059669,stroke-width:2px;
-  linkStyle 16 stroke:#7c3aed,stroke-width:2px;
-  linkStyle 17 stroke:#059669,stroke-width:2px;
+  linkStyle 14 stroke:#d97706,stroke-width:2px;
+  linkStyle 15 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 16 stroke:#059669,stroke-width:2px;
+  linkStyle 17 stroke:#7c3aed,stroke-width:2px;
   linkStyle 18 stroke:#059669,stroke-width:2px;
-  linkStyle 19 stroke:#7c3aed,stroke-width:2px;
-  linkStyle 20 stroke:#059669,stroke-width:2px;
+  linkStyle 19 stroke:#059669,stroke-width:2px;
+  linkStyle 20 stroke:#7c3aed,stroke-width:2px;
   linkStyle 21 stroke:#059669,stroke-width:2px;
-  linkStyle 22 stroke:#7c3aed,stroke-width:2px;
-  linkStyle 23 stroke:#059669,stroke-width:2px;
+  linkStyle 22 stroke:#059669,stroke-width:2px;
+  linkStyle 23 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 24 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -293,6 +296,7 @@ graph TB
 - `RAG 全流程` —**深化**→ `RAG 检索地基`（第 08 章）
 - `RAG 全流程` —**组成**→ `内存向量库 (add/search)`（第 08 章）
 - `隔离 + 标注 (wrapUntrusted)` —**应用**→ `上下文增强 (augment)`（第 17 章）
+- `源码问答检索` —**深化**→ `引用溯源`（第 21 章）
 - `LlamaIndex QueryEngine` —**深化**→ `RAG 全流程`（第 21 章）
 - `RAG 内置语料检索` —**组成**→ `RAG 全流程`（第 capstone 章）
 - `知识库检索 (BM25 带引用)` —**组成**→ `RAG 全流程`（第 cap-support 章）

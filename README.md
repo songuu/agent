@@ -192,7 +192,7 @@ pnpm site:live
 | 20 | [Agent 前沿文章库](./lessons/20-agent-frontier-news/) | ⭐⭐ | 按日期和体系层浏览 agent 前沿资料、摘要与原文 |
 | **第八部分** | **源码解析** | | |
 | 21 | [源码解析](./source-analysis/) | ⭐⭐⭐⭐ | 建立读框架源码的稳定顺序 |
-| 21.0 | [仓库矩阵解析器](./source-analysis/repository-matrix.md) | ⭐⭐⭐⭐ | 指定 GitHub 仓库，生成仓库矩阵与 Relevant Source Files |
+| 21.0 | [仓库矩阵与源码问答](./source-analysis/repository-matrix.md) | ⭐⭐⭐⭐ | 指定 GitHub 仓库，生成仓库矩阵、Relevant Source Files 和源码行号回答 |
 | 21.1 | [LangChain 源码解析](./source-analysis/langchain.md) | ⭐⭐⭐⭐ | `create_agent`、Runnable、middleware、structured output |
 | 21.2 | [LangGraph 源码解析](./source-analysis/langgraph.md) | ⭐⭐⭐⭐ | `StateGraph`、Pregel runtime、prebuilt ReAct agent、ToolNode |
 | 21.3 | [LlamaIndex 源码解析](./source-analysis/llamaindex.md) | ⭐⭐⭐⭐ | QueryEngine、Retriever、ResponseSynthesizer、Workflow |
@@ -259,7 +259,7 @@ agent/
 - 🚀 [**创业指南**](./docs/startup-guide.md)：机会判断、MVP 裁剪、成本控制、上线 checklist。
 - [**Agent 学习指南与分类地图**](./docs/agent-learning-guides.md)：按学习阶段、agent 类型、工程能力和岗位路线拆解全项目。
 - 🔬 [**进阶 RAG 专题**](./rag-advanced/01-chunking-strategies/)：分块策略、混合检索、重排、查询改写、评估、生产化六章，把第 08/09 章的最小 RAG 补成生产级，能力沉淀在 `src/shared/rag/`。
-- [**源码解析**](./source-analysis/)：先用仓库矩阵解析器定位任意 GitHub 仓库的包/文件边界，再顺着官方源码入口读 LangChain、LangGraph、LlamaIndex，把“会用框架”推进到“能看懂和调试框架”。
+- [**源码解析**](./source-analysis/)：先用仓库矩阵解析器定位任意 GitHub 仓库的包/文件边界，再用源码问答检索 raw source 和行号引用，再顺着官方源码入口读 LangChain、LangGraph、LlamaIndex，把“会用框架”推进到“能看懂和调试框架”。
 - 🧭 [**RAG 完整架构蓝图**](./docs/rag-architecture.md)：把 RAG demo 升级成可维护系统，覆盖写入路径、查询路径、数据模型、API 边界、安全治理、质量闭环和部署拓扑。
 - 🏢 [**企业知识库 Agent 蓝图**](./docs/enterprise-knowledge-base-agent.md)：把 RAG、记忆、工具、流式事件、定时任务和部署组织成一条企业级作品集路线。
 - 🎓 [**企业知识库 Agent Capstone**](./capstone/enterprise-knowledge-base-agent/)：把蓝图拆成产品边界、数据模型、API、事件流、测试门和 4 周实现路线。

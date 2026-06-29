@@ -97,7 +97,7 @@
 | # | 专题 | 链接 | 核心能力 |
 |---|------|------|----------|
 | 21 | 源码解析 | [source-analysis](../source-analysis/README.md) | 建立“入口函数 -> runtime -> 状态/工具/检索 -> 停止条件”的读法 |
-| 21.0 | 仓库矩阵解析器 | [repository-matrix](../source-analysis/repository-matrix.md) | 输入 GitHub 仓库，生成目录矩阵、Relevant Source Files、阅读路径 |
+| 21.0 | 仓库矩阵与源码问答 | [repository-matrix](../source-analysis/repository-matrix.md) | 输入 GitHub 仓库，生成目录矩阵、Relevant Source Files、源码问答和阅读路径 |
 | 21.1 | LangChain 源码解析 | [langchain](../source-analysis/langchain.md) | `create_agent`、Runnable、middleware、structured output |
 | 21.2 | LangGraph 源码解析 | [langgraph](../source-analysis/langgraph.md) | `StateGraph`、Pregel runtime、prebuilt ReAct agent、ToolNode |
 | 21.3 | LlamaIndex 源码解析 | [llamaindex](../source-analysis/llamaindex.md) | QueryEngine、Retriever、ResponseSynthesizer、Workflow / MultiAgentWorkflow |

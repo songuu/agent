@@ -2,13 +2,18 @@ import {
   SOURCE_ANALYSIS_PRESETS,
   analyzePreset,
   analyzeRepositoryTree,
+  answerSourceQuestion,
   buildGitHubFileUrl,
   normalizeRepositoryInput,
   presetForSlug,
+  selectQuestionFiles,
   type RepositoryAnalysis,
   type RepositoryAreaRow,
   type RepositoryFileRow,
   type RepositoryTreeItem,
+  type SourceDocument,
+  type SourceQuestionAnswer,
+  type SourceQuestionCitation,
 } from "./source-analysis-engine";
 
 interface GitHubRepoMeta {
@@ -50,6 +55,7 @@ function renderExplorer(root: HTMLElement): void {
 
   const defaultAnalysis = analyzePreset(SOURCE_ANALYSIS_PRESETS[0]!);
   let current = defaultAnalysis;
+  const sourceCache = new Map<string, string>();
 
   const shell = document.createElement("section");
   shell.className = "source-analysis-shell";
@@ -150,6 +156,7 @@ function renderExplorer(root: HTMLElement): void {
       renderLanguages(current),
       renderAreaMatrix(current),
       renderFileMatrix(current),
+      renderQuestionPanel(current, sourceCache),
       renderReadingPath(current),
     );
   }
@@ -384,3 +391,155 @@ function statCard(value: string, label: string): HTMLElement {
   return item;
 }
 
+
+function renderQuestionPanel(analysis: RepositoryAnalysis, sourceCache: Map<string, string>): HTMLElement {
+  const section = document.createElement("section");
+  section.className = "source-analysis-panel source-analysis-question-panel";
+  section.append(panelHeading("源码问答", "根据问题检索候选源码文件，返回 GitHub 行号、源码片段和解释。"));
+
+  const form = document.createElement("form");
+  form.className = "source-analysis-question-form";
+  const input = document.createElement("input");
+  input.type = "search";
+  input.placeholder = "例如：ToolNode 如何执行工具调用？checkpoint 在哪里保存状态？";
+  input.setAttribute("aria-label", "源码问题");
+  const submit = document.createElement("button");
+  submit.type = "submit";
+  submit.textContent = "检索源码回答";
+  form.append(input, submit);
+
+  const status = document.createElement("p");
+  status.className = "source-analysis-question-status";
+  const result = document.createElement("div");
+  result.className = "source-analysis-question-result";
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const question = input.value.trim();
+    if (!question) {
+      status.textContent = "请输入源码问题。";
+      result.replaceChildren();
+      return;
+    }
+
+    submit.disabled = true;
+    status.textContent = "正在选择候选文件并读取源码...";
+    result.replaceChildren();
+    const files = selectQuestionFiles(analysis, question, 8);
+    try {
+      const documents = await loadSourceDocuments(analysis, files.map((file) => file.path), sourceCache);
+      const answer = answerSourceQuestion({
+        analysis,
+        question,
+        documents,
+        requestedFiles: files.map((file) => file.path),
+        maxCitations: 4,
+      });
+      status.textContent = `已检索 ${answer.searchedFiles.length} 个源码文件${answer.missingFiles.length ? `，${answer.missingFiles.length} 个读取失败` : ""}。`;
+      result.replaceChildren(renderQuestionAnswer(answer));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      status.textContent = `源码问答失败：${message}`;
+    } finally {
+      submit.disabled = false;
+    }
+  });
+
+  section.append(form, status, result);
+  return section;
+}
+
+async function loadSourceDocuments(
+  analysis: RepositoryAnalysis,
+  paths: readonly string[],
+  sourceCache: Map<string, string>,
+): Promise<SourceDocument[]> {
+  const uniquePaths = [...new Set(paths)].slice(0, 8);
+  const documents: SourceDocument[] = [];
+  for (const path of uniquePaths) {
+    const cacheKey = `${analysis.slug}@${analysis.defaultBranch}:${path}`;
+    const cached = sourceCache.get(cacheKey);
+    if (cached !== undefined) {
+      documents.push({ path, content: cached });
+      continue;
+    }
+
+    const response = await fetch(buildRawGitHubUrl(analysis.slug, analysis.defaultBranch, path), {
+      headers: { Accept: "text/plain" },
+    });
+    if (!response.ok) continue;
+    const content = await response.text();
+    const boundedContent = content.length > 160_000 ? content.slice(0, 160_000) : content;
+    sourceCache.set(cacheKey, boundedContent);
+    documents.push({ path, content: boundedContent });
+  }
+  return documents;
+}
+
+function buildRawGitHubUrl(slug: string, branch: string, path: string): string {
+  const encodedPath = path.split("/").map(encodeURIComponent).join("/");
+  return `https://raw.githubusercontent.com/${slug}/${encodeURIComponent(branch)}/${encodedPath}`;
+}
+
+function renderQuestionAnswer(answer: SourceQuestionAnswer): HTMLElement {
+  const wrap = document.createElement("article");
+  wrap.className = "source-analysis-answer";
+
+  const summary = document.createElement("p");
+  summary.className = "source-analysis-answer-summary";
+  summary.textContent = answer.summary;
+  wrap.append(summary);
+
+  if (answer.citations.length > 0) {
+    const list = document.createElement("ol");
+    list.className = "source-analysis-citation-list";
+    for (const citation of answer.citations) list.append(renderCitation(citation));
+    wrap.append(list);
+  }
+
+  if (answer.missingFiles.length > 0) {
+    const details = document.createElement("details");
+    details.className = "source-analysis-missing-files";
+    const summaryNode = document.createElement("summary");
+    summaryNode.textContent = "读取失败的候选文件";
+    const list = document.createElement("ul");
+    for (const path of answer.missingFiles) {
+      const item = document.createElement("li");
+      item.textContent = path;
+      list.append(item);
+    }
+    details.append(summaryNode, list);
+    wrap.append(details);
+  }
+
+  return wrap;
+}
+
+function renderCitation(citation: SourceQuestionCitation): HTMLLIElement {
+  const item = document.createElement("li");
+  const header = document.createElement("div");
+  header.className = "source-analysis-citation-head";
+  const link = document.createElement("a");
+  link.href = citation.url;
+  link.target = "_blank";
+  link.rel = "noreferrer";
+  link.textContent = `${citation.path}:${citation.startLine}-${citation.endLine}`;
+  const badge = document.createElement("span");
+  badge.className = "source-analysis-layer-badge";
+  badge.textContent = citation.layer;
+  header.append(link, badge);
+
+  const explanation = document.createElement("p");
+  explanation.textContent = citation.explanation;
+  item.append(header, explanation);
+
+  if (citation.excerpt) {
+    const pre = document.createElement("pre");
+    const code = document.createElement("code");
+    code.textContent = citation.excerpt;
+    pre.append(code);
+    item.append(pre);
+  }
+
+  return item;
+}

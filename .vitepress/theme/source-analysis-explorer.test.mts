@@ -4,9 +4,12 @@ import {
   SOURCE_ANALYSIS_PRESETS,
   analyzePreset,
   analyzeRepositoryTree,
+  answerSourceQuestion,
   buildGitHubFileUrl,
+  buildGitHubLineUrl,
   classifyRepositoryPath,
   normalizeRepositoryInput,
+  selectQuestionFiles,
 } from "./source-analysis-engine.ts";
 
 test("normalizeRepositoryInput accepts owner/repo and GitHub URLs", () => {
@@ -30,6 +33,7 @@ test("presets expose complete matrix basics for the three source-analysis repos"
     assert.ok(analysis.areas.length >= 5, `${preset.slug} should expose area matrix`);
     assert.ok(analysis.keyFiles.length >= 5, `${preset.slug} should expose relevant source files`);
     assert.ok(analysis.readingPath.length >= 4, `${preset.slug} should expose reading path`);
+    assert.ok(analysis.areas.every((row) => preset.files.some((file) => file.path === row.readFirst)));
     assert.equal(analysis.source, "preset");
   }
 });
@@ -70,3 +74,55 @@ test("buildGitHubFileUrl points at selected branch and file", () => {
   );
 });
 
+
+test("selectQuestionFiles prioritizes question-relevant source files", () => {
+  const analysis = analyzePreset(SOURCE_ANALYSIS_PRESETS.find((preset) => preset.slug === "langchain-ai/langgraph")!);
+  const files = selectQuestionFiles(analysis, "ToolNode 如何执行工具调用？", 3);
+  assert.ok(files.some((file) => file.path.endsWith("tool_node.py")));
+  assert.equal(files[0]?.layer, "工具");
+});
+
+test("answerSourceQuestion returns line citations and explanations from source text", () => {
+  const analysis = analyzeRepositoryTree({
+    slug: "example/repo",
+    defaultBranch: "main",
+    items: [
+      { path: "src/tools/tool_node.ts", type: "file" },
+      { path: "src/runtime/agent.ts", type: "file" },
+    ],
+    source: "github",
+  });
+
+  const answer = answerSourceQuestion({
+    analysis,
+    question: "工具调用如何执行并返回结果？",
+    documents: [
+      {
+        path: "src/tools/tool_node.ts",
+        content: [
+          "export class ToolNode {",
+          "  async invoke(tool_call: ToolCall) {",
+          "    const result = await this.registry.execute(tool_call.name, tool_call.args);",
+          "    return new ToolMessage({ tool_call_id: tool_call.id, content: result });",
+          "  }",
+          "}",
+        ].join("\n"),
+      },
+    ],
+    requestedFiles: ["src/tools/tool_node.ts"],
+  });
+
+  assert.equal(answer.status, "answered");
+  assert.equal(answer.citations[0]?.path, "src/tools/tool_node.ts");
+  assert.ok(answer.citations[0]?.startLine === 1);
+  assert.ok(answer.citations[0]?.endLine && answer.citations[0].endLine >= 4);
+  assert.match(answer.citations[0]?.url ?? "", /#L1-L/);
+  assert.match(answer.citations[0]?.explanation ?? "", /tool call/);
+});
+
+test("buildGitHubLineUrl anchors exact source lines", () => {
+  assert.equal(
+    buildGitHubLineUrl("langchain-ai/langgraph", "main", "libs/prebuilt/langgraph/prebuilt/tool_node.py", 10, 18),
+    "https://github.com/langchain-ai/langgraph/blob/main/libs/prebuilt/langgraph/prebuilt/tool_node.py#L10-L18",
+  );
+});
