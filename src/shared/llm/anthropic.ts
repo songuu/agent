@@ -8,8 +8,8 @@
  *  - system 提示是独立参数，不混在 messages 里。
  */
 import Anthropic from "@anthropic-ai/sdk";
-import { requireEnv, getEnv } from "../util/env";
-import { emitDemoRunnerThinking } from "../util/demoRunnerProtocol";
+import { requireEnv, getEnv } from "../util/env.ts";
+import { emitDemoRunnerThinking } from "../util/demoRunnerProtocol.ts";
 import type {
   ChatOptions,
   ChatResult,
@@ -18,7 +18,7 @@ import type {
   StopReason,
   StreamChunk,
   ToolCall,
-} from "./types";
+} from "./types.ts";
 
 const DEFAULT_MODEL = "claude-opus-4-8";
 const DEFAULT_MAX_TOKENS = 4096;

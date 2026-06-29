@@ -6,7 +6,7 @@
  * from learning vendor-specific details.
  */
 import OpenAI from "openai";
-import { getEnv } from "../util/env";
+import { getEnv } from "../util/env.ts";
 
 export interface OpenAICompatibleClientOptions {
   apiKeyEnv?: string;

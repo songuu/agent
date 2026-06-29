@@ -222,6 +222,13 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 26. 为什么即便是“read-only auto-approval”模式，file-access 工具仍可能要强制人工审批？当 loop 能力被集成进 harness agent 后，这条边界为什么会变得更关键？（→ 05 / 11 / 17 / 18 / 19）
 27. 声明式 workflow / skill archive 为什么要显式防 symlink path traversal 和非法 flow definition paths？这类问题看起来不是 prompt bug，却为什么能直接突破 agent runtime 的文件系统边界？（→ 11 / 17 / 18 / 19）
 
+28. 为什么 agent workflow 一旦进入 conversational flow / declarative flow 阶段，就要单独追踪 turn usage，并统一 CLI、TUI、loader 的入口？如果 telemetry 和运行入口不统一，会让调试、计费和回放出现什么问题？（→ 11 / 16 / 18 / 19）
+29. 为什么企业做 agent 改造时常常应该“retrofit, don't rebuild”？agentic overlay 与直接重写遗留系统相比，分别在兜什么集成、权限和发布风险？（→ 05 / 11 / 17 / 18 / 19）
+30. 为什么生产级 agentic AI 需要 governed data mesh，而不是让 agent 直接去拉数据库 / 对象存储 / 知识库？identity、catalog、policy 和 knowledge base 在 agent 数据底座里分别解决什么问题？（→ 08 / 09 / 16 / 17 / 18 / 19）
+31. 为什么 production agent 里的 skill/provider tools 最好默认 `require approval`，而不是默认放行后再补规则？一旦默认值反了，权限壳层、审计和回放会出现什么系统性漏洞？（→ 05 / 11 / 17 / 18 / 19）
+32. 为什么 agent 的网页抓取 / scraping tool 不能只校验首跳 URL 是否在 allowlist？一旦重定向链里出现 SSRF bypass，会把什么内网、metadata 或权限侧信道暴露给 agent？（→ 05 / 11 / 17 / 18 / 19）
+33. 为什么研究型 agent 的 benchmark 不能只看最终答案对不对？`stepwise verification` 和 `interactive environment` 分别在检验什么能力，为什么它们比 `final-answer-only` 更能暴露长流程研究任务的失败模式？（→ 10 / 15 / 19 / capstone）
+
 ### C. 项目深挖类（考你是不是真做过）
 
 > 这一类没有标准题库，面试官会顺着你的简历项目往下钻。**提前给自己出这些题**：

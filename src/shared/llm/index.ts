@@ -4,10 +4,10 @@
  * 这是"防厂商锁定"的落点——课程代码统一写 `const llm = getLLM()`，
  * 想换厂商只改 .env 里的 LLM_PROVIDER，一行代码都不用动。
  */
-import { getEnv } from "../util/env";
-import { createAnthropicClient } from "./anthropic";
-import { createOllamaClient, createOpenAIClient } from "./openai";
-import type { LLMClient } from "./types";
+import { getEnv } from "../util/env.ts";
+import { createAnthropicClient } from "./anthropic.ts";
+import { createOllamaClient, createOpenAIClient } from "./openai.ts";
+import type { LLMClient } from "./types.ts";
 
 export type ProviderName = "anthropic" | "openai" | "ollama";
 
@@ -35,6 +35,6 @@ export function getLLM(provider?: ProviderName, options: GetLLMOptions = {}): LL
   }
 }
 
-export * from "./types";
-export { createAnthropicClient } from "./anthropic";
-export { createOllamaClient, createOpenAIClient } from "./openai";
+export * from "./types.ts";
+export { createAnthropicClient } from "./anthropic.ts";
+export { createOllamaClient, createOpenAIClient } from "./openai.ts";

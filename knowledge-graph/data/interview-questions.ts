@@ -37,7 +37,7 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   project: "项目深挖类",
 };
 
-const COLLECTED_DATE = "2026-06-25";
+const COLLECTED_DATE = "2026-06-29";
 const COLLECTED_AT = `${COLLECTED_DATE}T09:00:00+08:00`;
 
 interface RawInterviewQuestion {
@@ -437,7 +437,96 @@ const RAW_QUESTIONS: RawInterviewQuestion[] = [
     confidence: "high",
     rationale: "本题来自 CrewAI 最新 prerelease 对 skill archive 提取与 declarative flow path 的安全修复，适合补齐 workflow DSL 落地时的本地文件边界追问。",
   },
-  // C. 项目深挖类
+  {
+    slug: "conversational-flow-telemetry-and-unified-loader-boundary",
+    category: "engineering",
+    question:
+      "为什么 agent workflow 一旦进入 conversational flow / declarative flow 阶段，就要单独追踪 turn usage，并统一 CLI、TUI、loader 的入口？如果 telemetry 和运行入口不统一，会让调试、计费和回放出现什么问题？",
+    relatedChapters: ["11", "16", "18", "19"],
+    sourceTitles: [
+      "CrewAI 1.15.0 release notes",
+    ],
+    sourceUrls: [
+      "https://github.com/crewAIInc/crewAI/releases/tag/1.15.0",
+    ],
+    confidence: "high",
+    rationale: "本题来自 CrewAI 1.15.0 对 conversational flow telemetry 和 declarative flow 统一入口的稳定版收敛，适合追问多 agent workflow 的可观测与运维边界。",
+  },
+  {
+    slug: "agentic-overlay-vs-rebuild-for-legacy-enterprise-services",
+    category: "engineering",
+    question:
+      "为什么企业做 agent 改造时常常应该『retrofit, don't rebuild』？agentic overlay 与直接重写遗留系统相比，分别在兜什么集成、权限和发布风险？",
+    relatedChapters: ["05", "11", "17", "18", "19"],
+    sourceTitles: [
+      "Retrofit, don't rebuild: Agentic overlays for transforming legacy enterprise services",
+    ],
+    sourceUrls: [
+      "https://aws.amazon.com/blogs/machine-learning/retrofit-dont-rebuild-agentic-overlays-for-transforming-legacy-enterprise-services/",
+    ],
+    confidence: "high",
+    rationale: "本题来自 AWS 对 legacy enterprise services 的 agentic overlay 实践，适合补齐工具接口改造、权限壳层和渐进迁移的生产追问。",
+  },
+  {
+    slug: "governed-data-mesh-for-agentic-ai-vs-direct-source-access",
+    category: "engineering",
+    question:
+      "为什么生产级 agentic AI 需要 governed data mesh，而不是让 agent 直接去拉数据库/对象存储/知识库？identity、catalog、policy 和 knowledge base 在 agent 数据底座里分别解决什么问题？",
+    relatedChapters: ["08", "09", "16", "17", "18", "19"],
+    sourceTitles: [
+      "Building agentic AI applications with a modern data mesh strategy on AWS",
+    ],
+    sourceUrls: [
+      "https://aws.amazon.com/blogs/machine-learning/building-agentic-ai-applications-with-a-modern-data-mesh-strategy-on-aws/",
+    ],
+    confidence: "high",
+    rationale: "本题来自 AWS 对 governed data mesh + Bedrock AgentCore + Knowledge Bases 的组合实践，适合追问 production agent 的数据治理与检索边界。",
+  },
+  {
+    slug: "approval-by-default-for-agent-skills-and-tools",
+    category: "engineering",
+    question:
+      "为什么 production agent 里的 skill/provider tools 最好默认 require approval，而不是默认放行后再补规则？一旦默认值反了，权限壳层、审计和回放会出现什么系统性漏洞？",
+    relatedChapters: ["05", "11", "17", "18", "19"],
+    sourceTitles: [
+      "Microsoft Agent Framework .NET 1.11.1 release notes",
+    ],
+    sourceUrls: [
+      "https://github.com/microsoft/agent-framework/releases/tag/dotnet-1.11.1",
+    ],
+    confidence: "high",
+    rationale: "本题来自 Microsoft Agent Framework 1.11.1 的 breaking change：把 AgentSkillsProvider tools 的默认审批策略改成 require approval，适合补齐 agent tool 默认信任边界的高频追问。",
+  },
+  {
+    slug: "redirect-based-ssrf-in-agent-fetch-and-scraping-tools",
+    category: "engineering",
+    question:
+      "为什么 agent 的网页抓取 / scraping tool 不能只校验首跳 URL 是否在 allowlist？一旦重定向链里出现 SSRF bypass，会把什么内网、metadata 或权限侧信道暴露给 agent？",
+    relatedChapters: ["05", "11", "17", "18", "19"],
+    sourceTitles: [
+      "CrewAI 1.15.1 release notes",
+    ],
+    sourceUrls: [
+      "https://github.com/crewAIInc/crewAI/releases/tag/1.15.1",
+    ],
+    confidence: "high",
+    rationale: "本题来自 CrewAI 1.15.1 对 scraping fetches 中 SSRF redirect bypass 的修复，适合补齐 fetch/search/browser 类工具的网络边界追问。",
+  },
+  {
+    slug: "stepwise-verification-and-interactive-benchmarks-for-research-agents",
+    category: "engineering",
+    question:
+      "为什么研究型 agent 的 benchmark 不能只看最终答案对不对？stepwise verification 和 interactive environment 分别在检验什么能力，为什么它们比 final-answer-only 更能暴露长流程研究任务的失败模式？",
+    relatedChapters: ["10", "15", "19", "capstone"],
+    sourceTitles: [
+      "Benchmarking AI Agents for Addressing Scientific Challenges Across Scales",
+    ],
+    sourceUrls: [
+      "https://arxiv.org/abs/2606.12736",
+    ],
+    confidence: "medium",
+    rationale: "本题来自 SciAgentArena 论文：约 200 个科学任务使用 stepwise verification 和 interactive environment，适合补齐 deep research / science agent 的评测口径追问。",
+  },  // C. 项目深挖类
   {
     slug: "project-why-multi-agent",
     category: "project",

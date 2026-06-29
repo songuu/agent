@@ -7,12 +7,12 @@
  *  - system 就是一条 role:"system" 的普通消息。
  */
 import OpenAI from "openai";
-import { getEnv } from "../util/env";
-import { emitDemoRunnerThinking } from "../util/demoRunnerProtocol";
+import { getEnv } from "../util/env.ts";
+import { emitDemoRunnerThinking } from "../util/demoRunnerProtocol.ts";
 import {
   createOpenAICompatibleClient,
   type OpenAICompatibleClientOptions,
-} from "./openaiCompatible";
+} from "./openaiCompatible.ts";
 import type {
   ChatOptions,
   ChatResult,
@@ -21,7 +21,7 @@ import type {
   StopReason,
   StreamChunk,
   ToolCall,
-} from "./types";
+} from "./types.ts";
 
 const DEFAULT_MODEL = "gpt-4o";
 const DEFAULT_OLLAMA_MODEL = "llama3.2";
