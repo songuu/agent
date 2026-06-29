@@ -330,10 +330,13 @@ function renderPopularRepositories(
   plus.textContent = "+";
   const addTitle = document.createElement("strong");
   addTitle.textContent = "Add repo";
+  const addHint = document.createElement("span");
+  addHint.className = "source-analysis-popular-add-hint";
+  addHint.textContent = "Paste GitHub URL";
   const addArrow = document.createElement("span");
   addArrow.className = "source-analysis-popular-arrow";
   addArrow.textContent = "→";
-  add.append(plus, addTitle, addArrow);
+  add.append(plus, addTitle, addHint, addArrow);
   grid.append(add);
 
   for (const repo of POPULAR_SOURCE_REPOSITORIES) {
@@ -369,10 +372,6 @@ function popularRepositoryCard(
   desc.className = "source-analysis-popular-desc";
   desc.textContent = repo.description;
 
-  const reason = document.createElement("span");
-  reason.className = "source-analysis-popular-reason";
-  reason.textContent = repo.reason;
-
   const meta = document.createElement("span");
   meta.className = "source-analysis-popular-meta";
   const stars = document.createElement("span");
@@ -381,7 +380,7 @@ function popularRepositoryCard(
   mode.textContent = presetForSlug(repo.slug) ? "内置矩阵" : "Live tree";
   meta.append(stars, mode);
 
-  card.append(head, desc, reason, meta);
+  card.append(head, desc, meta);
   return card;
 }
 function renderReadingPath(analysis: RepositoryAnalysis): HTMLElement {
