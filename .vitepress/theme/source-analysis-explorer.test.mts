@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  POPULAR_SOURCE_REPOSITORIES,
   SOURCE_ANALYSIS_PRESETS,
   analyzePreset,
   analyzeRepositoryTree,
@@ -9,6 +10,7 @@ import {
   buildGitHubLineUrl,
   classifyRepositoryPath,
   normalizeRepositoryInput,
+  popularRepositoryForSlug,
   selectQuestionFiles,
 } from "./source-analysis-engine.ts";
 
@@ -26,6 +28,32 @@ test("normalizeRepositoryInput accepts owner/repo and GitHub URLs", () => {
   assert.equal(normalizeRepositoryInput("not-a-slug"), null);
 });
 
+test("popular source repositories mirror the DeepWiki-style hot repo entry grid", () => {
+  assert.ok(POPULAR_SOURCE_REPOSITORIES.length >= 12);
+  const slugs = POPULAR_SOURCE_REPOSITORIES.map((repo) => repo.slug);
+  assert.equal(new Set(slugs.map((slug) => slug.toLowerCase())).size, slugs.length);
+  for (const expected of [
+    "microsoft/vscode",
+    "huggingface/transformers",
+    "microsoft/playwright",
+    "opendatalab/MinerU",
+    "karpathy/nanochat",
+    "langchain-ai/langchain",
+    "openai/openai-python",
+  ]) {
+    assert.ok(slugs.includes(expected), `${expected} should be available as a popular repo`);
+  }
+  for (const repo of POPULAR_SOURCE_REPOSITORIES) {
+    assert.equal(normalizeRepositoryInput(repo.slug)?.slug, repo.slug);
+    assert.ok(repo.description.length > 0, `${repo.slug} should have card description`);
+    assert.ok(repo.reason.length > 0, `${repo.slug} should explain why it is worth reading`);
+  }
+});
+
+test("popularRepositoryForSlug is case-insensitive", () => {
+  assert.equal(popularRepositoryForSlug("LANGCHAIN-AI/LANGCHAIN")?.slug, "langchain-ai/langchain");
+  assert.equal(popularRepositoryForSlug("missing/repo"), undefined);
+});
 test("presets expose complete matrix basics for the three source-analysis repos", () => {
   assert.equal(SOURCE_ANALYSIS_PRESETS.length, 3);
   for (const preset of SOURCE_ANALYSIS_PRESETS) {

@@ -1,4 +1,5 @@
 import {
+  POPULAR_SOURCE_REPOSITORIES,
   SOURCE_ANALYSIS_PRESETS,
   analyzePreset,
   analyzeRepositoryTree,
@@ -7,6 +8,7 @@ import {
   normalizeRepositoryInput,
   presetForSlug,
   selectQuestionFiles,
+  type PopularRepository,
   type RepositoryAnalysis,
   type RepositoryAreaRow,
   type RepositoryFileRow,
@@ -68,11 +70,11 @@ function renderExplorer(root: HTMLElement): void {
   eyebrow.className = "source-analysis-eyebrow";
   eyebrow.textContent = "DeepWiki-style Repository Analysis";
   const title = document.createElement("h2");
-  title.textContent = "指定仓库 -> 仓库矩阵 -> 源码阅读路径";
+  title.textContent = "Which repo would you like to understand?";
   const description = document.createElement("p");
   description.className = "source-analysis-desc";
   description.textContent =
-    "输入公开 GitHub 仓库，前端直接读取 repo tree，生成目录矩阵、关键文件、语言分布和阅读顺序；无 token 时仍可使用三套内置源码解析。";
+    "选择热门仓库，或粘贴任意公开 GitHub repo，直接生成仓库矩阵、Relevant Source Files、源码问答和阅读路径。";
   titleGroup.append(eyebrow, title, description);
 
   const stats = document.createElement("div");
@@ -84,12 +86,15 @@ function renderExplorer(root: HTMLElement): void {
   const input = document.createElement("input");
   input.type = "search";
   input.value = defaultAnalysis.slug;
-  input.placeholder = "例如 langchain-ai/langgraph 或 https://github.com/run-llama/llama_index";
+  input.placeholder = "Search for repositories (or paste a link)";
   input.setAttribute("aria-label", "GitHub 仓库");
   const submit = document.createElement("button");
   submit.type = "submit";
-  submit.textContent = "解析仓库";
+  submit.textContent = "解析";
   form.append(input, submit);
+
+  const popular = document.createElement("section");
+  popular.className = "source-analysis-popular";
 
   const presets = document.createElement("nav");
   presets.className = "source-analysis-presets";
@@ -102,6 +107,7 @@ function renderExplorer(root: HTMLElement): void {
     button.addEventListener("click", () => {
       input.value = preset.slug;
       current = analyzePreset(preset);
+      status.textContent = "已加载内置源码解析矩阵。";
       renderAnalysis();
     });
     presets.append(button);
@@ -113,12 +119,12 @@ function renderExplorer(root: HTMLElement): void {
   const body = document.createElement("div");
   body.className = "source-analysis-body";
 
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
+  async function setRepository(value: string): Promise<void> {
     submit.disabled = true;
     status.textContent = "正在读取 GitHub repo tree...";
     try {
-      current = await loadRepository(input.value);
+      current = await loadRepository(value);
+      input.value = current.slug;
       status.textContent =
         current.source === "github"
           ? `GitHub tree 已解析：${current.stats.totalFiles} files${current.truncated ? " · GitHub 返回 truncated" : ""}`
@@ -126,10 +132,11 @@ function renderExplorer(root: HTMLElement): void {
       renderAnalysis();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      const target = normalizeRepositoryInput(input.value);
+      const target = normalizeRepositoryInput(value);
       const preset = target ? presetForSlug(target.slug) : undefined;
       if (preset) {
         current = analyzePreset(preset);
+        input.value = preset.slug;
         status.textContent = `GitHub 读取失败，已回退到内置矩阵：${message}`;
         renderAnalysis();
       } else {
@@ -138,6 +145,11 @@ function renderExplorer(root: HTMLElement): void {
     } finally {
       submit.disabled = false;
     }
+  }
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    void setRepository(input.value);
   });
 
   function renderAnalysis(): void {
@@ -151,6 +163,17 @@ function renderExplorer(root: HTMLElement): void {
       button.dataset.active = button.dataset.slug === current.slug ? "true" : "false";
     }
 
+    renderPopularRepositories(popular, current.slug, {
+      onAdd: () => {
+        input.focus();
+        input.select();
+      },
+      onAnalyze: (slug) => {
+        input.value = slug;
+        void setRepository(slug);
+      },
+    });
+
     body.replaceChildren(
       renderOverview(current),
       renderLanguages(current),
@@ -162,7 +185,7 @@ function renderExplorer(root: HTMLElement): void {
   }
 
   renderAnalysis();
-  shell.append(hero, form, presets, status, body);
+  shell.append(hero, form, popular, presets, status, body);
   root.append(shell);
 }
 
@@ -282,6 +305,85 @@ function renderFileMatrix(analysis: RepositoryAnalysis): HTMLElement {
   return section;
 }
 
+function renderPopularRepositories(
+  container: HTMLElement,
+  activeSlug: string,
+  actions: { onAdd: () => void; onAnalyze: (slug: string) => void },
+): void {
+  const header = document.createElement("header");
+  header.className = "source-analysis-popular-heading";
+  const title = document.createElement("h3");
+  title.textContent = "热门库直接解读";
+  const desc = document.createElement("p");
+  desc.textContent = "参照 DeepWiki 首页形态，把热门仓库做成可点击的源码解析入口。";
+  header.append(title, desc);
+
+  const grid = document.createElement("div");
+  grid.className = "source-analysis-popular-grid";
+
+  const add = document.createElement("button");
+  add.type = "button";
+  add.className = "source-analysis-popular-card source-analysis-popular-card--add";
+  add.addEventListener("click", actions.onAdd);
+  const plus = document.createElement("span");
+  plus.className = "source-analysis-popular-plus";
+  plus.textContent = "+";
+  const addTitle = document.createElement("strong");
+  addTitle.textContent = "Add repo";
+  const addArrow = document.createElement("span");
+  addArrow.className = "source-analysis-popular-arrow";
+  addArrow.textContent = "→";
+  add.append(plus, addTitle, addArrow);
+  grid.append(add);
+
+  for (const repo of POPULAR_SOURCE_REPOSITORIES) {
+    grid.append(popularRepositoryCard(repo, activeSlug, actions.onAnalyze));
+  }
+
+  container.replaceChildren(header, grid);
+}
+
+function popularRepositoryCard(
+  repo: PopularRepository,
+  activeSlug: string,
+  onAnalyze: (slug: string) => void,
+): HTMLButtonElement {
+  const card = document.createElement("button");
+  card.type = "button";
+  card.className = "source-analysis-popular-card";
+  card.dataset.slug = repo.slug;
+  card.dataset.active = repo.slug.toLowerCase() === activeSlug.toLowerCase() ? "true" : "false";
+  card.setAttribute("aria-label", `解析 ${repo.slug}`);
+  card.addEventListener("click", () => onAnalyze(repo.slug));
+
+  const head = document.createElement("span");
+  head.className = "source-analysis-popular-card-head";
+  const name = document.createElement("strong");
+  name.textContent = repo.slug.replace("/", " / ");
+  const arrow = document.createElement("span");
+  arrow.className = "source-analysis-popular-arrow";
+  arrow.textContent = "→";
+  head.append(name, arrow);
+
+  const desc = document.createElement("span");
+  desc.className = "source-analysis-popular-desc";
+  desc.textContent = repo.description;
+
+  const reason = document.createElement("span");
+  reason.className = "source-analysis-popular-reason";
+  reason.textContent = repo.reason;
+
+  const meta = document.createElement("span");
+  meta.className = "source-analysis-popular-meta";
+  const stars = document.createElement("span");
+  stars.textContent = repo.starsLabel ? `★ ${repo.starsLabel}` : "GitHub";
+  const mode = document.createElement("span");
+  mode.textContent = presetForSlug(repo.slug) ? "内置矩阵" : "Live tree";
+  meta.append(stars, mode);
+
+  card.append(head, desc, reason, meta);
+  return card;
+}
 function renderReadingPath(analysis: RepositoryAnalysis): HTMLElement {
   const section = document.createElement("section");
   section.className = "source-analysis-panel";

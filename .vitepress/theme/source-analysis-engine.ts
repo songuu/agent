@@ -26,6 +26,13 @@ export interface RepositoryPreset {
   readingPath: string[];
 }
 
+export interface PopularRepository {
+  slug: string;
+  description: string;
+  starsLabel?: string;
+  reason: string;
+}
+
 export interface RepositoryAreaRow {
   area: string;
   layer: RepositoryLayer;
@@ -283,6 +290,102 @@ export const SOURCE_ANALYSIS_PRESETS: RepositoryPreset[] = [
   },
 ];
 
+export const POPULAR_SOURCE_REPOSITORIES: PopularRepository[] = [
+  {
+    slug: "microsoft/vscode",
+    description: "Visual Studio Code",
+    starsLabel: "183.9k",
+    reason: "大型 TypeScript/Electron 产品，适合读插件体系、编辑器服务和跨进程边界。",
+  },
+  {
+    slug: "huggingface/transformers",
+    description: "State-of-the-art machine learning model framework for text, vision, audio and multimodal workloads.",
+    starsLabel: "159.4k",
+    reason: "模型加载、pipeline、tokenizer 和推理抽象密集，适合读 ML 框架工程分层。",
+  },
+  {
+    slug: "microsoft/playwright",
+    description: "Web testing and automation framework for Chromium, Firefox and WebKit.",
+    starsLabel: "86.5k",
+    reason: "浏览器驱动、协议封装、fixture/test runner 组合清晰，适合读工具 runtime。",
+  },
+  {
+    slug: "opendatalab/MinerU",
+    description: "Transforms complex documents such as PDFs into LLM-ready markdown/JSON.",
+    starsLabel: "60.0k",
+    reason: "文档解析、版面识别和结构化输出链路完整，适合读 data pipeline。",
+  },
+  {
+    slug: "karpathy/nanochat",
+    description: "A compact ChatGPT-style training and inference codebase.",
+    starsLabel: "51.9k",
+    reason: "小而完整，适合从训练、tokenizer、推理和聊天入口一次读穿。",
+  },
+  {
+    slug: "celery/celery",
+    description: "Distributed task queue for Python applications.",
+    reason: "任务调度、worker、broker 和可靠性边界成熟，适合读分布式后台 runtime。",
+  },
+  {
+    slug: "Tencent/ncnn",
+    description: "High-performance neural network inference framework optimized for mobile platforms.",
+    starsLabel: "23.1k",
+    reason: "C++ 推理 runtime、算子、模型加载和移动端优化边界清楚。",
+  },
+  {
+    slug: "eosphoros-ai/DB-GPT",
+    description: "Open-source agentic AI data assistant for AI + Data applications.",
+    starsLabel: "18.5k",
+    reason: "数据 agent、工具调用、SQL/RAG 和应用层编排都有真实工程复杂度。",
+  },
+  {
+    slug: "linshenkx/prompt-optimizer",
+    description: "AI prompt optimizer for writing better prompts and getting better AI results.",
+    starsLabel: "26.4k",
+    reason: "提示优化产品链路短，适合读 prompt workflow、模型调用和前端交互。",
+  },
+  {
+    slug: "nextapps-de/flexsearch",
+    description: "Next-generation full-text search library for browser and Node.js.",
+    starsLabel: "13.7k",
+    reason: "全文索引、分词、查询和性能权衡集中，适合读搜索库核心实现。",
+  },
+  {
+    slug: "agent0ai/agent-zero",
+    description: "Agent Zero AI framework.",
+    starsLabel: "17.0k",
+    reason: "agent framework 的工具、记忆、执行循环和扩展边界适合与本课程对照。",
+  },
+  {
+    slug: "hackjutsu/Lepton",
+    description: "Democratizing snippet management across macOS, Windows and Linux.",
+    starsLabel: "10.3k",
+    reason: "桌面应用、同步、编辑体验和状态管理完整，适合读产品型仓库。",
+  },
+  {
+    slug: "langchain-ai/langchain",
+    description: "The agent engineering platform.",
+    starsLabel: "133.6k",
+    reason: "课程内置深入解析：agent factory、Runnable、tool 和 middleware 主链完整。",
+  },
+  {
+    slug: "openai/openai-python",
+    description: "Official Python library for the OpenAI API.",
+    starsLabel: "30.5k",
+    reason: "SDK 生成代码、类型、streaming、错误处理和 API 边界适合读客户端设计。",
+  },
+  {
+    slug: "langchain-ai/langgraph",
+    description: "Build resilient language agents as graphs.",
+    reason: "课程内置深入解析：StateGraph、Pregel、ToolNode 和 checkpoint 主链完整。",
+  },
+  {
+    slug: "run-llama/llama_index",
+    description: "Data framework for LLM applications.",
+    reason: "课程内置深入解析：QueryEngine、Retriever、ResponseSynthesizer 和 Workflow 主链完整。",
+  },
+];
+
 export function normalizeRepositoryInput(input: string): RepositoryTarget | null {
   const trimmed = input.trim();
   if (!trimmed) return null;
@@ -299,6 +402,10 @@ export function normalizeRepositoryInput(input: string): RepositoryTarget | null
 
 export function presetForSlug(slug: string): RepositoryPreset | undefined {
   return SOURCE_ANALYSIS_PRESETS.find((preset) => preset.slug.toLowerCase() === slug.toLowerCase());
+}
+
+export function popularRepositoryForSlug(slug: string): PopularRepository | undefined {
+  return POPULAR_SOURCE_REPOSITORIES.find((repo) => repo.slug.toLowerCase() === slug.toLowerCase());
 }
 
 export function analyzePreset(preset: RepositoryPreset): RepositoryAnalysis {

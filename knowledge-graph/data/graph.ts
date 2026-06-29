@@ -445,7 +445,8 @@ export const CONCEPTS: Concept[] = [
 
   // 第 21 章 · 源码解析
   { id: "srca-reading-map", label: "源码阅读路线", chapter: "21", summary: "按入口函数、runtime、状态/工具/检索、停止条件四层读框架源码" },
-  { id: "srca-repository-matrix", label: "仓库矩阵解析器", chapter: "21", summary: "输入 GitHub 仓库后生成目录/包矩阵、Relevant Source Files、源码问答、语言分布和阅读路径" },
+  { id: "srca-popular-repositories", label: "热门库直接解读", chapter: "21", summary: "参照 DeepWiki 首页，把热门仓库做成可点击的源码解析入口" },
+  { id: "srca-repository-matrix", label: "仓库矩阵解析器", chapter: "21", summary: "从热门库卡片或 GitHub 仓库输入后生成目录/包矩阵、Relevant Source Files、源码问答、语言分布和阅读路径" },
   { id: "srca-relevant-source-files", label: "Relevant Source Files", chapter: "21", summary: "按路径和职责信号筛出首轮应该打开的源码入口" },
   { id: "srca-source-qa", label: "源码问答检索", chapter: "21", summary: "按问题检索候选源码，返回文件行号、源码片段和解释" },
   { id: "srca-langchain-agent-factory", label: "LangChain create_agent", chapter: "21", summary: "把模型、工具、middleware、structured output 组装成 agent runtime" },
@@ -657,6 +658,7 @@ export const RELATIONS: Relation[] = [
   { from: "c19-mcp", to: "c05-native-tool-use", type: "应用", note: "MCP 把工具调用标准化为跨厂商协议" },
   { from: "c20-news-archive", to: "c19-ecosystem-layers", type: "深化", note: "把生态分层进一步落到可按日期阅读的资料库" },
   { from: "srca-reading-map", to: "c12-framework-choice", type: "深化", note: "从框架选型进入源码级边界验证" },
+  { from: "srca-popular-repositories", to: "srca-repository-matrix", type: "组成", note: "热门仓库卡片是仓库矩阵的 DeepWiki-style 入口" },
   { from: "srca-repository-matrix", to: "srca-reading-map", type: "组成", note: "先把仓库切成矩阵，再沿阅读路线下钻" },
   { from: "srca-relevant-source-files", to: "srca-repository-matrix", type: "组成", note: "高信号文件列表是仓库矩阵的首轮入口" },
   { from: "srca-source-qa", to: "srca-relevant-source-files", type: "应用", note: "源码问答先用 Relevant Source Files 缩小检索范围" },
@@ -1702,7 +1704,7 @@ export const ARTICLES: Article[] = [
   { title: "LangGraph.js · How to wait for user input using interrupt", url: "https://langchain-ai.github.io/langgraphjs/how-tos/wait-user-input-functional/", kind: "doc", chapters: ["lg-hitl"], note: "用 interrupt 暂停等用户输入、再用 Command({resume}) 续跑的官方 how-to，对应本章审批门 demo" },
   { title: "LangGraph.js · Multi-agent systems（概念）", url: "https://langchain-ai.github.io/langgraphjs/concepts/multi_agent/", kind: "doc", chapters: ["lg-multiagent"], note: "官方多 agent 拓扑总览：supervisor、network、hierarchical 等——本章 supervisor / parallel team 的权威参考" },
   { title: "LangGraph.js · Agent supervisor（教程）", url: "https://langchain-ai.github.io/langgraphjs/tutorials/multi_agent/agent_supervisor/", kind: "doc", chapters: ["lg-multiagent"], note: "一个 supervisor 用条件边把任务派给多个 worker agent 的官方教程，对应本章图1 的中心化调度循环" },
-  { title: "DeepWiki", url: "https://deepwiki.com/", kind: "doc", source: "DeepWiki", chapters: ["21"], note: "源码仓库 Wiki 参考形态：仓库入口、目录化 Wiki、Relevant source files、源码问答和源码引用" },
+  { title: "DeepWiki", url: "https://deepwiki.com/", kind: "doc", source: "DeepWiki", chapters: ["21"], note: "源码仓库 Wiki 参考形态：热门仓库入口、目录化 Wiki、Relevant source files、源码问答和源码引用" },
   { title: "LangChain v1 agents source", url: "https://github.com/langchain-ai/langchain/blob/master/libs/langchain_v1/langchain/agents/factory.py", kind: "doc", source: "LangChain", chapters: ["21"], note: "LangChain 官方源码入口：create_agent 如何组装模型、工具、middleware、structured output 与 agent runtime" },
   { title: "LangGraph StateGraph and Pregel runtime source", url: "https://github.com/langchain-ai/langgraph/blob/main/libs/langgraph/langgraph/graph/state.py", kind: "doc", source: "LangGraph", chapters: ["21"], note: "LangGraph 官方源码入口：StateGraph 的 state schema、channel reducer、node、edge 与 compile" },
   { title: "LlamaIndex RetrieverQueryEngine source", url: "https://github.com/run-llama/llama_index/blob/main/llama-index-core/llama_index/core/query_engine/retriever_query_engine.py", kind: "doc", source: "LlamaIndex", chapters: ["21"], note: "LlamaIndex 官方源码入口：retriever、node postprocessor、response synthesizer 组成 data-first RAG 查询链路" },

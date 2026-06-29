@@ -150,4 +150,4 @@
 
 ## 下一步
 
-从 [基础概念扩展专题](../agent-basics/) 进入 B1-B12。每篇按“概念边界 → 工程拆解 → 常见误区 → 自检练习”组织，读完再回到主线第 04 章会更顺。学完第 12 章后，再走 [源码解析](../source-analysis/) 把 LangChain / LangGraph / LlamaIndex 的框架黑盒打开。
+从 [基础概念扩展专题](../agent-basics/) 进入 B1-B12。每篇按“概念边界 → 工程拆解 → 常见误区 → 自检练习”组织，读完再回到主线第 04 章会更顺。学完第 12 章后，再走 [源码解析](../source-analysis/)：先用热门库卡片快速进入真实仓库，再把 LangChain / LangGraph / LlamaIndex 的框架黑盒打开。
