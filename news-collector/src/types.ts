@@ -63,6 +63,8 @@ export interface NewsSource {
   readonly name: string;
   /** 来源地址。默认是 RSS2.0/Atom；少数无 feed 站点可用专用 format 适配。 */
   readonly url: string;
+  /** 同一来源的备用 feed URL；用于源站迁移或主 URL 间歇失败时兜底。 */
+  readonly fallbackUrls?: readonly string[];
   readonly format?: SourceFormat;
   readonly kind: SourceKind;
   readonly lang: SourceLang;
@@ -165,3 +167,4 @@ export const newsItemSchema = z.object({
 });
 
 export type ValidatedNewsItem = z.infer<typeof newsItemSchema>;
+

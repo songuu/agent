@@ -37,7 +37,7 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   project: "项目深挖类",
 };
 
-const COLLECTED_DATE = "2026-06-29";
+const COLLECTED_DATE = "2026-06-30";
 const COLLECTED_AT = `${COLLECTED_DATE}T09:00:00+08:00`;
 
 interface RawInterviewQuestion {
@@ -526,6 +526,51 @@ const RAW_QUESTIONS: RawInterviewQuestion[] = [
     ],
     confidence: "medium",
     rationale: "本题来自 SciAgentArena 论文：约 200 个科学任务使用 stepwise verification 和 interactive environment，适合补齐 deep research / science agent 的评测口径追问。",
+  },
+  {
+    slug: "assistant-function-choice-vs-openapi-path-canonicalization",
+    category: "engineering",
+    question:
+      "为什么给 Assistant agent 增加 `function_choice_behavior` 这类更强的函数选择能力时，必须同时审查 OpenAPI plugin 的路径归一化与 encoded dot-segment 绕过？如果只增强调度能力、不收紧 plugin 路径边界，会把什么 SSRF / 越权调用风险放大？",
+    relatedChapters: ["05", "11", "17", "18", "19"],
+    sourceTitles: [
+      "Semantic Kernel Python 1.43.1 release notes",
+    ],
+    sourceUrls: [
+      "https://github.com/microsoft/semantic-kernel/releases/tag/python-1.43.1",
+    ],
+    confidence: "high",
+    rationale: "本题来自 Semantic Kernel 1.43.1：把 assistant agent 的函数选择能力增强与 OpenAPI plugin 路径规范化修复放在同一次 release，适合追问“能力增强”和“边界收紧”为何必须并行推进。",
+  },
+  {
+    slug: "scientific-review-agent-needs-inference-scaling-and-human-final-say",
+    category: "engineering",
+    question:
+      "为什么 scientific review agent 不能只做一次性摘要或 zero-shot 打分？`inference scaling`、理论/实验核查和“人类保留最终裁决”分别在兜什么误判与责任边界？",
+    relatedChapters: ["10", "15", "19", "capstone"],
+    sourceTitles: [
+      "Towards Automating Scientific Review with Google's Paper Assistant Tool",
+    ],
+    sourceUrls: [
+      "https://arxiv.org/abs/2606.28277",
+    ],
+    confidence: "medium",
+    rationale: "本题来自 Google PAT 论文：review agent 的核心不是生成评论，而是把验证链拉长、把错误暴露出来，并维持 human-in-the-loop 的最终控制。",
+  },
+  {
+    slug: "repository-level-friction-vs-single-agent-win-rate",
+    category: "engineering",
+    question:
+      "为什么 coding agent 评测不能只看 isolated task success 或单个 PR 是否过测？`repository-level integration friction` 在衡量什么，为什么它比单 agent 胜率更接近真实生产风险？",
+    relatedChapters: ["12", "15", "16", "18", "19"],
+    sourceTitles: [
+      "Govern the Repository, Not the Agent: Measuring Ecosystem-Level Risk in AI-Native Software",
+    ],
+    sourceUrls: [
+      "https://arxiv.org/abs/2606.28235",
+    ],
+    confidence: "medium",
+    rationale: "本题来自仓库级风险论文：agent 各自过关不代表共享仓库健康，适合补齐 coding agent 在并发集成、仓库摩擦和生态治理上的高频追问。",
   },  // C. 项目深挖类
   {
     slug: "project-why-multi-agent",
@@ -640,3 +685,4 @@ const slugs = new Set(INTERVIEW_QUESTIONS.map((q) => q.slug));
 if (slugs.size !== INTERVIEW_QUESTIONS.length) {
   throw new Error("Duplicate interview question slug detected in interview-questions.ts");
 }
+

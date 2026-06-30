@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **45** 个单元、**269** 个概念、**417** 条关系、**165** 篇关联文章。
+共 **65** 个单元、**329** 个概念、**457** 条关系、**168** 篇关联文章。
 
 ## 章节地图
 
@@ -56,6 +56,26 @@ flowchart LR
     C_cap-feedback["cap-feedback 毕业项目 · 用户反馈洞察 Agent"]
     C_cap-sales["cap-sales 毕业项目 · 销售线索研究 Agent"]
     C_cap-enterprise-kb["cap-enterprise-kb 毕业项目 · 企业知识库 Agent"]
+    C_cap-meeting-action["cap-meeting-action 毕业项目 · 会议行动项 Agent"]
+    C_cap-contract-risk["cap-contract-risk 毕业项目 · 合同风险审阅 Agent"]
+    C_cap-data-quality["cap-data-quality 毕业项目 · 数据质量哨兵 Agent"]
+    C_cap-onboarding-coach["cap-onboarding-coach 毕业项目 · 新员工入职教练 Agent"]
+    C_cap-rfp-proposal["cap-rfp-proposal 毕业项目 · RFP 方案标书 Agent"]
+    C_cap-clinical-intake["cap-clinical-intake 毕业项目 · 临床问诊分流助手 Agent"]
+    C_cap-legal-discovery["cap-legal-discovery 毕业项目 · 法务证据发现 Agent"]
+    C_cap-finance-close["cap-finance-close 毕业项目 · 财务月结助手 Agent"]
+    C_cap-security-triage["cap-security-triage 毕业项目 · 安全告警分诊 Agent"]
+    C_cap-compliance-policy["cap-compliance-policy 毕业项目 · 合规政策监控 Agent"]
+    C_cap-developer-onboarding["cap-developer-onboarding 毕业项目 · 开发者入仓引导 Agent"]
+    C_cap-test-synthesizer["cap-test-synthesizer 毕业项目 · 测试用例生成 Agent"]
+    C_cap-cs-renewal["cap-cs-renewal 毕业项目 · 客户成功续约 Agent"]
+    C_cap-ecommerce-merch["cap-ecommerce-merch 毕业项目 · 电商选品运营 Agent"]
+    C_cap-adaptive-tutor["cap-adaptive-tutor 毕业项目 · 自适应学习教练 Agent"]
+    C_cap-recruiting-screener["cap-recruiting-screener 毕业项目 · 招聘初筛 Agent"]
+    C_cap-grant-proposal["cap-grant-proposal 毕业项目 · 科研基金申请 Agent"]
+    C_cap-supply-chain["cap-supply-chain 毕业项目 · 供应链风险雷达 Agent"]
+    C_cap-field-service["cap-field-service 毕业项目 · 现场服务调度 Agent"]
+    C_cap-privacy-dsr["cap-privacy-dsr 毕业项目 · 隐私数据请求 Agent"]
   end
   subgraph P9["进阶 RAG 专题"]
     C_rag-chunk["rag-chunk 进阶分块策略"]
@@ -105,7 +125,27 @@ flowchart LR
   C_cap-incident --> C_cap-feedback
   C_cap-feedback --> C_cap-sales
   C_cap-sales --> C_cap-enterprise-kb
-  C_cap-enterprise-kb --> C_rag-chunk
+  C_cap-enterprise-kb --> C_cap-meeting-action
+  C_cap-meeting-action --> C_cap-contract-risk
+  C_cap-contract-risk --> C_cap-data-quality
+  C_cap-data-quality --> C_cap-onboarding-coach
+  C_cap-onboarding-coach --> C_cap-rfp-proposal
+  C_cap-rfp-proposal --> C_cap-clinical-intake
+  C_cap-clinical-intake --> C_cap-legal-discovery
+  C_cap-legal-discovery --> C_cap-finance-close
+  C_cap-finance-close --> C_cap-security-triage
+  C_cap-security-triage --> C_cap-compliance-policy
+  C_cap-compliance-policy --> C_cap-developer-onboarding
+  C_cap-developer-onboarding --> C_cap-test-synthesizer
+  C_cap-test-synthesizer --> C_cap-cs-renewal
+  C_cap-cs-renewal --> C_cap-ecommerce-merch
+  C_cap-ecommerce-merch --> C_cap-adaptive-tutor
+  C_cap-adaptive-tutor --> C_cap-recruiting-screener
+  C_cap-recruiting-screener --> C_cap-grant-proposal
+  C_cap-grant-proposal --> C_cap-supply-chain
+  C_cap-supply-chain --> C_cap-field-service
+  C_cap-field-service --> C_cap-privacy-dsr
+  C_cap-privacy-dsr --> C_rag-chunk
   C_rag-chunk --> C_rag-hybrid
   C_rag-hybrid --> C_rag-rerank
   C_rag-rerank --> C_rag-query
@@ -337,6 +377,66 @@ graph LR
     n_csales_risk["合规风险扣分"]
     n_csales_talk_track["销售开场话术"]
     n_csales_next_action["下一步动作"]
+    n_cp_meeting_action_agent_workflow["会议行动项抽取"]
+    n_cp_meeting_action_agent_quality["Owner 与 deadline 归一"]
+    n_cp_meeting_action_agent_handoff["Follow-up 简报"]
+    n_cp_contract_risk_reviewer_workflow["合同条款切分"]
+    n_cp_contract_risk_reviewer_quality["Playbook 风险匹配"]
+    n_cp_contract_risk_reviewer_handoff["法务确认队列"]
+    n_cp_data_quality_sentinel_workflow["数据质量规则"]
+    n_cp_data_quality_sentinel_quality["Schema 漂移检测"]
+    n_cp_data_quality_sentinel_handoff["Lineage 影响报告"]
+    n_cp_onboarding_coach_agent_workflow["30/60/90 入职计划"]
+    n_cp_onboarding_coach_agent_quality["导师检查点"]
+    n_cp_onboarding_coach_agent_handoff["资料过期标记"]
+    n_cp_rfp_proposal_writer_workflow["RFP 需求矩阵"]
+    n_cp_rfp_proposal_writer_quality["能力库差距分析"]
+    n_cp_rfp_proposal_writer_handoff["方案评审清单"]
+    n_cp_clinical_intake_assistant_workflow["非诊断 intake 摘要"]
+    n_cp_clinical_intake_assistant_quality["红旗症状升级"]
+    n_cp_clinical_intake_assistant_handoff["医护人工分流"]
+    n_cp_legal_discovery_assistant_workflow["Issue list 检索"]
+    n_cp_legal_discovery_assistant_quality["证据时间线"]
+    n_cp_legal_discovery_assistant_handoff["Privilege 人工标记"]
+    n_cp_finance_close_assistant_workflow["月结 checklist"]
+    n_cp_finance_close_assistant_quality["银行流水对账"]
+    n_cp_finance_close_assistant_handoff["审计包生成"]
+    n_cp_security_triage_analyst_workflow["SIEM 告警关联"]
+    n_cp_security_triage_analyst_quality["攻击链严重度"]
+    n_cp_security_triage_analyst_handoff["Containment 审批队列"]
+    n_cp_compliance_policy_monitor_workflow["政策版本 diff"]
+    n_cp_compliance_policy_monitor_quality["控制矩阵映射"]
+    n_cp_compliance_policy_monitor_handoff["影响流程 owner"]
+    n_cp_developer_onboarding_guide_workflow["仓库入口扫描"]
+    n_cp_developer_onboarding_guide_quality["脚本事实索引"]
+    n_cp_developer_onboarding_guide_handoff["低风险首任务"]
+    n_cp_test_case_synthesizer_workflow["需求覆盖矩阵"]
+    n_cp_test_case_synthesizer_quality["边界测试数据"]
+    n_cp_test_case_synthesizer_handoff["回归缺陷清单"]
+    n_cp_customer_success_renewal_workflow["客户健康评分"]
+    n_cp_customer_success_renewal_quality["续约风险归因"]
+    n_cp_customer_success_renewal_handoff["QBR 议程生成"]
+    n_cp_ecommerce_merchandising_planner_workflow["商品机会分层"]
+    n_cp_ecommerce_merchandising_planner_quality["库存风险检测"]
+    n_cp_ecommerce_merchandising_planner_handoff["活动组合建议"]
+    n_cp_adaptive_learning_tutor_workflow["知识点掌握度"]
+    n_cp_adaptive_learning_tutor_quality["下一题推荐"]
+    n_cp_adaptive_learning_tutor_handoff["学习隐私最小化"]
+    n_cp_recruiting_screener_workflow["JD 能力项解析"]
+    n_cp_recruiting_screener_quality["简历证据匹配"]
+    n_cp_recruiting_screener_handoff["公平性复核队列"]
+    n_cp_grant_proposal_planner_workflow["基金指南解析"]
+    n_cp_grant_proposal_planner_quality["团队成果匹配"]
+    n_cp_grant_proposal_planner_handoff["预算规则检查"]
+    n_cp_supply_chain_risk_radar_workflow["供应商风险评分"]
+    n_cp_supply_chain_risk_radar_quality["SKU 影响映射"]
+    n_cp_supply_chain_risk_radar_handoff["替代方案规划"]
+    n_cp_field_service_dispatch_workflow["工单技能匹配"]
+    n_cp_field_service_dispatch_quality["备件可用性检查"]
+    n_cp_field_service_dispatch_handoff["SLA 派单风险"]
+    n_cp_privacy_dsr_automation_workflow["DSR 请求分类"]
+    n_cp_privacy_dsr_automation_quality["身份验证门"]
+    n_cp_privacy_dsr_automation_handoff["隐私审计记录"]
   end
   subgraph G9["进阶 RAG 专题"]
     n_cragchunk_why_matters["切块决定检索上限"]
@@ -685,6 +785,46 @@ graph LR
   n_csales_risk -->|前置| n_csales_next_action
   n_csales_talk_track -->|组成| n_csales_next_action
   n_csales_talk_track -->|应用| n_c03_prompt_as_spec
+  n_cp_meeting_action_agent_workflow -->|前置| n_cp_meeting_action_agent_quality
+  n_cp_meeting_action_agent_quality -->|前置| n_cp_meeting_action_agent_handoff
+  n_cp_contract_risk_reviewer_workflow -->|前置| n_cp_contract_risk_reviewer_quality
+  n_cp_contract_risk_reviewer_quality -->|前置| n_cp_contract_risk_reviewer_handoff
+  n_cp_data_quality_sentinel_workflow -->|前置| n_cp_data_quality_sentinel_quality
+  n_cp_data_quality_sentinel_quality -->|前置| n_cp_data_quality_sentinel_handoff
+  n_cp_onboarding_coach_agent_workflow -->|前置| n_cp_onboarding_coach_agent_quality
+  n_cp_onboarding_coach_agent_quality -->|前置| n_cp_onboarding_coach_agent_handoff
+  n_cp_rfp_proposal_writer_workflow -->|前置| n_cp_rfp_proposal_writer_quality
+  n_cp_rfp_proposal_writer_quality -->|前置| n_cp_rfp_proposal_writer_handoff
+  n_cp_clinical_intake_assistant_workflow -->|前置| n_cp_clinical_intake_assistant_quality
+  n_cp_clinical_intake_assistant_quality -->|前置| n_cp_clinical_intake_assistant_handoff
+  n_cp_legal_discovery_assistant_workflow -->|前置| n_cp_legal_discovery_assistant_quality
+  n_cp_legal_discovery_assistant_quality -->|前置| n_cp_legal_discovery_assistant_handoff
+  n_cp_finance_close_assistant_workflow -->|前置| n_cp_finance_close_assistant_quality
+  n_cp_finance_close_assistant_quality -->|前置| n_cp_finance_close_assistant_handoff
+  n_cp_security_triage_analyst_workflow -->|前置| n_cp_security_triage_analyst_quality
+  n_cp_security_triage_analyst_quality -->|前置| n_cp_security_triage_analyst_handoff
+  n_cp_compliance_policy_monitor_workflow -->|前置| n_cp_compliance_policy_monitor_quality
+  n_cp_compliance_policy_monitor_quality -->|前置| n_cp_compliance_policy_monitor_handoff
+  n_cp_developer_onboarding_guide_workflow -->|前置| n_cp_developer_onboarding_guide_quality
+  n_cp_developer_onboarding_guide_quality -->|前置| n_cp_developer_onboarding_guide_handoff
+  n_cp_test_case_synthesizer_workflow -->|前置| n_cp_test_case_synthesizer_quality
+  n_cp_test_case_synthesizer_quality -->|前置| n_cp_test_case_synthesizer_handoff
+  n_cp_customer_success_renewal_workflow -->|前置| n_cp_customer_success_renewal_quality
+  n_cp_customer_success_renewal_quality -->|前置| n_cp_customer_success_renewal_handoff
+  n_cp_ecommerce_merchandising_planner_workflow -->|前置| n_cp_ecommerce_merchandising_planner_quality
+  n_cp_ecommerce_merchandising_planner_quality -->|前置| n_cp_ecommerce_merchandising_planner_handoff
+  n_cp_adaptive_learning_tutor_workflow -->|前置| n_cp_adaptive_learning_tutor_quality
+  n_cp_adaptive_learning_tutor_quality -->|前置| n_cp_adaptive_learning_tutor_handoff
+  n_cp_recruiting_screener_workflow -->|前置| n_cp_recruiting_screener_quality
+  n_cp_recruiting_screener_quality -->|前置| n_cp_recruiting_screener_handoff
+  n_cp_grant_proposal_planner_workflow -->|前置| n_cp_grant_proposal_planner_quality
+  n_cp_grant_proposal_planner_quality -->|前置| n_cp_grant_proposal_planner_handoff
+  n_cp_supply_chain_risk_radar_workflow -->|前置| n_cp_supply_chain_risk_radar_quality
+  n_cp_supply_chain_risk_radar_quality -->|前置| n_cp_supply_chain_risk_radar_handoff
+  n_cp_field_service_dispatch_workflow -->|前置| n_cp_field_service_dispatch_quality
+  n_cp_field_service_dispatch_quality -->|前置| n_cp_field_service_dispatch_handoff
+  n_cp_privacy_dsr_automation_workflow -->|前置| n_cp_privacy_dsr_automation_quality
+  n_cp_privacy_dsr_automation_quality -->|前置| n_cp_privacy_dsr_automation_handoff
   n_cragchunk_why_matters -->|深化| n_cragchunk_sliding_window
   n_cragchunk_sliding_window -->|对比| n_cragchunk_recursive
   n_cragchunk_recursive -->|深化| n_cragchunk_markdown_aware
@@ -1022,6 +1162,66 @@ graph LR
 | 合规风险扣分 | [cap-sales 毕业项目 · 销售线索研究 Agent](../capstone/sales-lead-researcher/README.md) | 金融、教育等敏感场景提高风险权重，先确认权限边界 |
 | 销售开场话术 | [cap-sales 毕业项目 · 销售线索研究 Agent](../capstone/sales-lead-researcher/README.md) | 把证据链转成面向行业痛点的 discovery call 切入点 |
 | 下一步动作 | [cap-sales 毕业项目 · 销售线索研究 Agent](../capstone/sales-lead-researcher/README.md) | 按 priority/nurture/disqualify 输出可执行跟进策略 |
+| 会议行动项抽取 | [cap-meeting-action 毕业项目 · 会议行动项 Agent](../capstone/meeting-action-agent/README.md) | 把真实业务输入组织成可复现、可替换数据源的 Agent 流程 |
+| Owner 与 deadline 归一 | [cap-meeting-action 毕业项目 · 会议行动项 Agent](../capstone/meeting-action-agent/README.md) | 用规则、证据和验收清单约束输出质量，避免只做聊天 demo |
+| Follow-up 简报 | [cap-meeting-action 毕业项目 · 会议行动项 Agent](../capstone/meeting-action-agent/README.md) | 把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物 |
+| 合同条款切分 | [cap-contract-risk 毕业项目 · 合同风险审阅 Agent](../capstone/contract-risk-reviewer/README.md) | 把真实业务输入组织成可复现、可替换数据源的 Agent 流程 |
+| Playbook 风险匹配 | [cap-contract-risk 毕业项目 · 合同风险审阅 Agent](../capstone/contract-risk-reviewer/README.md) | 用规则、证据和验收清单约束输出质量，避免只做聊天 demo |
+| 法务确认队列 | [cap-contract-risk 毕业项目 · 合同风险审阅 Agent](../capstone/contract-risk-reviewer/README.md) | 把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物 |
+| 数据质量规则 | [cap-data-quality 毕业项目 · 数据质量哨兵 Agent](../capstone/data-quality-sentinel/README.md) | 把真实业务输入组织成可复现、可替换数据源的 Agent 流程 |
+| Schema 漂移检测 | [cap-data-quality 毕业项目 · 数据质量哨兵 Agent](../capstone/data-quality-sentinel/README.md) | 用规则、证据和验收清单约束输出质量，避免只做聊天 demo |
+| Lineage 影响报告 | [cap-data-quality 毕业项目 · 数据质量哨兵 Agent](../capstone/data-quality-sentinel/README.md) | 把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物 |
+| 30/60/90 入职计划 | [cap-onboarding-coach 毕业项目 · 新员工入职教练 Agent](../capstone/onboarding-coach-agent/README.md) | 把真实业务输入组织成可复现、可替换数据源的 Agent 流程 |
+| 导师检查点 | [cap-onboarding-coach 毕业项目 · 新员工入职教练 Agent](../capstone/onboarding-coach-agent/README.md) | 用规则、证据和验收清单约束输出质量，避免只做聊天 demo |
+| 资料过期标记 | [cap-onboarding-coach 毕业项目 · 新员工入职教练 Agent](../capstone/onboarding-coach-agent/README.md) | 把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物 |
+| RFP 需求矩阵 | [cap-rfp-proposal 毕业项目 · RFP 方案标书 Agent](../capstone/rfp-proposal-writer/README.md) | 把真实业务输入组织成可复现、可替换数据源的 Agent 流程 |
+| 能力库差距分析 | [cap-rfp-proposal 毕业项目 · RFP 方案标书 Agent](../capstone/rfp-proposal-writer/README.md) | 用规则、证据和验收清单约束输出质量，避免只做聊天 demo |
+| 方案评审清单 | [cap-rfp-proposal 毕业项目 · RFP 方案标书 Agent](../capstone/rfp-proposal-writer/README.md) | 把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物 |
+| 非诊断 intake 摘要 | [cap-clinical-intake 毕业项目 · 临床问诊分流助手 Agent](../capstone/clinical-intake-assistant/README.md) | 把真实业务输入组织成可复现、可替换数据源的 Agent 流程 |
+| 红旗症状升级 | [cap-clinical-intake 毕业项目 · 临床问诊分流助手 Agent](../capstone/clinical-intake-assistant/README.md) | 用规则、证据和验收清单约束输出质量，避免只做聊天 demo |
+| 医护人工分流 | [cap-clinical-intake 毕业项目 · 临床问诊分流助手 Agent](../capstone/clinical-intake-assistant/README.md) | 把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物 |
+| Issue list 检索 | [cap-legal-discovery 毕业项目 · 法务证据发现 Agent](../capstone/legal-discovery-assistant/README.md) | 把真实业务输入组织成可复现、可替换数据源的 Agent 流程 |
+| 证据时间线 | [cap-legal-discovery 毕业项目 · 法务证据发现 Agent](../capstone/legal-discovery-assistant/README.md) | 用规则、证据和验收清单约束输出质量，避免只做聊天 demo |
+| Privilege 人工标记 | [cap-legal-discovery 毕业项目 · 法务证据发现 Agent](../capstone/legal-discovery-assistant/README.md) | 把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物 |
+| 月结 checklist | [cap-finance-close 毕业项目 · 财务月结助手 Agent](../capstone/finance-close-assistant/README.md) | 把真实业务输入组织成可复现、可替换数据源的 Agent 流程 |
+| 银行流水对账 | [cap-finance-close 毕业项目 · 财务月结助手 Agent](../capstone/finance-close-assistant/README.md) | 用规则、证据和验收清单约束输出质量，避免只做聊天 demo |
+| 审计包生成 | [cap-finance-close 毕业项目 · 财务月结助手 Agent](../capstone/finance-close-assistant/README.md) | 把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物 |
+| SIEM 告警关联 | [cap-security-triage 毕业项目 · 安全告警分诊 Agent](../capstone/security-triage-analyst/README.md) | 把真实业务输入组织成可复现、可替换数据源的 Agent 流程 |
+| 攻击链严重度 | [cap-security-triage 毕业项目 · 安全告警分诊 Agent](../capstone/security-triage-analyst/README.md) | 用规则、证据和验收清单约束输出质量，避免只做聊天 demo |
+| Containment 审批队列 | [cap-security-triage 毕业项目 · 安全告警分诊 Agent](../capstone/security-triage-analyst/README.md) | 把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物 |
+| 政策版本 diff | [cap-compliance-policy 毕业项目 · 合规政策监控 Agent](../capstone/compliance-policy-monitor/README.md) | 把真实业务输入组织成可复现、可替换数据源的 Agent 流程 |
+| 控制矩阵映射 | [cap-compliance-policy 毕业项目 · 合规政策监控 Agent](../capstone/compliance-policy-monitor/README.md) | 用规则、证据和验收清单约束输出质量，避免只做聊天 demo |
+| 影响流程 owner | [cap-compliance-policy 毕业项目 · 合规政策监控 Agent](../capstone/compliance-policy-monitor/README.md) | 把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物 |
+| 仓库入口扫描 | [cap-developer-onboarding 毕业项目 · 开发者入仓引导 Agent](../capstone/developer-onboarding-guide/README.md) | 把真实业务输入组织成可复现、可替换数据源的 Agent 流程 |
+| 脚本事实索引 | [cap-developer-onboarding 毕业项目 · 开发者入仓引导 Agent](../capstone/developer-onboarding-guide/README.md) | 用规则、证据和验收清单约束输出质量，避免只做聊天 demo |
+| 低风险首任务 | [cap-developer-onboarding 毕业项目 · 开发者入仓引导 Agent](../capstone/developer-onboarding-guide/README.md) | 把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物 |
+| 需求覆盖矩阵 | [cap-test-synthesizer 毕业项目 · 测试用例生成 Agent](../capstone/test-case-synthesizer/README.md) | 把真实业务输入组织成可复现、可替换数据源的 Agent 流程 |
+| 边界测试数据 | [cap-test-synthesizer 毕业项目 · 测试用例生成 Agent](../capstone/test-case-synthesizer/README.md) | 用规则、证据和验收清单约束输出质量，避免只做聊天 demo |
+| 回归缺陷清单 | [cap-test-synthesizer 毕业项目 · 测试用例生成 Agent](../capstone/test-case-synthesizer/README.md) | 把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物 |
+| 客户健康评分 | [cap-cs-renewal 毕业项目 · 客户成功续约 Agent](../capstone/customer-success-renewal/README.md) | 把真实业务输入组织成可复现、可替换数据源的 Agent 流程 |
+| 续约风险归因 | [cap-cs-renewal 毕业项目 · 客户成功续约 Agent](../capstone/customer-success-renewal/README.md) | 用规则、证据和验收清单约束输出质量，避免只做聊天 demo |
+| QBR 议程生成 | [cap-cs-renewal 毕业项目 · 客户成功续约 Agent](../capstone/customer-success-renewal/README.md) | 把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物 |
+| 商品机会分层 | [cap-ecommerce-merch 毕业项目 · 电商选品运营 Agent](../capstone/ecommerce-merchandising-planner/README.md) | 把真实业务输入组织成可复现、可替换数据源的 Agent 流程 |
+| 库存风险检测 | [cap-ecommerce-merch 毕业项目 · 电商选品运营 Agent](../capstone/ecommerce-merchandising-planner/README.md) | 用规则、证据和验收清单约束输出质量，避免只做聊天 demo |
+| 活动组合建议 | [cap-ecommerce-merch 毕业项目 · 电商选品运营 Agent](../capstone/ecommerce-merchandising-planner/README.md) | 把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物 |
+| 知识点掌握度 | [cap-adaptive-tutor 毕业项目 · 自适应学习教练 Agent](../capstone/adaptive-learning-tutor/README.md) | 把真实业务输入组织成可复现、可替换数据源的 Agent 流程 |
+| 下一题推荐 | [cap-adaptive-tutor 毕业项目 · 自适应学习教练 Agent](../capstone/adaptive-learning-tutor/README.md) | 用规则、证据和验收清单约束输出质量，避免只做聊天 demo |
+| 学习隐私最小化 | [cap-adaptive-tutor 毕业项目 · 自适应学习教练 Agent](../capstone/adaptive-learning-tutor/README.md) | 把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物 |
+| JD 能力项解析 | [cap-recruiting-screener 毕业项目 · 招聘初筛 Agent](../capstone/recruiting-screener/README.md) | 把真实业务输入组织成可复现、可替换数据源的 Agent 流程 |
+| 简历证据匹配 | [cap-recruiting-screener 毕业项目 · 招聘初筛 Agent](../capstone/recruiting-screener/README.md) | 用规则、证据和验收清单约束输出质量，避免只做聊天 demo |
+| 公平性复核队列 | [cap-recruiting-screener 毕业项目 · 招聘初筛 Agent](../capstone/recruiting-screener/README.md) | 把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物 |
+| 基金指南解析 | [cap-grant-proposal 毕业项目 · 科研基金申请 Agent](../capstone/grant-proposal-planner/README.md) | 把真实业务输入组织成可复现、可替换数据源的 Agent 流程 |
+| 团队成果匹配 | [cap-grant-proposal 毕业项目 · 科研基金申请 Agent](../capstone/grant-proposal-planner/README.md) | 用规则、证据和验收清单约束输出质量，避免只做聊天 demo |
+| 预算规则检查 | [cap-grant-proposal 毕业项目 · 科研基金申请 Agent](../capstone/grant-proposal-planner/README.md) | 把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物 |
+| 供应商风险评分 | [cap-supply-chain 毕业项目 · 供应链风险雷达 Agent](../capstone/supply-chain-risk-radar/README.md) | 把真实业务输入组织成可复现、可替换数据源的 Agent 流程 |
+| SKU 影响映射 | [cap-supply-chain 毕业项目 · 供应链风险雷达 Agent](../capstone/supply-chain-risk-radar/README.md) | 用规则、证据和验收清单约束输出质量，避免只做聊天 demo |
+| 替代方案规划 | [cap-supply-chain 毕业项目 · 供应链风险雷达 Agent](../capstone/supply-chain-risk-radar/README.md) | 把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物 |
+| 工单技能匹配 | [cap-field-service 毕业项目 · 现场服务调度 Agent](../capstone/field-service-dispatch/README.md) | 把真实业务输入组织成可复现、可替换数据源的 Agent 流程 |
+| 备件可用性检查 | [cap-field-service 毕业项目 · 现场服务调度 Agent](../capstone/field-service-dispatch/README.md) | 用规则、证据和验收清单约束输出质量，避免只做聊天 demo |
+| SLA 派单风险 | [cap-field-service 毕业项目 · 现场服务调度 Agent](../capstone/field-service-dispatch/README.md) | 把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物 |
+| DSR 请求分类 | [cap-privacy-dsr 毕业项目 · 隐私数据请求 Agent](../capstone/privacy-dsr-automation/README.md) | 把真实业务输入组织成可复现、可替换数据源的 Agent 流程 |
+| 身份验证门 | [cap-privacy-dsr 毕业项目 · 隐私数据请求 Agent](../capstone/privacy-dsr-automation/README.md) | 用规则、证据和验收清单约束输出质量，避免只做聊天 demo |
+| 隐私审计记录 | [cap-privacy-dsr 毕业项目 · 隐私数据请求 Agent](../capstone/privacy-dsr-automation/README.md) | 把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物 |
 | 切块决定检索上限 | [rag-chunk 进阶分块策略](../rag-advanced/01-chunking-strategies/README.md) | 检索质量的天花板很大程度由分块策略决定，太大太小都伤召回 |
 | 字符滑窗切分 | [rag-chunk 进阶分块策略](../rag-advanced/01-chunking-strategies/README.md) | 第09章基线：定长字符 + 重叠，简单但会盲切句子 |
 | 递归语义切分 | [rag-chunk 进阶分块策略](../rag-advanced/01-chunking-strategies/README.md) | 优先在段落/句子/词等语义边界下刀，按 token 控大小 |
@@ -1255,6 +1455,9 @@ graph LR
 | [Microsoft Agent Framework .NET 1.11.1 release notes](https://github.com/microsoft/agent-framework/releases/tag/dotnet-1.11.1) | Microsoft | doc | 19 | 官方 release notes：把 AgentSkillsProvider tools 改成默认 require approval，并补上 AOT-safe declarative workflow checkpointing 与版本升级后的 checkpoint resume 修复，信号是 runtime 的默认权限姿态和持久化兼容性正在被提升为一等边界。 |
 | [CrewAI 1.15.1 release notes](https://github.com/crewAIInc/crewAI/releases/tag/1.15.1) | CrewAI | doc | 19 | 官方 release notes：稳定版开始要求显式 CrewAI project 定义、为生成项目自动初始化 Git，并修复 scraping fetches 的 SSRF redirect bypass，说明 coding/deploy agent 的项目边界与网络边界都在继续收紧。 |
 | [Benchmarking AI Agents for Addressing Scientific Challenges Across Scales](https://arxiv.org/abs/2606.12736) | arXiv | paper | 19 | SciAgentArena 论文提出约 200 个带 stepwise verification 的交互式科学任务，结果显示 agent 在结构清晰的数据分析流程里更稳，但在自驱探索、原创洞见和开放式研究题上仍明显失稳，适合作为 deep research / science agent 的评测参照。 |
+| [Semantic Kernel Python 1.43.1 release notes](https://github.com/microsoft/semantic-kernel/releases/tag/python-1.43.1) | Microsoft | doc | 19 | 官方 release notes：一边给 Azure AI / OpenAI Assistant agents 补 `function_choice_behavior`，一边在 OpenAPI plugin 里拒绝 encoded dot-segment paths，信号是“让 agent 更会调函数”和“把 plugin URL 归一化边界收紧”必须一起治理，否则工具编排能力越强，路径绕过面就越大。 |
+| [Towards Automating Scientific Review with Google's Paper Assistant Tool](https://arxiv.org/abs/2606.28277) | arXiv | paper | 19 | PAT 论文把 deep scientific review agent 做成带 inference scaling 的验证流程：不仅总结论文，还检查理论、实验与潜在缺陷，并在 SPOT 数学错误集上把 zero-shot recall 提升约 34%。信号是 research/review agent 的价值不在“给意见”，而在可扩展验证链和保留人类最终裁决。 |
+| [Govern the Repository, Not the Agent: Measuring Ecosystem-Level Risk in AI-Native Software](https://arxiv.org/abs/2606.28235) | arXiv | paper | 19 | 论文基于 93 万+ agent-authored PR 研究 integration friction，发现约一半变异留在 repository 层，而且 agent 贡献比 human 更集中到这种仓库级摩擦。信号是 coding agent 不能只按单个任务成功率打分，还要把仓库级并发集成风险、流程成熟度和生态摩擦作为治理对象。 |
 | [Introducing Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) | anthropic.com | blog | rag-chunk, rag-hybrid, rag-contextual | Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读 |
 | [Okapi BM25 - Wikipedia](https://en.wikipedia.org/wiki/Okapi_BM25) | en.wikipedia.org | doc | rag-hybrid | BM25 打分公式与 k1/b 参数的权威说明，对应本章 BM25Index |
 | [Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods](https://dl.acm.org/doi/10.1145/1571941.1572114) | dl.acm.org | paper | rag-hybrid | RRF 原始论文 (Cormack et al., SIGIR 2009)，混合检索融合法的来源 |

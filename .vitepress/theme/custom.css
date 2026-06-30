@@ -2827,6 +2827,20 @@ body::after {
   color: var(--vp-c-text-3);
 }
 
+.interview-clinic-source-link {
+  padding: 0.1rem 0.48rem;
+  border: 1px solid color-mix(in srgb, var(--vp-c-brand-1) 38%, transparent);
+  border-radius: 999px;
+  color: var(--vp-c-brand-1);
+  font-size: 0.74rem;
+  line-height: 1.4;
+}
+
+.interview-clinic-source-link:hover {
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-brand-2);
+}
+
 .interview-clinic-empty {
   padding: 0.8rem;
   color: var(--vp-c-text-3);

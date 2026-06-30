@@ -228,6 +228,9 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 31. 为什么 production agent 里的 skill/provider tools 最好默认 `require approval`，而不是默认放行后再补规则？一旦默认值反了，权限壳层、审计和回放会出现什么系统性漏洞？（→ 05 / 11 / 17 / 18 / 19）
 32. 为什么 agent 的网页抓取 / scraping tool 不能只校验首跳 URL 是否在 allowlist？一旦重定向链里出现 SSRF bypass，会把什么内网、metadata 或权限侧信道暴露给 agent？（→ 05 / 11 / 17 / 18 / 19）
 33. 为什么研究型 agent 的 benchmark 不能只看最终答案对不对？`stepwise verification` 和 `interactive environment` 分别在检验什么能力，为什么它们比 `final-answer-only` 更能暴露长流程研究任务的失败模式？（→ 10 / 15 / 19 / capstone）
+34. 为什么给 Assistant agent 增加 `function_choice_behavior` 这类更强的函数选择能力时，必须同时审查 OpenAPI plugin 的路径归一化与 encoded dot-segment 绕过？如果只增强调度能力、不收紧 plugin 路径边界，会把什么 SSRF / 越权调用风险放大？（→ 05 / 11 / 17 / 18 / 19）
+35. 为什么 scientific review agent 不能只做一次性摘要或 zero-shot 打分？`inference scaling`、理论/实验核查和“人类保留最终裁决”分别在兜什么误判与责任边界？（→ 10 / 15 / 19 / capstone）
+36. 为什么 coding agent 评测不能只看 isolated task success 或单个 PR 是否过测？`repository-level integration friction` 在衡量什么，为什么它比单 agent 胜率更接近真实生产风险？（→ 12 / 15 / 16 / 18 / 19）
 
 ### C. 项目深挖类（考你是不是真做过）
 
@@ -308,3 +311,4 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 ---
 
 > 配套阅读：[创业指南](./startup-guide.md)（如果你想的不是求职，而是把 demo 做成产品）。
+

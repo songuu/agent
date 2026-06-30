@@ -56,7 +56,8 @@ test("parses AIBase SSR news list cards", () => {
 });
 
 test("fetchFeed retries retryable failures up to source policy", async () => {
-  let calls = 0;
+  let parseUrlCalls = 0;
+  let fetchCalls = 0;
   const source: NewsSource = {
     key: "retry-me",
     name: "Retry Me",
@@ -69,25 +70,81 @@ test("fetchFeed retries retryable failures up to source policy", async () => {
   };
 
   const original = globalThis.setTimeout;
+  const realFetch = globalThis.fetch;
   const realParserParseUrl = (await import("rss-parser")).default.prototype.parseURL;
   globalThis.setTimeout = ((fn: (...args: unknown[]) => void) => {
     fn();
     return 0 as unknown as ReturnType<typeof setTimeout>;
   }) as typeof setTimeout;
   (await import("rss-parser")).default.prototype.parseURL = async function () {
-    calls += 1;
+    parseUrlCalls += 1;
     throw new Error("Status code 502");
   };
+  globalThis.fetch = (async () => {
+    fetchCalls += 1;
+    throw new Error("Status code 502");
+  }) as typeof fetch;
 
   try {
     const result = await fetchFeed(source, { timeoutMs: 10 });
     assert.equal(result.ok, false);
     assert.equal(result.attempts, 5);
-    assert.equal(calls, 5);
+    assert.equal(parseUrlCalls, 5);
+    assert.equal(fetchCalls, 5);
     assert.match(result.diagnostics ?? "", /critical/);
     assert.match(result.diagnostics ?? "", /retry-exhausted/);
   } finally {
     globalThis.setTimeout = original;
+    globalThis.fetch = realFetch;
     (await import("rss-parser")).default.prototype.parseURL = realParserParseUrl;
   }
 });
+test("fetchFeed falls back to fetch+parseString when parser URL fetch hits TLS errors", async () => {
+  const source: NewsSource = {
+    key: "google-like",
+    name: "Google Like",
+    url: "https://example.com/feed",
+    kind: "vendor-blog",
+    lang: "en",
+    enabled: true,
+    critical: true,
+    retry: { maxAttempts: 5, baseDelayMs: 1 },
+  };
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Example</title>
+    <item>
+      <title>Recovered item</title>
+      <link>https://example.com/recovered</link>
+      <description>Recovered through fetch fallback.</description>
+      <pubDate>Tue, 30 Jun 2026 00:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>`;
+
+  const realParserParseUrl = (await import("rss-parser")).default.prototype.parseURL;
+  const realFetch = globalThis.fetch;
+  (await import("rss-parser")).default.prototype.parseURL = async function () {
+    throw new Error("Client network socket disconnected before secure TLS connection was established");
+  };
+  globalThis.fetch = (async () => {
+    return new Response(xml, {
+      status: 200,
+      headers: { "content-type": "application/rss+xml" },
+    });
+  }) as typeof fetch;
+
+  try {
+    const result = await fetchFeed(source, { timeoutMs: 10 });
+    assert.equal(result.ok, true);
+    assert.equal(result.attempts, 1);
+    assert.equal(result.items.length, 1);
+    assert.equal(result.items[0].title, "Recovered item");
+  } finally {
+    (await import("rss-parser")).default.prototype.parseURL = realParserParseUrl;
+    globalThis.fetch = realFetch;
+  }
+});
+
+

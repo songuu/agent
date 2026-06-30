@@ -13,7 +13,7 @@
 | Agent 学习指南 | 想按 agent 类型、岗位目标或生产能力倒推学习路线 | [Agent 学习指南与分类地图](./agent-learning-guides.md) |
 | 源码解析 | 想从调用框架升级到读懂 LangChain / LangGraph / LlamaIndex 源码 | [第 21 章 · 源码解析](../source-analysis/README.md) |
 | 前沿文章库 | 想按日期、体系层浏览 agent 前沿资料和原文入口 | [第 20 章 · Agent 前沿文章库](../lessons/20-agent-frontier-news/README.md) |
-| 毕业项目 | 想把前面能力组装成完整作品 | [Deep Research Agent](../capstone/deep-research-agent/README.md) · [客服 Copilot](../capstone/support-copilot/README.md) · [代码评审团](../capstone/code-review-crew/README.md) · [Agent 评测与回归门](../capstone/agent-eval-harness/README.md) · [告警响应](../capstone/incident-responder/README.md) · [反馈洞察](../capstone/feedback-intelligence/README.md) · [销售线索研究](../capstone/sales-lead-researcher/README.md) · [企业知识库 Agent](../capstone/enterprise-knowledge-base-agent/README.md) |
+| 毕业项目 | 想把前面能力组装成完整作品 | [毕业项目总览（28 个）](../capstone/README.md) · [Deep Research Agent](../capstone/deep-research-agent/README.md) · [客服 Copilot](../capstone/support-copilot/README.md) · [代码评审团](../capstone/code-review-crew/README.md) · [Agent 评测与回归门](../capstone/agent-eval-harness/README.md) · [告警响应](../capstone/incident-responder/README.md) · [反馈洞察](../capstone/feedback-intelligence/README.md) · [销售线索研究](../capstone/sales-lead-researcher/README.md) · [企业知识库 Agent](../capstone/enterprise-knowledge-base-agent/README.md) |
 | 进阶 RAG 专题 | 想把最小 RAG 补成生产级（分块/混合/精排/改写/评估/生产化） | [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md) |
 | 进阶 LangGraph 专题 | 想把第 12 章的框架入门补成状态图、持久化、HITL、多 agent 与生产化路线 | [进阶 LangGraph 专题](../langgraph-advanced/README.md) |
 | RAG 完整架构 | 想把 RAG 从 demo 设计成可维护系统 | [RAG 完整架构蓝图](./rag-architecture.md) |
@@ -55,6 +55,27 @@
 | 🎓 | 产品实战 | [用户反馈洞察 Agent](../capstone/feedback-intelligence/README.md) | 多渠道反馈安全清洗、主题聚类、价值加权、roadmap ticket（离线可跑） |
 | 🎓 | 增长实战 | [销售线索研究 Agent](../capstone/sales-lead-researcher/README.md) | ICP 评分、业务信号证据链、合规风险、销售下一步动作（离线可跑） |
 | 🎓 | 纵向全栈实战 | [企业知识库 Agent](../capstone/enterprise-knowledge-base-agent/README.md) | ingestion、ACL、Agentic RAG、事件流、trace/eval、定时知识巡检 |
+| 🎓 | 项目总览 | [毕业项目总览（28 个）](../capstone/README.md) | 8 个既有综合项目 + 20 个新增实践项目，按领域选择作品集题目 |
+| 🎓 | 协作效率实战 | [会议行动项 Agent](../capstone/meeting-action-agent/README.md) | 一个可离线演示的 meeting-to-action 工作流，能输出行动项、风险、跟进提醒和复盘摘要。 |
+| 🎓 | 法务协作实战 | [合同风险审阅 Agent](../capstone/contract-risk-reviewer/README.md) | 一个合同条款审阅工作流，输出风险等级、证据条款、建议改写和需法务确认的问题。 |
+| 🎓 | 数据平台实战 | [数据质量哨兵 Agent](../capstone/data-quality-sentinel/README.md) | 一个数据质量巡检工作流，输出异常、影响报表、可能根因、回滚建议和通知摘要。 |
+| 🎓 | HR 与团队运营实战 | [新员工入职教练 Agent](../capstone/onboarding-coach-agent/README.md) | 一个入职教练工作流，输出学习路径、任务节奏、导师检查点和风险提醒。 |
+| 🎓 | 售前方案实战 | [RFP 方案标书 Agent](../capstone/rfp-proposal-writer/README.md) | 一个 RFP 响应工作流，输出需求映射、差距清单、方案大纲、风险和评审 checklist。 |
+| 🎓 | 医疗运营实战 | [临床问诊分流助手 Agent](../capstone/clinical-intake-assistant/README.md) | 一个高安全边界的医疗 intake 工作流，输出症状摘要、紧急信号、缺失信息和人工分流建议。 |
+| 🎓 | 企业法务实战 | [法务证据发现 Agent](../capstone/legal-discovery-assistant/README.md) | 一个 e-discovery 工作流，输出证据候选、相关性理由、时间线和 privilege/敏感标记。 |
+| 🎓 | 财务运营实战 | [财务月结助手 Agent](../capstone/finance-close-assistant/README.md) | 一个月结巡检工作流，输出差异列表、解释候选、责任人、截止日期和审计包。 |
+| 🎓 | 安全运营实战 | [安全告警分诊 Agent](../capstone/security-triage-analyst/README.md) | 一个安全分诊工作流，输出严重度、攻击链阶段、证据、误报理由、containment 建议和升级队列。 |
+| 🎓 | 合规治理实战 | [合规政策监控 Agent](../capstone/compliance-policy-monitor/README.md) | 一个合规变更影响分析工作流，输出政策差异、影响流程、owner、deadline 和审计说明。 |
+| 🎓 | 研发效率实战 | [开发者入仓引导 Agent](../capstone/developer-onboarding-guide/README.md) | 一个 repo onboarding 工作流，输出环境检查、关键目录、首个任务、代码阅读路径和风险提醒。 |
+| 🎓 | 质量工程实战 | [测试用例生成 Agent](../capstone/test-case-synthesizer/README.md) | 一个测试设计工作流，输出覆盖矩阵、测试数据、优先级、自动化候选和缺口。 |
+| 🎓 | 客户成功实战 | [客户成功续约 Agent](../capstone/customer-success-renewal/README.md) | 一个续约健康工作流，输出风险分层、证据、推荐动作、QBR 议程和 follow-up。 |
+| 🎓 | 电商运营实战 | [电商选品运营 Agent](../capstone/ecommerce-merchandising-planner/README.md) | 一个 merchandising 工作流，输出商品分层、库存风险、内容缺口、活动建议和监控指标。 |
+| 🎓 | 教育科技实战 | [自适应学习教练 Agent](../capstone/adaptive-learning-tutor/README.md) | 一个学习教练工作流，输出知识点掌握度、下一题推荐、讲解计划和家长/导师摘要。 |
+| 🎓 | 招聘运营实战 | [招聘初筛 Agent](../capstone/recruiting-screener/README.md) | 一个招聘初筛工作流，输出岗位匹配证据、缺口、面试问题和人工复核队列。 |
+| 🎓 | 科研管理实战 | [科研基金申请 Agent](../capstone/grant-proposal-planner/README.md) | 一个基金申请规划工作流，输出指南匹配、创新点、任务分工、预算风险和提交日程。 |
+| 🎓 | 供应链管理实战 | [供应链风险雷达 Agent](../capstone/supply-chain-risk-radar/README.md) | 一个供应链风险工作流，输出风险评分、影响 SKU、替代供应商、行动建议和监控节奏。 |
+| 🎓 | 服务交付实战 | [现场服务调度 Agent](../capstone/field-service-dispatch/README.md) | 一个派单调度工作流，输出工单优先级、技师匹配、备件检查、路线建议和 SLA 风险。 |
+| 🎓 | 隐私合规实战 | [隐私数据请求 Agent](../capstone/privacy-dsr-automation/README.md) | 一个隐私请求处理工作流，输出请求分类、身份验证缺口、系统清单、导出/删除计划和审计记录。 |
 | 🧭 | 架构蓝图 | [RAG 完整架构蓝图](./rag-architecture.md) | ingestion、query、eval、governance、deployment 系统边界 |
 | 🏢 | 纵向蓝图 | [企业知识库 Agent 蓝图](./enterprise-knowledge-base-agent.md) | RAG、记忆、Agent runtime、事件流、定时任务、部署里程碑 |
 | 📚 | 进阶项目 | [RAG System Checkpoint](../capstone/rag-system/README.md) → [RAG 系统实战项目](./rag-system-project.md) | 仓库内验收最小 RAG 系统闭环，再连接 `songuu/rag-system` |

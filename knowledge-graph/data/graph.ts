@@ -94,6 +94,68 @@ export interface Article {
   credibilityNote?: string;
 }
 
+
+const CAPSTONE_PORTFOLIO_PROJECTS = [
+  { id: "cap-meeting-action", slug: "meeting-action-agent", title: "毕业项目 · 会议行动项 Agent", concepts: ["会议行动项抽取", "Owner 与 deadline 归一", "Follow-up 简报"] },
+  { id: "cap-contract-risk", slug: "contract-risk-reviewer", title: "毕业项目 · 合同风险审阅 Agent", concepts: ["合同条款切分", "Playbook 风险匹配", "法务确认队列"] },
+  { id: "cap-data-quality", slug: "data-quality-sentinel", title: "毕业项目 · 数据质量哨兵 Agent", concepts: ["数据质量规则", "Schema 漂移检测", "Lineage 影响报告"] },
+  { id: "cap-onboarding-coach", slug: "onboarding-coach-agent", title: "毕业项目 · 新员工入职教练 Agent", concepts: ["30/60/90 入职计划", "导师检查点", "资料过期标记"] },
+  { id: "cap-rfp-proposal", slug: "rfp-proposal-writer", title: "毕业项目 · RFP 方案标书 Agent", concepts: ["RFP 需求矩阵", "能力库差距分析", "方案评审清单"] },
+  { id: "cap-clinical-intake", slug: "clinical-intake-assistant", title: "毕业项目 · 临床问诊分流助手 Agent", concepts: ["非诊断 intake 摘要", "红旗症状升级", "医护人工分流"] },
+  { id: "cap-legal-discovery", slug: "legal-discovery-assistant", title: "毕业项目 · 法务证据发现 Agent", concepts: ["Issue list 检索", "证据时间线", "Privilege 人工标记"] },
+  { id: "cap-finance-close", slug: "finance-close-assistant", title: "毕业项目 · 财务月结助手 Agent", concepts: ["月结 checklist", "银行流水对账", "审计包生成"] },
+  { id: "cap-security-triage", slug: "security-triage-analyst", title: "毕业项目 · 安全告警分诊 Agent", concepts: ["SIEM 告警关联", "攻击链严重度", "Containment 审批队列"] },
+  { id: "cap-compliance-policy", slug: "compliance-policy-monitor", title: "毕业项目 · 合规政策监控 Agent", concepts: ["政策版本 diff", "控制矩阵映射", "影响流程 owner"] },
+  { id: "cap-developer-onboarding", slug: "developer-onboarding-guide", title: "毕业项目 · 开发者入仓引导 Agent", concepts: ["仓库入口扫描", "脚本事实索引", "低风险首任务"] },
+  { id: "cap-test-synthesizer", slug: "test-case-synthesizer", title: "毕业项目 · 测试用例生成 Agent", concepts: ["需求覆盖矩阵", "边界测试数据", "回归缺陷清单"] },
+  { id: "cap-cs-renewal", slug: "customer-success-renewal", title: "毕业项目 · 客户成功续约 Agent", concepts: ["客户健康评分", "续约风险归因", "QBR 议程生成"] },
+  { id: "cap-ecommerce-merch", slug: "ecommerce-merchandising-planner", title: "毕业项目 · 电商选品运营 Agent", concepts: ["商品机会分层", "库存风险检测", "活动组合建议"] },
+  { id: "cap-adaptive-tutor", slug: "adaptive-learning-tutor", title: "毕业项目 · 自适应学习教练 Agent", concepts: ["知识点掌握度", "下一题推荐", "学习隐私最小化"] },
+  { id: "cap-recruiting-screener", slug: "recruiting-screener", title: "毕业项目 · 招聘初筛 Agent", concepts: ["JD 能力项解析", "简历证据匹配", "公平性复核队列"] },
+  { id: "cap-grant-proposal", slug: "grant-proposal-planner", title: "毕业项目 · 科研基金申请 Agent", concepts: ["基金指南解析", "团队成果匹配", "预算规则检查"] },
+  { id: "cap-supply-chain", slug: "supply-chain-risk-radar", title: "毕业项目 · 供应链风险雷达 Agent", concepts: ["供应商风险评分", "SKU 影响映射", "替代方案规划"] },
+  { id: "cap-field-service", slug: "field-service-dispatch", title: "毕业项目 · 现场服务调度 Agent", concepts: ["工单技能匹配", "备件可用性检查", "SLA 派单风险"] },
+  { id: "cap-privacy-dsr", slug: "privacy-dsr-automation", title: "毕业项目 · 隐私数据请求 Agent", concepts: ["DSR 请求分类", "身份验证门", "隐私审计记录"] },
+] as const;
+
+const CAPSTONE_PORTFOLIO_CONCEPT_KINDS = [
+  { suffix: "workflow", summary: "把真实业务输入组织成可复现、可替换数据源的 Agent 流程" },
+  { suffix: "quality", summary: "用规则、证据和验收清单约束输出质量，避免只做聊天 demo" },
+  { suffix: "handoff", summary: "把 Agent 结果转成 owner 明确、可审计、可人工确认的业务交付物" },
+] as const;
+
+const CAPSTONE_PORTFOLIO_CHAPTERS: Chapter[] = CAPSTONE_PORTFOLIO_PROJECTS.map((project) => ({
+  id: project.id,
+  slug: project.slug,
+  title: project.title,
+  part: "毕业项目",
+  dir: "capstone/" + project.slug,
+}));
+
+const CAPSTONE_PORTFOLIO_CONCEPTS: Concept[] = CAPSTONE_PORTFOLIO_PROJECTS.flatMap((project) =>
+  CAPSTONE_PORTFOLIO_CONCEPT_KINDS.map((kind, index) => ({
+    id: "cp-" + project.slug + "-" + kind.suffix,
+    label: project.concepts[index]!,
+    chapter: project.id,
+    summary: kind.summary,
+  })),
+);
+
+const CAPSTONE_PORTFOLIO_RELATIONS: Relation[] = CAPSTONE_PORTFOLIO_PROJECTS.flatMap((project) => [
+  {
+    from: "cp-" + project.slug + "-workflow",
+    to: "cp-" + project.slug + "-quality",
+    type: "前置",
+    note: "先跑通业务流程，再用证据、规则和验收清单收敛质量",
+  },
+  {
+    from: "cp-" + project.slug + "-quality",
+    to: "cp-" + project.slug + "-handoff",
+    type: "前置",
+    note: "质量门通过后才能把结果交给业务 owner 或人工确认队列",
+  },
+]);
+
 // ────────────────────────────────────────────────────────────────────────────
 // 章节清单（与磁盘真实目录一致）
 // ────────────────────────────────────────────────────────────────────────────
@@ -127,6 +189,7 @@ export const CHAPTERS: Chapter[] = [
   { id: "cap-feedback", slug: "feedback-intelligence", title: "毕业项目 · 用户反馈洞察 Agent", part: "毕业项目", dir: "capstone/feedback-intelligence", demo: { entry: "capstone/feedback-intelligence/src/cli.ts", needsKey: "none" } },
   { id: "cap-sales", slug: "sales-lead-researcher", title: "毕业项目 · 销售线索研究 Agent", part: "毕业项目", dir: "capstone/sales-lead-researcher", demo: { entry: "capstone/sales-lead-researcher/src/cli.ts", needsKey: "none" } },
   { id: "cap-enterprise-kb", slug: "enterprise-knowledge-base-agent", title: "毕业项目 · 企业知识库 Agent", part: "毕业项目", dir: "capstone/enterprise-knowledge-base-agent" },
+  ...CAPSTONE_PORTFOLIO_CHAPTERS,
   { id: "rag-chunk", slug: "01-chunking-strategies", title: "进阶分块策略", part: "进阶 RAG 专题", dir: "rag-advanced/01-chunking-strategies", demo: { needsKey: "none" } },
   { id: "rag-hybrid", slug: "02-hybrid-search", title: "混合检索 (向量+BM25+RRF)", part: "进阶 RAG 专题", dir: "rag-advanced/02-hybrid-search", demo: { needsKey: "embedding" } },
   { id: "rag-rerank", slug: "03-reranking", title: "召回-精排两段式", part: "进阶 RAG 专题", dir: "rag-advanced/03-reranking", demo: { needsKey: "embedding" } },
@@ -341,6 +404,8 @@ export const CONCEPTS: Concept[] = [
   { id: "csales-risk", label: "合规风险扣分", chapter: "cap-sales", summary: "金融、教育等敏感场景提高风险权重，先确认权限边界" },
   { id: "csales-talk-track", label: "销售开场话术", chapter: "cap-sales", summary: "把证据链转成面向行业痛点的 discovery call 切入点" },
   { id: "csales-next-action", label: "下一步动作", chapter: "cap-sales", summary: "按 priority/nurture/disqualify 输出可执行跟进策略" },
+
+  ...CAPSTONE_PORTFOLIO_CONCEPTS,
 
   // ── 进阶 RAG 专题 ──
   { id: "cragchunk-why-matters", label: "切块决定检索上限", chapter: "rag-chunk", summary: "检索质量的天花板很大程度由分块策略决定，太大太小都伤召回" },
@@ -736,6 +801,8 @@ export const RELATIONS: Relation[] = [
   { from: "csales-risk", to: "csales-next-action", type: "前置", note: "高风险线索先培育或确认边界，低风险高分才外呼" },
   { from: "csales-talk-track", to: "csales-next-action", type: "组成", note: "销售话术服务于下一步 discovery call" },
   { from: "csales-talk-track", to: "c03-prompt-as-spec", type: "应用", note: "把证据链转成受约束的外呼话术" },
+  ...CAPSTONE_PORTFOLIO_RELATIONS,
+
   // ── 进阶 RAG 专题：章内关系 ──
   { from: "cragchunk-why-matters", to: "cragchunk-sliding-window", type: "深化", note: "从最朴素的滑窗基线出发理解切块" },
   { from: "cragchunk-sliding-window", to: "cragchunk-recursive", type: "对比", note: "盲按字符切 vs 在语义边界下刀" },
@@ -1682,7 +1749,69 @@ export const ARTICLES: Article[] = [
     ],
     confidence: "medium",
     credibilityNote: "一手 arXiv 预印本；实验设计信息充分，但仍属于未正式同行评审的最新研究。",
-  },  { title: "Introducing Contextual Retrieval", url: "https://www.anthropic.com/news/contextual-retrieval", kind: "blog", chapters: ["rag-chunk", "rag-hybrid", "rag-contextual"], note: "Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读" },
+  },
+  {
+    title: "Semantic Kernel Python 1.43.1 release notes",
+    url: "https://github.com/microsoft/semantic-kernel/releases/tag/python-1.43.1",
+    kind: "doc",
+    source: "Microsoft",
+    publishedAt: "2026-06-17",
+    institution: "Microsoft",
+    chapters: ["19"],
+    ecosystemLayer: "security-governance",
+    note: "官方 release notes：一边给 Azure AI / OpenAI Assistant agents 补 `function_choice_behavior`，一边在 OpenAPI plugin 里拒绝 encoded dot-segment paths，信号是“让 agent 更会调函数”和“把 plugin URL 归一化边界收紧”必须一起治理，否则工具编排能力越强，路径绕过面就越大。",
+    applicableModules: [
+      "lessons/05-tool-use-basics",
+      "lessons/11-multi-agent-orchestration",
+      "lessons/17-safety-and-guardrails",
+      "lessons/18-deployment",
+      "lessons/20-agent-frontier-news",
+    ],
+    confidence: "high",
+    credibilityNote: "一手 GitHub release；直接来自 Microsoft Semantic Kernel 官方仓库。",
+  },
+  {
+    title: "Towards Automating Scientific Review with Google's Paper Assistant Tool",
+    url: "https://arxiv.org/abs/2606.28277",
+    kind: "paper",
+    source: "arXiv",
+    publishedAt: "2026-06-26",
+    author: "Rajesh Jayaram et al.",
+    institution: "Google Research authors",
+    chapters: ["19"],
+    ecosystemLayer: "evaluation",
+    note: "PAT 论文把 deep scientific review agent 做成带 inference scaling 的验证流程：不仅总结论文，还检查理论、实验与潜在缺陷，并在 SPOT 数学错误集上把 zero-shot recall 提升约 34%。信号是 research/review agent 的价值不在“给意见”，而在可扩展验证链和保留人类最终裁决。",
+    applicableModules: [
+      "lessons/10-reasoning-patterns",
+      "lessons/15-evaluation-and-testing",
+      "capstone/deep-research-agent",
+      "lessons/20-agent-frontier-news",
+    ],
+    confidence: "medium",
+    credibilityNote: "一手 arXiv 预印本；作者与部署场景信息清楚，但仍未经过正式同行评审。",
+  },
+  {
+    title: "Govern the Repository, Not the Agent: Measuring Ecosystem-Level Risk in AI-Native Software",
+    url: "https://arxiv.org/abs/2606.28235",
+    kind: "paper",
+    source: "arXiv",
+    publishedAt: "2026-06-26",
+    author: "Daniel Russo",
+    institution: "arXiv / academia",
+    chapters: ["19"],
+    ecosystemLayer: "evaluation",
+    note: "论文基于 93 万+ agent-authored PR 研究 integration friction，发现约一半变异留在 repository 层，而且 agent 贡献比 human 更集中到这种仓库级摩擦。信号是 coding agent 不能只按单个任务成功率打分，还要把仓库级并发集成风险、流程成熟度和生态摩擦作为治理对象。",
+    applicableModules: [
+      "lessons/12-intro-to-frameworks",
+      "lessons/15-evaluation-and-testing",
+      "lessons/16-observability-and-cost",
+      "lessons/18-deployment",
+      "lessons/20-agent-frontier-news",
+    ],
+    confidence: "medium",
+    credibilityNote: "一手 arXiv 预印本；样本量很大、问题定义直接命中 coding agent 生产治理，但结论仍待更多外部复核。",
+  },
+  { title: "Introducing Contextual Retrieval", url: "https://www.anthropic.com/news/contextual-retrieval", kind: "blog", chapters: ["rag-chunk", "rag-hybrid", "rag-contextual"], note: "Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读" },
   { title: "Okapi BM25 - Wikipedia", url: "https://en.wikipedia.org/wiki/Okapi_BM25", kind: "doc", chapters: ["rag-hybrid"], note: "BM25 打分公式与 k1/b 参数的权威说明，对应本章 BM25Index" },
   { title: "Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods", url: "https://dl.acm.org/doi/10.1145/1571941.1572114", kind: "paper", chapters: ["rag-hybrid"], note: "RRF 原始论文 (Cormack et al., SIGIR 2009)，混合检索融合法的来源" },
   { title: "Precise Zero-Shot Dense Retrieval without Relevance Labels (HyDE)", url: "https://arxiv.org/abs/2212.10496", kind: "paper", chapters: ["rag-query"], note: "HyDE 原始论文：用假设性文档的向量做检索" },
@@ -1712,3 +1841,4 @@ export const ARTICLES: Article[] = [
   { title: "LangGraph StateGraph and Pregel runtime source", url: "https://github.com/langchain-ai/langgraph/blob/main/libs/langgraph/langgraph/graph/state.py", kind: "doc", source: "LangGraph", chapters: ["21"], note: "LangGraph 官方源码入口：StateGraph 的 state schema、channel reducer、node、edge 与 compile" },
   { title: "LlamaIndex RetrieverQueryEngine source", url: "https://github.com/run-llama/llama_index/blob/main/llama-index-core/llama_index/core/query_engine/retriever_query_engine.py", kind: "doc", source: "LlamaIndex", chapters: ["21"], note: "LlamaIndex 官方源码入口：retriever、node postprocessor、response synthesizer 组成 data-first RAG 查询链路" },
 ];
+

@@ -81,12 +81,12 @@
 | 第六部分 · 生产化 | 15–18 | ~5 小时 |
 | 第七部分 · 前沿与生态 | 19–20 | ~1.5 小时 |
 | 第 21 章 · 源码解析 | source-analysis 章节 + 仓库矩阵/源码对话/CodeMap + 3 篇深入页 | ~5 小时 |
-| 🎓 毕业项目（8 个）· Deep Research / 客服 / 评审 / 评测 / 告警响应 / 反馈洞察 / 销售线索 / 企业知识库 | 综合 | ~23–34 小时 |
+| 🎓 毕业项目（28 个）· Deep Research / 客服 / 评审 / 评测 / 告警响应 / 反馈洞察 / 销售线索 / 企业知识库 | 综合 | ~88–124 小时 |
 | 🔬 进阶 RAG 专题 | rag-advanced ×11 | ~7–9 小时 |
 | 🧩 进阶 LangGraph 专题 | langgraph-advanced ×5 + 生产化扩章地图 | ~4–6 小时 |
 | 🧭 RAG 完整架构蓝图 | 架构阅读 | ~1 小时 |
 | 🏢 企业知识库 Agent 蓝图 | 纵向项目设计 | ~1 小时 |
-| **合计** | **21 章 + 基础概念扩展 + 8 个毕业项目 + RAG 专题 + LangGraph 专题 + 架构蓝图 + 企业知识库蓝图** | **约 63.5–83.5 小时**（不含动手扩展） |
+| **合计** | **21 章 + 基础概念扩展 + 28 个毕业项目 + RAG 专题 + LangGraph 专题 + 架构蓝图 + 企业知识库蓝图** | **约 128.5–173.5 小时**（不含动手扩展） |
 
 > 按每天投入 1–1.5 小时算，大约 **3–4 周**可以完整走完一遍。建议分散学、多动手，比一口气刷完更扎实。
 
@@ -276,9 +276,9 @@
 | 21.2 | LangGraph 源码解析 | ⭐⭐⭐⭐ | 75 分钟 | 从 `StateGraph`、Pregel runtime、ToolNode 读懂可恢复状态机 runtime | [../source-analysis/langgraph.md](../source-analysis/langgraph.md) |
 | 21.3 | LlamaIndex 源码解析 | ⭐⭐⭐⭐ | 60 分钟 | 从 QueryEngine、Retriever、ResponseSynthesizer、Workflow 读懂 data-first agent/RAG 框架 | [../source-analysis/llamaindex.md](../source-analysis/llamaindex.md) |
 
-### 🎓 毕业项目（8 个综合实战，可直接放进作品集）
+### 🎓 毕业项目（28 个综合实战，可直接放进作品集）
 
-> 8 个项目各展示一种完整架构，彼此互补：研究型 agent / 生产客服系统 / 多智能体评审 / Agent 评测 / 告警响应 / 用户反馈洞察 / 销售线索研究 / 企业知识库纵向全栈。新增的告警、反馈、销售三者都偏真实业务流程，**完全离线、零 key 可跑**，`pnpm <name>:smoke` 即可验证。
+> 28 个项目各展示一种完整架构，彼此互补：研究型 agent / 生产客服系统 / 多智能体评审 / Agent 评测 / 告警响应 / 用户反馈洞察 / 销售线索研究 / 企业知识库纵向全栈。新增的 20 个项目覆盖真实业务流程，按统一 README 规格交付，并由 `pnpm capstone:catalog:smoke` 验证结构完整；既有可运行项目继续用 `pnpm <name>:smoke` 验证。
 
 | # | 标题 | 难度 | 预计 | 一句话简介 | 链接 |
 |---|------|------|------|------------|------|
@@ -290,6 +290,31 @@
 | 🎓 | 用户反馈洞察 Agent | ⭐⭐⭐ | 2–3 小时 | 多渠道反馈注入隔离、PII 脱敏、主题聚类、价值加权与 roadmap ticket 生成 | [../capstone/feedback-intelligence/README.md](../capstone/feedback-intelligence/README.md) |
 | 🎓 | 销售线索研究 Agent | ⭐⭐⭐ | 2–3 小时 | ICP fit、业务信号、合规风险、销售开场话术与下一步动作 | [../capstone/sales-lead-researcher/README.md](../capstone/sales-lead-researcher/README.md) |
 | 🎓 | 企业知识库 Agent | ⭐⭐⭐⭐⭐ | 4–6 小时 | 把 ingestion、ACL、Agentic RAG、事件流、trace/eval、定时巡检拆成企业级纵向作品集路线 | [../capstone/enterprise-knowledge-base-agent/README.md](../capstone/enterprise-knowledge-base-agent/README.md) |
+
+#### 新增 20 个实践型毕业项目
+
+| # | 标题 | 难度 | 预计 | 一句话简介 | 链接 |
+|---|------|------|------|------------|------|
+| 🎓 | 会议行动项 Agent | ⭐⭐⭐☆☆ | 2-3 小时 | 一个可离线演示的 meeting-to-action 工作流，能输出行动项、风险、跟进提醒和复盘摘要。 | [../capstone/meeting-action-agent/README.md](../capstone/meeting-action-agent/README.md) |
+| 🎓 | 合同风险审阅 Agent | ⭐⭐⭐⭐☆ | 3-4 小时 | 一个合同条款审阅工作流，输出风险等级、证据条款、建议改写和需法务确认的问题。 | [../capstone/contract-risk-reviewer/README.md](../capstone/contract-risk-reviewer/README.md) |
+| 🎓 | 数据质量哨兵 Agent | ⭐⭐⭐⭐☆ | 3-4 小时 | 一个数据质量巡检工作流，输出异常、影响报表、可能根因、回滚建议和通知摘要。 | [../capstone/data-quality-sentinel/README.md](../capstone/data-quality-sentinel/README.md) |
+| 🎓 | 新员工入职教练 Agent | ⭐⭐⭐☆☆ | 2-3 小时 | 一个入职教练工作流，输出学习路径、任务节奏、导师检查点和风险提醒。 | [../capstone/onboarding-coach-agent/README.md](../capstone/onboarding-coach-agent/README.md) |
+| 🎓 | RFP 方案标书 Agent | ⭐⭐⭐⭐☆ | 4-6 小时 | 一个 RFP 响应工作流，输出需求映射、差距清单、方案大纲、风险和评审 checklist。 | [../capstone/rfp-proposal-writer/README.md](../capstone/rfp-proposal-writer/README.md) |
+| 🎓 | 临床问诊分流助手 Agent | ⭐⭐⭐⭐⭐ | 4-6 小时 | 一个高安全边界的医疗 intake 工作流，输出症状摘要、紧急信号、缺失信息和人工分流建议。 | [../capstone/clinical-intake-assistant/README.md](../capstone/clinical-intake-assistant/README.md) |
+| 🎓 | 法务证据发现 Agent | ⭐⭐⭐⭐☆ | 4-5 小时 | 一个 e-discovery 工作流，输出证据候选、相关性理由、时间线和 privilege/敏感标记。 | [../capstone/legal-discovery-assistant/README.md](../capstone/legal-discovery-assistant/README.md) |
+| 🎓 | 财务月结助手 Agent | ⭐⭐⭐⭐☆ | 3-4 小时 | 一个月结巡检工作流，输出差异列表、解释候选、责任人、截止日期和审计包。 | [../capstone/finance-close-assistant/README.md](../capstone/finance-close-assistant/README.md) |
+| 🎓 | 安全告警分诊 Agent | ⭐⭐⭐⭐⭐ | 4-6 小时 | 一个安全分诊工作流，输出严重度、攻击链阶段、证据、误报理由、containment 建议和升级队列。 | [../capstone/security-triage-analyst/README.md](../capstone/security-triage-analyst/README.md) |
+| 🎓 | 合规政策监控 Agent | ⭐⭐⭐⭐☆ | 3-4 小时 | 一个合规变更影响分析工作流，输出政策差异、影响流程、owner、deadline 和审计说明。 | [../capstone/compliance-policy-monitor/README.md](../capstone/compliance-policy-monitor/README.md) |
+| 🎓 | 开发者入仓引导 Agent | ⭐⭐⭐☆☆ | 3-4 小时 | 一个 repo onboarding 工作流，输出环境检查、关键目录、首个任务、代码阅读路径和风险提醒。 | [../capstone/developer-onboarding-guide/README.md](../capstone/developer-onboarding-guide/README.md) |
+| 🎓 | 测试用例生成 Agent | ⭐⭐⭐⭐☆ | 3-4 小时 | 一个测试设计工作流，输出覆盖矩阵、测试数据、优先级、自动化候选和缺口。 | [../capstone/test-case-synthesizer/README.md](../capstone/test-case-synthesizer/README.md) |
+| 🎓 | 客户成功续约 Agent | ⭐⭐⭐☆☆ | 3-4 小时 | 一个续约健康工作流，输出风险分层、证据、推荐动作、QBR 议程和 follow-up。 | [../capstone/customer-success-renewal/README.md](../capstone/customer-success-renewal/README.md) |
+| 🎓 | 电商选品运营 Agent | ⭐⭐⭐☆☆ | 3-4 小时 | 一个 merchandising 工作流，输出商品分层、库存风险、内容缺口、活动建议和监控指标。 | [../capstone/ecommerce-merchandising-planner/README.md](../capstone/ecommerce-merchandising-planner/README.md) |
+| 🎓 | 自适应学习教练 Agent | ⭐⭐⭐⭐☆ | 3-5 小时 | 一个学习教练工作流，输出知识点掌握度、下一题推荐、讲解计划和家长/导师摘要。 | [../capstone/adaptive-learning-tutor/README.md](../capstone/adaptive-learning-tutor/README.md) |
+| 🎓 | 招聘初筛 Agent | ⭐⭐⭐⭐☆ | 3-4 小时 | 一个招聘初筛工作流，输出岗位匹配证据、缺口、面试问题和人工复核队列。 | [../capstone/recruiting-screener/README.md](../capstone/recruiting-screener/README.md) |
+| 🎓 | 科研基金申请 Agent | ⭐⭐⭐⭐☆ | 4-6 小时 | 一个基金申请规划工作流，输出指南匹配、创新点、任务分工、预算风险和提交日程。 | [../capstone/grant-proposal-planner/README.md](../capstone/grant-proposal-planner/README.md) |
+| 🎓 | 供应链风险雷达 Agent | ⭐⭐⭐⭐☆ | 4-5 小时 | 一个供应链风险工作流，输出风险评分、影响 SKU、替代供应商、行动建议和监控节奏。 | [../capstone/supply-chain-risk-radar/README.md](../capstone/supply-chain-risk-radar/README.md) |
+| 🎓 | 现场服务调度 Agent | ⭐⭐⭐⭐☆ | 3-4 小时 | 一个派单调度工作流，输出工单优先级、技师匹配、备件检查、路线建议和 SLA 风险。 | [../capstone/field-service-dispatch/README.md](../capstone/field-service-dispatch/README.md) |
+| 🎓 | 隐私数据请求 Agent | ⭐⭐⭐⭐⭐ | 4-5 小时 | 一个隐私请求处理工作流，输出请求分类、身份验证缺口、系统清单、导出/删除计划和审计记录。 | [../capstone/privacy-dsr-automation/README.md](../capstone/privacy-dsr-automation/README.md) |
 
 ### 🧭 RAG 完整架构蓝图
 

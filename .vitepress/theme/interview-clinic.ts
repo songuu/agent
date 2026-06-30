@@ -192,6 +192,15 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
         tag.textContent = `→ ${chapterDisplay(chapter)}`;
         meta.append(tag);
       }
+      if (question.sourceUrls.length > 0) {
+        const link = document.createElement("a");
+        link.className = "interview-clinic-source-link";
+        link.href = question.sourceUrls[0];
+        link.target = "_blank";
+        link.rel = "noreferrer";
+        link.textContent = question.sourceTitles[0] ? "原文" : "来源";
+        meta.append(link);
+      }
 
       item.append(text, meta);
       list.append(item);

@@ -19,7 +19,7 @@
     "code-review-crew:smoke": "tsx capstone/code-review-crew/src/smoke.ts",
     "agent-eval-harness": "tsx capstone/agent-eval-harness/src/cli.ts",
     "agent-eval-harness:smoke": "tsx capstone/agent-eval-harness/src/smoke.ts",
-    "capstone:smoke": "pnpm support-copilot:smoke && pnpm code-review-crew:smoke && pnpm agent-eval-harness:smoke && pnpm incident-responder:smoke && pnpm feedback-intelligence:smoke && pnpm sales-lead-researcher:smoke",
+    "capstone:smoke": "pnpm support-copilot:smoke && pnpm code-review-crew:smoke && pnpm agent-eval-harness:smoke && pnpm incident-responder:smoke && pnpm feedback-intelligence:smoke && pnpm sales-lead-researcher:smoke && pnpm capstone:catalog:smoke",
     "kg": "tsx knowledge-graph/generate.ts",
     "supabase:frontier-seed": "tsx scripts/generate-frontier-ecosystem-supabase-seed.ts",
     "supabase:interview-seed": "tsx scripts/generate-interview-questions-supabase-seed.ts",
@@ -27,6 +27,8 @@
     "supabase:frontier-push": "tsx --env-file=.env scripts/push-frontier-ecosystem-to-supabase.ts",
     "supabase:frontier-read": "tsx --env-file=.env scripts/read-frontier-ecosystem-from-supabase.ts",
     "supabase:glossary-push": "tsx --env-file=.env scripts/push-glossary-to-supabase.ts",
+    "supabase:codefather-interview-sync": "node --experimental-transform-types --env-file=.env scripts/sync-codefather-interview-to-supabase.ts",
+    "codefather:interview-cron": "node --experimental-transform-types --env-file=.env scripts/codefather-interview-cron.ts",
     "supabase:news-seed": "tsx scripts/generate-news-items-seed.ts",
     "supabase:notion-seed": "tsx scripts/generate-notion-articles-seed.ts",
     "supabase:notion-push": "tsx --env-file=.env scripts/push-notion-articles-to-supabase.ts",
@@ -56,7 +58,9 @@
     "feedback-intelligence": "tsx capstone/feedback-intelligence/src/cli.ts",
     "feedback-intelligence:smoke": "tsx capstone/feedback-intelligence/src/smoke.ts",
     "sales-lead-researcher": "tsx capstone/sales-lead-researcher/src/cli.ts",
-    "sales-lead-researcher:smoke": "tsx capstone/sales-lead-researcher/src/smoke.ts"
+    "sales-lead-researcher:smoke": "tsx capstone/sales-lead-researcher/src/smoke.ts",
+    "capstone:catalog:generate": "node scripts/generate-capstone-readmes.mjs",
+    "capstone:catalog:smoke": "node scripts/verify-capstone-catalog.mjs"
   },
   "keywords": [
     "ai",

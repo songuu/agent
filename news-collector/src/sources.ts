@@ -118,7 +118,8 @@ export const SOURCES: readonly NewsSource[] = [
   {
     key: "google-ai",
     name: "Google AI Blog",
-    url: "https://blog.google/technology/ai/rss/",
+    url: "https://blog.google/innovation-and-ai/technology/ai/rss/",
+    fallbackUrls: ["https://blog.google/technology/ai/rss/"],
     kind: "vendor-blog",
     lang: "en",
     layerHint: "model-platform",
@@ -358,3 +359,4 @@ export function enabledSources(): readonly NewsSource[] {
 export function findSource(key: string): NewsSource | undefined {
   return SOURCES.find((source) => source.key === key);
 }
+

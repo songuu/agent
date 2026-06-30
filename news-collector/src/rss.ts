@@ -124,6 +124,45 @@ function usableItems(items: readonly RawFeedItem[]): RawFeedItem[] {
   return items.filter((item) => item.title.length > 0 && item.link.length > 0);
 }
 
+async function fetchFeedXml(url: string, timeoutMs: number): Promise<string> {
+  const response = await fetch(url, {
+    headers: { "User-Agent": USER_AGENT, Accept: ACCEPT_FEED },
+    signal: AbortSignal.timeout(timeoutMs),
+    redirect: "follow",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Status code ${response.status}`);
+  }
+
+  return response.text();
+}
+
+async function parseFeedUrl(
+  parser: Parser,
+  source: NewsSource,
+  timeoutMs: number,
+): Promise<RawFeedItem[]> {
+  const urls = [source.url, ...(source.fallbackUrls ?? [])];
+  const errors: string[] = [];
+
+  for (const url of urls) {
+    try {
+      return usableItems((await parser.parseURL(url)).items?.map(toRawItem) ?? []);
+    } catch (parseUrlError: unknown) {
+      errors.push(`${url} parseURL: ${getErrorMessage(parseUrlError)}`);
+
+      try {
+        const xml = await fetchFeedXml(url, timeoutMs);
+        return await parseFeedString(xml, timeoutMs);
+      } catch (fetchError: unknown) {
+        errors.push(`${url} fetch+parseString: ${getErrorMessage(fetchError)}`);
+      }
+    }
+  }
+
+  throw new Error(errors.join(" | "));
+}
 const HTML_ENTITIES: Readonly<Record<string, string>> = {
   amp: "&",
   lt: "<",
@@ -236,7 +275,7 @@ export async function fetchFeed(
       const items =
         source.format === "aibase-html"
           ? await fetchAIBaseHtml(source, opts.timeoutMs ?? DEFAULT_TIMEOUT_MS)
-          : usableItems((await parser.parseURL(source.url)).items?.map(toRawItem) ?? []);
+          : await parseFeedUrl(parser, source, opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
       return {
         source,
         ok: true,
@@ -273,3 +312,4 @@ export async function fetchFeed(
     diagnostics: summarizeDiagnostics(source, maxAttempts, maxAttempts, errors),
   };
 }
+

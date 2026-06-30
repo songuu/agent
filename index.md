@@ -58,9 +58,9 @@ features:
     linkText: 综合实战
   - icon: 🧰
     title: 实践型毕业项目组
-    details: 告警响应、反馈洞察、销售线索研究三条真实业务流程，全部离线可跑、可写进作品集。
-    link: /docs/curriculum#毕业项目8-个综合实战可直接放进作品集
-    linkText: 看 8 个项目
+    details: 20 个新增真实业务流程项目，覆盖协作、法务、数据、安全、合规、HR、供应链和隐私等场景。
+    link: /capstone/
+    linkText: 看 28 个项目
   - icon: 🔬
     title: 进阶 RAG 专题
     details: 分块策略、混合检索、召回-精排、查询改写、三指标评估、生产化——把最小 RAG 补成生产级。
@@ -68,7 +68,7 @@ features:
     linkText: R1–R6 六章
   - icon: 🗺️
     title: 知识图谱
-    details: 257 个概念、402 条关系的全局图谱与交互式动图，看清概念之间怎么串联。
+    details: 329 个概念、457 条关系的全局图谱与交互式动图，看清概念之间怎么串联。
     link: /docs/knowledge-graph
     linkText: 打开图谱
   - icon: 💼

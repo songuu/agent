@@ -12,7 +12,7 @@
 | 想做多 agent 协作 | [B7 Workflow vs Agent](../agent-basics/07-workflow-vs-agent.md) | [第 11 章](../lessons/11-multi-agent-orchestration/) + [LangGraph 专题](../langgraph-advanced/) | supervisor/worker 拆分与失败处理协议 |
 | 想读框架源码 | [第 12 章上框架](../lessons/12-intro-to-frameworks/) | [第 21 章 · 源码解析](../source-analysis/) | 能沿入口函数读懂 LangChain / LangGraph / LlamaIndex runtime |
 | 想上线生产 | [B10 Guardrails](../agent-basics/10-guardrails-intro.md) + [B11 Evaluation](../agent-basics/11-evaluation-first.md) | [第 15-18 章](../lessons/15-evaluation-and-testing/) | 评估门、权限边界、成本与部署清单 |
-| 想做作品集 | [毕业项目总览](./curriculum.md#-毕业项目8-个综合实战可直接放进作品集) | 任选 capstone | 可演示的端到端项目 |
+| 想做作品集 | [毕业项目总览](../capstone/) | 从 28 个 capstone 中选一个 | 可演示的端到端项目 |
 
 ## 分类 1: 按学习阶段
 
@@ -38,6 +38,31 @@
 | Multi-agent Team | 多角色并行分析、评审、协作 | supervisor、worker、handoff、merge policy | 角色重叠、无仲裁、并行结果不可合并 |
 | Coding Agent | 读仓库、改代码、跑测试、发 PR | repository guidance、tool safety、test gate | 找错文件、破坏用户改动、用测试代理完成目标 |
 | Monitoring Agent | 定时巡检、告警解释、触发后续动作 | scheduling、observability、incident policy；对应 capstone/incident-responder | 误报/漏报、权限过大、无审计日志 |
+
+## 作品集项目地图
+
+| 领域 | 项目 | 可展示产出 |
+|------|------|------------|
+| 协作效率 | [会议行动项 Agent](../capstone/meeting-action-agent/) | 一个可离线演示的 meeting-to-action 工作流，能输出行动项、风险、跟进提醒和复盘摘要。 |
+| 法务协作 | [合同风险审阅 Agent](../capstone/contract-risk-reviewer/) | 一个合同条款审阅工作流，输出风险等级、证据条款、建议改写和需法务确认的问题。 |
+| 数据平台 | [数据质量哨兵 Agent](../capstone/data-quality-sentinel/) | 一个数据质量巡检工作流，输出异常、影响报表、可能根因、回滚建议和通知摘要。 |
+| HR 与团队运营 | [新员工入职教练 Agent](../capstone/onboarding-coach-agent/) | 一个入职教练工作流，输出学习路径、任务节奏、导师检查点和风险提醒。 |
+| 售前方案 | [RFP 方案标书 Agent](../capstone/rfp-proposal-writer/) | 一个 RFP 响应工作流，输出需求映射、差距清单、方案大纲、风险和评审 checklist。 |
+| 医疗运营 | [临床问诊分流助手 Agent](../capstone/clinical-intake-assistant/) | 一个高安全边界的医疗 intake 工作流，输出症状摘要、紧急信号、缺失信息和人工分流建议。 |
+| 企业法务 | [法务证据发现 Agent](../capstone/legal-discovery-assistant/) | 一个 e-discovery 工作流，输出证据候选、相关性理由、时间线和 privilege/敏感标记。 |
+| 财务运营 | [财务月结助手 Agent](../capstone/finance-close-assistant/) | 一个月结巡检工作流，输出差异列表、解释候选、责任人、截止日期和审计包。 |
+| 安全运营 | [安全告警分诊 Agent](../capstone/security-triage-analyst/) | 一个安全分诊工作流，输出严重度、攻击链阶段、证据、误报理由、containment 建议和升级队列。 |
+| 合规治理 | [合规政策监控 Agent](../capstone/compliance-policy-monitor/) | 一个合规变更影响分析工作流，输出政策差异、影响流程、owner、deadline 和审计说明。 |
+| 研发效率 | [开发者入仓引导 Agent](../capstone/developer-onboarding-guide/) | 一个 repo onboarding 工作流，输出环境检查、关键目录、首个任务、代码阅读路径和风险提醒。 |
+| 质量工程 | [测试用例生成 Agent](../capstone/test-case-synthesizer/) | 一个测试设计工作流，输出覆盖矩阵、测试数据、优先级、自动化候选和缺口。 |
+| 客户成功 | [客户成功续约 Agent](../capstone/customer-success-renewal/) | 一个续约健康工作流，输出风险分层、证据、推荐动作、QBR 议程和 follow-up。 |
+| 电商运营 | [电商选品运营 Agent](../capstone/ecommerce-merchandising-planner/) | 一个 merchandising 工作流，输出商品分层、库存风险、内容缺口、活动建议和监控指标。 |
+| 教育科技 | [自适应学习教练 Agent](../capstone/adaptive-learning-tutor/) | 一个学习教练工作流，输出知识点掌握度、下一题推荐、讲解计划和家长/导师摘要。 |
+| 招聘运营 | [招聘初筛 Agent](../capstone/recruiting-screener/) | 一个招聘初筛工作流，输出岗位匹配证据、缺口、面试问题和人工复核队列。 |
+| 科研管理 | [科研基金申请 Agent](../capstone/grant-proposal-planner/) | 一个基金申请规划工作流，输出指南匹配、创新点、任务分工、预算风险和提交日程。 |
+| 供应链管理 | [供应链风险雷达 Agent](../capstone/supply-chain-risk-radar/) | 一个供应链风险工作流，输出风险评分、影响 SKU、替代供应商、行动建议和监控节奏。 |
+| 服务交付 | [现场服务调度 Agent](../capstone/field-service-dispatch/) | 一个派单调度工作流，输出工单优先级、技师匹配、备件检查、路线建议和 SLA 风险。 |
+| 隐私合规 | [隐私数据请求 Agent](../capstone/privacy-dsr-automation/) | 一个隐私请求处理工作流，输出请求分类、身份验证缺口、系统清单、导出/删除计划和审计记录。 |
 
 ## 分类 3: 按工程能力拆解
 

@@ -20,7 +20,7 @@
 - ▶️ **每章可运行**：`npx tsx` 直接跑，零编译、零环境折腾。
 - 🗺️ **先看图，再看代码**：每章都有可缩放的 `图解学习地图` / Mermaid 图（默认就放到可读尺度，不必手动放大），并自动插入「抽象概念可视化」模块——每个概念按类型渲染专属的内联 SVG 动画场景（循环环 / 传送带 / 双路汇流 / 语义空间…）；本章概念图谱还会高亮本章焦点、按关系类型给连线配色。所有图片由代码内联绘制（零外部图片资源），用流程图、示意图、轻量动画、彩色加粗重点和外部阅读链接先建立心智模型，再进入原理讲解和代码走读。
 - 🔌 **厂商无关**：统一的 `getLLM()` 抽象，换 Claude / OpenAI 只改一行 `.env`。
-- 💼 **能写进简历**：毕业项目是一个完整可演示的小产品；附**求职指南**（简历模板 + 面试题）与**创业指南**（demo → 产品）。
+- 💼 **能写进简历**：毕业项目覆盖 28 个可演示作品集项目；附**求职指南**（简历模板 + 面试题）与**创业指南**（demo → 产品）。
 
 > 适合：有基础 JS/TS、想入行或转行做 AI 应用 / Agent 工程的同学。
 
@@ -79,7 +79,7 @@ pnpm site:live
 
 ## 全局导航
 
-想直接跳到具体课程，走 [**全局课程导航**](./docs/navigation.md)。如果你想按 agent 类型、岗位目标或生产能力倒推学习路线，走 [**Agent 学习指南与分类地图**](./docs/agent-learning-guides.md)。它们一起整理了第 00–21 章、B1-B12 基础指南、毕业项目、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone、RAG 系统实战项目和源码解析。
+想直接跳到具体课程，走 [**全局课程导航**](./docs/navigation.md)。如果你想按 agent 类型、岗位目标或生产能力倒推学习路线，走 [**Agent 学习指南与分类地图**](./docs/agent-learning-guides.md)。它们一起整理了第 00–21 章、B1-B12 基础指南、28 个毕业项目、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone、RAG 系统实战项目和源码解析。
 
 ---
 
@@ -196,11 +196,32 @@ pnpm site:live
 | 21.1 | [LangChain 源码解析](./source-analysis/langchain.md) | ⭐⭐⭐⭐ | `create_agent`、Runnable、middleware、structured output |
 | 21.2 | [LangGraph 源码解析](./source-analysis/langgraph.md) | ⭐⭐⭐⭐ | `StateGraph`、Pregel runtime、prebuilt ReAct agent、ToolNode |
 | 21.3 | [LlamaIndex 源码解析](./source-analysis/llamaindex.md) | ⭐⭐⭐⭐ | QueryEngine、Retriever、ResponseSynthesizer、Workflow |
+| 🎓 | [毕业项目总览（28 个）](./capstone/) | ⭐⭐⭐-⭐⭐⭐⭐⭐ | 8 个既有综合项目 + 20 个新增实践项目，覆盖真实业务工作流 |
 | 🎓 | [毕业项目 · Deep Research Agent](./capstone/deep-research-agent/) | ⭐⭐⭐⭐ | 综合所有能力的实战项目 |
 | 🎓 | [毕业项目 · 告警响应 Agent](./capstone/incident-responder/) | ⭐⭐⭐⭐ | 告警、日志、runbook、审批和复盘的运维实战项目 |
 | 🎓 | [毕业项目 · 用户反馈洞察 Agent](./capstone/feedback-intelligence/) | ⭐⭐⭐ | 反馈清洗、主题聚类、价值加权和 roadmap ticket 的产品实战项目 |
 | 🎓 | [毕业项目 · 销售线索研究 Agent](./capstone/sales-lead-researcher/) | ⭐⭐⭐ | ICP 评分、业务信号、合规风险和销售话术的增长实战项目 |
 | 🎓 | [毕业项目 · 企业知识库 Agent](./capstone/enterprise-knowledge-base-agent/) | ⭐⭐⭐⭐⭐ | 企业知识库纵向全栈：ingestion、ACL、Agentic RAG、事件流、trace/eval、定时巡检 |
+| 🎓 | [毕业项目 · 会议行动项 Agent](./capstone/meeting-action-agent/) | ⭐⭐⭐☆☆ | 协作效率：把会议纪要、发言片段和历史决议整理成 owner、deadline、风险和后续追踪项，解决会后没人知道谁该做什么的问题。 |
+| 🎓 | [毕业项目 · 合同风险审阅 Agent](./capstone/contract-risk-reviewer/) | ⭐⭐⭐⭐☆ | 法务协作：把合同条款、公司 playbook 和谈判历史变成风险清单，帮助业务先定位付款、责任、终止和数据条款风险。 |
+| 🎓 | [毕业项目 · 数据质量哨兵 Agent](./capstone/data-quality-sentinel/) | ⭐⭐⭐⭐☆ | 数据平台：把数据表快照、质量规则和下游报表依赖串成巡检流程，发现 schema 漂移、空值暴涨、口径异常和影响范围。 |
+| 🎓 | [毕业项目 · 新员工入职教练 Agent](./capstone/onboarding-coach-agent/) | ⭐⭐⭐☆☆ | HR 与团队运营：把入职手册、团队制度、岗位清单和学习任务转成个性化 30/60/90 天计划，帮助新人尽快进入工作流。 |
+| 🎓 | [毕业项目 · RFP 方案标书 Agent](./capstone/rfp-proposal-writer/) | ⭐⭐⭐⭐☆ | 售前方案：把客户 RFP、公司能力库、案例库和合规要求整理成响应矩阵，生成可审查的方案骨架。 |
+| 🎓 | [毕业项目 · 临床问诊分流助手 Agent](./capstone/clinical-intake-assistant/) | ⭐⭐⭐⭐⭐ | 医疗运营：把患者自述、基础问卷和机构分流规则整理成非诊断型 intake 摘要，帮助人工医护更快接手。 |
+| 🎓 | [毕业项目 · 法务证据发现 Agent](./capstone/legal-discovery-assistant/) | ⭐⭐⭐⭐☆ | 企业法务：把邮件、合同、聊天记录和案件 issue list 组织成证据发现流程，帮助法务定位相关材料和时间线。 |
+| 🎓 | [毕业项目 · 财务月结助手 Agent](./capstone/finance-close-assistant/) | ⭐⭐⭐⭐☆ | 财务运营：把总账、应收应付、银行对账和月结 checklist 串起来，找出差异、缺凭证和需要人工确认的分录。 |
+| 🎓 | [毕业项目 · 安全告警分诊 Agent](./capstone/security-triage-analyst/) | ⭐⭐⭐⭐⭐ | 安全运营：把 SIEM 告警、资产信息、身份日志和威胁情报变成可审计分诊，帮助 SOC 降低噪音和漏报。 |
+| 🎓 | [毕业项目 · 合规政策监控 Agent](./capstone/compliance-policy-monitor/) | ⭐⭐⭐⭐☆ | 合规治理：把政策更新、内部控制清单和业务流程映射起来，识别哪些 SOP、系统配置和培训材料需要更新。 |
+| 🎓 | [毕业项目 · 开发者入仓引导 Agent](./capstone/developer-onboarding-guide/) | ⭐⭐⭐☆☆ | 研发效率：把仓库结构、脚本、架构文档和最近 PR 总结成新人可执行的第一周上手路线。 |
+| 🎓 | [毕业项目 · 测试用例生成 Agent](./capstone/test-case-synthesizer/) | ⭐⭐⭐⭐☆ | 质量工程：把需求、接口契约和历史缺陷转成测试矩阵，生成正常、边界、异常和回归用例。 |
+| 🎓 | [毕业项目 · 客户成功续约 Agent](./capstone/customer-success-renewal/) | ⭐⭐⭐☆☆ | 客户成功：把使用量、工单、健康度和合同信息整理成续约风险和 QBR 议程，帮助 CSM 提前干预。 |
+| 🎓 | [毕业项目 · 电商选品运营 Agent](./capstone/ecommerce-merchandising-planner/) | ⭐⭐⭐☆☆ | 电商运营：把商品表现、库存、评价和活动日历整理成选品、定价和内容优化建议。 |
+| 🎓 | [毕业项目 · 自适应学习教练 Agent](./capstone/adaptive-learning-tutor/) | ⭐⭐⭐⭐☆ | 教育科技：把学习目标、错题、掌握度和课程资源变成个性化练习路径，帮助学习者补弱项。 |
+| 🎓 | [毕业项目 · 招聘初筛 Agent](./capstone/recruiting-screener/) | ⭐⭐⭐⭐☆ | 招聘运营：把 JD、简历、面试题库和合规要求转成结构化初筛，帮助招聘团队提升一致性。 |
+| 🎓 | [毕业项目 · 科研基金申请 Agent](./capstone/grant-proposal-planner/) | ⭐⭐⭐⭐☆ | 科研管理：把基金指南、团队成果、预算规则和时间表整理成申请计划和材料缺口。 |
+| 🎓 | [毕业项目 · 供应链风险雷达 Agent](./capstone/supply-chain-risk-radar/) | ⭐⭐⭐⭐☆ | 供应链管理：把供应商表现、地区风险、交付记录和替代方案整理成采购风险监控。 |
+| 🎓 | [毕业项目 · 现场服务调度 Agent](./capstone/field-service-dispatch/) | ⭐⭐⭐⭐☆ | 服务交付：把工单、技师技能、地理区域、备件和 SLA 整理成派单建议，降低迟到和重复上门。 |
+| 🎓 | [毕业项目 · 隐私数据请求 Agent](./capstone/privacy-dsr-automation/) | ⭐⭐⭐⭐⭐ | 隐私合规：把用户的数据访问/删除请求、身份验证状态、系统目录和法定时限组织成 DSR 处理队列。 |
 | **进阶专题** | **RAG 生产化（rag-advanced）** | | |
 | R1 | [进阶分块策略](./rag-advanced/01-chunking-strategies/) | ⭐⭐⭐ | 递归语义切分、Markdown 感知、按 token 控大小（纯函数，免 key 可跑） |
 | R2 | [混合检索](./rag-advanced/02-hybrid-search/) | ⭐⭐⭐ | 向量 + BM25 + RRF 融合 |
@@ -240,11 +261,17 @@ agent/
 │   ├── 01-what-is-an-agent/
 │   └── ...
 └── capstone/
+    ├── README.md                        # 🎓 28 个毕业项目总览
+    ├── project-catalog.mjs              # 新增 20 个实践项目的数据源
     ├── deep-research-agent/             # 🎓 Deep Research 综合实战
+    ├── support-copilot/                 # 客服 Copilot
+    ├── code-review-crew/                # 代码评审团
+    ├── agent-eval-harness/              # Agent 评测与回归门
     ├── incident-responder/              # 告警响应与复盘实战
     ├── feedback-intelligence/           # 用户反馈洞察实战
     ├── sales-lead-researcher/           # 销售线索研究实战
-    └── enterprise-knowledge-base-agent/ # 🏢 企业知识库 Agent Capstone
+    ├── enterprise-knowledge-base-agent/ # 🏢 企业知识库 Agent Capstone
+    └── privacy-dsr-automation/          # 新增实践项目之一，其余见 capstone/README.md
 ```
 
 > 💡 **设计说明**：第二、三部分「从零手写」时，各章在自己目录里**亲手实现**核心逻辑以理解原理；
