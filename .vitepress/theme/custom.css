@@ -2744,116 +2744,113 @@ body::after {
 }
 
 .interview-clinic-summary {
-  margin: 0 0 0.6rem;
+  margin: 0 0 0.8rem;
   font-size: 0.82rem;
   color: var(--vp-c-text-3);
 }
 
-.interview-clinic-viewport {
-  position: relative;
-  min-height: 24rem;
-  max-height: min(72vh, 42rem);
-  overflow: hidden;
+.interview-clinic-card-list {
+  display: grid;
+  gap: 14px;
+}
+
+.interview-clinic-card {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem 1rem 0.9rem;
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--vp-c-bg) 96%, transparent);
+  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-highlight);
+  cursor: pointer;
+}
+
+.interview-clinic-card:hover,
+.interview-clinic-card:focus-visible {
+  border-color: color-mix(in srgb, var(--vp-c-brand-1) 40%, transparent);
+  outline: none;
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--glass-bg-soft) 84%, transparent), transparent 22%),
-    color-mix(in srgb, var(--vp-c-bg) 92%, var(--glass-bg-soft));
-  box-shadow: inset 0 1px 0 var(--glass-highlight);
+    linear-gradient(180deg, color-mix(in srgb, var(--vp-c-brand-1) 8%, transparent), transparent 52%),
+    color-mix(in srgb, var(--vp-c-bg) 96%, transparent);
 }
 
-.interview-clinic-viewport:focus-visible {
-  outline: 2px solid var(--vp-c-brand-1);
-  outline-offset: 3px;
-}
-
-.interview-clinic-list {
+.interview-clinic-card-title {
   margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  height: 100%;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scroll-behavior: smooth;
-  scroll-snap-type: y mandatory;
-}
-
-.interview-clinic-item {
-  display: flex;
-  min-height: min(72vh, 42rem);
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 1rem 1rem 1.1rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--glass-border) 76%, transparent);
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-  background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--vp-c-brand-1) 10%, transparent), transparent 32%),
-    color-mix(in srgb, var(--vp-c-bg) 94%, transparent);
-}
-
-.interview-clinic-item:last-child {
-  border-bottom: 0;
-}
-
-.interview-clinic-question {
-  display: block;
-  font-size: 1rem;
   color: var(--vp-c-text-1);
-  line-height: 1.65;
+  font-size: 1.06rem;
+  line-height: 1.55;
 }
 
-.interview-clinic-meta {
+.interview-clinic-card-excerpt {
+  margin: 0;
+  color: var(--vp-c-text-2);
+  font-size: 0.92rem;
+  line-height: 1.75;
+}
+
+.interview-clinic-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.interview-clinic-card-link {
+  color: var(--vp-c-brand-1);
+  font-size: 0.92rem;
+  text-decoration: none;
+}
+
+.interview-clinic-card-link:hover {
+  color: var(--vp-c-brand-2);
+}
+
+.interview-clinic-card-source {
+  padding: 0.55rem 0.7rem;
+  background: color-mix(in srgb, var(--vp-c-bg-soft) 84%, transparent);
+  color: var(--vp-c-text-3);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.interview-clinic-card-tags {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 0.4rem;
-  margin-top: 0.45rem;
+  gap: 0.38rem;
 }
 
-.interview-clinic-badge {
+.interview-clinic-badge,
+.interview-clinic-chapter-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
   padding: 0.1rem 0.5rem;
   border-radius: 999px;
   font-size: 0.74rem;
+  line-height: 1.3;
+}
+
+.interview-clinic-badge {
   background: var(--vp-c-brand-soft);
   color: var(--brand-text);
 }
 
 .interview-clinic-chapter-tag {
-  font-size: 0.74rem;
+  background: color-mix(in srgb, var(--vp-c-bg-soft) 88%, transparent);
   color: var(--vp-c-text-3);
 }
 
-.interview-clinic-source-link {
-  padding: 0.1rem 0.48rem;
-  border: 1px solid color-mix(in srgb, var(--vp-c-brand-1) 38%, transparent);
-  border-radius: 999px;
-  color: var(--vp-c-brand-1);
-  font-size: 0.74rem;
-  line-height: 1.4;
-}
-
-.interview-clinic-source-link:hover {
-  border-color: var(--vp-c-brand-1);
-  color: var(--vp-c-brand-2);
+.interview-detail-source {
+  margin: 0;
+  color: var(--vp-c-text-3);
+  font-size: 0.9rem;
+  line-height: 1.6;
 }
 
 .interview-clinic-empty {
-  padding: 0.8rem;
+  padding: 1rem;
   color: var(--vp-c-text-3);
   list-style: none;
-}
-
-.interview-clinic-pager {
-  margin: 0.7rem 0 0;
-  font-size: 0.78rem;
-  color: var(--vp-c-text-3);
-}
-
-/* 术语表「可筛 + 可搜」渲染器（glossary-explorer.ts）。仅用 transition/静态样式，不引关键帧动画。 */
+}/* 术语表「可筛 + 可搜」渲染器（glossary-explorer.ts）。仅用 transition/静态样式，不引关键帧动画。 */
 .glossary-explorer {
   margin: 1rem 0 1.5rem;
   padding: 1rem;
@@ -4251,5 +4248,233 @@ body::after {
 
   .source-analysis-chat-turn {
     max-width: 100%;
+  }
+}
+
+
+.interview-article-page .VPDocFooter {
+  display: none;
+}
+
+.interview-detail-source {
+  margin: 16px 0 0;
+  color: var(--frontier-text-muted);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.interview-detail-section {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--frontier-card-border);
+}
+
+.vp-doc h2.interview-detail-section-title,
+.interview-detail-section-title {
+  margin: 0 0 16px;
+  border: 0;
+  padding: 0;
+  color: var(--frontier-text-strong);
+  font-size: 22px;
+  line-height: 1.28;
+}
+
+.interview-detail-nav-grid,
+.interview-detail-related-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.interview-detail-nav-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.interview-detail-nav-card,
+.interview-detail-related-card {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid var(--frontier-card-border);
+  border-radius: 8px;
+  color: inherit;
+  text-decoration: none;
+  background: color-mix(in srgb, var(--frontier-card-bg) 90%, var(--vp-c-bg));
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.interview-detail-nav-card:hover,
+.interview-detail-related-card:hover {
+  border-color: color-mix(in srgb, var(--frontier-accent) 55%, var(--frontier-card-border));
+  transform: translateY(-2px);
+  box-shadow: var(--frontier-card-shadow);
+}
+
+.interview-detail-nav-label,
+.interview-detail-related-kind,
+.interview-detail-related-meta {
+  color: var(--frontier-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.interview-detail-nav-title,
+.interview-detail-related-title {
+  color: var(--frontier-text-strong);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.interview-detail-related-summary {
+  margin: 0;
+  color: var(--frontier-text);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+@media (max-width: 640px) {
+  .interview-detail-nav-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .interview-detail-nav-card,
+  .interview-detail-related-card {
+    padding: 16px;
+  }
+
+  .interview-detail-nav-title,
+  .interview-detail-related-title {
+    font-size: 15px;
+  }
+}
+
+.interview-answer-disclosure {
+  display: block;
+}
+
+.interview-answer-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 40px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.interview-answer-summary::-webkit-details-marker {
+  display: none;
+}
+
+.interview-answer-summary::marker {
+  content: "";
+}
+
+.interview-answer-summary .interview-detail-section-title {
+  margin: 0;
+}
+
+.interview-answer-toggle-label {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  color: var(--frontier-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.interview-answer-toggle-label::after {
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  content: "";
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 0.18s ease;
+}
+
+.interview-answer-toggle-label-open {
+  display: none;
+}
+
+.interview-answer-disclosure[open] .interview-answer-toggle-label-closed {
+  display: none;
+}
+
+.interview-answer-disclosure[open] .interview-answer-toggle-label-open {
+  display: inline-flex;
+}
+
+.interview-answer-disclosure[open] .interview-answer-toggle-label-open::after {
+  transform: rotate(225deg) translateY(-2px);
+}
+
+.interview-answer-disclosure:not([open]) .interview-answer-grid {
+  display: none;
+}
+
+.interview-answer-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 14px;
+}
+
+.interview-answer-card,
+.interview-analysis-block {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid var(--frontier-card-border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--frontier-card-bg) 92%, var(--vp-c-bg));
+}
+
+.interview-answer-kind {
+  color: var(--frontier-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.vp-doc h3.interview-answer-title,
+.interview-answer-title,
+.vp-doc h3.interview-analysis-heading,
+.interview-analysis-heading {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  color: var(--frontier-text-strong);
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+.interview-answer-body,
+.interview-analysis-body {
+  margin: 0;
+  color: var(--frontier-text);
+  font-size: 15px;
+  line-height: 1.9;
+  white-space: pre-wrap;
+}
+
+.interview-analysis-section {
+  display: grid;
+  gap: 14px;
+}
+
+.interview-analysis-block {
+  padding: 20px;
+}
+
+.interview-analysis-pre {
+  margin: 0;
+  overflow: auto;
+  border-radius: 8px;
+}
+
+@media (max-width: 640px) {
+  .interview-answer-grid {
+    grid-template-columns: 1fr;
   }
 }

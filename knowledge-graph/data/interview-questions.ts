@@ -29,6 +29,8 @@ export interface InterviewQuestion {
   sourceUrls: string[];
   confidence?: "high" | "medium" | "low";
   rationale?: string;
+  summaryExcerpt?: string;
+  faqList?: Array<{ question: string; answer: string }>;
 }
 
 const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
@@ -37,7 +39,7 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   project: "项目深挖类",
 };
 
-const COLLECTED_DATE = "2026-06-30";
+const COLLECTED_DATE = "2026-07-02";
 const COLLECTED_AT = `${COLLECTED_DATE}T09:00:00+08:00`;
 
 interface RawInterviewQuestion {
@@ -49,6 +51,7 @@ interface RawInterviewQuestion {
   sourceUrls?: string[];
   confidence?: "high" | "medium" | "low";
   rationale?: string;
+  summaryExcerpt?: string;
 }
 
 // 题干与 docs/career-guide.md 第四节保持一致（去掉「（→ 章节）」括注，章节关系由 relatedChapters 承载）。
@@ -571,7 +574,53 @@ const RAW_QUESTIONS: RawInterviewQuestion[] = [
     ],
     confidence: "medium",
     rationale: "本题来自仓库级风险论文：agent 各自过关不代表共享仓库健康，适合补齐 coding agent 在并发集成、仓库摩擦和生态治理上的高频追问。",
-  },  // C. 项目深挖类
+  },
+  {
+    slug: "debuggable-harness-boundary-in-background-agent-runtime",
+    category: "engineering",
+    question:
+      "为什么 background agent runtime 不能吞掉 skill / resource 错误，而要把 provider 解析、available resources / scripts 和失败原因显式暴露给 harness？这对 agent 自纠错、回放和生产可调试性分别意味着什么？",
+    relatedChapters: ["05", "11", "16", "18", "19"],
+    sourceTitles: [
+      "Microsoft Agent Framework Python 1.10.0 release notes",
+    ],
+    sourceUrls: [
+      "https://github.com/microsoft/agent-framework/releases/tag/python-1.10.0",
+    ],
+    confidence: "high",
+    rationale: "本题来自 Microsoft Agent Framework Python 1.10.0：release 直接补了 background agent loop provider 解析、available_resources/scripts 暴露与 skill/resource error 透传，适合追问 runtime 为什么必须让模型和 harness 看见真实失败边界。",
+  },
+  {
+    slug: "terminal-use-agent-benchmark-needs-real-work-breadth",
+    category: "engineering",
+    question:
+      "为什么 terminal-use agent 的 benchmark 不能只测 coding 或单条 shell task？像 TUA-Bench 这类覆盖文档编辑、邮件、在线研究、内容创作与系统运维的任务集，在检验什么更接近真实工作的长期能力？",
+    relatedChapters: ["10", "15", "18", "19"],
+    sourceTitles: [
+      "TUA-Bench: A Benchmark for General-Purpose Terminal-Use Agents",
+    ],
+    sourceUrls: [
+      "https://arxiv.org/abs/2506.17537",
+    ],
+    confidence: "medium",
+    rationale: "本题来自 TUA-Bench：把 terminal-use agent 从单一 coding 场景扩展到 200+ 个跨知识工作任务，适合补齐“真实工作广度”和“长流程工具链编排”两个评测维度。",
+  },
+  {
+    slug: "multi-layer-agent-red-teaming-vs-single-jailbreak-metric",
+    category: "engineering",
+    question:
+      "为什么 agent 安全红队不能只看单一 jailbreak 成功率？基础设施层、协议层、agent 层和模型层分别会暴露什么不同攻击面，为什么必须做 multi-layer red teaming？",
+    relatedChapters: ["11", "15", "17", "18", "19"],
+    sourceTitles: [
+      "Securing the AI Agent: A Unified Framework for Multi-Layer Agent Red Teaming",
+    ],
+    sourceUrls: [
+      "https://arxiv.org/abs/2506.19396",
+    ],
+    confidence: "medium",
+    rationale: "本题来自 AI-Infra-Guard 论文：把 agent 红队拆成 infra / protocol / agent / model 四层，适合补齐生产 agent 为什么不能只做 prompt jailbreak 测试的安全追问。",
+  },
+  // C. 项目深挖类
   {
     slug: "project-why-multi-agent",
     category: "project",
@@ -626,6 +675,65 @@ const RAW_QUESTIONS: RawInterviewQuestion[] = [
   },
 ];
 
+const LOCAL_ANSWER_SUMMARIES: Partial<Record<string, string>> = {
+  "llm-vs-agent-and-loop": "LLM 只负责基于上下文生成下一段文本；Agent 是在 LLM 外面再包一层『目标、状态、工具、停止条件』的执行系统。典型循环是：读取目标 -> 思考下一步 -> 调工具/执行动作 -> 观察结果 -> 再规划，直到完成或触发 maxSteps。",
+  "token-and-statelessness-memory": "Token 是模型实际计费和处理的最小文本单元。LLM 本身每次调用都不记得上次发生了什么，所谓多轮记忆其实是应用层把历史消息、摘要或检索结果重新塞回上下文；窗口满了就靠裁剪、摘要或外部记忆解决。",
+  "system-vs-user-prompt-cot-temperature": "System 提示定义长期角色、规则和边界，user 提示描述当前任务。CoT 能提升正确率，因为它强迫模型把隐含推理拆成中间步骤；temperature=0 适合抽取、分类、结构化输出这类要稳定复现的任务。",
+  "react-and-maxsteps": "ReAct 的核心是让模型在『思考 -> 行动 -> 观察』之间循环，用外部工具补足知识和执行能力。maxSteps 必须存在，因为模型可能反复试错、绕圈或被脏上下文带偏，没有步数上限就会烧时间、烧钱甚至触发危险副作用。",
+  "function-calling-roundtrip": "完整往返是：模型先返回要调用的工具名和参数，宿主程序校验并真正执行工具，再把 tool_result 连同 toolCallId 回传给模型，最后模型基于结果继续回答。模型不会自己执行工具，toolCallId 的作用是把某次调用请求和对应结果精确配对。",
+  "rag-basics-overlap-topk-traceable": "RAG 本质上是先检索相关知识片段，再让模型在这些片段约束下生成答案，所以比裸答更不容易幻觉。Overlap 用来避免关键信息被分块边界切断；top-k 取值是在召回率和噪声之间折中，通常从 3 到 8 起步调；可溯源的关键是回答时明确引用片段编号或来源链接。",
+  "why-llm-hallucinate": "幻觉不是普通代码 bug，而是概率生成模型在上下文不足、训练分布外或指令模糊时的固有风险。工程上不能承诺彻底消除，只能通过检索约束、结构化校验、工具调用、人审和拒答策略把它压到可接受范围。",
+  "embedding-cosine-vs-euclidean": "Embedding 是把文本映射到向量空间，让语义相近的内容在几何上更接近。相似度搜索更常用余弦，是因为我们更关心方向上的语义接近，而不是向量绝对长度；语义检索适合同义改写和开放问答，关键词检索更适合精确术语、编号、过滤条件。",
+  "react-vs-plan-execute-reflection": "ReAct 是边做边想，适合环境不确定、每一步都要看反馈再决定下一步的任务；Plan-and-Execute 会先产出一个较完整计划，再按计划分步执行，适合目标清晰且拆解成本低的任务。Reflection 的价值在于让模型先审查自己哪里可能错了再修正，但如果没有新证据输入，它提升的是一致性和表达质量，不会无限提高真实性。",
+  "stable-json-output-retry-repair": "想要稳定 JSON，先给清晰 schema，再让模型只输出结构化结果，最后在宿主程序里做强校验。校验失败时不要直接崩，应该把错误信息回喂模型做 retry-repair；工具调用最适合『模型决定调用什么能力』，JSON mode 适合受控结构化输出，纯提示约束最脆弱。",
+  "prevent-prompt-injection-guardrails": "Prompt injection 的本质是外部输入试图覆盖系统规则或诱导模型泄露/越权，所以不能只靠 system 里一句『别上当』。真正的护栏要落在执行边界：高权限工具最小权限、参数白名单、人工确认、结果校验、敏感操作二次授权。",
+  "control-cost-token-accounting": "成本主要花在输入 token、输出 token 和多步循环的重复调用上。控制办法是：压上下文、减少无效历史、用更小模型做简单步骤、把重计算移到工具层，并把每一步 token 和记账都打到 trace 里；上下文太长就优先裁剪、摘要和检索，而不是无脑把所有历史塞进去。",
+  "evaluate-agent-llm-app": "LLM 应用不能只靠传统单测，因为输出不是完全确定的，真正风险在『大致对但关键处错』。评估要有代表性样本集、明确评分标准、回归基线和失败分桶；LLM-as-judge 可以提高覆盖率，但必须配人工抽查、双模型交叉和严格 rubric，避免模型互相糊弄。",
+  "context-window-full-strategies": "窗口满了时最常见的三招是裁剪、滑动窗口和摘要压缩。滑动窗口保留最近交互，适合短期上下文强依赖；摘要压缩能保住长期信息，但会丢细节且可能引入摘要误差，所以常见做法是最近消息原文保留、远历史摘要化、再配外部检索补细节。",
+  "streaming-throughput-vs-ux-abortcontroller": "流式输出并不会让模型真正更快算完，只是把已经生成的 token 提前推给前端，所以改善的是首字时间和用户体感。AbortController 更像协作式取消：宿主发出取消信号，后续请求/流读取停止，但已经发出的外部副作用必须靠业务层自己兜底。",
+  "tool-error-feedback-not-throw": "工具报错直接抛异常只会中断当前链路，模型拿不到失败原因，也就没法自我修正。把错误变成可读字符串回传给模型，模型才能补参数、换工具或降级回答，这比宿主一崩到底更接近真实 agent 的闭环。",
+  "when-multi-agent-and-cost": "多 agent 适合任务天然可拆成不同角色、不同上下文窗口和不同工具权限的场景，比如研究、写作、审核分工。代价是调用次数更多、调试更难、状态传递更复杂，所以只有当分工真的能减少单 agent 的上下文污染或决策负担时才值得上。",
+  "when-not-to-use-agent": "流程固定、规则明确、没有开放式决策空间的任务通常不该上 Agent，普通 workflow、脚本或表单校验更便宜、更稳定。只要答案可以被确定性逻辑直接推出，Agent 往往是在增加成本和不确定性。",
+  "project-why-multi-agent": "Deep Research Agent 用多智能体，是因为『检索/证据收集』和『综合写作』对上下文、工具和评价标准不同，拆开后每个角色更专注。单 agent 也能做，但容易把搜索噪声、写作风格和规划状态搅在一起；代价则是链路更长、调试更复杂，所以只在长任务上启用。",
+  "project-rag-chunk-overlap-topk": "分块大小通常围绕『一个片段能独立表达一个小主题』来定，overlap 用来保证跨段概念不断裂；块太大噪声多，块太小上下文不完整。top-k 一般从 3 到 5 起步，命不中再扩召回，但不会无限加，因为加太多会把模型注意力稀释掉。",
+  "project-eval-set-and-judge": "所谓 90% 不是拍脑袋，要先准备一组覆盖真实问题分布的 eval 集，再定义『事实正确、引用充分、结构完整』这类评分维度。LLM-as-judge 可以做初筛，但我会保留人工抽样复核，并记录模型间分歧，避免把模型偏见当成客观真相。",
+  "project-perf-cost-bottleneck": "这类项目最大的成本瓶颈通常不是单次生成，而是多步检索、反复工具调用和冗长上下文带来的累计 token 消耗。优化手段包括裁剪历史、缓存检索结果、把简单步骤下放给小模型，以及对低价值步骤设置更硬的停止条件。",
+  "project-handwrite-vs-langgraph": "先手写 agent loop 是为了把消息往返、工具执行、停止条件和错误回灌这些底层机制吃透。等到任务开始需要 checkpoint、复杂状态图、并发分支或人工审批节点时，再上 LangGraph 这类框架，收益才会超过它引入的抽象成本。",
+  "project-scale-100-users": "并发到 100 用户时，先扛不住的通常是共享状态、限流和外部依赖，不是页面本身。要改成无状态服务、把会话和任务状态外置、加队列和并发上限、做 token/速率预算隔离，否则一个长任务就可能拖垮整批请求。",
+  "project-runaway-tools-observability": "防模型胡乱调工具，第一层是 maxSteps、超时和工具级频率限制，第二层是 trace、日志和告警，把『谁在什么时候调了什么工具』记录清楚。真失控时要能人工熔断会话、降级成只读模式，或者直接切到人工审核。",
+  "project-biggest-pitfall": "这种项目最常见的大坑不是功能写不出来，而是边界没先定清：哪些结果必须可追溯、哪些动作必须人工确认、哪些失败可以自动重试。我的处理原则是先把状态、权限和评估口径钉死，再继续堆能力，否则越往后越难补救。",
+  "computer-use-agent-success-vs-harm-metrics": "评测 computer-use / workplace agent 不能只看任务成功率，因为 agent 可能在成功完成主任务的同时多做了不该做的动作。unintended action 兜的是『做对主线但顺手乱点、乱改、乱发』的流程偏航风险；harmful action 兜的是数据破坏、误操作、隐私泄露和安全事故这类高代价副作用。",
+  "memory-agent-recall-vs-reuse-evaluation": "长期记忆 agent 不能只测 recall，因为『记住了』不等于『会在正确时机把对的记忆拿出来并用对』。observation stream 测原始事件摄入，user feedback 测偏好/纠错更新，knowledge archive 测稳定知识沉淀，follow-up reuse 测后续任务中的真实调用效果；四段混在一起，你就分不清问题出在记忆写入、更新、检索还是使用。",
+  "harness-vs-framework-boundary": "Agent framework / SDK 主要提供模型调用、状态图、工具协议和工作流原语；harness 则是把审批、重试、回放、配额、追踪、权限壳层和失败恢复包在外面的运行时外壳。把这些控制面放在 harness 而不是模型里，才能做到可审计、可复现、可回滚，也避免一次 prompt 偏航直接越过系统护栏。",
+  "runtime-upgrade-auth-compaction-boundaries": "Runtime / tool 协议升级时要单独审查 auth-required vs input-required，因为它决定『谁来批准、批准什么』；审查 history compaction，是因为压缩可能把关键审批证据、tool result 或安全上下文删掉；审查 auto-approval 和 tracing 注入，是因为它们分别改变默认信任边界和数据暴露边界。生产事故往往不是模型能力问题，而是这些运行时默认值悄悄变了。",
+  "scientific-synthesis-clean-room-generalization": "研究型 agent benchmark 强调 clean-room synthesis，是要求 agent 基于证据自己综合结论，而不是把原文句子拼接得像答案；强调 strategic generalization，是看它能否在新组合、新约束和跨文献冲突里给出稳定推理。若 agent 只是检索命中后复读原句，高分证明的只是语料重合和抽取能力，不是科学综合能力。",
+  "long-horizon-agent-benchmark-vs-single-step-score": "长周期 agent 评测不能只看单步 reward 或单回合成功率，因为真正难点在跨轮状态保持、延迟反馈下的策略修正和长期收益稳定性。RetailBench 这类 benchmark 检验的是 agent 能否在连续经营/运营情境里维持目标一致、处理中间波动、根据后验结果调策略，而不是某一步答对一个局部动作。",
+  "monitoring-agent-timeliness-false-alert-action-chain": "监控/告警 agent 只会识别异常还不够，还要看识别得是否及时、误报/漏报成本是否可接受，以及后续处置链有没有把问题真的推进到解决。只测『能否识别异常』会遗漏两个关键风险：一是发现太慢等于没发现，二是发现之后不会升级、不会止损、不会闭环，系统仍然失控。",
+  "memory-agent-relational-consistency-vs-keyword-recall": "关键词召回只能证明 agent 把某些词记住了，不能证明它记住了事实之间的关系。补充关系、矛盾关系和无关关系必须分开测，因为真实记忆系统常见失败不是『完全忘了』，而是把相互冲突的信息一起当真，或把无关细节当成支持证据，最终破坏回答一致性。",
+  "pre-approval-tool-input-guardrails-vs-post-hoc-check": "Tool guardrails 放在真正执行前的 pre-approval 边界，本质是在副作用发生前阻断危险参数和越权动作。等工具跑完再做事后检查，很多损失已经不可逆了，例如邮件已发出、数据库已删除、权限已变更；高权限工具必须把参数校验、白名单、人工确认和策略判定前置。",
+  "brokered-execution-vs-agent-held-production-authority": "生产变更权限不该直接塞进 agent 推理进程，因为模型一旦被注入、误触发或日志泄露，就等于把生产权限直接暴露给不稳定的推理层。Certificate-bound broker / scoped execution identity 的作用，是把『提出方案』和『真正执行』拆开，用独立身份、短时令牌和集中审计来兜住越权、横向移动和凭证滥用风险。",
+  "probabilistic-policy-verification-under-ambiguous-detectors": "当 PII detector / declassifier 本身有误报漏报时，deterministic policy 只会假装这些判定是绝对真理，结果要么过度阻断，要么放过高风险动作。Probabilistic verification 的意义，是把检测器不确定性显式纳入决策，问的是『在当前误差分布下，这个 agent 行为的总体泄露/违规概率是否仍低于可接受阈值』。",
+  "repository-guidance-coverage-vs-precision-for-coding-agents": "高质量仓库指引首先提升的是 coverage，也就是 agent 更快找到应该看的目录、命令、约束和边界，少在错误区域乱试。Patch precision 仍取决于模型推理、测试反馈和实现能力；但当步数预算变大时，谁能更稳定定位到正确文件，往往比单次补丁写得漂不漂亮更决定最终成功率。",
+  "multi-tenant-agent-runtime-isolation-vs-dedicated-stack": "多租户 agent runtime 不能只靠逻辑 tenant id，因为真正要隔离的是会话状态与记忆、执行身份与凭证、遥测与日志、审批流与配额。只做逻辑分租容易出现跨租户上下文串味、trace 泄露和审批串单；一旦遇到高权限业务、强监管数据或 noisy neighbor 明显场景，就该回到 dedicated stack。",
+  "scientific-copilot-query-parse-retrieval-summary-boundary": "研究型 copilot 把 structured query parsing、embedding retrieval 和 AI summary 拆开，是为了把『用户到底问什么』『系统到底拿到了哪些证据』『模型到底怎样组织答案』三类错误分层定位。若让一个大 prompt 端到端包办，你很难判断错在 query 解析、检索召回还是总结幻觉，也很难保留可追溯引用链。",
+  "agent-identity-infrastructure-vs-provider-account-mapping": "跨组织 agent 协作不能长期靠『每个 agent 一把 API key』，因为 API key 只表示某个平台上的访问凭证，不解决身份发现、撤销、轮换、跨平台互认和组织级信任。独立的 agent identity / name service 提供的是稳定身份、可验证归属和统一吊销能力，让 agent 之间建立信任时不必把平台账号耦死在一起。",
+  "approval-state-idempotency-and-guardrail-race-cancellation": "已解决的 approval 不应被重复求值，因为这会导致同一动作反复弹审批、重复执行甚至让用户误以为系统状态还没落地。Sibling guardrail / task 一旦失败就应立刻取消其它并发 guardrail，是为了阻断竞态窗口，避免某个分支在整体已经判定失败后仍继续写外部系统、留下双重副作用或脏状态。",
+  "read-only-file-access-still-needs-explicit-approval": "Read-only 不等于低风险，因为读取本身就可能暴露密钥、客户数据、内部架构和后续可利用线索。尤其当 loop 能力被集成进 harness agent 后，模型可以把多次无害读取串成一次敏感推断或数据外传链路，所以 file-access 即便不写盘，也常常要做显式审批、目录范围限制和目的约束。",
+  "declarative-workflow-path-validation-vs-runtime-filesystem-boundary": "声明式 workflow / skill archive 若不防 symlink path traversal 和非法 flow definition paths，攻击者就能把『加载工作流定义』变成『读取或执行本不该碰的文件』。这不是 prompt 层小 bug，而是 runtime 对文件系统边界失守：agent 会在看似合法的配置装载流程里越过目录沙箱。",
+  "conversational-flow-telemetry-and-unified-loader-boundary": "Workflow 一旦进入 conversational / declarative flow 阶段，就必须单独追踪 turn usage，因为计费、性能瓶颈和状态膨胀都发生在每一轮交互里。CLI、TUI、loader 入口若不统一，同一条 flow 会在不同入口表现出不同 trace、不同上下文拼装和不同计费口径，最终让调试、回放和审计都失真。",
+  "agentic-overlay-vs-rebuild-for-legacy-enterprise-services": "企业做 agent 改造时优先 agentic overlay，而不是推倒重写，是因为旧系统里最难替代的是沉淀多年的权限、事务、流程和集成契约。Overlay 做法是把 agent 放在现有系统外面做编排与辅助决策，既能复用成熟控制面，又能降低一次性替换带来的发布、回归和组织协调风险。",
+  "governed-data-mesh-for-agentic-ai-vs-direct-source-access": "生产级 agentic AI 需要 governed data mesh，因为让 agent 直接拉数据库/对象存储等于给了一个会推理的程序过宽的数据面。Identity 解决『以谁身份访问』，catalog 解决『知道有哪些可用数据』，policy 解决『哪些上下文下能怎么用』，knowledge base 解决『把原始数据整理成适合检索和引用的知识层』。",
+  "approval-by-default-for-agent-skills-and-tools": "Production agent 的 skill/provider tools 最好默认 require approval，因为默认放行意味着新工具上线的第一天就天然处于过度信任状态。默认值一旦反了，后续再补规则也只能被动堵洞：审计不完整、回放无法复现实验边界、权限壳层也会出现『漏配即放行』的系统性漏洞。",
+  "redirect-based-ssrf-in-agent-fetch-and-scraping-tools": "抓取 / scraping tool 只校验首跳 URL 不够，因为重定向链完全可能把请求带到 169.254 metadata、内网控制台、私有 API 或带签名的内部端点。SSRF bypass 一旦成功，agent 不只是『看错网页』，而是会拿到本不该见到的凭证、网络拓扑和内部响应，再把这些信息带回推理链。",
+  "stepwise-verification-and-interactive-benchmarks-for-research-agents": "研究型 agent benchmark 不能只看最终答案，因为 final-answer-only 会把幸运猜中、证据伪造和中间推理断裂都藏起来。Stepwise verification 检查的是每一步检索、归纳和推断是否站得住；interactive environment 检查的是 agent 遇到新反馈时会不会重规划、修正和管理证据链。",
+  "assistant-function-choice-vs-openapi-path-canonicalization": "增强 Assistant agent 的 function_choice_behavior 会显著扩大工具调用频率和覆盖面，因此必须同时收紧 OpenAPI plugin 的路径归一化。若 encoded dot-segment 绕过仍存在，模型越会主动选函数，就越可能把本来局部的路径逃逸问题放大成 SSRF、越权调用和错误后端访问。",
+  "scientific-review-agent-needs-inference-scaling-and-human-final-say": "Scientific review agent 不能只做一次性摘要或 zero-shot 打分，因为论文评审真正难的是核查理论链、实验设计、统计结论和相关工作位置。Inference scaling 让 agent 在高风险样本上花更多计算做交叉核查；而『人类保留最终裁决』是在责任边界上兜底，避免把接受/拒绝决定完全外包给不稳定模型。",
+  "repository-level-friction-vs-single-agent-win-rate": "Coding agent 评测不能只看 isolated task success 或单个 PR 过不过测，因为真实仓库风险来自多个变更在共享依赖、测试环境、规范和发布节奏上的相互摩擦。Repository-level integration friction 衡量的是这些系统性阻力：单个 agent 各自都像赢了，但仓库整体可能更难合并、更难回滚、更容易积累隐性破坏。",
+  "debuggable-harness-boundary-in-background-agent-runtime": "Background agent runtime 若吞掉 skill 或 resource 错误，模型和运维都只会看到『没成功』，却不知道失败发生在哪一层。把 provider 解析、available resources/scripts 和真实错误原因显式暴露出来，才能让模型自纠错、让 harness 做回放诊断，也才能在生产里区分是权限缺失、资源缺失还是 runtime 自己的调度问题。",
+  "terminal-use-agent-benchmark-needs-real-work-breadth": "Terminal-use agent 若只在 coding benchmark 上高分，不代表它能处理真实工作的跨工具、跨格式和长流程任务。TUA-Bench 这类任务集覆盖写作、邮件、研究、运维和文档编辑，检验的是 agent 能否在统一终端环境里持续规划、切换工具、保持状态并交付可用产物，而不是只会修一段代码。",
+  "multi-layer-agent-red-teaming-vs-single-jailbreak-metric": "只看 jailbreak 成功率会把 agent 风险错误压缩成单一提示攻击问题，但真实系统里还有基础设施、协议和工具编排层面的巨大攻击面。多层红队的价值是把风险拆开看：基础设施层管环境与凭证，协议层管调用与身份，agent 层管计划和工具使用，模型层才是提示与生成本身；四层混在一起就很难定位真实防线缺口。"
+};
+
 function chapterAnswerLabel(chapter: string): string {
   if (chapter === "capstone") return "毕业项目（capstone）";
   return `第 ${chapter} 章`;
@@ -678,6 +786,7 @@ export const INTERVIEW_QUESTIONS: InterviewQuestion[] = RAW_QUESTIONS.map((raw, 
   sourceUrls: raw.sourceUrls ?? [],
   confidence: raw.confidence,
   rationale: raw.rationale,
+  summaryExcerpt: LOCAL_ANSWER_SUMMARIES[raw.slug] ?? raw.rationale,
 }));
 
 // 身份完整性：slug 必须唯一（它是 Supabase upsert 的 on-conflict 目标）。
@@ -685,4 +794,6 @@ const slugs = new Set(INTERVIEW_QUESTIONS.map((q) => q.slug));
 if (slugs.size !== INTERVIEW_QUESTIONS.length) {
   throw new Error("Duplicate interview question slug detected in interview-questions.ts");
 }
+
+
 

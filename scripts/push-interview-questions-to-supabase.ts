@@ -44,6 +44,8 @@ async function main(): Promise<void> {
       sourceUrls: q.sourceUrls,
       confidence: q.confidence ?? null,
       rationale: q.rationale ?? null,
+      plainTextDescription: q.summaryExcerpt ?? null,
+      faqList: q.faqList ?? null,
     },
   }));
 

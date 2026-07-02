@@ -1,4 +1,4 @@
-import { ARTICLES } from "./graph";
+import { ARTICLES, CAPSTONE_PORTFOLIO_PROJECTS } from "./graph";
 
 export type ConceptVisualKind =
   | "loop"
@@ -35,6 +35,60 @@ export interface ConceptReference {
   note: string;
 }
 
+const CAPSTONE_PORTFOLIO_VISUAL_KINDS: ConceptVisualKind[] = [
+  "pipeline",
+  "shield",
+  "layers",
+  "loop",
+  "fusion",
+  "pipeline",
+  "stream",
+  "layers",
+  "shield",
+  "pipeline",
+  "layers",
+  "pipeline",
+  "compare",
+  "pipeline",
+  "loop",
+  "shield",
+  "pipeline",
+  "compare",
+  "pipeline",
+  "shield",
+];
+
+const capstonePortfolioChapterIds = new Set<string>(CAPSTONE_PORTFOLIO_PROJECTS.map((project) => project.id));
+
+const CAPSTONE_PORTFOLIO_VISUALS: ConceptVisual[] = CAPSTONE_PORTFOLIO_PROJECTS.map((project, index) => {
+  const [workflow, quality, handoff] = project.concepts;
+  return {
+    chapter: project.id,
+    kind: CAPSTONE_PORTFOLIO_VISUAL_KINDS[index % CAPSTONE_PORTFOLIO_VISUAL_KINDS.length]!,
+    title: `${project.title.replace(/^毕业项目 · /, "")}：从业务输入到作品集交付`,
+    summary: `把 ${workflow}、${quality} 和 ${handoff} 串成一条可实现、可验收、可复盘的作品集 Agent 项目。`,
+    steps: ["业务输入", workflow, quality, handoff, "验收交付"],
+    takeaway: "实践型毕业项目的重点不是写一个聊天框，而是交付可演示、可测试、边界清楚的业务工作流。",
+  };
+});
+
+const CAPSTONE_PORTFOLIO_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> = Object.fromEntries(
+  CAPSTONE_PORTFOLIO_PROJECTS.map((project) => [
+    project.id,
+    [
+      {
+        tone: "core" as const,
+        label: "核心判断",
+        body: `${project.title.replace(/^毕业项目 · /, "")} 要先跑通 ${project.concepts[0]}，再用质量规则和人工交接把 demo 收敛成作品集资产。`,
+      },
+      {
+        tone: "warning" as const,
+        label: "易错边界",
+        body: "不要只写概念说明；fixtures、guardrails、milestones、tests 和简历话术都要能落到实现与验收。",
+      },
+    ],
+  ]),
+);
 export const CONCEPT_VISUALS: ConceptVisual[] = [
   {
     chapter: "01",
@@ -260,6 +314,7 @@ export const CONCEPT_VISUALS: ConceptVisual[] = [
     steps: ["Ingest", "Index", "ACL Retrieve", "Answer/Refuse", "Citations", "Trace/Eval"],
     takeaway: "企业知识库的关键不在会答，而在权限、引用、回放和退化防护都可证明。",
   },
+  ...CAPSTONE_PORTFOLIO_VISUALS,
   {
     chapter: "rag-chunk",
     kind: "pipeline",
@@ -511,6 +566,7 @@ const CONCEPT_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> =
     { tone: "core", label: "核心判断", body: "企业知识库 Agent 的价值在端到端证据链：文档版本、chunk、权限过滤、引用核验、trace/eval 必须同时成立。" },
     { tone: "warning", label: "易错边界", body: "不要把企业知识库做成普通问答 demo；ACL 不能放在回答后处理，引用也不能只存当前 URL。" },
   ],
+  ...CAPSTONE_PORTFOLIO_HIGHLIGHTS,
   "rag-chunk": [
     { tone: "core", label: "核心判断", body: "分块决定证据能否被召回；chunk 必须在完整性和大小之间取平衡。" },
     { tone: "warning", label: "易错边界", body: "坏分块会让检索、精排和生成全背锅；先看 chunk，再调模型。" },
@@ -586,7 +642,7 @@ export function getConceptHighlights(chapter: string): readonly ConceptHighlight
 }
 
 export function getConceptReferences(chapter: string): readonly ConceptReference[] {
-  const referenceChapter = chapter === "20" ? "19" : chapter;
+  const referenceChapter = chapter === "20" || capstonePortfolioChapterIds.has(chapter) ? "19" : chapter;
   return ARTICLES
     .filter((article) => article.chapters.includes(referenceChapter) && article.kind !== "internal")
     .slice(0, 3)

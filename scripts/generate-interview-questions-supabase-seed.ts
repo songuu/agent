@@ -32,6 +32,8 @@ const rows = INTERVIEW_QUESTIONS.map((question) => {
     sourceUrls: question.sourceUrls,
     confidence: question.confidence ?? null,
     rationale: question.rationale ?? null,
+    plainTextDescription: question.summaryExcerpt ?? null,
+    faqList: question.faqList ?? null,
   };
   return [
     sqlString(question.id),

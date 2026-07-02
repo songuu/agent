@@ -12,6 +12,18 @@ interface CodefatherFaq {
   readonly answer?: unknown;
 }
 
+interface CodefatherAnswerVariant {
+  readonly title: string;
+  readonly answer: string;
+  readonly kind: "summary" | "section" | "faq";
+}
+
+interface CodefatherContentSection {
+  readonly heading: string;
+  readonly body: string;
+  readonly level: number;
+}
+
 export interface CodefatherPost {
   readonly id?: unknown;
   readonly title?: unknown;
@@ -148,6 +160,8 @@ const DEFAULT_PAGE_SIZE = 20;
 const DEFAULT_TAG = "面试题";
 const CODEFATHER_SORT_OFFSET = 100000;
 const CODEFATHER_RELATED_CHAPTER = "external-codefather";
+const SUPABASE_WRITE_MAX_ATTEMPTS = 3;
+const RETRYABLE_HTTP_STATUS_CODES = new Set([408, 425, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524]);
 const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   principle: "原理类",
   engineering: "工程类",
@@ -183,32 +197,34 @@ export async function fetchCodefatherInterviewPosts({
   let pages: number | null = null;
 
   while (records.length < normalizedLimit && (pages === null || current <= pages)) {
-    const response = await fetchImpl(CODEFATHER_POST_LIST_ENDPOINT, {
-      method: "POST",
-      headers: {
-        Accept: "application/json, text/plain, */*",
-        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
-        "Content-Type": "application/json",
-        Origin: "https://ai.codefather.cn",
-        Referer: "https://ai.codefather.cn/essay",
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-      },
-      body: JSON.stringify({
-        current,
-        pageSize: normalizedPageSize,
-        reviewStatus: 1,
-        hiddenContent: false,
-        needCursor: false,
-        needFilterVipContent: true,
-        tags: [tag],
-        sorterList: [{ field: "createTime", asc: false }],
+    const requestBody = JSON.stringify({
+      current,
+      pageSize: normalizedPageSize,
+      reviewStatus: 1,
+      hiddenContent: false,
+      needCursor: false,
+      needFilterVipContent: true,
+      tags: [tag],
+      sorterList: [{ field: "createTime", asc: false }],
+    });
+    const response = await fetchWithRetries({
+      label: `Codefather list page=${current}`,
+      endpoint: CODEFATHER_POST_LIST_ENDPOINT,
+      fetchImpl,
+      createRequestInit: () => ({
+        method: "POST",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+          "Content-Type": "application/json",
+          Origin: "https://ai.codefather.cn",
+          Referer: "https://ai.codefather.cn/essay",
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        },
+        body: requestBody,
       }),
     });
-    if (!response.ok) {
-      const detail = await response.text();
-      throw new Error(`Codefather list failed: HTTP ${response.status} ${detail.slice(0, 300)}`);
-    }
 
     const payload = (await response.json()) as CodefatherListResponse;
     if (payload.code !== 0) {
@@ -248,6 +264,10 @@ export function toInterviewQuestionRows(
     const sourceTags = stringArrayValue(post.tags);
     const faqList = faqListValue(post.faqList);
     const sourceTitles = [title];
+    const contentMarkdown = normalizeContentMarkdown(firstNonEmpty(post.content, post.description, post.plainTextDescription, ""));
+    const contentSections = extractContentSections(contentMarkdown);
+    const summaryText = extractSummaryText(contentMarkdown, firstNonEmpty(post.plainTextDescription, post.description, title));
+    const answerVariants = buildAnswerVariants({ title, summaryText, faqList, contentSections });
 
     return {
       question_id: `codefather-${id}`,
@@ -269,7 +289,10 @@ export function toInterviewQuestionRows(
         sourceTitles,
         sourceUrls: [sourceUrl],
         sourceListUrl: "https://ai.codefather.cn/essay",
-        plainTextDescription: truncate(firstNonEmpty(post.plainTextDescription, post.description, post.content, ""), 6000),
+        plainTextDescription: truncate(summaryText, 1200),
+        contentMarkdown: truncate(contentMarkdown, 30000),
+        contentSections,
+        answerVariants,
         faqList,
         stats: {
           viewNum: numberValue(post.viewNum, 0),
@@ -286,7 +309,7 @@ export function toInterviewQuestionRows(
         sourceCreatedAt: timestampToIso(post.createTime),
         sourceUpdatedAt: timestampToIso(post.updateTime),
         confidence: "high",
-        rationale: "来自 Codefather 公开列表 API 的面试题标签记录；标题用于面试清单展示，摘要与 FAQ 存入 metadata 便于追溯。",
+        rationale: "来自 Codefather 公开列表 API 的面试题标签记录；标题、完整正文分段、FAQ 与原文链接一并存入 metadata，详情页可直接展示多个答案与完整解析。",
       },
     };
   });
@@ -350,21 +373,24 @@ export async function upsertInterviewQuestionRows(
 ): Promise<void> {
   if (rows.length === 0) return;
   const endpoint = `${baseUrl.replace(/\/+$/, "")}/rest/v1/interview_questions?on_conflict=slug`;
-  const response = await fetchImpl(endpoint, {
-    method: "POST",
-    headers: {
-      apikey: serviceRoleKey,
-      Authorization: `Bearer ${serviceRoleKey}`,
-      "Content-Type": "application/json",
-      "Content-Profile": schema,
-      Prefer: "resolution=merge-duplicates,return=minimal",
-    },
-    body: JSON.stringify(rows),
+  const payload = JSON.stringify(rows);
+
+  await fetchWithRetries({
+    label: "interview_questions upsert",
+    endpoint,
+    fetchImpl,
+    createRequestInit: () => ({
+      method: "POST",
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+        "Content-Type": "application/json",
+        "Content-Profile": schema,
+        Prefer: "resolution=merge-duplicates,return=minimal",
+      },
+      body: payload,
+    }),
   });
-  if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`interview_questions upsert failed: HTTP ${response.status} ${detail.slice(0, 500)}`);
-  }
 }
 
 export async function readCodefatherCount({
@@ -567,7 +593,8 @@ export function formatCodefatherSyncReport(report: CodefatherSyncReport): string
 
 export function formatCodefatherSyncFailure(error: unknown): string {
   if (error instanceof Error) {
-    return `[codefather-interview] run failed: ${error.message}\n${error.stack ?? "<no stack>"}`;
+    const causeText = formatErrorCause(error);
+    return `[codefather-interview] run failed: ${error.message}${causeText}\n${error.stack ?? "<no stack>"}`;
   }
   return `[codefather-interview] run failed: ${String(error)}`;
 }
@@ -702,6 +729,87 @@ function faqListValue(value: unknown): Array<{ question: string; answer: string 
     .slice(0, 20);
 }
 
+function normalizeContentMarkdown(value: string): string {
+  return value.replace(/\r\n/g, "\n").replace(/\u00a0/g, " ").trim();
+}
+
+function extractSummaryText(contentMarkdown: string, fallback: string): string {
+  const cleaned = stripMarkdown(contentMarkdown);
+  if (cleaned) return truncate(cleaned, 1200);
+  return truncate(stripMarkdown(fallback), 1200);
+}
+
+function extractContentSections(contentMarkdown: string): CodefatherContentSection[] {
+  const normalized = normalizeContentMarkdown(contentMarkdown);
+  if (!normalized) return [];
+  const lines = normalized.split("\n");
+  const sections: CodefatherContentSection[] = [];
+  let current: { heading: string; level: number; body: string[] } | null = null;
+
+  const pushCurrent = () => {
+    if (!current) return;
+    const body = current.body.join("\n").trim();
+    if (body) sections.push({ heading: current.heading, body: truncate(body, 8000), level: current.level });
+  };
+
+  for (const line of lines) {
+    const headingMatch = line.match(/^(#{2,4})\s+(.+)$/);
+    if (headingMatch) {
+      pushCurrent();
+      current = { heading: stripMarkdown(headingMatch[2]), level: headingMatch[1].length, body: [] };
+      continue;
+    }
+    if (!current) current = { heading: "概览", level: 2, body: [] };
+    current.body.push(line);
+  }
+
+  pushCurrent();
+  return sections.slice(0, 16);
+}
+
+function buildAnswerVariants(input: {
+  title: string;
+  summaryText: string;
+  faqList: readonly { question: string; answer: string }[];
+  contentSections: readonly CodefatherContentSection[];
+}): CodefatherAnswerVariant[] {
+  const variants: CodefatherAnswerVariant[] = [];
+  const seen = new Set<string>();
+
+  const pushVariant = (title: string, answer: string, kind: "summary" | "section" | "faq") => {
+    const normalizedAnswer = normalizeText(stripMarkdown(answer));
+    const normalizedTitle = normalizeText(stripMarkdown(title));
+    if (!normalizedTitle || !normalizedAnswer) return;
+    const key = normalizedTitle + '::' + normalizedAnswer;
+    if (seen.has(key)) return;
+    seen.add(key);
+    variants.push({ title: normalizedTitle, answer: truncate(normalizedAnswer, 900), kind });
+  };
+
+  pushVariant("这道题怎么答", input.summaryText, "summary");
+  for (const faq of input.faqList) pushVariant(faq.question, faq.answer, "faq");
+  for (const section of input.contentSections) {
+    if (section.heading !== "概览") pushVariant(section.heading, section.body, "section");
+  }
+  if (variants.length === 0 && input.contentSections[0]) pushVariant(input.title, input.contentSections[0].body, "section");
+  return variants.slice(0, 10);
+}
+
+function stripMarkdown(value: string): string {
+  return value
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/^[-*+]\s+/gm, "")
+    .replace(/^\d+\.\s+/gm, "")
+    .replace(/[>*_~|]/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/[ \t]+/g, " ")
+    .trim();
+}
+
 function uniqueStrings(values: readonly string[]): string[] {
   return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
 }
@@ -762,6 +870,89 @@ function firstSourceUrl(row: InterviewQuestionRow): string {
 
 function normalizeText(value: string): string {
   return value.toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+async function fetchWithRetries(input: {
+  label: string;
+  endpoint: string;
+  fetchImpl: typeof fetch;
+  createRequestInit: () => RequestInit;
+}): Promise<Response> {
+  let lastError: unknown = null;
+
+  for (let attempt = 1; attempt <= SUPABASE_WRITE_MAX_ATTEMPTS; attempt += 1) {
+    try {
+      const response = await input.fetchImpl(input.endpoint, input.createRequestInit());
+      if (response.ok) return response;
+
+      const detail = (await response.text()).slice(0, 500);
+      const retryable = RETRYABLE_HTTP_STATUS_CODES.has(response.status);
+      if (!retryable || attempt === SUPABASE_WRITE_MAX_ATTEMPTS) {
+        throw new Error(
+          `${input.label} failed: HTTP ${response.status} retryable=${retryable} attempt=${attempt}/${SUPABASE_WRITE_MAX_ATTEMPTS} endpoint=${input.endpoint} detail=${detail}`,
+        );
+      }
+
+      lastError = new Error(
+        `${input.label} transient HTTP ${response.status} attempt=${attempt}/${SUPABASE_WRITE_MAX_ATTEMPTS} endpoint=${input.endpoint} detail=${detail}`,
+      );
+    } catch (error) {
+      lastError = error;
+      if (!isRetryableFetchError(error) || attempt === SUPABASE_WRITE_MAX_ATTEMPTS) {
+        throw annotateFetchFailure(
+          `${input.label} threw attempt=${attempt}/${SUPABASE_WRITE_MAX_ATTEMPTS} endpoint=${input.endpoint}`,
+          error,
+        );
+      }
+    }
+
+    await delay(attempt * 1000);
+  }
+
+  throw annotateFetchFailure(
+    `${input.label} exhausted retries attempts=${SUPABASE_WRITE_MAX_ATTEMPTS} endpoint=${input.endpoint}`,
+    lastError,
+  );
+}
+
+function isRetryableFetchError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  if (error.name === "AbortError" || error.name === "TimeoutError") return true;
+  const message = error.message.toLowerCase();
+  if (
+    message.includes("fetch failed") ||
+    message.includes("timed out") ||
+    message.includes("timeout") ||
+    message.includes("econnreset") ||
+    message.includes("etimedout") ||
+    message.includes("eai_again") ||
+    message.includes("enotfound") ||
+    message.includes("socket") ||
+    message.includes("network")
+  ) {
+    return true;
+  }
+  const causeCode = stringValue((error).cause?.code).toLowerCase();
+  return ["econnreset", "etimedout", "eai_again", "enotfound", "econnrefused"].includes(causeCode);
+}
+
+function annotateFetchFailure(prefix: string, error: unknown): Error {
+  const details = error instanceof Error ? `${prefix}; ${error.message}${formatErrorCause(error)}` : `${prefix}; ${String(error)}`;
+  return new Error(details, error instanceof Error && "cause" in error ? { cause: error } : undefined);
+}
+
+function formatErrorCause(error: Error): string {
+  const cause = (error).cause;
+  if (!cause) return "";
+  if (cause instanceof Error) {
+    const code = stringValue(cause.code);
+    return `; cause=${cause.name}:${cause.message}${code ? ` code=${code}` : ""}`;
+  }
+  return `; cause=${String(cause)}`;
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function main(): Promise<void> {

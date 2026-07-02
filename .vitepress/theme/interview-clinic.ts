@@ -1,9 +1,5 @@
 /**
- * 求职指南「高频面试题」可筛渲染器（No-Vue：vanilla TS + 挂载 div）。
- *
- * 挂载点：career-guide.md 里的 `<div data-interview-clinic></div>`。
- * 数据源：优先读 Supabase `public.interview_questions`；失败时回退本地 bundle。
- * 交互：按分类（原理/工程/项目深挖）tab + 按章节下拉过滤；纯前端，逻辑见 interview-clinic-filter.ts。
+ * 面试题库列表页：按分类 / 章节筛选后展示卡片列表，点击进入独立详情页。
  */
 import type { InterviewQuestion } from "../../knowledge-graph/data/interview-questions";
 import { loadInterviewClinicData } from "./interview-clinic-data";
@@ -14,15 +10,10 @@ import {
   type CategoryFilter,
   type ChapterFilter,
 } from "./interview-clinic-filter";
-import {
-  clampPageIndex,
-  nearestPagedIndex,
-  nextPagedIndex,
-} from "./interview-clinic-paging";
+import { chapterDisplay, chapterGroup } from "./interview-clinic-chapters.ts";
 
 const initialized = new WeakSet<HTMLElement>();
-const WHEEL_PAGE_LOCK_MS = 380;
-const WHEEL_PAGE_THRESHOLD = 24;
+const BASE = (import.meta.env?.BASE_URL ?? "/") as string;
 
 const CATEGORY_TABS: Array<{ id: CategoryFilter; label: string }> = [
   { id: "all", label: "全部" },
@@ -86,12 +77,22 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
   allOption.value = "all";
   allOption.textContent = "全部章节";
   select.append(allOption);
+  const courseGroup = document.createElement("optgroup");
+  courseGroup.label = "课程章节";
+  const specialGroup = document.createElement("optgroup");
+  specialGroup.label = "专题章节";
   for (const chapter of chapters) {
     const option = document.createElement("option");
     option.value = chapter;
     option.textContent = chapterDisplay(chapter);
-    select.append(option);
+    if (chapterGroup(chapter) === "special") {
+      specialGroup.append(option);
+    } else {
+      courseGroup.append(option);
+    }
   }
+  if (courseGroup.childElementCount > 0) select.append(courseGroup);
+  if (specialGroup.childElementCount > 0) select.append(specialGroup);
   select.addEventListener("change", () => {
     selectedChapter = select.value === "all" ? "all" : select.value;
     renderList();
@@ -102,40 +103,9 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
   const summary = document.createElement("p");
   summary.className = "interview-clinic-summary";
 
-  const viewport = document.createElement("section");
-  viewport.className = "interview-clinic-viewport";
-  viewport.tabIndex = 0;
-  viewport.setAttribute("aria-label", "面试题滚动翻页区");
-
-  const list = document.createElement("ol");
-  list.className = "interview-clinic-list";
-
-  const pager = document.createElement("p");
-  pager.className = "interview-clinic-pager";
-
-  let currentPage = 0;
-  let wheelLocked = false;
-  let scrollSyncToken = 0;
-
-  function listItems(): HTMLElement[] {
-    return Array.from(list.querySelectorAll<HTMLElement>(".interview-clinic-item"));
-  }
-
-  function syncPager(total: number): void {
-    if (total <= 0) {
-      pager.textContent = "暂无可翻页题目";
-      return;
-    }
-    pager.textContent = `第 ${currentPage + 1} / ${total} 页 · 可用滚轮、方向键、PageUp/PageDown 翻页`;
-  }
-
-  function scrollToPage(index: number, behavior: ScrollBehavior = "smooth"): void {
-    const items = listItems();
-    if (items.length === 0) return;
-    currentPage = clampPageIndex(index, items.length);
-    syncPager(items.length);
-    items[currentPage]?.scrollIntoView({ block: "start", inline: "nearest", behavior });
-  }
+  const list = document.createElement("section");
+  list.className = "interview-clinic-card-list";
+  list.setAttribute("aria-label", "面试题列表");
 
   function renderTabs(): void {
     tabs.replaceChildren();
@@ -156,120 +126,103 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
 
   function renderList(): void {
     const filtered = filterQuestions(questions, selectedCategory, selectedChapter);
-    currentPage = 0;
     summary.textContent =
       `共 ${filtered.length} 题${selectedChapter === "all" ? "" : ` · 章节 ${chapterDisplay(selectedChapter)}`}` +
       ` · ${sourceNote}`;
     list.replaceChildren();
 
     if (filtered.length === 0) {
-      const empty = document.createElement("li");
-      empty.className = "interview-clinic-empty";
-      empty.textContent = "该筛选条件下暂无面试题。";
-      list.append(empty);
-      syncPager(0);
+      list.append(statusBlock("该筛选条件下暂无面试题。"));
       return;
     }
 
     for (const question of filtered) {
-      const item = document.createElement("li");
-      item.className = "interview-clinic-item";
-
-      const text = document.createElement("span");
-      text.className = "interview-clinic-question";
-      text.textContent = question.question;
-
-      const meta = document.createElement("span");
-      meta.className = "interview-clinic-meta";
-      const cat = document.createElement("span");
-      cat.className = "interview-clinic-badge";
-      cat.dataset.category = question.category;
-      cat.textContent = question.categoryLabel;
-      meta.append(cat);
-      for (const chapter of question.relatedChapters) {
-        const tag = document.createElement("span");
-        tag.className = "interview-clinic-chapter-tag";
-        tag.textContent = `→ ${chapterDisplay(chapter)}`;
-        meta.append(tag);
-      }
-      if (question.sourceUrls.length > 0) {
-        const link = document.createElement("a");
-        link.className = "interview-clinic-source-link";
-        link.href = question.sourceUrls[0];
-        link.target = "_blank";
-        link.rel = "noreferrer";
-        link.textContent = question.sourceTitles[0] ? "原文" : "来源";
-        meta.append(link);
-      }
-
-      item.append(text, meta);
-      list.append(item);
+      list.append(buildInterviewCard(question));
     }
-
-    syncPager(filtered.length);
-    requestAnimationFrame(() => scrollToPage(0, "auto"));
   }
-
-  viewport.addEventListener(
-    "wheel",
-    (event) => {
-      const items = listItems();
-      if (items.length <= 1) return;
-      if (Math.abs(event.deltaY) < WHEEL_PAGE_THRESHOLD) return;
-      event.preventDefault();
-      if (wheelLocked) return;
-
-      wheelLocked = true;
-      scrollToPage(nextPagedIndex(currentPage, event.deltaY, items.length));
-      window.setTimeout(() => {
-        wheelLocked = false;
-      }, WHEEL_PAGE_LOCK_MS);
-    },
-    { passive: false },
-  );
-
-  viewport.addEventListener("keydown", (event) => {
-    const items = listItems();
-    if (items.length <= 1) return;
-
-    if (event.key === "ArrowDown" || event.key === "PageDown" || event.key === " ") {
-      event.preventDefault();
-      scrollToPage(currentPage + 1);
-      return;
-    }
-
-    if (event.key === "ArrowUp" || event.key === "PageUp") {
-      event.preventDefault();
-      scrollToPage(currentPage - 1);
-    }
-  });
-
-  list.addEventListener(
-    "scroll",
-    () => {
-      const token = window.setTimeout(() => {
-        if (token !== scrollSyncToken) return;
-        const items = listItems();
-        currentPage = nearestPagedIndex(
-          list.scrollTop,
-          items.map((item) => item.offsetTop),
-        );
-        syncPager(items.length);
-      }, 80);
-      scrollSyncToken = token;
-    },
-    { passive: true },
-  );
 
   renderTabs();
   renderList();
-  viewport.append(list);
-  root.append(tabs, controls, summary, viewport, pager);
+  root.append(tabs, controls, summary, list);
 }
 
-/** 章节标签展示：数字章节加「第 N 章」，毕设等非数字原样。 */
-function chapterDisplay(chapter: string): string {
-  return /^\d+$/.test(chapter) ? `第 ${chapter} 章` : chapter;
+function buildInterviewCard(question: InterviewQuestion): HTMLElement {
+  const article = document.createElement("article");
+  article.className = "interview-clinic-card";
+  article.tabIndex = 0;
+  article.setAttribute("role", "link");
+  article.setAttribute("aria-label", `打开面试题详情：${question.question}`);
+  article.addEventListener("click", () => {
+    window.location.href = interviewArticleHref(question.slug);
+  });
+  article.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      window.location.href = interviewArticleHref(question.slug);
+    }
+  });
+
+  const title = document.createElement("h3");
+  title.className = "interview-clinic-card-title";
+  title.textContent = question.question;
+  article.append(title);
+
+  const excerpt = bestInterviewCardText(question);
+  if (excerpt) {
+    const body = document.createElement("p");
+    body.className = "interview-clinic-card-excerpt";
+    body.textContent = excerpt;
+    article.append(body);
+  }
+
+  const actions = document.createElement("div");
+  actions.className = "interview-clinic-card-actions";
+  const detailLink = document.createElement("a");
+  detailLink.className = "interview-clinic-card-link";
+  detailLink.href = interviewArticleHref(question.slug);
+  detailLink.textContent = "查看全文";
+  detailLink.addEventListener("click", (event) => event.stopPropagation());
+  actions.append(detailLink);
+  article.append(actions);
+
+  const source = document.createElement("div");
+  source.className = "interview-clinic-card-source";
+  source.textContent = question.sourceTitles[0] || question.answerSource || "课程标准答案";
+  article.append(source);
+
+  const tags = document.createElement("div");
+  tags.className = "interview-clinic-card-tags";
+  tags.append(chip(question.categoryLabel, "interview-clinic-badge"));
+  for (const tag of buildTagList(question)) {
+    tags.append(chip(tag, "interview-clinic-chapter-tag"));
+  }
+  article.append(tags);
+
+  return article;
+}
+
+function buildTagList(question: InterviewQuestion): string[] {
+  const chapterTags = question.relatedChapters.slice(0, 2).map((chapter) => chapterDisplay(chapter));
+  const topicTags = question.tags.filter((tag) => tag !== "codefather").slice(0, Math.max(0, 4 - chapterTags.length));
+  return [...chapterTags, ...topicTags];
+}
+
+function interviewArticleHref(slug: string): string {
+  return `${BASE}interview/article?id=${encodeURIComponent(slug)}`;
+}
+
+function bestInterviewCardText(question: InterviewQuestion): string | undefined {
+  if (question.summaryExcerpt) return question.summaryExcerpt;
+  if (question.rationale) return question.rationale;
+  if (question.answerSource) return `标准答案来源：${question.answerSource}`;
+  return undefined;
+}
+
+function chip(text: string, className: string): HTMLSpanElement {
+  const span = document.createElement("span");
+  span.className = className;
+  span.textContent = text;
+  return span;
 }
 
 function statusBlock(message: string): HTMLDivElement {

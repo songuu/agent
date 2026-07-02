@@ -34,6 +34,8 @@ interface InterviewQuestionMetadata {
   sourceUrls?: unknown;
   confidence?: unknown;
   rationale?: unknown;
+  plainTextDescription?: unknown;
+  faqList?: unknown;
 }
 
 export interface InterviewClinicDataResult {
@@ -62,6 +64,8 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   engineering: "工程类",
   project: "项目深挖类",
 };
+
+const LOCAL_QUESTION_BY_SLUG = new Map(INTERVIEW_QUESTIONS.map((question) => [question.slug, question]));
 
 export async function loadInterviewClinicData(
   fetchImpl?: typeof fetch,
@@ -114,9 +118,16 @@ export async function loadInterviewClinicData(
 export function normalizeInterviewQuestionRow(row: InterviewQuestionRow): InterviewQuestion {
   const category = categoryValue(row.category);
   const metadata = metadataValue(row.metadata);
+  const slug = stringValue(row.slug, "");
+  const localFallback = LOCAL_QUESTION_BY_SLUG.get(slug);
+  const remoteRationale = optionalStringValue(metadata.rationale);
+  const remoteSummaryExcerpt = excerptValue(metadata.plainTextDescription);
+  const rationale = remoteRationale ?? localFallback?.rationale;
+  const summaryExcerpt = preferredSummaryExcerpt(remoteSummaryExcerpt, remoteRationale, localFallback?.summaryExcerpt);
+  const faqList = faqListValue(metadata.faqList) ?? localFallback?.faqList;
   return {
     id: stringValue(row.question_id, stringValue(row.slug, "")),
-    slug: stringValue(row.slug, ""),
+    slug,
     category,
     categoryLabel: stringValue(row.category_label, CATEGORY_LABELS[category]),
     question: stringValue(row.question, ""),
@@ -129,7 +140,9 @@ export function normalizeInterviewQuestionRow(row: InterviewQuestionRow): Interv
     sourceTitles: stringArrayValue(metadata.sourceTitles),
     sourceUrls: stringArrayValue(metadata.sourceUrls),
     confidence: confidenceValue(metadata.confidence),
-    rationale: optionalStringValue(metadata.rationale),
+    rationale,
+    summaryExcerpt,
+    faqList,
   };
 }
 
@@ -152,7 +165,46 @@ function stringValue(value: unknown, fallback: string): string {
 }
 
 function optionalStringValue(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim() ? value : undefined;
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function excerptValue(value: unknown): string | undefined {
+  const text = optionalStringValue(value)?.replace(/\s+/g, " ");
+  if (!text) return undefined;
+  return text.length > 320 ? `${text.slice(0, 320)}...` : text;
+}
+
+function looksLikeAnswerSource(text: string): boolean {
+  return /^(标准答案来源|答案来源|来源)[:：]/.test(text.trim());
+}
+
+function looksLikeSelectionRationale(text: string): boolean {
+  return /^(本题(?:直接)?来自|本题覆盖|本题对应)/.test(text.trim());
+}
+
+function preferredSummaryExcerpt(
+  remoteSummaryExcerpt: string | undefined,
+  remoteRationale: string | undefined,
+  localSummaryExcerpt: string | undefined,
+): string | undefined {
+  const remote = remoteSummaryExcerpt && !looksLikeAnswerSource(remoteSummaryExcerpt) ? remoteSummaryExcerpt : undefined;
+  if (remote && remote !== remoteRationale && !looksLikeSelectionRationale(remote)) return remote;
+  if (localSummaryExcerpt) return localSummaryExcerpt;
+  return remote ?? remoteRationale;
+}
+
+function faqListValue(value: unknown): Array<{ question: string; answer: string }> | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const items = value
+    .map((entry) => {
+      if (!entry || typeof entry !== "object") return null;
+      const question = optionalStringValue((entry).question);
+      const answer = optionalStringValue((entry).answer);
+      if (!question || !answer) return null;
+      return { question, answer };
+    })
+    .filter((item) => item !== null);
+  return items.length > 0 ? items : undefined;
 }
 
 function numberValue(value: unknown, fallback: number): number {

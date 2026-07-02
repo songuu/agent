@@ -7,6 +7,7 @@ import "./diagram-zoom";
 import "./frontier-article-archive";
 import "./glossary-explorer";
 import "./interview-clinic";
+import "./interview-article-detail";
 import "./notion-article-detail";
 import "./notion-articles-list";
 import "./selection-chat";

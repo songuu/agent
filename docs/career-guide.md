@@ -176,6 +176,8 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 > 每章 README 末尾的 `💡 面试会问` 是你的标准答案来源，先按章复习再来自测。
 > 自测标准：**能脱口而出 + 能讲清 WHY + 能说出取舍**，才算过。
 
+> 🔎 **独立页面**：如果你只想刷题，直接打开 [/interview/](/interview/)；那里会以独立页面承载同一份题库。
+>
 > 🔎 **按分类 / 章节筛选**：题目较多时用下面的筛选器只看某一类或某一章；下方按 A/B/C 分组的完整清单始终是同源底稿（无 JS 时仍可阅读）。
 
 <div data-interview-clinic></div>
@@ -231,6 +233,9 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 34. 为什么给 Assistant agent 增加 `function_choice_behavior` 这类更强的函数选择能力时，必须同时审查 OpenAPI plugin 的路径归一化与 encoded dot-segment 绕过？如果只增强调度能力、不收紧 plugin 路径边界，会把什么 SSRF / 越权调用风险放大？（→ 05 / 11 / 17 / 18 / 19）
 35. 为什么 scientific review agent 不能只做一次性摘要或 zero-shot 打分？`inference scaling`、理论/实验核查和“人类保留最终裁决”分别在兜什么误判与责任边界？（→ 10 / 15 / 19 / capstone）
 36. 为什么 coding agent 评测不能只看 isolated task success 或单个 PR 是否过测？`repository-level integration friction` 在衡量什么，为什么它比单 agent 胜率更接近真实生产风险？（→ 12 / 15 / 16 / 18 / 19）
+37. 为什么 background agent runtime 不能吞掉 skill / resource 错误，而要把 provider 解析、available resources / scripts 和失败原因显式暴露给 harness？这对 agent 自纠错、回放和生产可调试性分别意味着什么？（→ 05 / 11 / 16 / 18 / 19）
+38. 为什么 terminal-use agent 的 benchmark 不能只测 coding 或单条 shell task？像 TUA-Bench 这类覆盖文档编辑、邮件、在线研究、内容创作与系统运维的任务集，在检验什么更接近真实工作的长期能力？（→ 10 / 15 / 18 / 19）
+39. 为什么 agent 安全红队不能只看单一 jailbreak 成功率？基础设施层、协议层、agent 层和模型层分别会暴露什么不同攻击面，为什么必须做 multi-layer red teaming？（→ 11 / 15 / 17 / 18 / 19）
 
 ### C. 项目深挖类（考你是不是真做过）
 
@@ -311,4 +316,5 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 ---
 
 > 配套阅读：[创业指南](./startup-guide.md)（如果你想的不是求职，而是把 demo 做成产品）。
+
 

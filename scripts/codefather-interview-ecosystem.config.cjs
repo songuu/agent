@@ -1,4 +1,4 @@
-// PM2 config for daily Codefather interview sync.
+// PM2 config for 2-hour Codefather interview sync.
 // Start from repo root:
 //   mkdir -p /var/log/agent-build
 //   pm2 start scripts/codefather-interview-ecosystem.config.cjs
@@ -13,8 +13,8 @@ module.exports = {
   apps: [
     {
       name: "codefather-interview-sync",
-      script: "node",
-      args: "--env-file=.env scripts/codefather-interview-cron.ts",
+      script: "/bin/bash",
+      args: "scripts/run-codefather-interview-cron.sh",
       cwd: repoRoot,
       instances: 1,
       exec_mode: "fork",
@@ -27,7 +27,8 @@ module.exports = {
       merge_logs: true,
       env: {
         NODE_ENV: "production",
-        CODEFATHER_INTERVIEW_CRON: "15 8 * * *",
+        CODEFATHER_INTERVIEW_REPO_ROOT: process.env.CODEFATHER_INTERVIEW_REPO_ROOT || "/opt/agent-build/current",
+        CODEFATHER_INTERVIEW_CRON: "5 */2 * * *",
         CODEFATHER_INTERVIEW_TZ: "Asia/Shanghai",
         CODEFATHER_INTERVIEW_LIMIT: "500",
         CODEFATHER_INTERVIEW_PAGE_SIZE: "20",
@@ -36,3 +37,4 @@ module.exports = {
     },
   ],
 };
+

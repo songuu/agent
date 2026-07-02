@@ -5,6 +5,7 @@ import {
   deleteCodefatherRowsBySlug,
   fetchCodefatherInterviewPosts,
   findDuplicateCodefatherStoredSlugs,
+  formatCodefatherSyncFailure,
   readCodefatherCount,
   runCodefatherInterviewSync,
   toInterviewQuestionRows,
@@ -52,6 +53,36 @@ test("fetchCodefatherInterviewPosts paginates and keeps interview records", asyn
   assert.equal(calls.length, 2);
 });
 
+test("fetchCodefatherInterviewPosts retries transient HTTP 524", async () => {
+  let attempts = 0;
+  const originalSetTimeout = globalThis.setTimeout;
+  globalThis.setTimeout = ((callback, _delay, ...args) => {
+    if (typeof callback === "function") callback(...args);
+    return 0 as ReturnType<typeof setTimeout>;
+  }) as typeof setTimeout;
+
+  try {
+    const fetchImpl: typeof fetch = async () => {
+      attempts += 1;
+      if (attempts < 3) {
+        return new Response("", { status: 524 });
+      }
+      return jsonResponse({
+        code: 0,
+        data: { pages: "1", records: [{ id: "1", title: "Java 面试题", tags: ["面试题"] }] },
+        message: "ok",
+      });
+    };
+
+    const posts = await fetchCodefatherInterviewPosts({ limit: 1, pageSize: 20, tag: "面试题", fetchImpl });
+    assert.equal(posts.length, 1);
+  } finally {
+    globalThis.setTimeout = originalSetTimeout;
+  }
+
+  assert.equal(attempts, 3);
+});
+
 test("toInterviewQuestionRows maps Codefather posts to interview_questions rows", () => {
   const posts: CodefatherPost[] = [
     {
@@ -78,6 +109,10 @@ test("toInterviewQuestionRows maps Codefather posts to interview_questions rows"
   assert.ok(row.tags.includes("面试题"));
   assert.deepEqual(row.metadata.sourceUrls, ["https://ai.codefather.cn/post/207"]);
   assert.equal((row.metadata.faqList as Array<{ question: string }>)[0].question, "上下文快满了怎么办？");
+  assert.ok(Array.isArray(row.metadata.answerVariants));
+  assert.ok(Array.isArray(row.metadata.contentSections));
+  assert.equal((row.metadata.answerVariants as Array<{ title: string }>)[0]?.title, "这道题怎么答");
+  assert.equal((row.metadata.contentSections as Array<{ heading: string }>)[0]?.heading, "概览");
 });
 
 test("dedupeInterviewQuestionRows skips duplicate slug, source URL, and same-day title", () => {
@@ -121,6 +156,50 @@ test("upsertInterviewQuestionRows sends PostgREST merge-upsert request", async (
     "resolution=merge-duplicates,return=minimal",
   );
   assert.match(String(requests[0].init.body), /codefather-interview-1/);
+});
+
+test("upsertInterviewQuestionRows retries transient fetch failures", async () => {
+  const rows = toInterviewQuestionRows([{ id: "1", title: "面试题", tags: ["面试题"] }]);
+  let attempts = 0;
+  const originalSetTimeout = globalThis.setTimeout;
+  globalThis.setTimeout = ((callback, _delay, ...args) => {
+    if (typeof callback === "function") callback(...args);
+    return 0 as ReturnType<typeof setTimeout>;
+  }) as typeof setTimeout;
+
+  try {
+    const fetchImpl: typeof fetch = async () => {
+      attempts += 1;
+      if (attempts < 3) {
+        const error = new TypeError("fetch failed");
+        Object.defineProperty(error, "cause", {
+          value: Object.assign(new Error("socket hang up"), { code: "ECONNRESET" }),
+        });
+        throw error;
+      }
+      return new Response(null, { status: 201 });
+    };
+
+    await upsertInterviewQuestionRows(rows, {
+      baseUrl: "https://supabase.test/",
+      serviceRoleKey: "service-key",
+      schema: "public",
+      fetchImpl,
+    });
+  } finally {
+    globalThis.setTimeout = originalSetTimeout;
+  }
+
+  assert.equal(attempts, 3);
+});
+
+test("formatCodefatherSyncFailure includes nested cause details", () => {
+  const cause = Object.assign(new Error("socket hang up"), { code: "ECONNRESET" });
+  const error = new Error("interview_questions upsert threw attempt=3/3 endpoint=https://supabase.test", { cause });
+
+  const text = formatCodefatherSyncFailure(error);
+
+  assert.match(text, /cause=Error:socket hang up code=ECONNRESET/);
 });
 
 test("readCodefatherCount parses content-range totals", async () => {

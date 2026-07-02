@@ -29,6 +29,7 @@
     "supabase:glossary-push": "tsx --env-file=.env scripts/push-glossary-to-supabase.ts",
     "supabase:codefather-interview-sync": "node --experimental-transform-types --env-file=.env scripts/sync-codefather-interview-to-supabase.ts",
     "codefather:interview-cron": "node --experimental-transform-types --env-file=.env scripts/codefather-interview-cron.ts",
+    "deploy:codefather-interview-sync": "pwsh scripts/deploy-codefather-interview-sync.ps1",
     "supabase:news-seed": "tsx scripts/generate-news-items-seed.ts",
     "supabase:notion-seed": "tsx scripts/generate-notion-articles-seed.ts",
     "supabase:notion-push": "tsx --env-file=.env scripts/push-notion-articles-to-supabase.ts",
@@ -105,3 +106,4 @@
     "vitepress-plugin-mermaid": "^2.0.17"
   }
 }
+

@@ -62,3 +62,18 @@ test("categoryCounts 含总量", () => {
 test("availableChapters 去重 + 数值升序，非数字章节(capstone)排末尾", () => {
   assert.deepEqual(availableChapters(sample), ["01", "02", "07", "09", "13", "capstone"]);
 });
+test("availableChapters：专题章节排在课程章节后，external-codefather 显示为独立专题", () => {
+  const withSpecial: InterviewQuestion[] = [
+    ...sample,
+    q("e", "engineering", ["external-codefather"]),
+  ];
+  assert.deepEqual(availableChapters(withSpecial), [
+    "01",
+    "02",
+    "07",
+    "09",
+    "13",
+    "capstone",
+    "external-codefather",
+  ]);
+});

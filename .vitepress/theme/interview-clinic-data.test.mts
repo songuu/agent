@@ -85,3 +85,38 @@ test("loadInterviewClinicData：Supabase 读取成功时优先使用远端数据
 
   holder.__FRONTIER_SUPABASE_CONFIG__ = original;
 });
+
+
+test("normalizeInterviewQuestionRow：远端缺答案时回退本地 bundle 摘要", () => {
+  const question = normalizeInterviewQuestionRow({
+    question_id: "iq-local",
+    slug: "llm-vs-agent-and-loop",
+    category: "principle",
+    category_label: "原理类",
+    question: "LLM 和 Agent 有什么区别？请画出 Agent 的执行循环。",
+    answer_source: "第 01 章 README",
+    metadata: {
+      plainTextDescription: "标准答案来源：第 01 章 README 的 面试会问。",
+    },
+  });
+
+  assert.match(question.summaryExcerpt ?? "", /LLM 只负责基于上下文生成下一段文本/);
+});
+
+
+test("normalizeInterviewQuestionRow：远端只有选题说明时优先使用本地真实答案", () => {
+  const question = normalizeInterviewQuestionRow({
+    question_id: "iq-20",
+    slug: "memory-agent-recall-vs-reuse-evaluation",
+    category: "engineering",
+    category_label: "工程类",
+    question: "长期记忆 agent 为何不能只测 recall？为什么 observation stream、user feedback、knowledge archive 与 follow-up reuse 要分开评估？",
+    answer_source: "第 07/15/19 章 README",
+    metadata: {
+      rationale: "本题覆盖 2026 新 memory benchmark 的核心口径变化，适合补齐记忆评测高频追问。",
+    },
+  });
+
+  assert.match(question.summaryExcerpt ?? "", /不能只测 recall/);
+  assert.doesNotMatch(question.summaryExcerpt ?? "", /^本题覆盖/);
+});

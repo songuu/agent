@@ -8,7 +8,7 @@ import {
   runCodefatherInterviewSync,
 } from "./sync-codefather-interview-to-supabase.ts";
 
-const DEFAULT_CRON = "15 8 * * *";
+const DEFAULT_CRON = "5 */2 * * *";
 const DEFAULT_TIMEZONE = "Asia/Shanghai";
 const DEFAULT_LIMIT = 500;
 const DEFAULT_PAGE_SIZE = 20;

@@ -95,7 +95,7 @@ export interface Article {
 }
 
 
-const CAPSTONE_PORTFOLIO_PROJECTS = [
+export const CAPSTONE_PORTFOLIO_PROJECTS = [
   { id: "cap-meeting-action", slug: "meeting-action-agent", title: "毕业项目 · 会议行动项 Agent", concepts: ["会议行动项抽取", "Owner 与 deadline 归一", "Follow-up 简报"] },
   { id: "cap-contract-risk", slug: "contract-risk-reviewer", title: "毕业项目 · 合同风险审阅 Agent", concepts: ["合同条款切分", "Playbook 风险匹配", "法务确认队列"] },
   { id: "cap-data-quality", slug: "data-quality-sentinel", title: "毕业项目 · 数据质量哨兵 Agent", concepts: ["数据质量规则", "Schema 漂移检测", "Lineage 影响报告"] },
@@ -1811,6 +1811,67 @@ export const ARTICLES: Article[] = [
     confidence: "medium",
     credibilityNote: "一手 arXiv 预印本；样本量很大、问题定义直接命中 coding agent 生产治理，但结论仍待更多外部复核。",
   },
+  {
+    title: "Microsoft Agent Framework Python 1.10.0 release notes",
+    url: "https://github.com/microsoft/agent-framework/releases/tag/python-1.10.0",
+    kind: "doc",
+    source: "Microsoft",
+    publishedAt: "2026-06-30",
+    institution: "Microsoft",
+    chapters: ["19"],
+    ecosystemLayer: "runtime",
+    note: "官方 release notes：Python 版把 background agent loop 的 provider 解析前移为默认能力，显式暴露 available_resources / scripts，并停止吞掉 skill/resource 错误，外加 standalone Durable Task worker、Foundry adaptive evals 与 reasoning token 统计。信号是 production harness 正在把『可调试、自纠错、可回放』提升为 runtime 的一等职责，而不再只做工具分发器。",
+    applicableModules: [
+      "lessons/05-tool-use-basics",
+      "lessons/11-multi-agent-orchestration",
+      "lessons/16-observability-and-cost",
+      "lessons/18-deployment",
+      "lessons/20-agent-frontier-news",
+    ],
+    confidence: "high",
+    credibilityNote: "一手 GitHub release；直接来自 Microsoft Agent Framework 官方仓库 Python release。",
+  },
+  {
+    title: "TUA-Bench: A Benchmark for General-Purpose Terminal-Use Agents",
+    url: "https://arxiv.org/abs/2506.17537",
+    kind: "paper",
+    source: "arXiv",
+    publishedAt: "2026-06-27",
+    author: "Nikhil Kapoor et al.",
+    institution: "TUA-Bench authors",
+    chapters: ["19"],
+    ecosystemLayer: "evaluation",
+    note: "TUA-Bench 给 terminal-use agents 提供 200+ 个跨 coding、文档编辑、邮件、在线研究、内容创作和系统运维的真实知识工作任务，并同时记录成本、时延与任务完成质量。信号是 terminal agent 评测正在从“能不能修代码”扩展到“能不能持续完成真实工作的跨工具链任务”。",
+    applicableModules: [
+      "lessons/10-reasoning-patterns",
+      "lessons/15-evaluation-and-testing",
+      "lessons/18-deployment",
+      "lessons/20-agent-frontier-news",
+    ],
+    confidence: "medium",
+    credibilityNote: "一手 arXiv 预印本；任务设计与指标公开透明，但仍需后续同行评审与更多外部复现。",
+  },
+  {
+    title: "Securing the AI Agent: A Unified Framework for Multi-Layer Agent Red Teaming",
+    url: "https://arxiv.org/abs/2506.19396",
+    kind: "paper",
+    source: "arXiv",
+    publishedAt: "2026-06-27",
+    author: "Aman Kesarwani et al.",
+    institution: "AI-Infra-Guard authors",
+    chapters: ["19"],
+    ecosystemLayer: "security-governance",
+    note: "AI-Infra-Guard 论文把 agent 红队统一拆成 infrastructure、protocol、agent、model 四层，强调不能只测 prompt jailbreak，而要同时审查身份、协议调用、工具编排和模型输出。信号是 production agent 的安全验证已从单点提示攻击扩展到多层系统攻防。",
+    applicableModules: [
+      "lessons/11-multi-agent-orchestration",
+      "lessons/15-evaluation-and-testing",
+      "lessons/17-safety-and-guardrails",
+      "lessons/18-deployment",
+      "lessons/20-agent-frontier-news",
+    ],
+    confidence: "medium",
+    credibilityNote: "一手 arXiv 预印本；框架完整、攻击面分层清楚，但仍属最新研究，需要继续观察社区复现与工程落地情况。",
+  },
   { title: "Introducing Contextual Retrieval", url: "https://www.anthropic.com/news/contextual-retrieval", kind: "blog", chapters: ["rag-chunk", "rag-hybrid", "rag-contextual"], note: "Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读" },
   { title: "Okapi BM25 - Wikipedia", url: "https://en.wikipedia.org/wiki/Okapi_BM25", kind: "doc", chapters: ["rag-hybrid"], note: "BM25 打分公式与 k1/b 参数的权威说明，对应本章 BM25Index" },
   { title: "Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods", url: "https://dl.acm.org/doi/10.1145/1571941.1572114", kind: "paper", chapters: ["rag-hybrid"], note: "RRF 原始论文 (Cormack et al., SIGIR 2009)，混合检索融合法的来源" },
@@ -1841,4 +1902,5 @@ export const ARTICLES: Article[] = [
   { title: "LangGraph StateGraph and Pregel runtime source", url: "https://github.com/langchain-ai/langgraph/blob/main/libs/langgraph/langgraph/graph/state.py", kind: "doc", source: "LangGraph", chapters: ["21"], note: "LangGraph 官方源码入口：StateGraph 的 state schema、channel reducer、node、edge 与 compile" },
   { title: "LlamaIndex RetrieverQueryEngine source", url: "https://github.com/run-llama/llama_index/blob/main/llama-index-core/llama_index/core/query_engine/retriever_query_engine.py", kind: "doc", source: "LlamaIndex", chapters: ["21"], note: "LlamaIndex 官方源码入口：retriever、node postprocessor、response synthesizer 组成 data-first RAG 查询链路" },
 ];
+
 

@@ -8,6 +8,7 @@ import type {
   InterviewQuestion,
   InterviewQuestionCategory,
 } from "../../knowledge-graph/data/interview-questions";
+import { compareChapters } from "./interview-clinic-chapters.ts";
 
 export type CategoryFilter = InterviewQuestionCategory | "all";
 export type ChapterFilter = string | "all";
@@ -45,13 +46,6 @@ export function availableChapters(questions: readonly InterviewQuestion[]): stri
   for (const question of questions) {
     for (const chapter of question.relatedChapters) set.add(chapter);
   }
-  return [...set].sort((a, b) => {
-    const na = Number(a);
-    const nb = Number(b);
-    // 纯数字章节按数值排；非数字（如毕设 id）排在数字后并按字典序。
-    if (Number.isFinite(na) && Number.isFinite(nb)) return na - nb;
-    if (Number.isFinite(na)) return -1;
-    if (Number.isFinite(nb)) return 1;
-    return a < b ? -1 : a > b ? 1 : 0;
-  });
+  return [...set].sort(compareChapters);
 }
+
