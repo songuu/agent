@@ -220,5 +220,7 @@ jobs:
             echo "public https://${DOMAIN}${path} -> ${code}"
             test "${code}" = "200"
           done
-          curl -k -L -s "https://${DOMAIN}/agent-build/" | grep -q 'Agent 从零到上框架'
+          home_html="$(mktemp)"
+          curl -k -L -s -o "${home_html}" "https://${DOMAIN}/agent-build/"
+          grep -q 'Agent 从零到上框架' "${home_html}"
           echo "public gateway verified"
