@@ -1,0 +1,211 @@
+name: Deploy Agent Build
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: agent-build-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+# 静态站部署：vitepress build -> release-root/current symlink -> nginx alias /agent-build/。
+# 结构直接参考 AICrew 的 .github/workflows/deploy-aicrew.yml：单 job、runner 内打包、SSH 上传、远端 release 目录、current 原子切换、生产验证。
+# 必需 GH secrets：AGENT_BUILD_SSH_PRIVATE_KEY、AGENT_BUILD_PRODUCTION_ENV（构建期 .env 内容）。
+# 可选 secrets（有默认值）：AGENT_BUILD_DEPLOY_HOST、AGENT_BUILD_DEPLOY_USER、AGENT_BUILD_DOMAIN。
+jobs:
+  build-and-deploy:
+    name: Build and deploy (static site)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      NODE_VERSION: "22"
+      PNPM_VERSION: "10.12.1"
+      DEPLOY_HOST: ${{ secrets.AGENT_BUILD_DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.AGENT_BUILD_DEPLOY_USER }}
+      DOMAIN: ${{ secrets.AGENT_BUILD_DOMAIN }}
+      SSH_PRIVATE_KEY: ${{ secrets.AGENT_BUILD_SSH_PRIVATE_KEY }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set deployment defaults
+        run: |
+          set -euo pipefail
+          echo "DEPLOY_HOST=${DEPLOY_HOST:-47.253.230.197}" >> "$GITHUB_ENV"
+          echo "DEPLOY_USER=${DEPLOY_USER:-root}" >> "$GITHUB_ENV"
+          echo "DOMAIN=${DOMAIN:-songuu.top}" >> "$GITHUB_ENV"
+          echo "RELEASE_ROOT=/opt/agent-build/releases" >> "$GITHUB_ENV"
+          echo "CURRENT_LINK=/opt/agent-build/current" >> "$GITHUB_ENV"
+          echo "BASE_PATH=/agent-build/" >> "$GITHUB_ENV"
+          echo "VERIFY_SCHEME=https" >> "$GITHUB_ENV"
+          echo "DEMO_RUNNER_BASE_URL=/agent-build/api/demo-runner" >> "$GITHUB_ENV"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Enable pnpm
+        run: |
+          set -euo pipefail
+          corepack enable
+          corepack prepare pnpm@${PNPM_VERSION} --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run quality gates
+        run: |
+          set -euo pipefail
+          pnpm typecheck
+          npx tsx knowledge-graph/data/visuals.test.mts
+          npx tsx knowledge-graph/generate.test.mts
+          npx tsx .vitepress/theme/diagram-zoom.test.mts
+          npx tsx .vitepress/theme/reduced-motion.test.mts
+
+      - name: Write production env
+        run: |
+          set -euo pipefail
+          if [ -z "${AGENT_BUILD_PRODUCTION_ENV}" ]; then
+            echo "::error::Missing required GitHub secret AGENT_BUILD_PRODUCTION_ENV (构建期 .env 内容)"
+            exit 1
+          fi
+          printf '%s\n' "${AGENT_BUILD_PRODUCTION_ENV}" > .env
+          grep -q '^NEXT_PUBLIC_SUPABASE_URL=' .env || { echo "::error::AGENT_BUILD_PRODUCTION_ENV 缺少 NEXT_PUBLIC_SUPABASE_URL"; exit 1; }
+          grep -q '^NEXT_PUBLIC_SUPABASE_ANON_KEY=' .env || { echo "::error::AGENT_BUILD_PRODUCTION_ENV 缺少 NEXT_PUBLIC_SUPABASE_ANON_KEY"; exit 1; }
+          if grep -Eq '^(SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SERVICE_ROLE)=' .env; then
+            echo "::error::AGENT_BUILD_PRODUCTION_ENV 不应包含 service role secret；静态站只允许 public anon 配置"
+            exit 1
+          fi
+          echo "Production .env written for build (values masked)."
+        env:
+          AGENT_BUILD_PRODUCTION_ENV: ${{ secrets.AGENT_BUILD_PRODUCTION_ENV }}
+
+      - name: Generate knowledge graph artifacts
+        run: pnpm kg
+
+      - name: Build static site
+        run: pnpm site:build
+        env:
+          VITEPRESS_BASE: ${{ env.BASE_PATH }}
+          DEMO_RUNNER_CLIENT_ENABLED: "1"
+          DEMO_RUNNER_BASE_URL: ${{ env.DEMO_RUNNER_BASE_URL }}
+
+      - name: Build self-check
+        run: |
+          set -euo pipefail
+          test -f .vitepress/dist/index.html
+          expected_prefix="${BASE_PATH%/}/assets"
+          grep -q "$expected_prefix" .vitepress/dist/index.html
+          find .vitepress/dist -type f | wc -l
+
+      - name: Package static release
+        run: |
+          set -euo pipefail
+          archive="${RUNNER_TEMP}/agent-build-site-${GITHUB_SHA}.tgz"
+          tar -czf "${archive}" .vitepress/dist
+          echo "ARCHIVE=${archive}" >> "$GITHUB_ENV"
+          echo "REMOTE_ARCHIVE=/tmp/agent-build-site-${GITHUB_SHA}.tgz" >> "$GITHUB_ENV"
+          echo "REMOTE_RELEASE=${RELEASE_ROOT}/agent-build-site-${GITHUB_SHA}" >> "$GITHUB_ENV"
+
+      - name: Configure SSH
+        run: |
+          set -euo pipefail
+          if [ -z "${SSH_PRIVATE_KEY}" ]; then
+            echo "::error::Missing required GitHub secret AGENT_BUILD_SSH_PRIVATE_KEY"
+            exit 1
+          fi
+          mkdir -p ~/.ssh
+          printf '%s\n' "${SSH_PRIVATE_KEY}" > ~/.ssh/agent_build_deploy_key
+          chmod 600 ~/.ssh/agent_build_deploy_key
+          ssh-keyscan -T 10 -H "${DEPLOY_HOST}" >> ~/.ssh/known_hosts
+
+      - name: Upload release archive
+        run: |
+          set -euo pipefail
+          scp -i ~/.ssh/agent_build_deploy_key -o BatchMode=yes \
+            "${ARCHIVE}" \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_ARCHIVE}"
+
+      - name: Remote static release (atomic symlink swap)
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/agent_build_deploy_key -o BatchMode=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "RELEASE_ROOT='${RELEASE_ROOT}' CURRENT_LINK='${CURRENT_LINK}' REMOTE_ARCHIVE='${REMOTE_ARCHIVE}' REMOTE_RELEASE='${REMOTE_RELEASE}' bash -s" <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          DEPLOY_SWITCHED=0
+          trap 'rm -f "${REMOTE_ARCHIVE}" "${CURRENT_LINK}.next"; if [ "${DEPLOY_SWITCHED}" != "1" ]; then rm -rf "${REMOTE_RELEASE}"; fi' EXIT
+
+          mkdir -p "${RELEASE_ROOT}"
+          rm -rf "${REMOTE_RELEASE}"
+          mkdir -p "${REMOTE_RELEASE}"
+          tar -xzf "${REMOTE_ARCHIVE}" -C "${REMOTE_RELEASE}"
+          test -f "${REMOTE_RELEASE}/.vitepress/dist/index.html"
+          chmod -R a+rX "${REMOTE_RELEASE}/.vitepress/dist"
+
+          ln -sfn "${REMOTE_RELEASE}" "${CURRENT_LINK}.next"
+          legacy_backup=""
+          if [ -e "${CURRENT_LINK}" ] && [ ! -L "${CURRENT_LINK}" ]; then
+            legacy_backup="${CURRENT_LINK}.pre-symlink.$(date +%Y%m%d%H%M%S)"
+            mv "${CURRENT_LINK}" "${legacy_backup}"
+            if ! mv -Tf "${CURRENT_LINK}.next" "${CURRENT_LINK}"; then
+              mv "${legacy_backup}" "${CURRENT_LINK}"
+              exit 1
+            fi
+          else
+            mv -Tf "${CURRENT_LINK}.next" "${CURRENT_LINK}"
+          fi
+          DEPLOY_SWITCHED=1
+          rm -f "${REMOTE_ARCHIVE}"
+
+          ls -1dt "${RELEASE_ROOT}"/*/ 2>/dev/null | tail -n +6 | xargs -r rm -rf
+
+          file_count="$(find "${CURRENT_LINK}/.vitepress/dist" -type f | wc -l)"
+          echo "CURRENT_RELEASE=$(readlink -f "${CURRENT_LINK}")"
+          echo "LEGACY_CURRENT_BACKUP=${legacy_backup}"
+          echo "STATIC_ROOT=${CURRENT_LINK}/.vitepress/dist"
+          echo "FILE_COUNT=${file_count}"
+          REMOTE_SCRIPT
+
+      - name: Verify production
+        run: |
+          set -euo pipefail
+          # 1) 远端 loopback：绕过公网 DNS，确认 nginx Host/path 能读到 current symlink 指向的新静态站。
+          ssh -i ~/.ssh/agent_build_deploy_key -o BatchMode=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "DOMAIN='${DOMAIN}' BASE_PATH='${BASE_PATH}' VERIFY_SCHEME='${VERIFY_SCHEME}' bash -s" <<'VERIFY_SCRIPT'
+          set -euo pipefail
+          paths=(
+            ""
+            "lessons/04-the-agent-loop/"
+            "lessons/07-short-term-memory/"
+            "rag-advanced/02-hybrid-search/"
+          )
+          for path in "${paths[@]}"; do
+            code="$(curl -sk -o /dev/null -w '%{http_code}' -H "Host:${DOMAIN}" "${VERIFY_SCHEME}://127.0.0.1${BASE_PATH}${path}")"
+            echo "loopback ${BASE_PATH}${path} -> ${code}"
+            test "${code}" = "200"
+          done
+          loop_scene="$(curl -sk -H "Host:${DOMAIN}" "${VERIFY_SCHEME}://127.0.0.1${BASE_PATH}lessons/04-the-agent-loop/" | grep -c concept-visual-canvas--loop || true)"
+          echo "loop_scene=${loop_scene}"
+          test "${loop_scene}" != "0"
+          VERIFY_SCRIPT
+
+          # 2) 公网 HTTPS：对齐 AICrew，确认公开入口可达。
+          for path in /agent-build/ /agent-build/lessons/04-the-agent-loop/ /agent-build/rag-advanced/02-hybrid-search/; do
+            code="$(curl -k -L -s -o /dev/null -w '%{http_code}' "https://${DOMAIN}${path}")"
+            echo "public https://${DOMAIN}${path} -> ${code}"
+            test "${code}" = "200"
+          done
+          curl -k -L -s "https://${DOMAIN}/agent-build/" | grep -q 'Agent 从零到上框架'
+          echo "public gateway verified"

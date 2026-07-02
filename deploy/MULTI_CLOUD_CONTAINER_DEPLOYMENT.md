@@ -77,6 +77,46 @@ pwsh scripts/deploy-container.ps1 `
   -UseRegistry
 ```
 
+## GitHub Actions 自动打包部署
+
+`agent-build` 的 GitHub Actions 发布流直接参考本机 `AICrew` 项目的 `.github/workflows/deploy-aicrew.yml` 形状：单 job 在 runner 内完成构建、打包、SSH 上传、远端 release 目录、`current` 原子切换和生产验证。区别是 AICrew 发布 Next server runtime，`agent-build` 发布 VitePress 静态站。
+
+```text
+push master / manual dispatch
+  -> set deployment defaults（默认 host 47.253.230.197）
+  -> pnpm install
+  -> typecheck + visual/graph gates
+  -> 写入 AGENT_BUILD_PRODUCTION_ENV 到 .env
+  -> pnpm kg
+  -> VITEPRESS_BASE=/agent-build/ pnpm site:build
+  -> tar .vitepress/dist
+  -> scp 到目标主机 /tmp
+  -> 解包到 /opt/agent-build/releases/agent-build-site-<sha>
+  -> /opt/agent-build/current symlink 原子切换
+  -> loopback + public HTTPS 验证
+```
+
+Workflow 文件：`.github/workflows/agent-build-deploy.yml`。
+
+需要配置的 GitHub Secrets：
+
+| Secret | 用途 |
+|--------|------|
+| `AGENT_BUILD_SSH_PRIVATE_KEY` | 部署专用 SSH 私钥 |
+| `AGENT_BUILD_PRODUCTION_ENV` | 构建期 `.env` 完整内容，必须含 `NEXT_PUBLIC_SUPABASE_URL` 和 `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
+| `AGENT_BUILD_DEPLOY_HOST` | 可选，目标主机 hostname/IP，未设置时默认 `47.253.230.197` |
+| `AGENT_BUILD_DEPLOY_USER` | 可选，SSH 用户，未设置时默认 `root` |
+| `AGENT_BUILD_DOMAIN` | 可选，验证域名，未设置时默认 `songuu.top` |
+
+安全边界：
+
+- Workflow 不提交真实主机私钥、service role key 或 `.env`。
+- `AGENT_BUILD_PRODUCTION_ENV` 只允许 public anon Supabase 配置；如果包含 `SUPABASE_SERVICE_ROLE_KEY` / `SUPABASE_SERVICE_ROLE`，CI 会直接失败。
+- `ssh-keyscan` 行为与 AICrew workflow 保持一致，不再额外引入 known-hosts secret。
+- 自动部署只切换 `/opt/agent-build/current` symlink，不会改宿主机 Nginx、PM2 或 Docker Compose。若首跑时 `current` 仍是旧目录，会先备份为 `current.pre-symlink.<timestamp>` 再切换为 symlink。
+- Nginx 继续读取 `/opt/agent-build/current/.vitepress/dist`；回滚可把 `current` symlink 指回旧 release。
+- release 目录默认保留最近 5 个，清理更早版本。
+
 ## 脚本行为
 
 `scripts/deploy-container.ps1` 默认执行：

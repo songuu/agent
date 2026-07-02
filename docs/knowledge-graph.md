@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **65** 个单元、**329** 个概念、**457** 条关系、**168** 篇关联文章。
+共 **65** 个单元、**329** 个概念、**457** 条关系、**171** 篇关联文章。
 
 ## 章节地图
 
@@ -1458,6 +1458,9 @@ graph LR
 | [Semantic Kernel Python 1.43.1 release notes](https://github.com/microsoft/semantic-kernel/releases/tag/python-1.43.1) | Microsoft | doc | 19 | 官方 release notes：一边给 Azure AI / OpenAI Assistant agents 补 `function_choice_behavior`，一边在 OpenAPI plugin 里拒绝 encoded dot-segment paths，信号是“让 agent 更会调函数”和“把 plugin URL 归一化边界收紧”必须一起治理，否则工具编排能力越强，路径绕过面就越大。 |
 | [Towards Automating Scientific Review with Google's Paper Assistant Tool](https://arxiv.org/abs/2606.28277) | arXiv | paper | 19 | PAT 论文把 deep scientific review agent 做成带 inference scaling 的验证流程：不仅总结论文，还检查理论、实验与潜在缺陷，并在 SPOT 数学错误集上把 zero-shot recall 提升约 34%。信号是 research/review agent 的价值不在“给意见”，而在可扩展验证链和保留人类最终裁决。 |
 | [Govern the Repository, Not the Agent: Measuring Ecosystem-Level Risk in AI-Native Software](https://arxiv.org/abs/2606.28235) | arXiv | paper | 19 | 论文基于 93 万+ agent-authored PR 研究 integration friction，发现约一半变异留在 repository 层，而且 agent 贡献比 human 更集中到这种仓库级摩擦。信号是 coding agent 不能只按单个任务成功率打分，还要把仓库级并发集成风险、流程成熟度和生态摩擦作为治理对象。 |
+| [Microsoft Agent Framework Python 1.10.0 release notes](https://github.com/microsoft/agent-framework/releases/tag/python-1.10.0) | Microsoft | doc | 19 | 官方 release notes：Python 版把 background agent loop 的 provider 解析前移为默认能力，显式暴露 available_resources / scripts，并停止吞掉 skill/resource 错误，外加 standalone Durable Task worker、Foundry adaptive evals 与 reasoning token 统计。信号是 production harness 正在把『可调试、自纠错、可回放』提升为 runtime 的一等职责，而不再只做工具分发器。 |
+| [TUA-Bench: A Benchmark for General-Purpose Terminal-Use Agents](https://arxiv.org/abs/2506.17537) | arXiv | paper | 19 | TUA-Bench 给 terminal-use agents 提供 200+ 个跨 coding、文档编辑、邮件、在线研究、内容创作和系统运维的真实知识工作任务，并同时记录成本、时延与任务完成质量。信号是 terminal agent 评测正在从“能不能修代码”扩展到“能不能持续完成真实工作的跨工具链任务”。 |
+| [Securing the AI Agent: A Unified Framework for Multi-Layer Agent Red Teaming](https://arxiv.org/abs/2506.19396) | arXiv | paper | 19 | AI-Infra-Guard 论文把 agent 红队统一拆成 infrastructure、protocol、agent、model 四层，强调不能只测 prompt jailbreak，而要同时审查身份、协议调用、工具编排和模型输出。信号是 production agent 的安全验证已从单点提示攻击扩展到多层系统攻防。 |
 | [Introducing Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) | anthropic.com | blog | rag-chunk, rag-hybrid, rag-contextual | Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读 |
 | [Okapi BM25 - Wikipedia](https://en.wikipedia.org/wiki/Okapi_BM25) | en.wikipedia.org | doc | rag-hybrid | BM25 打分公式与 k1/b 参数的权威说明，对应本章 BM25Index |
 | [Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods](https://dl.acm.org/doi/10.1145/1571941.1572114) | dl.acm.org | paper | rag-hybrid | RRF 原始论文 (Cormack et al., SIGIR 2009)，混合检索融合法的来源 |
