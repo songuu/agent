@@ -47,18 +47,31 @@ jobs:
           echo "VERIFY_SCHEME=https" >> "$GITHUB_ENV"
           echo "DEMO_RUNNER_BASE_URL=/agent-build/api/demo-runner" >> "$GITHUB_ENV"
 
+      - name: Validate required secrets
+        env:
+          AGENT_BUILD_PRODUCTION_ENV: ${{ secrets.AGENT_BUILD_PRODUCTION_ENV }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SSH_PRIVATE_KEY}" ]; then
+            echo "::error::Missing required GitHub secret AGENT_BUILD_SSH_PRIVATE_KEY"
+            exit 1
+          fi
+          if [ -z "${AGENT_BUILD_PRODUCTION_ENV}" ]; then
+            echo "::error::Missing required GitHub secret AGENT_BUILD_PRODUCTION_ENV (构建期 .env 内容)"
+            exit 1
+          fi
+
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
-
-      - name: Enable pnpm
-        run: |
-          set -euo pipefail
-          corepack enable
-          corepack prepare pnpm@${PNPM_VERSION} --activate
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
