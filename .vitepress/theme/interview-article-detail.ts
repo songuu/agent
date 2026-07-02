@@ -325,6 +325,7 @@ function buildAnswerSection(items: Array<{ title: string; answer: string; kind: 
   const section = el("section", "interview-detail-section interview-answer-section");
   const details = document.createElement("details");
   details.className = "interview-answer-disclosure";
+  details.open = true;
   const summary = document.createElement("summary");
   summary.className = "interview-answer-summary";
   summary.append(sectionHeading("直接可背的答案"));
