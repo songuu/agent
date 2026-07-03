@@ -61,6 +61,16 @@ features:
     details: 20 个新增真实业务流程项目，覆盖协作、法务、数据、安全、合规、HR、供应链和隐私等场景。
     link: /capstone/
     linkText: 看 28 个项目
+  - icon: 📁
+    title: 项目中心
+    details: 像 ChatGPT Projects 一样，把课程项目、源码解析、RAG 系统、企业知识库和作品集入口收束到一个工作区。
+    link: /docs/projects
+    linkText: 打开项目
+  - icon: ⏱️
+    title: 已安排
+    details: 集中查看 AI 资讯、Notion、面试题和日报等定时任务的入口、节奏、数据落点和验证边界。
+    link: /docs/scheduled
+    linkText: 查看任务
   - icon: 🔬
     title: 进阶 RAG 专题
     details: 分块策略、混合检索、召回-精排、查询改写、三指标评估、生产化——把最小 RAG 补成生产级。

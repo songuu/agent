@@ -191,6 +191,8 @@ const sidebar: DefaultTheme.SidebarItem[] = [
     items: [
       { text: "00 环境搭建", link: "/docs/setup" },
       { text: "全局课程导航", link: "/docs/navigation" },
+      { text: "项目", link: "/docs/projects" },
+      { text: "已安排", link: "/docs/scheduled" },
       { text: "完整教学大纲", link: "/docs/curriculum" },
       { text: "术语表", link: "/docs/glossary" },
     ],
@@ -231,6 +233,8 @@ const sidebar: DefaultTheme.SidebarItem[] = [
       { text: "💼 求职指南", link: "/docs/career-guide" },
       { text: "🎯 面试题库", link: "/interview/" },
       { text: "🚀 创业指南", link: "/docs/startup-guide" },
+      { text: "📁 项目", link: "/docs/projects" },
+      { text: "⏱️ 已安排", link: "/docs/scheduled" },
       { text: "Agent 学习指南", link: "/docs/agent-learning-guides" },
       { text: "🧭 RAG 完整架构蓝图", link: "/docs/rag-architecture" },
       { text: "🏢 企业知识库 Agent 蓝图", link: "/docs/enterprise-knowledge-base-agent" },
@@ -394,6 +398,8 @@ export default withMermaid(
         { text: "AI 资讯", link: "/news/" },
         { text: "面试题库", link: "/interview/", activeMatch: "^/interview(?:/|$)" },
         { text: "Notion 文章", link: "/notion/" },
+        { text: "项目", link: "/docs/projects" },
+        { text: "已安排", link: "/docs/scheduled" },
         {
           text: "知识图谱",
           items: [
@@ -405,8 +411,10 @@ export default withMermaid(
           text: "指南",
           items: [
             { text: "💼 求职指南", link: "/docs/career-guide" },
-      { text: "🎯 面试题库", link: "/interview/" },
+            { text: "🎯 面试题库", link: "/interview/" },
             { text: "🚀 创业指南", link: "/docs/startup-guide" },
+            { text: "📁 项目", link: "/docs/projects" },
+            { text: "⏱️ 已安排", link: "/docs/scheduled" },
             { text: "Agent 学习指南", link: "/docs/agent-learning-guides" },
             { text: "🧭 RAG 完整架构", link: "/docs/rag-architecture" },
             { text: "🏢 企业知识库 Agent", link: "/docs/enterprise-knowledge-base-agent" },
@@ -464,4 +472,3 @@ export default withMermaid(
     },
   }),
 );
-
