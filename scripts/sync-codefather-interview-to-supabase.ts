@@ -78,6 +78,8 @@ interface UpsertOptions {
   readonly baseUrl: string;
   readonly serviceRoleKey: string;
   readonly schema: string;
+  readonly batchSize?: number;
+  readonly timeoutMs?: number;
   readonly fetchImpl?: typeof fetch;
 }
 
@@ -119,6 +121,8 @@ export interface CodefatherSyncOptions {
   readonly serviceRoleKey?: string;
   readonly anonKey?: string;
   readonly schema?: string;
+  readonly batchSize?: number;
+  readonly timeoutMs?: number;
   readonly fetchImpl?: typeof fetch;
   readonly now?: Date;
 }
@@ -161,6 +165,8 @@ const DEFAULT_TAG = "面试题";
 const CODEFATHER_SORT_OFFSET = 100000;
 const CODEFATHER_RELATED_CHAPTER = "external-codefather";
 const SUPABASE_WRITE_MAX_ATTEMPTS = 3;
+const DEFAULT_UPSERT_BATCH_SIZE = 100;
+const DEFAULT_UPSERT_TIMEOUT_MS = 120_000;
 const RETRYABLE_HTTP_STATUS_CODES = new Set([408, 425, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524]);
 const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   principle: "原理类",
@@ -369,28 +375,37 @@ export function dedupeInterviewQuestionRows(rows: readonly InterviewQuestionRow[
 
 export async function upsertInterviewQuestionRows(
   rows: readonly InterviewQuestionRow[],
-  { baseUrl, serviceRoleKey, schema, fetchImpl = fetch }: UpsertOptions,
+  { baseUrl, serviceRoleKey, schema, batchSize, timeoutMs, fetchImpl = fetch }: UpsertOptions,
 ): Promise<void> {
   if (rows.length === 0) return;
   const endpoint = `${baseUrl.replace(/\/+$/, "")}/rest/v1/interview_questions?on_conflict=slug`;
-  const payload = JSON.stringify(rows);
+  const normalizedBatchSize = normalizePositiveInteger(batchSize ?? DEFAULT_UPSERT_BATCH_SIZE, DEFAULT_UPSERT_BATCH_SIZE);
+  const normalizedTimeoutMs = normalizePositiveInteger(timeoutMs ?? DEFAULT_UPSERT_TIMEOUT_MS, DEFAULT_UPSERT_TIMEOUT_MS);
+  const batches = chunk(rows, normalizedBatchSize);
 
-  await fetchWithRetries({
-    label: "interview_questions upsert",
-    endpoint,
-    fetchImpl,
-    createRequestInit: () => ({
-      method: "POST",
-      headers: {
-        apikey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`,
-        "Content-Type": "application/json",
-        "Content-Profile": schema,
-        Prefer: "resolution=merge-duplicates,return=minimal",
-      },
-      body: payload,
-    }),
-  });
+  for (let index = 0; index < batches.length; index += 1) {
+    const payload = JSON.stringify(batches[index]);
+    const label =
+      batches.length === 1 ? "interview_questions upsert" : `interview_questions upsert batch=${index + 1}/${batches.length}`;
+
+    await fetchWithRetries({
+      label,
+      endpoint,
+      fetchImpl,
+      createRequestInit: () => ({
+        method: "POST",
+        headers: {
+          apikey: serviceRoleKey,
+          Authorization: `Bearer ${serviceRoleKey}`,
+          "Content-Type": "application/json",
+          "Content-Profile": schema,
+          Prefer: "resolution=merge-duplicates,return=minimal",
+        },
+        body: payload,
+        signal: AbortSignal.timeout(normalizedTimeoutMs),
+      }),
+    });
+  }
 }
 
 export async function readCodefatherCount({
@@ -539,7 +554,14 @@ export async function runCodefatherInterviewSync(options: CodefatherSyncOptions 
     const serviceRoleKey = options.serviceRoleKey || requireEnv("SUPABASE_SERVICE_ROLE_KEY");
     const anonKey = options.anonKey || requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
 
-    await upsertInterviewQuestionRows(rows, { baseUrl, serviceRoleKey, schema, fetchImpl });
+    await upsertInterviewQuestionRows(rows, {
+      baseUrl,
+      serviceRoleKey,
+      schema,
+      batchSize: options.batchSize,
+      timeoutMs: options.timeoutMs,
+      fetchImpl,
+    });
     const storedRows = await readCodefatherRows({ baseUrl, key: serviceRoleKey, schema, fetchImpl });
     const duplicateSlugs = findDuplicateCodefatherStoredSlugs(storedRows);
     if (duplicateSlugs.length > 0) {
@@ -968,3 +990,4 @@ if (invokedPath.endsWith("/sync-codefather-interview-to-supabase.ts")) {
     process.exitCode = 1;
   });
 }
+

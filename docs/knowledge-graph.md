@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **65** 个单元、**329** 个概念、**457** 条关系、**171** 篇关联文章。
+共 **65** 个单元、**329** 个概念、**457** 条关系、**175** 篇关联文章。
 
 ## 章节地图
 
@@ -1461,6 +1461,10 @@ graph LR
 | [Microsoft Agent Framework Python 1.10.0 release notes](https://github.com/microsoft/agent-framework/releases/tag/python-1.10.0) | Microsoft | doc | 19 | 官方 release notes：Python 版把 background agent loop 的 provider 解析前移为默认能力，显式暴露 available_resources / scripts，并停止吞掉 skill/resource 错误，外加 standalone Durable Task worker、Foundry adaptive evals 与 reasoning token 统计。信号是 production harness 正在把『可调试、自纠错、可回放』提升为 runtime 的一等职责，而不再只做工具分发器。 |
 | [TUA-Bench: A Benchmark for General-Purpose Terminal-Use Agents](https://arxiv.org/abs/2506.17537) | arXiv | paper | 19 | TUA-Bench 给 terminal-use agents 提供 200+ 个跨 coding、文档编辑、邮件、在线研究、内容创作和系统运维的真实知识工作任务，并同时记录成本、时延与任务完成质量。信号是 terminal agent 评测正在从“能不能修代码”扩展到“能不能持续完成真实工作的跨工具链任务”。 |
 | [Securing the AI Agent: A Unified Framework for Multi-Layer Agent Red Teaming](https://arxiv.org/abs/2506.19396) | arXiv | paper | 19 | AI-Infra-Guard 论文把 agent 红队统一拆成 infrastructure、protocol、agent、model 四层，强调不能只测 prompt jailbreak，而要同时审查身份、协议调用、工具编排和模型输出。信号是 production agent 的安全验证已从单点提示攻击扩展到多层系统攻防。 |
+| [LangGraph 1.2.7 release notes](https://github.com/langchain-ai/langgraph/releases/tag/1.2.7) | LangChain | doc | 19 | 官方 release notes：1.2.7 重点修 checkpoint / delta state 的正确性边界，修掉 `DeltaChannel` 跨 superstep 覆盖、`Overwrite` JSON roundtrip 丢语义，以及 langgraph-api 退出模式下 task_id UUID 非法的问题。信号是图式 agent 一旦进入持久化、回放和 API 化阶段，状态补丁的序列化稳定性本身就是生产事故面，而不只是内部实现细节。 |
+| [Building a serverless A2A gateway for agent discovery, routing, and access control](https://aws.amazon.com/blogs/machine-learning/building-a-serverless-a2a-gateway-for-agent-discovery-routing-and-access-control/) | AWS | blog | 19 | AWS 官方实践把 A2A 通信的痛点从『点对点连通』重构为『单域入口 + 注册表 + 语义发现 + JWT scope 授权 + OAuth 代理』。文章直接给出 management / control / execution 三层网关设计，并指出 20 个 agent 无集中层时会膨胀到 190 条点对点连接。信号是 agent 协议标准化只解决“怎么说话”，真正的企业落地还要补 discoverability、authz、rate limit 和统一流式路由。 |
+| [Structured memory filtering with metadata in AgentCore Memory](https://aws.amazon.com/blogs/machine-learning/structured-memory-filtering-with-metadata-in-agentcore-memory/) | AWS | blog | 19 | AWS 官方把 AgentCore Memory 的元数据过滤讲成三段式：配置 indexed keys、在 ingestion 期传播或严格保持 metadata、在 retrieval 前先做 metadata pre-filter 再做向量相似度。文中给出 LoCoMo 风格 151 题测试：整体 QA 准确率从 40% 提升到 64%，依赖上下文边界的问题从 16% 提升到 69%。信号是长期记忆系统的关键不只是“记住”，而是让命名空间、确定性标签和时间/权限边界在检索前就先裁掉错误候选集。 |
+| [Can Agents Generalize to the Open World? Unveiling the Fragility of Static Training in Tool Use](https://arxiv.org/abs/2607.01084) | arXiv | paper | 19 | OpenAgent 论文把 tool-use agent 的真实部署问题定义成 open-world shift：query、action、observation、domain 都会漂移。作者在受控 sandbox 里按 Perception / Interaction / Reasoning / Internalization 四层制造环境偏移，结果显示 SFT 与 RL agent 都会在开放环境中显著掉点，并提出 Perturbation-Augmented Fine-Tuning 作为鲁棒性补强。信号是静态 benchmark 高分并不等于 agent 已能承受真实工具、真实用户和真实环境的变化。 |
 | [Introducing Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) | anthropic.com | blog | rag-chunk, rag-hybrid, rag-contextual | Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读 |
 | [Okapi BM25 - Wikipedia](https://en.wikipedia.org/wiki/Okapi_BM25) | en.wikipedia.org | doc | rag-hybrid | BM25 打分公式与 k1/b 参数的权威说明，对应本章 BM25Index |
 | [Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods](https://dl.acm.org/doi/10.1145/1571941.1572114) | dl.acm.org | paper | rag-hybrid | RRF 原始论文 (Cormack et al., SIGIR 2009)，混合检索融合法的来源 |

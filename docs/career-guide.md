@@ -236,6 +236,10 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 37. 为什么 background agent runtime 不能吞掉 skill / resource 错误，而要把 provider 解析、available resources / scripts 和失败原因显式暴露给 harness？这对 agent 自纠错、回放和生产可调试性分别意味着什么？（→ 05 / 11 / 16 / 18 / 19）
 38. 为什么 terminal-use agent 的 benchmark 不能只测 coding 或单条 shell task？像 TUA-Bench 这类覆盖文档编辑、邮件、在线研究、内容创作与系统运维的任务集，在检验什么更接近真实工作的长期能力？（→ 10 / 15 / 18 / 19）
 39. 为什么 agent 安全红队不能只看单一 jailbreak 成功率？基础设施层、协议层、agent 层和模型层分别会暴露什么不同攻击面，为什么必须做 multi-layer red teaming？（→ 11 / 15 / 17 / 18 / 19）
+40. 为什么 graph agent 的 checkpoint / delta state 不能把“序列化细节”当成无关实现？一旦 `Overwrite` 或 superstep 补丁在 JSON roundtrip 后语义漂移，会怎样破坏回放、恢复和线上排障？（→ 11 / 16 / 18 / 19）
+41. 为什么企业里的 agent-to-agent 通信不能靠点对点 URL + 各自凭证凑合？A2A protocol 只解决了哪一层，为什么 discoverability、scope 授权、统一路由、rate limit 和单域流式代理还需要单独的 gateway 层？（→ 05 / 11 / 17 / 18 / 19）
+42. 为什么长期记忆 / agentic RAG 不能只靠 namespace + 语义相似度？metadata pre-filter、`STRICTLY_CONSISTENT` 键和值域约束分别在兜什么检索边界，为什么它们要发生在向量搜索之前？（→ 07 / 08 / 09 / 11 / 19）
+43. 为什么 tool-use agent 在静态 benchmark 上高分，到了真实环境仍会明显掉点？query、action、observation、domain 四类 open-world shift 分别在暴露什么泛化缺口，为什么仅靠静态训练不够？（→ 05 / 10 / 15 / 18 / 19）
 
 ### C. 项目深挖类（考你是不是真做过）
 

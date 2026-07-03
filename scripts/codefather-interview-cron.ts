@@ -76,6 +76,8 @@ async function runScheduled(reason: string): Promise<void> {
       pageSize: positiveIntEnv("CODEFATHER_INTERVIEW_PAGE_SIZE", DEFAULT_PAGE_SIZE),
       tag: process.env.CODEFATHER_INTERVIEW_TAG || DEFAULT_TAG,
       dryRun: booleanEnv("CODEFATHER_INTERVIEW_DRY_RUN", false),
+      batchSize: positiveIntEnv("CODEFATHER_INTERVIEW_UPSERT_BATCH_SIZE", 100),
+      timeoutMs: positiveIntEnv("CODEFATHER_INTERVIEW_UPSERT_TIMEOUT_MS", 120000),
     });
     log(formatCodefatherSyncReport(report));
   } catch (error: unknown) {
@@ -97,7 +99,8 @@ function main(): void {
 
   log(
     `[codefather-interview-cron] daemon up cron="${schedule}" tz=${timezone} ` +
-      `limit=${positiveIntEnv("CODEFATHER_INTERVIEW_LIMIT", DEFAULT_LIMIT)} dryRun=${booleanEnv("CODEFATHER_INTERVIEW_DRY_RUN", false)}`,
+      `limit=${positiveIntEnv("CODEFATHER_INTERVIEW_LIMIT", DEFAULT_LIMIT)} dryRun=${booleanEnv("CODEFATHER_INTERVIEW_DRY_RUN", false)} ` +
+      `upsertBatch=${positiveIntEnv("CODEFATHER_INTERVIEW_UPSERT_BATCH_SIZE", 100)} upsertTimeoutMs=${positiveIntEnv("CODEFATHER_INTERVIEW_UPSERT_TIMEOUT_MS", 120000)}`,
   );
 
   const task = cron.schedule(
@@ -122,3 +125,4 @@ function main(): void {
 }
 
 main();
+

@@ -39,7 +39,7 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   project: "项目深挖类",
 };
 
-const COLLECTED_DATE = "2026-07-02";
+const COLLECTED_DATE = "2026-07-03";
 const COLLECTED_AT = `${COLLECTED_DATE}T09:00:00+08:00`;
 
 interface RawInterviewQuestion {
@@ -620,6 +620,58 @@ const RAW_QUESTIONS: RawInterviewQuestion[] = [
     confidence: "medium",
     rationale: "本题来自 AI-Infra-Guard 论文：把 agent 红队拆成 infra / protocol / agent / model 四层，适合补齐生产 agent 为什么不能只做 prompt jailbreak 测试的安全追问。",
   },
+  {
+    slug: "checkpoint-delta-state-roundtrip-vs-production-replay",
+    category: "engineering",
+    question:
+      "为什么 graph agent 的 checkpoint / delta state 不能把『序列化细节』当成无关实现？一旦 `Overwrite` 或 superstep 补丁在 JSON roundtrip 后语义漂移，会怎样破坏回放、恢复和线上排障？",
+    relatedChapters: ["11", "16", "18", "19"],
+    sourceTitles: ["LangGraph 1.2.7 release notes"],
+    sourceUrls: ["https://github.com/langchain-ai/langgraph/releases/tag/1.2.7"],
+    confidence: "high",
+    rationale: "本题来自 LangGraph 1.2.7：release 直接修了 DeltaChannel overwrite、Overwrite JSON roundtrip 和 exit-mode task_id 边界，适合追问 state graph 为何会在持久化层翻车。",
+  },
+  {
+    slug: "a2a-gateway-vs-point-to-point-agent-mesh",
+    category: "engineering",
+    question:
+      "为什么企业里的 agent-to-agent 通信不能靠点对点 URL + 各自凭证凑合？A2A protocol 只解决了哪一层，为什么 discoverability、scope 授权、统一路由、rate limit 和单域流式代理还需要单独的 gateway 层？",
+    relatedChapters: ["05", "11", "17", "18", "19"],
+    sourceTitles: [
+      "Building a serverless A2A gateway for agent discovery, routing, and access control",
+    ],
+    sourceUrls: [
+      "https://aws.amazon.com/blogs/machine-learning/building-a-serverless-a2a-gateway-for-agent-discovery-routing-and-access-control/",
+    ],
+    confidence: "high",
+    rationale: "本题来自 AWS A2A gateway 实践：文章明确把 management / control / execution 三层拆开，适合补齐协议标准化与企业治理层的边界追问。",
+  },
+  {
+    slug: "metadata-prefiltering-vs-pure-semantic-memory-retrieval",
+    category: "engineering",
+    question:
+      "为什么长期记忆 / agentic RAG 不能只靠 namespace + 语义相似度？metadata pre-filter、STRICTLY_CONSISTENT 键和值域约束分别在兜什么检索边界，为什么它们要发生在向量搜索之前？",
+    relatedChapters: ["07", "08", "09", "11", "19"],
+    sourceTitles: ["Structured memory filtering with metadata in AgentCore Memory"],
+    sourceUrls: [
+      "https://aws.amazon.com/blogs/machine-learning/structured-memory-filtering-with-metadata-in-agentcore-memory/",
+    ],
+    confidence: "high",
+    rationale: "本题来自 AgentCore Memory 元数据过滤实践：重点不是记忆更多，而是先按业务/权限/时间边界裁候选集，再做相似度召回。",
+  },
+  {
+    slug: "open-world-tool-use-fragility-vs-static-benchmark-score",
+    category: "engineering",
+    question:
+      "为什么 tool-use agent 在静态 benchmark 上高分，到了真实环境仍会明显掉点？query、action、observation、domain 四类 open-world shift 分别在暴露什么泛化缺口，为什么仅靠静态训练不够？",
+    relatedChapters: ["05", "10", "15", "18", "19"],
+    sourceTitles: [
+      "Can Agents Generalize to the Open World? Unveiling the Fragility of Static Training in Tool Use",
+    ],
+    sourceUrls: ["https://arxiv.org/abs/2607.01084"],
+    confidence: "medium",
+    rationale: "本题来自 OpenAgent 论文：把 open-world tool-use shift 拆成四层后，能直接追问为什么离线高分和线上可靠性不是一回事。",
+  },
   // C. 项目深挖类
   {
     slug: "project-why-multi-agent",
@@ -731,7 +783,11 @@ const LOCAL_ANSWER_SUMMARIES: Partial<Record<string, string>> = {
   "repository-level-friction-vs-single-agent-win-rate": "Coding agent 评测不能只看 isolated task success 或单个 PR 过不过测，因为真实仓库风险来自多个变更在共享依赖、测试环境、规范和发布节奏上的相互摩擦。Repository-level integration friction 衡量的是这些系统性阻力：单个 agent 各自都像赢了，但仓库整体可能更难合并、更难回滚、更容易积累隐性破坏。",
   "debuggable-harness-boundary-in-background-agent-runtime": "Background agent runtime 若吞掉 skill 或 resource 错误，模型和运维都只会看到『没成功』，却不知道失败发生在哪一层。把 provider 解析、available resources/scripts 和真实错误原因显式暴露出来，才能让模型自纠错、让 harness 做回放诊断，也才能在生产里区分是权限缺失、资源缺失还是 runtime 自己的调度问题。",
   "terminal-use-agent-benchmark-needs-real-work-breadth": "Terminal-use agent 若只在 coding benchmark 上高分，不代表它能处理真实工作的跨工具、跨格式和长流程任务。TUA-Bench 这类任务集覆盖写作、邮件、研究、运维和文档编辑，检验的是 agent 能否在统一终端环境里持续规划、切换工具、保持状态并交付可用产物，而不是只会修一段代码。",
-  "multi-layer-agent-red-teaming-vs-single-jailbreak-metric": "只看 jailbreak 成功率会把 agent 风险错误压缩成单一提示攻击问题，但真实系统里还有基础设施、协议和工具编排层面的巨大攻击面。多层红队的价值是把风险拆开看：基础设施层管环境与凭证，协议层管调用与身份，agent 层管计划和工具使用，模型层才是提示与生成本身；四层混在一起就很难定位真实防线缺口。"
+  "multi-layer-agent-red-teaming-vs-single-jailbreak-metric": "只看 jailbreak 成功率会把 agent 风险错误压缩成单一提示攻击问题，但真实系统里还有基础设施、协议和工具编排层面的巨大攻击面。多层红队的价值是把风险拆开看：基础设施层管环境与凭证，协议层管调用与身份，agent 层管计划和工具使用，模型层才是提示与生成本身；四层混在一起就很难定位真实防线缺口。",
+  "checkpoint-delta-state-roundtrip-vs-production-replay": "Checkpoint / delta state 若在 JSON roundtrip 里丢了 `Overwrite` 或 superstep 语义，线上最糟糕的后果不是『某个字段不漂亮』，而是恢复后的状态和真实执行历史分叉。回放无法复现、诊断看见的是假历史、重试可能覆盖错任务，这就是为什么状态补丁协议本身必须被当成生产边界来审查。",
+  "a2a-gateway-vs-point-to-point-agent-mesh": "A2A protocol 只规范了 agent 彼此如何通信，不负责企业里『谁能发现谁、谁能访问谁、流量怎么走、速率怎么控、流式连接怎么统一代理』这些治理问题。Point-to-point 连接一多，凭证、路由和发现逻辑会在各后端分叉；gateway 的价值就是把 discoverability、authz 和 routing 抽到单一控制面。",
+  "metadata-prefiltering-vs-pure-semantic-memory-retrieval": "长期记忆不能只靠 namespace + 向量相似度，因为语义接近不等于业务边界正确。Metadata pre-filter 先按时间、权限、部门、优先级等维度缩小候选集，STRICTLY_CONSISTENT 保证某些键值在抽取和合并过程中不漂移；两者合起来，才不会把不该混在一起的记忆先召回再交给模型误用。",
+  "open-world-tool-use-fragility-vs-static-benchmark-score": "静态 benchmark 往往默认工具集合、用户请求和观察反馈都稳定，所以高分只能证明 agent 学会了一个封闭环境。真实部署里 query、action、observation、domain 都会漂移；一旦 agent 只适应训练分布，就会在新工具、新异常反馈和新任务组合前迅速掉点，这就是 open-world tool-use 的核心脆弱性。"
 };
 
 function chapterAnswerLabel(chapter: string): string {

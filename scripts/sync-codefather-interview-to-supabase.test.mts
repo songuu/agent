@@ -158,6 +158,37 @@ test("upsertInterviewQuestionRows sends PostgREST merge-upsert request", async (
   assert.match(String(requests[0].init.body), /codefather-interview-1/);
 });
 
+test("upsertInterviewQuestionRows splits large payloads into batches", async () => {
+  const rows = toInterviewQuestionRows(
+    [
+      { id: "1", title: "题 1", tags: ["面试题"] },
+      { id: "2", title: "题 2", tags: ["面试题"] },
+      { id: "3", title: "题 3", tags: ["面试题"] },
+    ],
+    new Date("2026-06-30T03:00:00.000Z"),
+  );
+  const requests: Array<{ url: string; init: RequestInit }> = [];
+  const fetchImpl: typeof fetch = async (url, init) => {
+    requests.push({ url: String(url), init: init ?? {} });
+    return new Response(null, { status: 201 });
+  };
+
+  await upsertInterviewQuestionRows(rows, {
+    baseUrl: "https://supabase.test/",
+    serviceRoleKey: "service-key",
+    schema: "public",
+    batchSize: 2,
+    timeoutMs: 12345,
+    fetchImpl,
+  });
+
+  assert.equal(requests.length, 2);
+  assert.match(String(requests[0].init.body), /codefather-interview-1/);
+  assert.match(String(requests[0].init.body), /codefather-interview-2/);
+  assert.doesNotMatch(String(requests[0].init.body), /codefather-interview-3/);
+  assert.match(String(requests[1].init.body), /codefather-interview-3/);
+  assert.equal(requests[0].init.signal instanceof AbortSignal, true);
+});
 test("upsertInterviewQuestionRows retries transient fetch failures", async () => {
   const rows = toInterviewQuestionRows([{ id: "1", title: "面试题", tags: ["面试题"] }]);
   let attempts = 0;
@@ -304,3 +335,4 @@ test("findDuplicateCodefatherStoredSlugs and deleteCodefatherRowsBySlug clean re
   assert.equal(requests[0].method, "DELETE");
   assert.match(decodeURIComponent(requests[0].url), /slug=in\.\("codefather-interview-2","codefather-interview-3"\)/);
 });
+
