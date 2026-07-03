@@ -395,6 +395,13 @@ export default withMermaid(
       nav: [
         { text: "开始学习", link: "/docs/setup" },
         { text: "课程总览", link: "/docs/navigation" },
+        {
+          text: "应用入口",
+          items: [
+            { text: "SPIFFE mTLS Agent", link: "https://songuu.top/agent-demo/spiffe/", target: "_blank" },
+            { text: "应用目录", link: "/docs/agent-apps" },
+          ],
+        },
         { text: "AI 资讯", link: "/news/" },
         { text: "面试题库", link: "/interview/", activeMatch: "^/interview(?:/|$)" },
         { text: "Notion 文章", link: "/notion/" },

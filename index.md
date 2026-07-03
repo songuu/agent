@@ -66,6 +66,11 @@ features:
     details: 像 ChatGPT Projects 一样，把课程项目、源码解析、RAG 系统、企业知识库和作品集入口收束到一个工作区。
     link: /docs/projects
     linkText: 打开项目
+  - icon: 🧩
+    title: Agent 应用入口
+    details: 统一进入独立部署的 Agent 子应用；当前包含 SPIFFE mTLS Agent 架构演示，后续子应用沿同一目录扩展。
+    link: /docs/agent-apps
+    linkText: 打开应用目录
   - icon: ⏱️
     title: 已安排
     details: 集中查看 AI 资讯、Notion、面试题和日报等定时任务的入口、节奏、数据落点和验证边界。
