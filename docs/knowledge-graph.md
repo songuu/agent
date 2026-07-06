@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **65** 个单元、**329** 个概念、**457** 条关系、**175** 篇关联文章。
+共 **65** 个单元、**329** 个概念、**457** 条关系、**179** 篇关联文章。
 
 ## 章节地图
 
@@ -1465,6 +1465,10 @@ graph LR
 | [Building a serverless A2A gateway for agent discovery, routing, and access control](https://aws.amazon.com/blogs/machine-learning/building-a-serverless-a2a-gateway-for-agent-discovery-routing-and-access-control/) | AWS | blog | 19 | AWS 官方实践把 A2A 通信的痛点从『点对点连通』重构为『单域入口 + 注册表 + 语义发现 + JWT scope 授权 + OAuth 代理』。文章直接给出 management / control / execution 三层网关设计，并指出 20 个 agent 无集中层时会膨胀到 190 条点对点连接。信号是 agent 协议标准化只解决“怎么说话”，真正的企业落地还要补 discoverability、authz、rate limit 和统一流式路由。 |
 | [Structured memory filtering with metadata in AgentCore Memory](https://aws.amazon.com/blogs/machine-learning/structured-memory-filtering-with-metadata-in-agentcore-memory/) | AWS | blog | 19 | AWS 官方把 AgentCore Memory 的元数据过滤讲成三段式：配置 indexed keys、在 ingestion 期传播或严格保持 metadata、在 retrieval 前先做 metadata pre-filter 再做向量相似度。文中给出 LoCoMo 风格 151 题测试：整体 QA 准确率从 40% 提升到 64%，依赖上下文边界的问题从 16% 提升到 69%。信号是长期记忆系统的关键不只是“记住”，而是让命名空间、确定性标签和时间/权限边界在检索前就先裁掉错误候选集。 |
 | [Can Agents Generalize to the Open World? Unveiling the Fragility of Static Training in Tool Use](https://arxiv.org/abs/2607.01084) | arXiv | paper | 19 | OpenAgent 论文把 tool-use agent 的真实部署问题定义成 open-world shift：query、action、observation、domain 都会漂移。作者在受控 sandbox 里按 Perception / Interaction / Reasoning / Internalization 四层制造环境偏移，结果显示 SFT 与 RL agent 都会在开放环境中显著掉点，并提出 Perturbation-Augmented Fine-Tuning 作为鲁棒性补强。信号是静态 benchmark 高分并不等于 agent 已能承受真实工具、真实用户和真实环境的变化。 |
+| [Copilot agent session streaming is now in public preview](https://github.blog/changelog/2026-07-02-copilot-agent-session-streaming-is-now-in-public-preview/) | GitHub Changelog | blog | 19 | GitHub 官方 changelog：企业托管用户现在可以通过 streaming endpoint 或 REST API 获取跨 Copilot 客户端的 agent session 数据，包括 prompts、responses 和 tool calls，并可流向 SIEM 或 Microsoft Purview。信号是 coding agent 的企业化重点正在从『能自动做事』推进到『每个 agent session 都能被审计、回放和集中治理』。 |
+| [CrewAI 1.15.2a2 release notes](https://github.com/crewAIInc/crewAI/releases/tag/1.15.2a2) | CrewAI | doc | 19 | CrewAI 官方 prerelease：1.15.2a2 增加 Bedrock extra 的 aiobotocore、补充 flow agent options 与 streaming docs，并修复 self-listening flow methods 的拒绝逻辑。信号是多 agent runtime 的生产化边界继续集中在云模型适配、flow 可配置性、流式体验和声明式 flow 的结构校验上。 |
+| [Sakana Fugu](https://github.com/SakanaAI/fugu) | SakanaAI | doc | 19 | SakanaAI 官方仓库把 Fugu 定位成『delivered as one model』的 multi-agent system：内部动态编排 frontier models，但对外通过 Sakana API 暴露为单个 LLM，兼容 Chat Completions 与 Responses endpoints，并提供 Codex 安装入口。信号是多 agent 能力正在从应用层框架下沉为模型/API 产品形态，调用者不一定直接管理多个 agent。 |
+| [Registry-Governed Agent Lifecycle: Completing EDDOps with Evaluation-Driven Registration, Promotion, and Retirement on AWS AgentCore](https://arxiv.org/abs/2607.00345) | arXiv | paper | 19 | 论文把 Evaluation-Driven Development and Operations 映射到 AgentCore Runtime、Evaluations、Agent Registry 和 CloudWatch observability，强调 agent 上线不是一次性 benchmark 过关，而是注册、晋升、回滚/退休都受评估证据治理。信号是企业 agent 的模型选择正在变成质量、可靠性、安全、时延和成本共同约束下的生命周期治理问题。 |
 | [Introducing Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) | anthropic.com | blog | rag-chunk, rag-hybrid, rag-contextual | Anthropic 官方：上下文化分块 + 向量与 BM25 混合 + 重排的实战配方，进阶 RAG 必读 |
 | [Okapi BM25 - Wikipedia](https://en.wikipedia.org/wiki/Okapi_BM25) | en.wikipedia.org | doc | rag-hybrid | BM25 打分公式与 k1/b 参数的权威说明，对应本章 BM25Index |
 | [Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods](https://dl.acm.org/doi/10.1145/1571941.1572114) | dl.acm.org | paper | rag-hybrid | RRF 原始论文 (Cormack et al., SIGIR 2009)，混合检索融合法的来源 |

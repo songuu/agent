@@ -241,6 +241,11 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 42. 为什么长期记忆 / agentic RAG 不能只靠 namespace + 语义相似度？metadata pre-filter、`STRICTLY_CONSISTENT` 键和值域约束分别在兜什么检索边界，为什么它们要发生在向量搜索之前？（→ 07 / 08 / 09 / 11 / 19）
 43. 为什么 tool-use agent 在静态 benchmark 上高分，到了真实环境仍会明显掉点？query、action、observation、domain 四类 open-world shift 分别在暴露什么泛化缺口，为什么仅靠静态训练不够？（→ 05 / 10 / 15 / 18 / 19）
 
+44. 为什么企业级 coding agent 不能只保留普通聊天日志，而要把 prompts、responses、tool calls 作为 agent session usage records 流式送到 SIEM / audit log？这和可观测性、合规审计、事故回放分别有什么关系？（→ 11 / 16 / 17 / 18 / 19）
+45. 看到 CrewAI 这类 runtime 的 prerelease 同时改 Bedrock 适配、flow agent options、streaming docs 和 self-listening flow 校验时，应该如何判断哪些是生产升级信号，哪些只能作为观望项？（→ 11 / 12 / 14 / 18 / 19）
+46. Sakana Fugu 这类把 multi-agent system 包装成单个 LLM/API 的做法，和应用层自己用 LangGraph / CrewAI 编排多个 agent 有什么边界差异？可观测性、成本控制、debug 和 vendor lock-in 分别会怎么变？（→ 04 / 11 / 12 / 16 / 18 / 19）
+47. 为什么 agent 评估不能停在上线前一次 benchmark？EDDOps 里的 registry、promotion、retirement 和 trace-native observability 分别在治理 agent 生命周期的哪一段风险？（→ 15 / 16 / 18 / 19）
+
 ### C. 项目深挖类（考你是不是真做过）
 
 > 这一类没有标准题库，面试官会顺着你的简历项目往下钻。**提前给自己出这些题**：

@@ -39,7 +39,7 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   project: "项目深挖类",
 };
 
-const COLLECTED_DATE = "2026-07-03";
+const COLLECTED_DATE = "2026-07-06";
 const COLLECTED_AT = `${COLLECTED_DATE}T09:00:00+08:00`;
 
 interface RawInterviewQuestion {
@@ -672,6 +672,54 @@ const RAW_QUESTIONS: RawInterviewQuestion[] = [
     confidence: "medium",
     rationale: "本题来自 OpenAgent 论文：把 open-world tool-use shift 拆成四层后，能直接追问为什么离线高分和线上可靠性不是一回事。",
   },
+  {
+    slug: "copilot-agent-session-streaming-audit-vs-chat-logs",
+    category: "engineering",
+    question:
+      "为什么企业级 coding agent 不能只保留普通聊天日志，而要把 prompts、responses、tool calls 作为 agent session usage records 流式送到 SIEM / audit log？这和可观测性、合规审计、事故回放分别有什么关系？",
+    relatedChapters: ["11", "16", "17", "18", "19"],
+    sourceTitles: ["Copilot agent session streaming is now in public preview"],
+    sourceUrls: [
+      "https://github.blog/changelog/2026-07-02-copilot-agent-session-streaming-is-now-in-public-preview/",
+    ],
+    confidence: "high",
+    rationale: "本题来自 GitHub Copilot agent session streaming：官方把 prompts / responses / tool calls 做成企业 usage records，适合追问 coding agent 的审计边界。",
+  },
+  {
+    slug: "flow-agent-runtime-prerelease-signal-vs-stable-baseline",
+    category: "engineering",
+    question:
+      "看到 CrewAI 这类 runtime 的 prerelease 同时改 Bedrock 适配、flow agent options、streaming docs 和 self-listening flow 校验时，应该如何判断哪些是生产升级信号，哪些只能作为观望项？",
+    relatedChapters: ["11", "12", "14", "18", "19"],
+    sourceTitles: ["CrewAI 1.15.2a2 release notes"],
+    sourceUrls: ["https://github.com/crewAIInc/crewAI/releases/tag/1.15.2a2"],
+    confidence: "medium",
+    rationale: "本题来自 CrewAI 官方 prerelease，考点是 runtime release notes 的工程解读：云模型适配、flow 校验和 streaming 不是同一类风险。",
+  },
+  {
+    slug: "single-api-multi-agent-system-vs-app-level-orchestration",
+    category: "engineering",
+    question:
+      "Sakana Fugu 这类把 multi-agent system 包装成单个 LLM/API 的做法，和应用层自己用 LangGraph / CrewAI 编排多个 agent 有什么边界差异？可观测性、成本控制、debug 和 vendor lock-in 分别会怎么变？",
+    relatedChapters: ["04", "11", "12", "16", "18", "19"],
+    sourceTitles: ["Sakana Fugu"],
+    sourceUrls: ["https://github.com/SakanaAI/fugu"],
+    confidence: "medium",
+    rationale: "本题来自 Sakana Fugu：多 agent 能力被产品化为单模型接口后，使用门槛降低，但内部编排透明度和治理边界会变化。",
+  },
+  {
+    slug: "eddops-registry-promotion-retirement-vs-one-time-eval",
+    category: "engineering",
+    question:
+      "为什么 agent 评估不能停在上线前一次 benchmark？EDDOps 里的 registry、promotion、retirement 和 trace-native observability 分别在治理 agent 生命周期的哪一段风险？",
+    relatedChapters: ["15", "16", "18", "19"],
+    sourceTitles: [
+      "Registry-Governed Agent Lifecycle: Completing EDDOps with Evaluation-Driven Registration, Promotion, and Retirement on AWS AgentCore",
+    ],
+    sourceUrls: ["https://arxiv.org/abs/2607.00345"],
+    confidence: "medium",
+    rationale: "本题来自 EDDOps / AgentCore 论文，适合把 agent eval 从一次性分数扩展到注册、晋升、观测和退休的全生命周期治理。",
+  },
   // C. 项目深挖类
   {
     slug: "project-why-multi-agent",
@@ -787,7 +835,11 @@ const LOCAL_ANSWER_SUMMARIES: Partial<Record<string, string>> = {
   "checkpoint-delta-state-roundtrip-vs-production-replay": "Checkpoint / delta state 若在 JSON roundtrip 里丢了 `Overwrite` 或 superstep 语义，线上最糟糕的后果不是『某个字段不漂亮』，而是恢复后的状态和真实执行历史分叉。回放无法复现、诊断看见的是假历史、重试可能覆盖错任务，这就是为什么状态补丁协议本身必须被当成生产边界来审查。",
   "a2a-gateway-vs-point-to-point-agent-mesh": "A2A protocol 只规范了 agent 彼此如何通信，不负责企业里『谁能发现谁、谁能访问谁、流量怎么走、速率怎么控、流式连接怎么统一代理』这些治理问题。Point-to-point 连接一多，凭证、路由和发现逻辑会在各后端分叉；gateway 的价值就是把 discoverability、authz 和 routing 抽到单一控制面。",
   "metadata-prefiltering-vs-pure-semantic-memory-retrieval": "长期记忆不能只靠 namespace + 向量相似度，因为语义接近不等于业务边界正确。Metadata pre-filter 先按时间、权限、部门、优先级等维度缩小候选集，STRICTLY_CONSISTENT 保证某些键值在抽取和合并过程中不漂移；两者合起来，才不会把不该混在一起的记忆先召回再交给模型误用。",
-  "open-world-tool-use-fragility-vs-static-benchmark-score": "静态 benchmark 往往默认工具集合、用户请求和观察反馈都稳定，所以高分只能证明 agent 学会了一个封闭环境。真实部署里 query、action、observation、domain 都会漂移；一旦 agent 只适应训练分布，就会在新工具、新异常反馈和新任务组合前迅速掉点，这就是 open-world tool-use 的核心脆弱性。"
+  "open-world-tool-use-fragility-vs-static-benchmark-score": "静态 benchmark 往往默认工具集合、用户请求和观察反馈都稳定，所以高分只能证明 agent 学会了一个封闭环境。真实部署里 query、action、observation、domain 都会漂移；一旦 agent 只适应训练分布，就会在新工具、新异常反馈和新任务组合前迅速掉点，这就是 open-world tool-use 的核心脆弱性。",
+  "copilot-agent-session-streaming-audit-vs-chat-logs": "企业级 coding agent 的关键证据不只是最终回复，而是 prompt、response、tool call、客户端来源和执行时间线。把 session usage records 流式送到 SIEM / audit log，可以把异常工具调用、越权访问、成本峰值和事故复盘串成可检索证据链；普通聊天日志通常缺少工具调用粒度，无法支撑合规审计和精确回放。",
+  "flow-agent-runtime-prerelease-signal-vs-stable-baseline": "Release notes 里的生产信号要分层看：Bedrock extra 说明云模型适配面扩大，flow options 说明编排配置面扩大，streaming docs 说明交互体验进入主路径，self-listening flow reject 则是结构校验补洞。但 prerelease 仍不能当稳定基线，应该先用于兼容性验证和趋势跟踪，而不是直接替换生产 runtime。",
+  "single-api-multi-agent-system-vs-app-level-orchestration": "把 multi-agent system 包成单个 API 会降低接入成本：调用者像调一个模型一样获得内部协作能力。但代价是编排策略、子模型选择、失败重试和成本拆分更不透明；应用层自编排虽然更重，却能精确控制状态、审计、预算和工具权限。生产选择要看你更需要可控性还是托管抽象。",
+  "eddops-registry-promotion-retirement-vs-one-time-eval": "一次性 eval 只能回答『这一版在这批题上是否过线』，不能管理上线后的漂移、成本变化和安全回归。EDDOps 把评估证据接进 registry、promotion 和 retirement：注册时说明准入条件，晋升时比较质量/成本/时延，运行时用 trace-native observability 捕捉退化，退休则让低质量或不再合规的 agent 有退出路径。"
 };
 
 function chapterAnswerLabel(chapter: string): string {
