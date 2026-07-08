@@ -52,6 +52,7 @@ const DETAIL_COLUMNS = [
 ].join(",");
 
 const NAVIGATION_COLUMNS = ["external_id", "title", "published_at", "published_date"].join(",");
+const BASE = (import.meta.env?.BASE_URL ?? "/") as string;
 
 const initialized = new WeakSet<HTMLElement>();
 
@@ -252,8 +253,8 @@ function navigationCard(label: string, externalId: string, title: string): HTMLE
   return link;
 }
 
-function newsArticleHref(externalId: string): string {
-  return "/news/article?id=" + encodeURIComponent(externalId);
+export function newsArticleHref(externalId: string): string {
+  return `${BASE}news/article?id=${encodeURIComponent(externalId)}`;
 }
 
 

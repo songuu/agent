@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildNewsArticleParagraphs, resolveArticleNavigation, splitArticleParagraphs } from "./daily-news-article-detail";
+import { buildNewsArticleParagraphs, newsArticleHref, resolveArticleNavigation, splitArticleParagraphs } from "./daily-news-article-detail";
 
 test("splitArticleParagraphs keeps paragraph boundaries", () => {
   assert.deepEqual(splitArticleParagraphs("第一段正文。\n\n第二段正文。"), ["第一段正文。", "第二段正文。"]);
@@ -60,4 +60,9 @@ test("resolveArticleNavigation：中间项同时展示前后篇", () => {
 
 test("resolveArticleNavigation：缺少当前文章时返回 null", () => {
   assert.equal(resolveArticleNavigation([{ external_id: "a", title: "第一篇" }], "x"), null);
+});
+
+
+test("newsArticleHref uses BASE-aware detail path", () => {
+  assert.equal(newsArticleHref("abc/123"), "/news/article?id=abc%2F123");
 });
