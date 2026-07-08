@@ -12,6 +12,7 @@ import {
   upsertInterviewQuestionRows,
   type CodefatherPost,
 } from "./sync-codefather-interview-to-supabase.ts";
+import ecosystemConfig from "./codefather-interview-ecosystem.config.cjs";
 
 function jsonResponse(payload: unknown, init: ResponseInit = {}): Response {
   return new Response(JSON.stringify(payload), {
@@ -81,6 +82,13 @@ test("fetchCodefatherInterviewPosts retries transient HTTP 524", async () => {
   }
 
   assert.equal(attempts, 3);
+});
+
+test("codefather interview ecosystem config uses safer upsert defaults", () => {
+  const app = ecosystemConfig.apps[0];
+
+  assert.equal(app.env.CODEFATHER_INTERVIEW_UPSERT_BATCH_SIZE, "25");
+  assert.equal(app.env.CODEFATHER_INTERVIEW_UPSERT_TIMEOUT_MS, "300000");
 });
 
 test("toInterviewQuestionRows maps Codefather posts to interview_questions rows", () => {
@@ -188,6 +196,34 @@ test("upsertInterviewQuestionRows splits large payloads into batches", async () 
   assert.doesNotMatch(String(requests[0].init.body), /codefather-interview-3/);
   assert.match(String(requests[1].init.body), /codefather-interview-3/);
   assert.equal(requests[0].init.signal instanceof AbortSignal, true);
+});
+
+test("upsertInterviewQuestionRows uses safer default batch size", async () => {
+  const rows = toInterviewQuestionRows(
+    Array.from({ length: 26 }, (_value, index) => ({
+      id: String(index + 1),
+      title: `题 ${index + 1}`,
+      tags: ["面试题"],
+    })),
+    new Date("2026-06-30T03:00:00.000Z"),
+  );
+  const requests: Array<{ url: string; init: RequestInit }> = [];
+  const fetchImpl: typeof fetch = async (url, init) => {
+    requests.push({ url: String(url), init: init ?? {} });
+    return new Response(null, { status: 201 });
+  };
+
+  await upsertInterviewQuestionRows(rows, {
+    baseUrl: "https://supabase.test/",
+    serviceRoleKey: "service-key",
+    schema: "public",
+    fetchImpl,
+  });
+
+  assert.equal(requests.length, 2);
+  assert.match(String(requests[0].init.body), /codefather-interview-25/);
+  assert.doesNotMatch(String(requests[0].init.body), /codefather-interview-26/);
+  assert.match(String(requests[1].init.body), /codefather-interview-26/);
 });
 test("upsertInterviewQuestionRows retries transient fetch failures", async () => {
   const rows = toInterviewQuestionRows([{ id: "1", title: "面试题", tags: ["面试题"] }]);
