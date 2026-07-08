@@ -25,6 +25,16 @@ interface NewsArticleRow {
   published_date?: unknown;
 }
 
+interface NewsArticleNavigationItem {
+  readonly externalId: string;
+  readonly title: string;
+}
+
+interface NewsArticleNavigation {
+  readonly previous: NewsArticleNavigationItem | null;
+  readonly next: NewsArticleNavigationItem | null;
+}
+
 const DETAIL_COLUMNS = [
   "external_id",
   "title",
@@ -40,6 +50,8 @@ const DETAIL_COLUMNS = [
   "published_at",
   "published_date",
 ].join(",");
+
+const NAVIGATION_COLUMNS = ["external_id", "title", "published_at", "published_date"].join(",");
 
 const initialized = new WeakSet<HTMLElement>();
 
@@ -70,27 +82,32 @@ function mount(root: HTMLElement): void {
   }
 
   root.replaceChildren(status("正在加载文章正文..."));
-  loadArticle(id)
-    .then((row) => {
+  Promise.all([loadArticle(id), loadArticleNavigation(id)])
+    .then(([row, navigation]) => {
       if (!row) {
         root.replaceChildren(status("未找到该文章，可能已下线或尚未同步。"));
         return;
       }
-      render(root, row);
+      render(root, row, navigation);
     })
     .catch((error: unknown) => {
       root.replaceChildren(status(`加载失败：${error instanceof Error ? error.message : String(error)}`));
     });
 }
 
-async function loadArticle(id: string): Promise<NewsArticleRow | null> {
+function requireSupabaseConfig(): { url: string; anonKey: string; schema: string } {
   const config = __FRONTIER_SUPABASE_CONFIG__ ?? null;
   if (!config?.url || !config.anonKey) {
     throw new Error("缺少 NEXT_PUBLIC_SUPABASE_URL 或 NEXT_PUBLIC_SUPABASE_ANON_KEY");
   }
+  return { url: config.url, anonKey: config.anonKey, schema: config.schema || "public" };
+}
+
+async function loadArticle(id: string): Promise<NewsArticleRow | null> {
+  const config = requireSupabaseConfig();
 
   const rows = await fetchAllPostgrestRows<NewsArticleRow>({
-    config: { url: config.url, anonKey: config.anonKey, schema: config.schema || "public" },
+    config,
     table: "news_items",
     select: DETAIL_COLUMNS,
     filters: [`external_id=eq.${encodeURIComponent(id)}`],
@@ -100,7 +117,19 @@ async function loadArticle(id: string): Promise<NewsArticleRow | null> {
   return rows[0] ?? null;
 }
 
-function render(root: HTMLElement, row: NewsArticleRow): void {
+async function loadArticleNavigation(id: string): Promise<NewsArticleNavigation | null> {
+  const config = requireSupabaseConfig();
+  const rows = await fetchAllPostgrestRows<NewsArticleRow>({
+    config,
+    table: "news_items",
+    select: NAVIGATION_COLUMNS,
+    order: ["published_date.desc", "published_at.desc"],
+    pageSize: 1000,
+  });
+  return resolveArticleNavigation(rows, id);
+}
+
+function render(root: HTMLElement, row: NewsArticleRow, navigation: NewsArticleNavigation | null): void {
   const title = asString(row.title) || "未命名文章";
   const url = asString(row.url);
   const sourceName = asString(row.source_name) || "未知来源";
@@ -148,7 +177,8 @@ function render(root: HTMLElement, row: NewsArticleRow): void {
   }
 
   article.append(header, body, actions);
-  root.replaceChildren(article);
+  const navigationSection = buildArticleNavigation(navigation);
+  root.replaceChildren(...(navigationSection ? [article, navigationSection] : [article]));
   document.title = `${title} | AI 资讯`;
 }
 
@@ -179,6 +209,53 @@ export function splitArticleParagraphs(text: string): string[] {
   if (byBreaks.length > 0) return byBreaks;
   return [normalizeText(text)].filter(Boolean);
 }
+
+export function resolveArticleNavigation(
+  rows: readonly NewsArticleRow[],
+  currentId: string,
+): NewsArticleNavigation | null {
+  const items = rows
+    .map((row) => ({
+      externalId: asString(row.external_id),
+      title: asString(row.title),
+    }))
+    .filter((item) => item.externalId && item.title);
+
+  const index = items.findIndex((item) => item.externalId === currentId);
+  if (index < 0) return null;
+
+  const previous = items[index - 1] ?? null;
+  const next = items[index + 1] ?? null;
+  if (!previous && !next) return null;
+  return { previous, next };
+}
+
+function buildArticleNavigation(navigation: NewsArticleNavigation | null): HTMLElement | null {
+  if (!navigation?.previous && !navigation?.next) return null;
+
+  const section = el("section", "interview-detail-section interview-detail-nav");
+  section.append(el("h2", "interview-detail-section-title", "文章切换"));
+
+  const grid = el("div", "interview-detail-nav-grid");
+  if (navigation.previous) grid.append(navigationCard("上一篇", navigation.previous.externalId, navigation.previous.title));
+  if (navigation.next) grid.append(navigationCard("下一篇", navigation.next.externalId, navigation.next.title));
+  section.append(grid);
+  return section;
+}
+
+function navigationCard(label: string, externalId: string, title: string): HTMLElement {
+  const link = document.createElement("a");
+  link.className = "interview-detail-nav-card";
+  link.href = newsArticleHref(externalId);
+  link.append(el("span", "interview-detail-nav-label", label));
+  link.append(el("strong", "interview-detail-nav-title", title));
+  return link;
+}
+
+function newsArticleHref(externalId: string): string {
+  return "/news/article?id=" + encodeURIComponent(externalId);
+}
+
 
 function normalizeText(text: string): string {
   return text.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
