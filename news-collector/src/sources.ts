@@ -17,6 +17,16 @@ export const SOURCES: readonly NewsSource[] = [
     lang: "zh",
     enabled: true,
   },
+  {
+    key: "aibase-news",
+    name: "AIBase 新闻",
+    url: "https://news.aibase.com/zh/news",
+    kind: "cn-media",
+    lang: "zh",
+    format: "aibase-html",
+    layerHint: "model-platform",
+    enabled: true,
+  },
 
   {
     key: "techweb-it",
@@ -24,6 +34,15 @@ export const SOURCES: readonly NewsSource[] = [
     url: "https://www.techweb.com.cn/rss/it.xml",
     kind: "cn-media",
     lang: "zh",
+    enabled: true,
+  },
+  {
+    key: "36kr-feed",
+    name: "36Kr",
+    url: "https://36kr.com/feed",
+    kind: "cn-media",
+    lang: "zh",
+    layerHint: "product-ui",
     enabled: true,
   },
   {

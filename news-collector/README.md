@@ -54,7 +54,9 @@ news-collector/
 | key | 源 | 类型 | 状态 |
 |-----|----|----|------|
 | qbitai | 量子位 | 中文媒体 | ✅ |
+| aibase-news | AIBase 新闻 | 中文媒体 | ✅ HTML adapter |
 | techweb-it | TechWeb 业界 | 中文媒体 | ✅ 官方 RSS |
+| 36kr-feed | 36Kr | 中文媒体 | ✅ 官方 RSS |
 | ithome | IT之家 | 中文媒体 | ✅ 官方 RSS |
 | sspai | 少数派 | 中文媒体 | ✅ 官方 RSS |
 | the-decoder | The Decoder | 英文媒体 | ✅ |
@@ -62,7 +64,7 @@ news-collector/
 | arxiv-cs-lg | arXiv cs.LG | 论文 | ✅ |
 | hn-ai | Hacker News · AI | 社区 | ✅ |
 | hn-frontpage | Hacker News Front Page | 社区 | ✅ |
-| linuxdo-latest | LinuxDo 最新 | 社区 | ✅ 官方 RSS |
+| linuxdo-latest | LinuxDo 最新 | 社区 | ❌ 403 / Cloudflare challenge（保留注册，默认禁用） |
 | github-engineering | GitHub Engineering Blog | 厂商 | ✅ 官方 RSS |
 | github-changelog | GitHub Changelog | 厂商 | ✅ 官方 RSS |
 | google-ai | Google AI Blog | 厂商 | ✅ |

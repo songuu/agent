@@ -48,6 +48,7 @@ test("expanded article sources stay enabled", () => {
     "sspai",
     "deepmind",
     "techweb-it",
+    "36kr-feed",
     "arxiv-cs-lg",
     "hn-frontpage",
     "github-engineering",
