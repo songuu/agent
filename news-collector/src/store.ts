@@ -38,6 +38,8 @@ interface NewsItemRow {
   metadata: Readonly<Record<string, unknown>>;
 }
 
+const NEWS_ITEM_UPSERT_CHUNK_SIZE = 100;
+
 function toRow(item: NewsItem): NewsItemRow {
   return {
     external_id: item.externalId,
@@ -64,6 +66,46 @@ function toRow(item: NewsItem): NewsItemRow {
   };
 }
 
+function chunkRows<T>(rows: readonly T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let index = 0; index < rows.length; index += size) {
+    chunks.push(rows.slice(index, index + size));
+  }
+  return chunks;
+}
+
+function sanitizeTextForPostgrest(value: string): string {
+  let output = "";
+  for (let index = 0; index < value.length; index += 1) {
+    const code = value.charCodeAt(index);
+    if (code === 0) continue;
+
+    if (code >= 0xd800 && code <= 0xdbff) {
+      const next = value.charCodeAt(index + 1);
+      if (next >= 0xdc00 && next <= 0xdfff) {
+        output += value[index] + value[index + 1];
+        index += 1;
+      }
+      continue;
+    }
+
+    if (code >= 0xdc00 && code <= 0xdfff) continue;
+    output += value[index];
+  }
+  return output;
+}
+
+function sanitizeForPostgrest(value: unknown): unknown {
+  if (typeof value === "string") return sanitizeTextForPostgrest(value);
+  if (Array.isArray(value)) return value.map((entry) => sanitizeForPostgrest(entry));
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, sanitizeForPostgrest(entry)]),
+    );
+  }
+  return value;
+}
+
 /** 幂等 upsert；返回尝试/无效/成功条数与表内总量（content-range）。 */
 export async function upsertNewsItems(
   items: readonly NewsItem[],
@@ -85,28 +127,37 @@ export async function upsertNewsItems(
   }
 
   const base = config.url.replace(/\/+$/, "");
-  const rows = valid.map(toRow);
+  const rows = valid.map((item) => sanitizeForPostgrest(toRow(item)) as NewsItemRow);
+  let pushed = 0;
 
-  const response = await fetchImpl(
-    `${base}/rest/v1/news_items?on_conflict=external_id`,
-    {
-      method: "POST",
-      headers: {
-        apikey: config.serviceRoleKey,
-        Authorization: `Bearer ${config.serviceRoleKey}`,
-        "Content-Type": "application/json",
-        "Content-Profile": config.schema,
-        Prefer: "resolution=merge-duplicates,return=minimal",
+  const rowChunks = chunkRows(rows, NEWS_ITEM_UPSERT_CHUNK_SIZE);
+  for (let chunkIndex = 0; chunkIndex < rowChunks.length; chunkIndex += 1) {
+    const chunk = rowChunks[chunkIndex]!;
+    const response = await fetchImpl(
+      `${base}/rest/v1/news_items?on_conflict=external_id`,
+      {
+        method: "POST",
+        headers: {
+          apikey: config.serviceRoleKey,
+          Authorization: `Bearer ${config.serviceRoleKey}`,
+          "Content-Type": "application/json",
+          "Content-Profile": config.schema,
+          Prefer: "resolution=merge-duplicates,return=minimal",
+        },
+        body: JSON.stringify(chunk),
       },
-      body: JSON.stringify(rows),
-    },
-  );
-
-  if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(
-      `news_items upsert failed: HTTP ${response.status} ${detail.slice(0, 500)}`,
     );
+
+    if (!response.ok) {
+      const detail = await response.text();
+      const start = chunkIndex * NEWS_ITEM_UPSERT_CHUNK_SIZE;
+      const end = start + chunk.length - 1;
+      throw new Error(
+        `news_items upsert failed: table=news_items chunk=${chunkIndex + 1}/${rowChunks.length} rows=${start}-${end} HTTP ${response.status} ${detail.slice(0, 500)}`,
+      );
+    }
+
+    pushed += chunk.length;
   }
 
   const countResponse = await fetchImpl(
@@ -123,5 +174,5 @@ export async function upsertNewsItems(
   );
   const tableCount = countResponse.headers.get("content-range") ?? "?";
 
-  return { attempted: items.length, invalid, pushed: rows.length, tableCount };
+  return { attempted: items.length, invalid, pushed, tableCount };
 }

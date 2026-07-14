@@ -15,6 +15,7 @@ import {
   type NotionArticleView,
   type TagFilter,
 } from "./notion-articles-filter";
+import { currentRelativePath, replaceCurrentSearch, withReturnPath } from "./list-detail-return";
 
 declare const __FRONTIER_SUPABASE_CONFIG__:
   | { url: string; anonKey: string; schema: string }
@@ -119,9 +120,10 @@ function render(root: HTMLElement, articles: NotionArticleView[]): void {
     return;
   }
 
-  let selectedTag: TagFilter = "all";
-  let selectedDate: string | null = null; // null = 全部日期
-  let query = "";
+  const initialState = readNotionListQueryState();
+  let selectedTag: TagFilter = initialState.tag;
+  let selectedDate: string | null = initialState.date; // null = 全部日期
+  let query = initialState.query;
 
   const hero = el("header", "notion-hero");
   hero.append(
@@ -135,6 +137,7 @@ function render(root: HTMLElement, articles: NotionArticleView[]): void {
   search.type = "search";
   search.className = "notion-search";
   search.placeholder = "搜索标题 / 摘要 / 标签…";
+  search.value = query;
   search.addEventListener("input", () => {
     query = search.value;
     update();
@@ -146,12 +149,15 @@ function render(root: HTMLElement, articles: NotionArticleView[]): void {
   allOpt.value = "";
   allOpt.textContent = "全部日期";
   dateSelect.append(allOpt);
-  for (const date of availableDates(articles)) {
+  const dates = availableDates(articles);
+  if (selectedDate && !dates.includes(selectedDate)) selectedDate = null;
+  for (const date of dates) {
     const opt = document.createElement("option");
     opt.value = date;
     opt.textContent = date;
     dateSelect.append(opt);
   }
+  dateSelect.value = selectedDate ?? "";
   dateSelect.addEventListener("change", () => {
     selectedDate = dateSelect.value || null;
     update();
@@ -162,6 +168,7 @@ function render(root: HTMLElement, articles: NotionArticleView[]): void {
   const tabs = el("nav", "notion-tag-tabs");
   tabs.setAttribute("aria-label", "标签筛选");
   const tags: TagFilter[] = ["all", ...availableTags(articles)];
+  if (selectedTag !== "all" && !tags.includes(selectedTag)) selectedTag = "all";
   const tabButtons = new Map<TagFilter, HTMLButtonElement>();
   for (const tag of tags) {
     const button = document.createElement("button");
@@ -185,6 +192,7 @@ function render(root: HTMLElement, articles: NotionArticleView[]): void {
   }
 
   function update(): void {
+    replaceNotionListState();
     for (const [tag, button] of tabButtons) {
       button.classList.toggle("is-active", tag === selectedTag);
     }
@@ -194,19 +202,45 @@ function render(root: HTMLElement, articles: NotionArticleView[]): void {
       grid.append(status("没有匹配的文章。"));
       return;
     }
-    for (const article of items) grid.append(card(article));
+    for (const article of items) grid.append(card(article, currentRelativePath()));
   }
 
   // 默认选中最新日期可让首屏更聚焦；这里保留"全部"以展示完整列表。
   void pickDefaultDate;
   root.append(hero, controls, tabs, grid);
   update();
+
+  function replaceNotionListState(): void {
+    const params = new URLSearchParams(window.location.search);
+    params.set("tag", selectedTag);
+    params.set("date", selectedDate ?? "all");
+    const cleanQuery = query.trim();
+    if (cleanQuery) {
+      params.set("q", cleanQuery);
+    } else {
+      params.delete("q");
+    }
+    replaceCurrentSearch(params);
+  }
 }
 
-function card(article: NotionArticleView): HTMLElement {
+function readNotionListQueryState(search = typeof window === "undefined" ? "" : window.location.search): {
+  tag: TagFilter;
+  date: string | null;
+  query: string;
+} {
+  const params = new URLSearchParams(search);
+  const tag = params.get("tag")?.trim() || "all";
+  const rawDate = params.get("date")?.trim() || "";
+  const date = rawDate === "all" || rawDate === "" ? null : rawDate;
+  const query = params.get("q")?.trim() || "";
+  return { tag, date, query };
+}
+
+function card(article: NotionArticleView, returnPath: string): HTMLElement {
   const link = document.createElement("a");
   link.className = "notion-card";
-  link.href = `${BASE}notion/article?slug=${encodeURIComponent(article.slug)}`;
+  link.href = notionArticleHref(article.slug, returnPath);
 
   if (article.coverImageUrl) {
     const cover = document.createElement("img");
@@ -229,6 +263,10 @@ function card(article: NotionArticleView): HTMLElement {
   body.append(meta);
   link.append(body);
   return link;
+}
+
+export function notionArticleHref(slug: string, returnPath?: string): string {
+  return withReturnPath(`${BASE}notion/article?slug=${encodeURIComponent(slug)}`, returnPath);
 }
 
 function el(tag: string, className: string, text?: string): HTMLElement {

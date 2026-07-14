@@ -2,7 +2,12 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { INTERVIEW_QUESTIONS } from "../../knowledge-graph/data/interview-questions";
 import { rankSimilarInterviewQuestions } from "./interview-similarity";
-import { resolveInterviewSummary, shouldRefreshInterviewDetail } from "./interview-article-detail";
+import {
+  interviewDetailHref,
+  interviewReturnPathFromSearch,
+  resolveInterviewSummary,
+  shouldRefreshInterviewDetail,
+} from "./interview-article-detail";
 
 test("题目切换：首题仅展示下一题", () => {
   const index = INTERVIEW_QUESTIONS.findIndex((question) => question.slug === "llm-vs-agent-and-loop");
@@ -16,6 +21,18 @@ test("题目切换：slug 变化时必须刷新详情", () => {
   assert.equal(shouldRefreshInterviewDetail("llm-vs-agent-and-loop", "?id=llm-vs-agent-and-loop"), false);
   assert.equal(shouldRefreshInterviewDetail("llm-vs-agent-and-loop", "?id=token-and-statelessness-memory"), true);
   assert.equal(shouldRefreshInterviewDetail("llm-vs-agent-and-loop", ""), true);
+});
+
+test("详情跳转：保留面试题库筛选返回路径", () => {
+  assert.equal(
+    interviewDetailHref("llm-vs-agent-and-loop", "/interview/?category=principle&chapter=agent-loop"),
+    "/interview/article?id=llm-vs-agent-and-loop&from=%2Finterview%2F%3Fcategory%3Dprinciple%26chapter%3Dagent-loop",
+  );
+  assert.equal(
+    interviewReturnPathFromSearch("?id=abc&from=%2Finterview%2F%3Fcategory%3Dproject"),
+    "/interview/?category=project",
+  );
+  assert.equal(interviewReturnPathFromSearch("?id=abc&from=%2F%2Fevil.test"), "/interview/");
 });
 
 test("详情摘要：远端只有选题说明时必须回退本地真实答案", () => {

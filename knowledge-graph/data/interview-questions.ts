@@ -39,7 +39,7 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   project: "项目深挖类",
 };
 
-const COLLECTED_DATE = "2026-07-06";
+const COLLECTED_DATE = "2026-07-14";
 const COLLECTED_AT = `${COLLECTED_DATE}T09:00:00+08:00`;
 
 interface RawInterviewQuestion {
@@ -720,6 +720,284 @@ const RAW_QUESTIONS: RawInterviewQuestion[] = [
     confidence: "medium",
     rationale: "本题来自 EDDOps / AgentCore 论文，适合把 agent eval 从一次性分数扩展到注册、晋升、观测和退休的全生命周期治理。",
   },
+
+  {
+    slug: "session-credit-limit-vs-global-budget-for-automation-agents",
+    category: "engineering",
+    question:
+      "为什么自动化 coding agent 不能只靠月度/组织级预算控成本，而需要每次 session 自己带 AI credit 上限？subagents、compaction 和后台工作分别会怎样让一次运行超出预期？",
+    relatedChapters: ["11", "16", "18", "19"],
+    sourceTitles: ["Set AI credit session limits in Copilot CLI and SDK"],
+    sourceUrls: [
+      "https://github.blog/changelog/2026-07-01-set-ai-credit-session-limits-in-copilot-cli-and-sdk/",
+    ],
+    confidence: "high",
+    rationale: "本题来自 GitHub Copilot CLI / SDK session limits：考点是 agent 成本控制要进入运行时边界，而不是只做事后账单统计。",
+  },
+  {
+    slug: "browser-agent-permission-isolation-and-network-domain-controls",
+    category: "engineering",
+    question:
+      "浏览器工具进入 IDE agent 后，为什么必须同时设计 tab 隔离、cookie/storage 隔离、敏感权限显式审批和企业域名 allow/deny？这些控制分别在防什么事故？",
+    relatedChapters: ["05", "11", "17", "18", "19"],
+    sourceTitles: [
+      "Browser tools for GitHub Copilot in VS Code are generally available",
+    ],
+    sourceUrls: [
+      "https://github.blog/changelog/2026-07-01-browser-tools-for-github-copilot-in-vs-code-are-generally-available/",
+    ],
+    confidence: "high",
+    rationale: "本题来自 Copilot browser tools GA：agent 获得真实浏览器动作后，用户会话隔离、权限审批和网络域控制都变成生产必答题。",
+  },
+  {
+    slug: "file-editing-tools-session-isolation-and-approval-harness-defaults",
+    category: "engineering",
+    question:
+      "当 agent framework 新增 file editing tools、per-user session isolation 和 configurable default-approval harness 时，为什么这不是简单的功能增强，而是在重划身份、文件系统和工具审批边界？",
+    relatedChapters: ["05", "11", "17", "18", "19"],
+    sourceTitles: ["Microsoft Agent Framework .NET 1.13.0 release notes"],
+    sourceUrls: [
+      "https://github.com/microsoft/agent-framework/releases/tag/dotnet-1.13.0",
+    ],
+    confidence: "high",
+    rationale: "本题来自 Microsoft Agent Framework .NET 1.13.0：同一 release 同时触及 session isolation、file editing tools、skill approval options 与 shell/default approval 配置，适合追问 production harness 的安全默认值。",
+  },
+  {
+    slug: "verified-rule-generation-loop-vs-freeform-agent-output",
+    category: "engineering",
+    question:
+      "为什么让 agent 生成 deterministic rules 时，不能只看生成文本是否合理，而要把每条规则放进 corpus verification loop？这种 verified-rule generation 和普通自由文本生成在可靠性上有什么本质差异？",
+    relatedChapters: ["10", "15", "19", "capstone"],
+    sourceTitles: [
+      "Agentic generation of verifiable rules for deterministic, self-expanding reaction classification",
+    ],
+    sourceUrls: ["https://arxiv.org/abs/2607.01061"],
+    confidence: "medium",
+    rationale: "本题来自 2607.01061：多 agent pipeline 不是只产出解释，而是产出可在数据集上验证的符号规则，适合追问 agent 输出如何从文本建议变成可回归工件。",
+  },
+  {
+    slug: "realtime-agent-default-model-and-cross-sdk-parity",
+    category: "engineering",
+    question:
+      "RealtimeAgent 默认模型跨 Python / JS SDK 同步升级时，为什么不能只改依赖版本，而要审查模型默认值、session 存储、token/trace 口径和回滚策略？",
+    relatedChapters: ["12", "14", "16", "18", "19"],
+    sourceTitles: [
+      "OpenAI Agents SDK Python v0.18.0 release notes",
+      "OpenAI Agents SDK JS v0.13.0 release notes",
+    ],
+    sourceUrls: [
+      "https://github.com/openai/openai-agents-python/releases/tag/v0.18.0",
+      "https://github.com/openai/openai-agents-js/releases/tag/v0.13.0",
+    ],
+    confidence: "high",
+    rationale: "本题来自 OpenAI Agents Python / JS 同日 release：RealtimeAgent 默认模型升级会影响延迟、成本、能力边界、trace 对比和事故回滚，适合追问 SDK 默认值变更的生产审查。",
+  },
+  {
+    slug: "managed-agent-workflow-as-tool-vs-local-orchestration",
+    category: "engineering",
+    question:
+      "Google ADK 这类 runtime 同时加入 ManagedAgent、Workflow as Tool、session TTL、MCP traces 和 sandbox/security 修复时，为什么要重新划分托管执行、应用层编排、可观测性和安全默认值的边界？",
+    relatedChapters: ["11", "12", "16", "17", "18", "19"],
+    sourceTitles: ["Google ADK Python v2.4.0 release notes"],
+    sourceUrls: ["https://github.com/google/adk-python/releases/tag/v2.4.0"],
+    confidence: "high",
+    rationale: "本题来自 Google ADK v2.4.0：同一 release 同时扩大托管 agent 能力、工作流复用能力、会话生命周期、trace 和安全补丁，适合考 runtime 升级的边界审查。",
+  },
+  {
+    slug: "fresh-thread-update-state-snapshot-vs-stub-checkpoint",
+    category: "engineering",
+    question:
+      "为什么 graph agent 在 fresh thread 上执行 updateState 时，应该强制形成可恢复 snapshot，而不能留下语义不完整的 stub checkpoint？这会怎样影响时间旅行、回放、人工修正和线上排障？",
+    relatedChapters: ["07", "11", "15", "16", "18", "19"],
+    sourceTitles: ["LangGraph 1.2.8 release notes"],
+    sourceUrls: ["https://github.com/langchain-ai/langgraph/releases/tag/1.2.8"],
+    confidence: "high",
+    rationale: "本题来自 LangGraph 1.2.8：checkpoint/delta state bug 直接影响 fresh thread 的 updateState 语义，适合追问状态持久化是否可回放、可修正、可审计。",
+  },
+  {
+    slug: "enterprise-cli-coding-agent-adoption-retention-output-proxy",
+    category: "engineering",
+    question:
+      "企业 rollout CLI coding agents 时，为什么不能只看试用人数或 benchmark 成绩？adoption、retention、merged PR 这类 output proxy、token spend 和社交扩散分别应该怎样纳入评估？",
+    relatedChapters: ["11", "15", "16", "18", "19"],
+    sourceTitles: [
+      "Adoption and Impact of Command-Line AI Coding Agents: A Study of Microsoft's Early 2026 Rollout of Claude Code and GitHub Copilot CLI",
+    ],
+    sourceUrls: ["https://arxiv.org/abs/2607.01418"],
+    confidence: "medium",
+    rationale: "本题来自 Microsoft CLI coding agent rollout 研究：作者用 merged PR 作为 output proxy，并提醒它不等同真实价值，适合考企业 agent 评估如何避免把采用率或产出代理指标误读为业务收益。",
+  },
+
+  {
+    slug: "copilot-model-family-policy-and-job-fit",
+    category: "engineering",
+    question:
+      "Copilot 这类 agentic coding 产品把 GPT-5.6 分成 Sol / Terra / Luna 并放进多个 agent 入口时，为什么模型选择不能只看“最强模型”？任务复杂度、usage-based billing、管理员策略和回滚分别要怎样纳入？",
+    relatedChapters: ["12", "16", "18", "19"],
+    sourceTitles: [
+      "OpenAI's GPT-5.6 Sol, Terra, and Luna are now available in GitHub Copilot",
+    ],
+    sourceUrls: [
+      "https://github.blog/changelog/2026-07-09-openais-gpt-5-6-sol-terra-and-luna-are-now-available-in-github-copilot/",
+    ],
+    confidence: "high",
+    rationale: "本题来自 GitHub Copilot GPT-5.6 模型族 rollout：同一 agent 产品把不同模型绑定到不同任务、计费和企业策略，适合考模型选择的工程治理。",
+  },
+  {
+    slug: "repository-overview-onboarding-vs-source-truth",
+    category: "engineering",
+    question:
+      "Copilot 能为陌生仓库生成 overview / README 时，为什么这既是 onboarding 能力，也是事实性风险点？怎样用 README、贡献指南、源码扫描和人工复核兜住仓库理解偏差？",
+    relatedChapters: ["07", "12", "16", "19", "capstone"],
+    sourceTitles: ["Ask Copilot for a repository overview"],
+    sourceUrls: [
+      "https://github.blog/changelog/2026-07-09-ask-copilot-for-a-repository-overview/",
+    ],
+    confidence: "high",
+    rationale: "本题来自 GitHub Copilot repository overview：仓库理解能力能降低 onboarding 成本，但也会把生成式摘要的事实性风险带入代码入口。",
+  },
+  {
+    slug: "managed-otel-agent-host-vs-local-env-telemetry",
+    category: "engineering",
+    question:
+      "为什么企业不能只让开发者自己配 OTEL_* 环境变量，而要用 managed settings 统一 Copilot CLI agent host 的 OpenTelemetry 导出？prompt / response / tool content、认证 header 和子进程隔离分别在兜什么治理风险？",
+    relatedChapters: ["16", "17", "18", "19"],
+    sourceTitles: ["Enterprise-managed OpenTelemetry export for VS Code and CLI"],
+    sourceUrls: [
+      "https://github.blog/changelog/2026-07-08-enterprise-managed-opentelemetry-export-for-vs-code-and-cli/",
+    ],
+    confidence: "high",
+    rationale: "本题来自 GitHub enterprise-managed OTel：官方强调托管配置优先于本地环境变量，并避免把认证 header 暴露给子进程，适合考 agent 观测和凭证边界。",
+  },
+  {
+    slug: "stable-crewai-flow-skill-runtime-hardening",
+    category: "engineering",
+    question:
+      "CrewAI 1.15.2 把 inline skills、Flow Definition authoring、templated flow inputs、stream frame protocol 和 repository agents 做成 stable release 时，为什么要把 flow 定义、技能装载、反馈处理和供应链修复一起审查？",
+    relatedChapters: ["11", "12", "14", "17", "18", "19"],
+    sourceTitles: ["CrewAI 1.15.2 release notes"],
+    sourceUrls: ["https://github.com/crewAIInc/crewAI/releases/tag/1.15.2"],
+    confidence: "high",
+    rationale: "本题来自 CrewAI 1.15.2 stable release：同一版本同时碰到 flow、skill、repo agent、streaming 与依赖安全修复，适合追问 runtime 升级审查清单。",
+  },
+  {
+    slug: "agent-failure-taxonomy-vs-leaderboard-score",
+    category: "engineering",
+    question:
+      "为什么 agent 评估不能只看 leaderboard 或平均分？tool 参数错误、规划失败、长上下文退化、多 agent 协调、安全失败和 measurement validity 这六类失败要怎样进入回归分桶？",
+    relatedChapters: ["05", "10", "11", "15", "17", "18", "19"],
+    sourceTitles: [
+      "Beyond the Leaderboard: A Synthesis of Agentic AI Benchmarking, Failure Taxonomies, and Evaluation Gaps",
+    ],
+    sourceUrls: ["https://arxiv.org/abs/2607.05775"],
+    confidence: "medium",
+    rationale: "本题来自 2607.05775 综述：它把 agent benchmark 的问题从榜单均分拆到失败模式、轨迹和测量有效性，适合考评估体系设计。",
+  },
+  {
+    slug: "hosted-multi-agent-sdk-sandbox-ownership",
+    category: "engineering",
+    question:
+      "OpenAI Agents SDK 增加 hosted multi-agent beta 和 GPT-5.6 request controls 时，为什么要同时审查 sandbox PTY/Docker cleanup ownership、realtime callback/playback 和 content-filter refusal 可见性？",
+    relatedChapters: ["12", "14", "17", "18", "19"],
+    sourceTitles: ["OpenAI Agents SDK Python v0.18.2 release notes"],
+    sourceUrls: ["https://github.com/openai/openai-agents-python/releases/tag/v0.18.2"],
+    confidence: "high",
+    rationale: "本题来自 OpenAI Agents SDK v0.18.2：同一 release 同时触达 hosted multi-agent、sandbox 生命周期、realtime 行为和拒答可见性，适合考生产运行时升级审查。",
+  },
+  {
+    slug: "delta-channel-metadata-counters-replay",
+    category: "engineering",
+    question:
+      "LangGraph 1.2.9 修 updateState metadata / counters for delta channel，为什么这类字段会影响 replay、time travel、监控统计和事故排查，而不能当成内部实现细节？",
+    relatedChapters: ["07", "11", "15", "16", "18", "19"],
+    sourceTitles: ["LangGraph 1.2.9 release notes"],
+    sourceUrls: ["https://github.com/langchain-ai/langgraph/releases/tag/1.2.9"],
+    confidence: "high",
+    rationale: "本题来自 LangGraph 1.2.9：delta channel 元数据和计数器会进入状态恢复、时间旅行和 trace 口径，适合考 agent graph 持久化一致性。",
+  },
+  {
+    slug: "agent-ui-tool-call-approval-cwe863",
+    category: "engineering",
+    question:
+      "Pydantic AI 披露 AG-UI dangling tool-call strip 的 CWE-863 风险时，为什么 requires_approval、ApprovalRequiredToolset、工具参数鉴权和 usage_limits 要一起看？",
+    relatedChapters: ["05", "13", "16", "17", "18", "19"],
+    sourceTitles: ["Pydantic AI v2.9.0 release notes"],
+    sourceUrls: ["https://github.com/pydantic/pydantic-ai/releases/tag/v2.9.0"],
+    confidence: "high",
+    rationale: "本题来自 Pydantic AI v2.9.0：安全公告把 UI 消息清洗、工具审批和授权边界放在一起，适合考 agent tool-call 治理。",
+  },
+  {
+    slug: "multi-user-ai-budget-state-api-cost-governance",
+    category: "engineering",
+    question:
+      "为什么企业级 agent / Copilot 成本治理不能只看总预算？GitHub multi-user budget per-user states API 里的 consumed、limit、使用比例过滤和 individual override 应该怎样用于预警、降级和 enablement？",
+    relatedChapters: ["16", "18", "19"],
+    sourceTitles: ["Per-user states for multi-user budgets in the REST API"],
+    sourceUrls: ["https://github.blog/changelog/2026-07-10-per-user-states-for-multi-user-budgets-in-the-rest-api/"],
+    confidence: "high",
+    rationale: "本题来自 GitHub 2026-07-10 budget API：成本治理开始下沉到用户级状态，适合考 agent 成本观测和组织级配额控制。",
+  },
+  {
+    slug: "agentic-rag-underwriting-human-governance",
+    category: "engineering",
+    question:
+      "在 underwriting 这类 regulated workflow 中，为什么 Agentic RAG 要把 targeted retrieval、third-party checks、multi-step rule evaluation 和 human-in-the-loop governance 组合起来，而不是只做 naive RAG？",
+    relatedChapters: ["09", "10", "11", "15", "17", "18", "19"],
+    sourceTitles: ["Agentic AI and Retrieval-Augmented Models in Straight-Through Underwriting"],
+    sourceUrls: ["https://arxiv.org/abs/2607.07858"],
+    confidence: "medium",
+    rationale: "本题来自 arXiv 2607.07858：论文用 underwriting 三管线对比说明多步、缺失信息和可审计决策比单纯检索摘要更关键。",
+  },
+  {
+    slug: "health-agent-benchmark-terminal-verifier-governance",
+    category: "engineering",
+    question:
+      "HealthAgentBench 这类医疗 agent benchmark 为什么要把终端环境、任务级 verifier、数据凭证、禁用浏览器和成本/时间指标一起纳入，而不能只看最终回答对不对？",
+    relatedChapters: ["10", "11", "15", "16", "17", "18", "19"],
+    sourceTitles: [
+      "HealthAgentBench: A Unified Benchmark Suite of Realistic Agentic Healthcare Environments for Challenging Frontier AI Agents",
+      "microsoft/HealthAgentBench",
+    ],
+    sourceUrls: [
+      "https://arxiv.org/abs/2606.31179",
+      "https://github.com/microsoft/HealthAgentBench",
+    ],
+    confidence: "medium",
+    rationale: "本题来自 HealthAgentBench 论文与 Microsoft 仓库：医疗 agent 评估需要同时覆盖执行环境、领域 verifier、数据访问许可、防作弊和成本时间。",
+  },
+  {
+    slug: "benchmark-audit-vs-assuming-ground-truth-is-clean",
+    category: "engineering",
+    question:
+      "为什么评估 Agent 时不能默认 benchmark ground truth 和评分脚本都是干净的？Auto Benchmark Audit 发现的环境依赖、规格缺口和脆弱评分会怎样扭曲 SWE-bench / Terminal-Bench 这类结果？",
+    relatedChapters: ["15", "16", "18", "19"],
+    sourceTitles: ["Automated Benchmark Auditing for AI Agents and Large Language Models"],
+    sourceUrls: ["https://arxiv.org/abs/2605.26079"],
+    confidence: "medium",
+    rationale: "本题来自 Auto Benchmark Audit：论文显示 benchmark 本身的缺陷会改变模型排名与平均分，适合考评估可信度和回归治理。",
+  },
+  {
+    slug: "agents-md-skills-subagents-harness-engineering",
+    category: "engineering",
+    question:
+      "AGENTS.md、context files、skills 和 subagents 分别在 coding agent harness 里解决什么问题？为什么说 AGENTS.md 是起点，但不能替代可执行 skill、权限边界和回归验证？",
+    relatedChapters: ["05", "11", "12", "15", "16", "19"],
+    sourceTitles: ["Harness Engineering for Agentic AI Coding Tools: An Exploratory Study"],
+    sourceUrls: ["https://arxiv.org/abs/2602.14690"],
+    confidence: "medium",
+    rationale: "本题来自 2026 coding agent harness 研究：AGENTS.md 正成为跨工具起点，但 skills/subagents 的真实采用仍浅，适合考 repo guidance 与可执行 harness 边界。",
+  },
+  {
+    slug: "agentic-pr-dataset-vs-productivity-claim",
+    category: "engineering",
+    question:
+      "AIDev 这类 agent-authored PR 数据集能支持哪些结论，不能支持哪些结论？为什么 93 万个 Agentic-PR 只能作为采用与协作研究基础，而不能直接证明生产率提升？",
+    relatedChapters: ["11", "15", "16", "18", "19"],
+    sourceTitles: ["AIDev: Studying AI Coding Agents on GitHub"],
+    sourceUrls: ["https://arxiv.org/abs/2602.09185"],
+    confidence: "medium",
+    rationale: "本题来自 AIDev 数据集论文：大规模 Agentic-PR 数据适合研究采用和协作模式，但 PR 数量不是业务价值或代码质量的直接证明。",
+  },
   // C. 项目深挖类
   {
     slug: "project-why-multi-agent",
@@ -794,6 +1072,19 @@ const LOCAL_ANSWER_SUMMARIES: Partial<Record<string, string>> = {
   "tool-error-feedback-not-throw": "工具报错直接抛异常只会中断当前链路，模型拿不到失败原因，也就没法自我修正。把错误变成可读字符串回传给模型，模型才能补参数、换工具或降级回答，这比宿主一崩到底更接近真实 agent 的闭环。",
   "when-multi-agent-and-cost": "多 agent 适合任务天然可拆成不同角色、不同上下文窗口和不同工具权限的场景，比如研究、写作、审核分工。代价是调用次数更多、调试更难、状态传递更复杂，所以只有当分工真的能减少单 agent 的上下文污染或决策负担时才值得上。",
   "when-not-to-use-agent": "流程固定、规则明确、没有开放式决策空间的任务通常不该上 Agent，普通 workflow、脚本或表单校验更便宜、更稳定。只要答案可以被确定性逻辑直接推出，Agent 往往是在增加成本和不确定性。",
+  "realtime-agent-default-model-and-cross-sdk-parity": "RealtimeAgent 默认模型跨 SDK 升级不是普通依赖升级，因为默认模型会改变延迟、成本、输出特征、工具调用节奏和 trace 可比性。生产上要记录旧/新默认值、回归实时交互场景、确认 session 存储兼容，并准备按 SDK 或环境变量回滚，而不是让业务在无感知下漂移。",
+  "managed-agent-workflow-as-tool-vs-local-orchestration": "ManagedAgent 和 Workflow as Tool 会把一部分编排与执行权从应用代码迁到 runtime/托管层。边界要重划：应用层负责业务状态、权限和验收，托管层负责执行、会话生命周期、工具协议和 trace；session TTL、MCP traces、mTLS、DNS rebinding 和 path traversal 修复说明这类 runtime 本身已经是安全与可观测控制面。",
+  "fresh-thread-update-state-snapshot-vs-stub-checkpoint": "Fresh thread 上的 updateState 如果只留下 stub checkpoint，后续恢复时系统会误以为有完整历史，实际却缺少可重放状态。强制 snapshot 的意义是让人工修正、time travel、失败重试和事故排查都基于完整状态快照；否则回放看到的是假历史，排障和幂等补偿都会失真。",
+  "enterprise-cli-coding-agent-adoption-retention-output-proxy": "企业 rollout CLI coding agents 要同时看谁开始用、谁持续用、用在什么工作、成本是多少，以及产出代理指标有没有带来真实价值。Merged PR 可以作为一个 output proxy，但它不等于代码质量、业务收益或长期维护性；token spend 又可能放大试错成本，所以评估必须把 adoption、retention、产出、质量和成本放在同一张表里看。",
+  "hosted-multi-agent-sdk-sandbox-ownership": "Hosted multi-agent 和 request controls 扩大了 runtime 执行面，sandbox PTY/Docker ownership 决定后台任务和清理是否归属正确，realtime callback/playback 决定交互时序是否可控，content-filter refusal 可见性决定安全拒答是否会被吞成空 turn。升级时要按执行身份、资源清理、时序稳定和安全信号可观测性分别回归。",
+  "delta-channel-metadata-counters-replay": "Delta channel 的 metadata 和 counters 会进入状态快照、回放、time travel 和监控统计。它们错了，表面可能只是计数不准，实际会让调试看到的历史和真实执行分叉；生产 graph agent 要把这类字段当作 replay contract，而不是内部小字段。",
+  "agent-ui-tool-call-approval-cwe863": "AG-UI 消息清洗一旦错误处理 dangling tool-call，就可能让 UI 层看到的工具调用、审批状态和真实执行意图不一致。requires_approval / ApprovalRequiredToolset 把敏感工具默认拦住，工具 handler 自己做参数鉴权兜住越权，usage_limits 则限制错误链路持续消耗。",
+  "multi-user-ai-budget-state-api-cost-governance": "总预算只能告诉你组织还剩多少钱，不能告诉你哪个用户或成本中心正在接近失控。per-user states API 能按 consumed、limit、比例和 override 找到高风险账户，再触发提醒、模型降级、session limit 或定向培训；这比月底账单复盘更接近实时治理。",
+  "agentic-rag-underwriting-human-governance": "Regulated workflow 里 naive RAG 只能提供相似证据，不能保证决策步骤完整、外部数据已核验或规则被逐条应用。Agentic RAG 把检索、第三方检查、规则评估和人工治理拆成可审计步骤，可以在缺失信息时拒绝 straight-through decision，而不是生成看似合理但证据不足的结论。",
+  "health-agent-benchmark-terminal-verifier-governance": "医疗 agent benchmark 不能只看最终自然语言答案，因为真实任务要进终端、读受控数据、运行工具、产出可验证结果，并遵守数据许可和防作弊边界。任务级 verifier 负责把输出落到领域成功标准，成本/时间指标则暴露长流程 agent 的真实运行代价。",
+  "benchmark-audit-vs-assuming-ground-truth-is-clean": "Benchmark 不是天然真理，任务描述、环境依赖、gold answer 和评分脚本都可能有错。Auto Benchmark Audit 这类方法的价值是先审计题目本身，把 ambiguous spec、隐藏依赖和脆弱 grader 分出来；否则模型排名变化可能只是 benchmark 脏数据造成的假信号。",
+  "agents-md-skills-subagents-harness-engineering": "AGENTS.md 适合给跨工具 agent 提供入口规则、命令和边界，context files 补仓库知识，skills 把重复流程封装成可执行能力，subagents 用来隔离角色和上下文。AGENTS.md 只是最低摩擦起点，生产可靠性还要靠权限控制、可执行脚本、测试回归和 trace 验证兜住。",
+  "agentic-pr-dataset-vs-productivity-claim": "Agent-authored PR 数据集能告诉我们哪些工具被使用、PR 分布、评论/评审/提交轨迹和协作模式，但不能直接证明生产率或业务价值提升。PR 数量可能受任务难度、团队流程、审查门槛和生成代码质量影响；真正结论要叠加质量、维护成本、缺陷率和人工时间。",
   "project-why-multi-agent": "Deep Research Agent 用多智能体，是因为『检索/证据收集』和『综合写作』对上下文、工具和评价标准不同，拆开后每个角色更专注。单 agent 也能做，但容易把搜索噪声、写作风格和规划状态搅在一起；代价则是链路更长、调试更复杂，所以只在长任务上启用。",
   "project-rag-chunk-overlap-topk": "分块大小通常围绕『一个片段能独立表达一个小主题』来定，overlap 用来保证跨段概念不断裂；块太大噪声多，块太小上下文不完整。top-k 一般从 3 到 5 起步，命不中再扩召回，但不会无限加，因为加太多会把模型注意力稀释掉。",
   "project-eval-set-and-judge": "所谓 90% 不是拍脑袋，要先准备一组覆盖真实问题分布的 eval 集，再定义『事实正确、引用充分、结构完整』这类评分维度。LLM-as-judge 可以做初筛，但我会保留人工抽样复核，并记录模型间分歧，避免把模型偏见当成客观真相。",
@@ -839,7 +1130,16 @@ const LOCAL_ANSWER_SUMMARIES: Partial<Record<string, string>> = {
   "copilot-agent-session-streaming-audit-vs-chat-logs": "企业级 coding agent 的关键证据不只是最终回复，而是 prompt、response、tool call、客户端来源和执行时间线。把 session usage records 流式送到 SIEM / audit log，可以把异常工具调用、越权访问、成本峰值和事故复盘串成可检索证据链；普通聊天日志通常缺少工具调用粒度，无法支撑合规审计和精确回放。",
   "flow-agent-runtime-prerelease-signal-vs-stable-baseline": "Release notes 里的生产信号要分层看：Bedrock extra 说明云模型适配面扩大，flow options 说明编排配置面扩大，streaming docs 说明交互体验进入主路径，self-listening flow reject 则是结构校验补洞。但 prerelease 仍不能当稳定基线，应该先用于兼容性验证和趋势跟踪，而不是直接替换生产 runtime。",
   "single-api-multi-agent-system-vs-app-level-orchestration": "把 multi-agent system 包成单个 API 会降低接入成本：调用者像调一个模型一样获得内部协作能力。但代价是编排策略、子模型选择、失败重试和成本拆分更不透明；应用层自编排虽然更重，却能精确控制状态、审计、预算和工具权限。生产选择要看你更需要可控性还是托管抽象。",
-  "eddops-registry-promotion-retirement-vs-one-time-eval": "一次性 eval 只能回答『这一版在这批题上是否过线』，不能管理上线后的漂移、成本变化和安全回归。EDDOps 把评估证据接进 registry、promotion 和 retirement：注册时说明准入条件，晋升时比较质量/成本/时延，运行时用 trace-native observability 捕捉退化，退休则让低质量或不再合规的 agent 有退出路径。"
+  "eddops-registry-promotion-retirement-vs-one-time-eval": "一次性 eval 只能回答『这一版在这批题上是否过线』，不能管理上线后的漂移、成本变化和安全回归。EDDOps 把评估证据接进 registry、promotion 和 retirement：注册时说明准入条件，晋升时比较质量/成本/时延，运行时用 trace-native observability 捕捉退化，退休则让低质量或不再合规的 agent 有退出路径。",
+  "session-credit-limit-vs-global-budget-for-automation-agents": "组织级预算只能限制整体花费，不能阻止一次无人值守的自动化 session 在错误路径上持续消耗。Session-level AI credit limit 把成本边界放进执行现场：subagents 会放大并发调用，compaction 会产生后台成本，长链路工具循环会持续拉高 token；软上限至少能让 agent 及时收尾并报告，而不是等账单或人工巡检才发现异常。",
+  "browser-agent-permission-isolation-and-network-domain-controls": "Browser-use agent 一旦能点击、输入、读页面和截图，就等于获得了真实浏览器侧的行动能力。Tab 隔离防止 agent 读取用户私人会话，cookie/storage 隔离防止跨任务串号，敏感权限审批防止摄像头、麦克风、定位、剪贴板被自动授权，企业域名 allow/deny 则把 agent 可访问的网络边界从提示词约束变成确定性控制。",
+  "file-editing-tools-session-isolation-and-approval-harness-defaults": "File editing tools 让 agent 从读环境进入改环境，per-user session isolation 决定不同用户/会话的状态和凭证是否串扰，approval harness 默认值决定新工具上线时是默认放行还是默认审查。三者合在一起说明 production harness 的核心不是提供更多能力，而是把身份、文件系统、副作用和审批记录绑定成可审计的运行边界。",
+  "verified-rule-generation-loop-vs-freeform-agent-output": "自由文本生成只是在语言上看起来合理，不能保证规则可执行、可复现或覆盖新样本。Verified-rule generation 把 agent 产物放进确定性验证环：每条规则都要能在 corpus 上跑、失败就修正，最终形成可回归的符号资产。可靠性的差异在于，输出不再靠主观读感验收，而是靠可重复测试和数据集覆盖验收。",
+  "copilot-model-family-policy-and-job-fit": "模型选择不是越强越好，而是要把任务复杂度、延迟、成本、上下文需求和组织策略一起放进决策。Sol 适合长跑复杂任务，Terra 适合日常默认路径，Luna 适合低成本快速任务；企业还要记录 billing、管理员开关、入口覆盖和回滚路径，否则一次模型默认值变更会同时影响成本、质量和合规边界。",
+  "repository-overview-onboarding-vs-source-truth": "仓库 overview 能降低新成员理解成本，但它仍是生成式摘要，不是事实源。工程上应把 README、贡献指南、package/scripts、目录结构和关键源码当成可验证证据链，让 overview 只做导航入口；缺少 README 时可以辅助起草，但必须人工复核技术栈、运行命令和架构边界。",
+  "managed-otel-agent-host-vs-local-env-telemetry": "Agent 观测不能只靠开发者本地环境变量，因为本地配置不可审计、不可统一回收，也容易把 token/header 泄露给子进程。Managed OTel 把 endpoint、resource attributes、内容采集范围和认证 header 放进企业控制面；prompt、response、tool content 是否导出必须由策略决定，不能由每个终端临时决定。",
+  "stable-crewai-flow-skill-runtime-hardening": "Flow 和 skill 进入 stable 后，风险不只是 API 可用，而是声明式定义、技能装载、repo agent、streaming frame 和反馈处理会一起改变执行边界。升级时要核对 flow input 模板、生成式定义权限、依赖安全修复、模型 catalog cache 和异常反馈路径，避免把 prerelease 中的实验能力无审查地带进生产。",
+  "agent-failure-taxonomy-vs-leaderboard-score": "Leaderboard 均分会掩盖失败类型：一个 agent 可能平均分高，却在工具参数、长上下文、规划、多 agent 协调或安全边界上系统性失败。回归评估要按失败模式分桶，记录轨迹和中间步骤，并单独审查 measurement validity；否则模型看似进步，生产中的端到端可靠性仍可能下降。"
 };
 
 function chapterAnswerLabel(chapter: string): string {

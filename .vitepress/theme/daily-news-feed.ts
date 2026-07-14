@@ -17,6 +17,7 @@ import {
   type YearMonth,
 } from "./frontier-date-filter";
 import { fetchAllPostgrestRows, fetchPostgrestPage } from "./postgrest-pagination";
+import { currentRelativePath, positiveIntegerParam, replaceCurrentSearch, withReturnPath } from "./list-detail-return";
 
 const WEEKDAY_LABELS = ["一", "二", "三", "四", "五", "六", "日"] as const;
 const DEFAULT_DATE_LABEL = "6月17日 · 周三";
@@ -88,6 +89,14 @@ interface NewsFilterIndexItem {
 }
 
 type LayerFilter = FrontierEcosystemLayer | "all";
+
+interface NewsListQueryState {
+  readonly layer: LayerFilter;
+  readonly date: string | null;
+  readonly hasDate: boolean;
+  readonly page: number;
+  readonly pageSize: number;
+}
 
 const NEWS_COLUMNS = [
   "external_id",
@@ -193,14 +202,16 @@ async function fetchNewsFilterIndex(): Promise<NewsFilterIndexItem[]> {
 async function renderFeed(root: HTMLElement): Promise<void> {
   root.replaceChildren();
 
-  let selectedLayer: LayerFilter = "all";
-  let selectedDate: string | null = null;
+  const initialState = readNewsListQueryState();
+  let selectedLayer: LayerFilter = initialState.layer;
+  let selectedDate: string | null = initialState.date;
+  let selectedDateWasExplicit = initialState.hasDate;
   let calendarMonth: YearMonth = { year: 2026, month: 6 };
   let filterIndex: NewsFilterIndexItem[] = [];
   let items: NewsItemView[] = [];
   let totalCount: number | null = null;
-  let currentPage = 1;
-  let pageSize = DEFAULT_NEWS_PAGE_SIZE;
+  let currentPage = initialState.page;
+  let pageSize = initialState.pageSize;
   let loadingPage = false;
   let pageError: string | null = null;
   let loadGeneration = 0;
@@ -291,7 +302,7 @@ async function renderFeed(root: HTMLElement): Promise<void> {
   }
 
   function syncFilterState(): void {
-    if (selectedDate === null) {
+    if (selectedDate === null && !selectedDateWasExplicit) {
       selectedDate = pickDefaultDate(filterIndex);
     }
     alignDateToLayer();
@@ -346,6 +357,7 @@ async function renderFeed(root: HTMLElement): Promise<void> {
       button.textContent = `${entry.label} ${layerCount(entry.id)}`;
       button.addEventListener("click", () => {
         selectedLayer = entry.id;
+        selectedDateWasExplicit = true;
         alignDateToLayer();
         currentPage = 1;
         void loadPage(1);
@@ -407,6 +419,7 @@ async function renderFeed(root: HTMLElement): Promise<void> {
           button.setAttribute("aria-label", `查看 ${cell.date} 的 ${count} 篇文章`);
           button.addEventListener("click", () => {
             selectedDate = cell.date;
+            selectedDateWasExplicit = true;
             const nextMonth = yearMonthOf(cell.date);
             if (nextMonth) calendarMonth = nextMonth;
             currentPage = 1;
@@ -427,6 +440,7 @@ async function renderFeed(root: HTMLElement): Promise<void> {
     if (selectedDate === null) all.dataset.active = "true";
     all.addEventListener("click", () => {
       selectedDate = null;
+      selectedDateWasExplicit = true;
       currentPage = 1;
       void loadPage(1);
     });
@@ -479,11 +493,20 @@ async function renderFeed(root: HTMLElement): Promise<void> {
   }
 
   function openArticleDetail(item: NewsItemView): void {
-    window.location.href = newsArticleHref(item.externalId);
+    window.location.href = newsArticleHref(item.externalId, currentRelativePath());
   }
 
   function activeQueryFilters(): string[] {
     return buildNewsFilters(selectedLayer, selectedDate);
+  }
+
+  function replaceNewsListState(): void {
+    const params = new URLSearchParams(window.location.search);
+    params.set("layer", selectedLayer);
+    params.set("date", selectedDate ?? "all");
+    params.set("page", String(currentPage));
+    params.set("pageSize", String(pageSize));
+    replaceCurrentSearch(params);
   }
 
   function renderPagination(): void {
@@ -567,6 +590,7 @@ async function renderFeed(root: HTMLElement): Promise<void> {
         currentPage = totalPages;
       }
       renderAll();
+      replaceNewsListState();
     } catch (error: unknown) {
       if (generation !== loadGeneration) return;
       pageError = error instanceof Error ? error.message : String(error);
@@ -588,9 +612,13 @@ async function renderFeed(root: HTMLElement): Promise<void> {
   root.append(overview, layout);
 
   filterIndex = await fetchNewsFilterIndex();
-  selectedDate = pickDefaultDate(filterIndex);
-  calendarMonth = yearMonthOf(selectedDate) ?? calendarMonth;
-  await loadPage(1);
+  if (!selectedDateWasExplicit) {
+    selectedDate = pickDefaultDate(filterIndex);
+  } else {
+    alignDateToLayer();
+  }
+  calendarMonth = yearMonthOf(selectedDate) ?? yearMonthOf(availableDates(filterIndex)[0] ?? null) ?? calendarMonth;
+  await loadPage(currentPage);
 
   if (items.length === 0) {
     timeline.replaceChildren(
@@ -601,6 +629,27 @@ async function renderFeed(root: HTMLElement): Promise<void> {
   }
 }
 
+function readNewsListQueryState(search = typeof window === "undefined" ? "" : window.location.search): NewsListQueryState {
+  const params = new URLSearchParams(search);
+  const layer = layerFilterValue(params.get("layer"));
+  const hasDate = params.has("date");
+  const rawDate = params.get("date")?.trim() || "";
+  const date = rawDate === "all" ? null : dateStringValue(rawDate, "") || null;
+  const page = positiveIntegerParam(params, "page", 1);
+  const rawPageSize = positiveIntegerParam(params, "pageSize", DEFAULT_NEWS_PAGE_SIZE);
+  const pageSize = NEWS_PAGE_SIZE_OPTIONS.includes(rawPageSize as (typeof NEWS_PAGE_SIZE_OPTIONS)[number])
+    ? rawPageSize
+    : DEFAULT_NEWS_PAGE_SIZE;
+  return { layer, date, hasDate, page, pageSize };
+}
+
+function layerFilterValue(value: string | null): LayerFilter {
+  if (value === "all") return "all";
+  if (typeof value === "string" && FRONTIER_ECOSYSTEM_LAYERS.some((layer) => layer.id === value)) {
+    return value as FrontierEcosystemLayer;
+  }
+  return "all";
+}
 function pageButton(label: string, disabled: boolean, onClick: () => void): HTMLButtonElement {
   const button = document.createElement("button");
   button.type = "button";
@@ -818,8 +867,8 @@ function newsCard(
   return card;
 }
 
-function newsArticleHref(externalId: string): string {
-  return `${BASE}news/article?id=${encodeURIComponent(externalId)}`;
+function newsArticleHref(externalId: string, returnPath?: string): string {
+  return withReturnPath(`${BASE}news/article?id=${encodeURIComponent(externalId)}`, returnPath);
 }
 
 function groupByDate(items: NewsItemView[]): Array<{ date: string; label: string; items: NewsItemView[] }> {

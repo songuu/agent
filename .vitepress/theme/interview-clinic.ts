@@ -11,6 +11,7 @@ import {
   type ChapterFilter,
 } from "./interview-clinic-filter";
 import { chapterDisplay, chapterGroup } from "./interview-clinic-chapters.ts";
+import { currentRelativePath, replaceCurrentSearch, withReturnPath } from "./list-detail-return";
 
 const initialized = new WeakSet<HTMLElement>();
 const BASE = (import.meta.env?.BASE_URL ?? "/") as string;
@@ -56,11 +57,11 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
   root.classList.add("interview-clinic");
   root.replaceChildren();
 
-  let selectedCategory: CategoryFilter = "all";
-  let selectedChapter: ChapterFilter = "all";
-
   const counts = categoryCounts(questions);
   const chapters = availableChapters(questions);
+  const initialState = readInterviewListQueryState();
+  let selectedCategory: CategoryFilter = initialState.category;
+  let selectedChapter: ChapterFilter = initialState.chapter === "all" || chapters.includes(initialState.chapter) ? initialState.chapter : "all";
 
   const tabs = document.createElement("nav");
   tabs.className = "interview-clinic-tabs";
@@ -93,6 +94,7 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
   }
   if (courseGroup.childElementCount > 0) select.append(courseGroup);
   if (specialGroup.childElementCount > 0) select.append(specialGroup);
+  select.value = selectedChapter;
   select.addEventListener("change", () => {
     selectedChapter = select.value === "all" ? "all" : select.value;
     renderList();
@@ -125,6 +127,7 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
   }
 
   function renderList(): void {
+    replaceInterviewListState();
     const filtered = filterQuestions(questions, selectedCategory, selectedChapter);
     summary.textContent =
       `共 ${filtered.length} 题${selectedChapter === "all" ? "" : ` · 章节 ${chapterDisplay(selectedChapter)}`}` +
@@ -137,28 +140,45 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
     }
 
     for (const question of filtered) {
-      list.append(buildInterviewCard(question));
+      list.append(buildInterviewCard(question, currentRelativePath()));
     }
   }
 
   renderTabs();
   renderList();
   root.append(tabs, controls, summary, list);
+
+  function replaceInterviewListState(): void {
+    const params = new URLSearchParams(window.location.search);
+    params.set("category", selectedCategory);
+    params.set("chapter", selectedChapter);
+    replaceCurrentSearch(params);
+  }
 }
 
-function buildInterviewCard(question: InterviewQuestion): HTMLElement {
+function readInterviewListQueryState(search = typeof window === "undefined" ? "" : window.location.search): {
+  category: CategoryFilter;
+  chapter: ChapterFilter;
+} {
+  const params = new URLSearchParams(search);
+  const rawCategory = params.get("category");
+  const category = CATEGORY_TABS.some((tab) => tab.id === rawCategory) ? (rawCategory as CategoryFilter) : "all";
+  const chapter = params.get("chapter")?.trim() || "all";
+  return { category, chapter };
+}
+function buildInterviewCard(question: InterviewQuestion, returnPath: string): HTMLElement {
   const article = document.createElement("article");
   article.className = "interview-clinic-card";
   article.tabIndex = 0;
   article.setAttribute("role", "link");
   article.setAttribute("aria-label", `打开面试题详情：${question.question}`);
   article.addEventListener("click", () => {
-    window.location.href = interviewArticleHref(question.slug);
+    window.location.href = interviewArticleHref(question.slug, returnPath);
   });
   article.addEventListener("keydown", (event) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      window.location.href = interviewArticleHref(question.slug);
+      window.location.href = interviewArticleHref(question.slug, returnPath);
     }
   });
 
@@ -179,7 +199,7 @@ function buildInterviewCard(question: InterviewQuestion): HTMLElement {
   actions.className = "interview-clinic-card-actions";
   const detailLink = document.createElement("a");
   detailLink.className = "interview-clinic-card-link";
-  detailLink.href = interviewArticleHref(question.slug);
+  detailLink.href = interviewArticleHref(question.slug, returnPath);
   detailLink.textContent = "查看全文";
   detailLink.addEventListener("click", (event) => event.stopPropagation());
   actions.append(detailLink);
@@ -207,8 +227,8 @@ function buildTagList(question: InterviewQuestion): string[] {
   return [...chapterTags, ...topicTags];
 }
 
-function interviewArticleHref(slug: string): string {
-  return `${BASE}interview/article?id=${encodeURIComponent(slug)}`;
+function interviewArticleHref(slug: string, returnPath?: string): string {
+  return withReturnPath(`${BASE}interview/article?id=${encodeURIComponent(slug)}`, returnPath);
 }
 
 function bestInterviewCardText(question: InterviewQuestion): string | undefined {

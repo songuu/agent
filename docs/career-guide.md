@@ -245,7 +245,29 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 45. 看到 CrewAI 这类 runtime 的 prerelease 同时改 Bedrock 适配、flow agent options、streaming docs 和 self-listening flow 校验时，应该如何判断哪些是生产升级信号，哪些只能作为观望项？（→ 11 / 12 / 14 / 18 / 19）
 46. Sakana Fugu 这类把 multi-agent system 包装成单个 LLM/API 的做法，和应用层自己用 LangGraph / CrewAI 编排多个 agent 有什么边界差异？可观测性、成本控制、debug 和 vendor lock-in 分别会怎么变？（→ 04 / 11 / 12 / 16 / 18 / 19）
 47. 为什么 agent 评估不能停在上线前一次 benchmark？EDDOps 里的 registry、promotion、retirement 和 trace-native observability 分别在治理 agent 生命周期的哪一段风险？（→ 15 / 16 / 18 / 19）
+48. 为什么自动化 coding agent 不能只靠月度/组织级预算控成本，而需要每次 session 自己带 AI credit 上限？subagents、compaction 和后台工作分别会怎样让一次运行超出预期？（→ 11 / 16 / 18 / 19）
+49. 浏览器工具进入 IDE agent 后，为什么必须同时设计 tab 隔离、cookie/storage 隔离、敏感权限显式审批和企业域名 allow/deny？这些控制分别在防什么事故？（→ 05 / 11 / 17 / 18 / 19）
+50. 当 agent framework 新增 file editing tools、per-user session isolation 和 configurable default-approval harness 时，为什么这不是简单的功能增强，而是在重划身份、文件系统和工具审批边界？（→ 05 / 11 / 17 / 18 / 19）
+51. 为什么让 agent 生成 deterministic rules 时，不能只看生成文本是否合理，而要把每条规则放进 corpus verification loop？这种 verified-rule generation 和普通自由文本生成在可靠性上有什么本质差异？（→ 10 / 15 / 19 / capstone）
+52. RealtimeAgent 默认模型跨 Python / JS SDK 同步升级时，为什么不能只改依赖版本，而要审查模型默认值、session 存储、token/trace 口径和回滚策略？（→ 12 / 14 / 16 / 18 / 19）
+53. Google ADK 这类 runtime 同时加入 ManagedAgent、Workflow as Tool、session TTL、MCP traces 和 sandbox/security 修复时，为什么要重新划分托管执行、应用层编排、可观测性和安全默认值的边界？（→ 11 / 12 / 16 / 17 / 18 / 19）
+54. 为什么 graph agent 在 fresh thread 上执行 updateState 时，应该强制形成可恢复 snapshot，而不能留下语义不完整的 stub checkpoint？这会怎样影响时间旅行、回放、人工修正和线上排障？（→ 07 / 11 / 15 / 16 / 18 / 19）
+55. 企业 rollout CLI coding agents 时，为什么不能只看试用人数或 benchmark 成绩？adoption、retention、merged PR 这类 output proxy、token spend 和社交扩散分别应该怎样纳入评估？（→ 11 / 15 / 16 / 18 / 19）
+56. Copilot 这类 agentic coding 产品把 GPT-5.6 分成 Sol / Terra / Luna 并放进多个 agent 入口时，为什么模型选择不能只看“最强模型”？任务复杂度、usage-based billing、管理员策略和回滚分别要怎样纳入？（→ 12 / 16 / 18 / 19）
+57. Copilot 能为陌生仓库生成 overview / README 时，为什么这既是 onboarding 能力，也是事实性风险点？怎样用 README、贡献指南、源码扫描和人工复核兜住仓库理解偏差？（→ 07 / 12 / 16 / 19 / capstone）
+58. 为什么企业不能只让开发者自己配 OTEL_* 环境变量，而要用 managed settings 统一 Copilot CLI agent host 的 OpenTelemetry 导出？prompt / response / tool content、认证 header 和子进程隔离分别在兜什么治理风险？（→ 16 / 17 / 18 / 19）
+59. CrewAI 1.15.2 把 inline skills、Flow Definition authoring、templated flow inputs、stream frame protocol 和 repository agents 做成 stable release 时，为什么要把 flow 定义、技能装载、反馈处理和供应链修复一起审查？（→ 11 / 12 / 14 / 17 / 18 / 19）
+60. 为什么 agent 评估不能只看 leaderboard 或平均分？tool 参数错误、规划失败、长上下文退化、多 agent 协调、安全失败和 measurement validity 这六类失败要怎样进入回归分桶？（→ 05 / 10 / 11 / 15 / 17 / 18 / 19）
 
+61. OpenAI Agents SDK 增加 hosted multi-agent beta 和 GPT-5.6 request controls 时，为什么要同时审查 sandbox PTY/Docker cleanup ownership、realtime callback/playback 和 content-filter refusal 可见性？（→ 12 / 14 / 17 / 18 / 19）
+62. LangGraph 1.2.9 修 updateState metadata / counters for delta channel，为什么这类字段会影响 replay、time travel、监控统计和事故排查，而不能当成内部实现细节？（→ 07 / 11 / 15 / 16 / 18 / 19）
+63. Pydantic AI 披露 AG-UI dangling tool-call strip 的 CWE-863 风险时，为什么 requires_approval、ApprovalRequiredToolset、工具参数鉴权和 usage_limits 要一起看？（→ 05 / 13 / 16 / 17 / 18 / 19）
+64. 为什么企业级 agent / Copilot 成本治理不能只看总预算？GitHub multi-user budget per-user states API 里的 consumed、limit、使用比例过滤和 individual override 应该怎样用于预警、降级和 enablement？（→ 16 / 18 / 19）
+65. 在 underwriting 这类 regulated workflow 中，为什么 Agentic RAG 要把 targeted retrieval、third-party checks、multi-step rule evaluation 和 human-in-the-loop governance 组合起来，而不是只做 naive RAG？（→ 09 / 10 / 11 / 15 / 17 / 18 / 19）
+66. HealthAgentBench 这类医疗 agent benchmark 为什么要把终端环境、任务级 verifier、数据凭证、禁用浏览器和成本/时间指标一起纳入，而不能只看最终回答对不对？（→ 10 / 11 / 15 / 16 / 17 / 18 / 19）
+67. 为什么评估 Agent 时不能默认 benchmark ground truth 和评分脚本都是干净的？Auto Benchmark Audit 发现的环境依赖、规格缺口和脆弱评分会怎样扭曲 SWE-bench / Terminal-Bench 这类结果？（→ 15 / 16 / 18 / 19）
+68. AGENTS.md、context files、skills 和 subagents 分别在 coding agent harness 里解决什么问题？为什么说 AGENTS.md 是起点，但不能替代可执行 skill、权限边界和回归验证？（→ 05 / 11 / 12 / 15 / 16 / 19）
+69. AIDev 这类 agent-authored PR 数据集能支持哪些结论，不能支持哪些结论？为什么 93 万个 Agentic-PR 只能作为采用与协作研究基础，而不能直接证明生产率提升？（→ 11 / 15 / 16 / 18 / 19）
 ### C. 项目深挖类（考你是不是真做过）
 
 > 这一类没有标准题库，面试官会顺着你的简历项目往下钻。**提前给自己出这些题**：

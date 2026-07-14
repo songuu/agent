@@ -329,6 +329,61 @@ test("runCodefatherInterviewSync writes unique rows and returns service/anon rea
   assert.equal(report.remoteDuplicatesDeleted, 0);
   assert.equal(requests.filter((request) => request.url.includes("select=slug")).length, 3);
 });
+test("runCodefatherInterviewSync falls back to healthy readback after retryable Codefather 502", async () => {
+  let codefatherAttempts = 0;
+  const originalSetTimeout = globalThis.setTimeout;
+  globalThis.setTimeout = ((callback, _delay, ...args) => {
+    if (typeof callback === "function") callback(...args);
+    return 0 as ReturnType<typeof setTimeout>;
+  }) as typeof setTimeout;
+
+  try {
+    const fetchImpl: typeof fetch = async (url, init) => {
+      const requestUrl = String(url);
+      if (requestUrl.includes("api.codefather.cn")) {
+        codefatherAttempts += 1;
+        return new Response("<html><title>502 Bad Gateway</title></html>", { status: 502 });
+      }
+      if (requestUrl.includes("select=slug%2Cquestion") || requestUrl.includes("select=slug,question")) {
+        return jsonResponse(
+          [
+            {
+              slug: "codefather-interview-1",
+              question: "Java 面试题",
+              collected_date: "2026-06-30",
+              sort_order: 1,
+              metadata: { source: "codefather", sourceUrls: ["https://ai.codefather.cn/post/1"] },
+            },
+          ],
+          { status: 206, headers: { "content-range": "0-0/1" } },
+        );
+      }
+      return new Response("[]", {
+        status: 206,
+        headers: { "content-range": "0-0/1" },
+      });
+    };
+
+    const report = await runCodefatherInterviewSync({
+      limit: 1,
+      pageSize: 20,
+      baseUrl: "https://supabase.test",
+      serviceRoleKey: "service-key",
+      anonKey: "anon-key",
+      schema: "public",
+      fetchImpl,
+    });
+
+    assert.equal(codefatherAttempts, 3);
+    assert.equal(report.sourceFetchStatus, "fallback-readback");
+    assert.match(report.sourceFetchError ?? "", /HTTP 502/);
+    assert.equal(report.rows, 1);
+    assert.equal(report.serviceCount, 1);
+    assert.equal(report.anonCount, 1);
+  } finally {
+    globalThis.setTimeout = originalSetTimeout;
+  }
+});
 test("findDuplicateCodefatherStoredSlugs and deleteCodefatherRowsBySlug clean remote duplicates", async () => {
   const duplicates = findDuplicateCodefatherStoredSlugs([
     {

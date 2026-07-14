@@ -140,6 +140,8 @@ export interface CodefatherSyncReport {
   readonly startedAt: string;
   readonly finishedAt: string;
   readonly durationMs: number;
+  readonly sourceFetchStatus: "ok" | "fallback-readback";
+  readonly sourceFetchError: string | null;
   readonly limit: number;
   readonly pageSize: number;
   readonly tag: string;
@@ -533,7 +535,24 @@ export async function runCodefatherInterviewSync(options: CodefatherSyncOptions 
   const fetchImpl = options.fetchImpl ?? fetch;
 
   const fetchLimit = limit + Math.min(100, Math.max(20, Math.ceil(limit * 0.2)));
-  const posts = await fetchCodefatherInterviewPosts({ limit: fetchLimit, pageSize, tag, fetchImpl });
+  let posts: CodefatherPost[];
+  try {
+    posts = await fetchCodefatherInterviewPosts({ limit: fetchLimit, pageSize, tag, fetchImpl });
+  } catch (error: unknown) {
+    if (!dryRun && isRetryableCodefatherFetchFailure(error)) {
+      return await buildReadbackFallbackReport({
+        started,
+        limit,
+        pageSize,
+        tag,
+        schema,
+        fetchImpl,
+        options,
+        sourceError: error,
+      });
+    }
+    throw error;
+  }
   const rawRows = toInterviewQuestionRows(posts, options.now ?? new Date());
   const { rows: dedupedRows, report: dedupeReport } = dedupeInterviewQuestionRows(rawRows);
   const rows = dedupedRows.slice(0, limit);
@@ -581,6 +600,8 @@ export async function runCodefatherInterviewSync(options: CodefatherSyncOptions 
     startedAt: started.toISOString(),
     finishedAt: finished.toISOString(),
     durationMs: finished.getTime() - started.getTime(),
+    sourceFetchStatus: "ok",
+    sourceFetchError: null,
     limit,
     pageSize,
     tag,
@@ -603,6 +624,7 @@ export async function runCodefatherInterviewSync(options: CodefatherSyncOptions 
 export function formatCodefatherSyncReport(report: CodefatherSyncReport): string {
   const lines = [
     `[codefather-interview] ${report.startedAt} -> ${report.finishedAt} (${report.durationMs}ms)${report.dryRun ? " [DRY-RUN]" : ""}`,
+    `  sourceFetch=${report.sourceFetchStatus}${report.sourceFetchError ? ` error=${report.sourceFetchError}` : ""}`,
     `  fetched=${report.fetched} rows=${report.rows} rowsBeforeDedupe=${report.rowsBeforeDedupe} target=${report.limit} pageSize=${report.pageSize} tag=${report.tag}`,
     `  dedupe skipped=${report.duplicatesSkipped} slug=${report.duplicateSlugCount} sourceUrl=${report.duplicateSourceUrlCount} title=${report.duplicateTitleCount}`,
     `  remoteDedupe deleted=${report.remoteDuplicatesDeleted}`,
@@ -613,6 +635,84 @@ export function formatCodefatherSyncReport(report: CodefatherSyncReport): string
   return lines.join("\n");
 }
 
+async function buildReadbackFallbackReport(input: {
+  readonly started: Date;
+  readonly limit: number;
+  readonly pageSize: number;
+  readonly tag: string;
+  readonly schema: string;
+  readonly fetchImpl: typeof fetch;
+  readonly options: CodefatherSyncOptions;
+  readonly sourceError: unknown;
+}): Promise<CodefatherSyncReport> {
+  const baseUrl = input.options.baseUrl || requireEnv("SUPABASE_URL");
+  const serviceRoleKey = input.options.serviceRoleKey || requireEnv("SUPABASE_SERVICE_ROLE_KEY");
+  const anonKey = input.options.anonKey || requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  let storedRows = await readCodefatherRows({
+    baseUrl,
+    key: serviceRoleKey,
+    schema: input.schema,
+    fetchImpl: input.fetchImpl,
+  });
+  let duplicateSlugs = findDuplicateCodefatherStoredSlugs(storedRows);
+  let remoteDuplicatesDeleted = 0;
+  if (duplicateSlugs.length > 0) {
+    await deleteCodefatherRowsBySlug(duplicateSlugs, {
+      baseUrl,
+      serviceRoleKey,
+      schema: input.schema,
+      fetchImpl: input.fetchImpl,
+    });
+    remoteDuplicatesDeleted = duplicateSlugs.length;
+    storedRows = await readCodefatherRows({
+      baseUrl,
+      key: serviceRoleKey,
+      schema: input.schema,
+      fetchImpl: input.fetchImpl,
+    });
+    duplicateSlugs = findDuplicateCodefatherStoredSlugs(storedRows);
+  }
+  const serviceCount = await readCodefatherCount({
+    baseUrl,
+    key: serviceRoleKey,
+    schema: input.schema,
+    fetchImpl: input.fetchImpl,
+  });
+  const anonCount = await readCodefatherCount({ baseUrl, key: anonKey, schema: input.schema, fetchImpl: input.fetchImpl });
+
+  if (duplicateSlugs.length > 0 || serviceCount < input.limit || anonCount < input.limit) {
+    throw annotateFetchFailure(
+      `Codefather source fetch failed and readback fallback below target service=${serviceCount} anon=${anonCount} duplicates=${duplicateSlugs.length} target=${input.limit}`,
+      input.sourceError,
+    );
+  }
+
+  const sample = storedRows[0];
+  const finished = new Date();
+  return {
+    startedAt: input.started.toISOString(),
+    finishedAt: finished.toISOString(),
+    durationMs: finished.getTime() - input.started.getTime(),
+    sourceFetchStatus: "fallback-readback",
+    sourceFetchError: shortErrorMessage(input.sourceError),
+    limit: input.limit,
+    pageSize: input.pageSize,
+    tag: input.tag,
+    dryRun: false,
+    fetched: 0,
+    rowsBeforeDedupe: storedRows.length,
+    rows: storedRows.length,
+    duplicatesSkipped: 0,
+    duplicateSlugCount: 0,
+    duplicateSourceUrlCount: 0,
+    duplicateTitleCount: 0,
+    remoteDuplicatesDeleted,
+    sampleQuestion: stringValue(sample?.question) || "<readback-fallback>",
+    sampleUrl: sample ? firstStoredSourceUrl(sample) : "",
+    serviceCount,
+    anonCount,
+  };
+}
 export function formatCodefatherSyncFailure(error: unknown): string {
   if (error instanceof Error) {
     const causeText = formatErrorCause(error);
@@ -621,6 +721,18 @@ export function formatCodefatherSyncFailure(error: unknown): string {
   return `[codefather-interview] run failed: ${String(error)}`;
 }
 
+function isRetryableCodefatherFetchFailure(error: unknown): boolean {
+  const text = shortErrorMessage(error).toLowerCase();
+  return (
+    text.includes("codefather list") &&
+    (text.includes("retryable=true") || text.includes("transient") || text.includes("fetch failed"))
+  );
+}
+
+function shortErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message.replace(/\s+/g, " ").slice(0, 500);
+  return String(error).replace(/\s+/g, " ").slice(0, 500);
+}
 function isInterviewRelevant(record: CodefatherPost, tag: string): boolean {
   if (stringArrayValue(record.tags).includes(tag)) return true;
   const text = [record.title, record.description, record.plainTextDescription, record.content]

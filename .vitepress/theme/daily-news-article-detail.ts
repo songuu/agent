@@ -3,6 +3,7 @@
 
 import { fetchAllPostgrestRows } from "./postgrest-pagination";
 import { cleanNewsSummary } from "./daily-news-feed";
+import { safeReturnPathFromSearch, withReturnPath } from "./list-detail-return";
 
 declare const __FRONTIER_SUPABASE_CONFIG__:
   | { url: string; anonKey: string; schema: string }
@@ -55,28 +56,47 @@ const NAVIGATION_COLUMNS = ["external_id", "title", "published_at", "published_d
 const BASE = (import.meta.env?.BASE_URL ?? "/") as string;
 
 const initialized = new WeakSet<HTMLElement>();
+const renderedIdByRoot = new WeakMap<HTMLElement, string | null>();
+const requestVersionByRoot = new WeakMap<HTMLElement, number>();
+const NEWS_LOCATION_CHANGE_EVENT = "agent-build:news-locationchange";
+let locationSyncInstalled = false;
 
 if (typeof window !== "undefined") {
   installNewsArticleDetail();
 }
 
 function installNewsArticleDetail(): void {
+  installLocationSync();
   scanNewsArticleDetail();
   const observer = new MutationObserver(() => scanNewsArticleDetail());
   observer.observe(document.body, { childList: true, subtree: true });
+  window.addEventListener(NEWS_LOCATION_CHANGE_EVENT, () => scanNewsArticleDetail());
 }
 
 function scanNewsArticleDetail(): void {
   document.querySelectorAll<HTMLElement>("[data-news-article]").forEach((root) => {
-    if (initialized.has(root)) return;
-    initialized.add(root);
-    mount(root);
+    if (!initialized.has(root)) {
+      initialized.add(root);
+      mount(root);
+      return;
+    }
+    refreshRoot(root);
   });
 }
 
 function mount(root: HTMLElement): void {
   root.classList.add("news-article-detail");
-  const id = new URLSearchParams(window.location.search).get("id");
+  refreshRoot(root, true);
+}
+
+function refreshRoot(root: HTMLElement, force = false): void {
+  const id = newsArticleIdFromSearch(window.location.search);
+  const renderedId = renderedIdByRoot.get(root) ?? null;
+  if (!force && !shouldRefreshNewsArticleDetail(renderedId, window.location.search)) return;
+
+  const nextRequestVersion = (requestVersionByRoot.get(root) ?? 0) + 1;
+  requestVersionByRoot.set(root, nextRequestVersion);
+  renderedIdByRoot.set(root, id);
   if (!id) {
     root.replaceChildren(status("缺少文章 id。请从 AI 资讯列表进入文章详情。"));
     return;
@@ -85,6 +105,7 @@ function mount(root: HTMLElement): void {
   root.replaceChildren(status("正在加载文章正文..."));
   Promise.all([loadArticle(id), loadArticleNavigation(id)])
     .then(([row, navigation]) => {
+      if (requestVersionByRoot.get(root) !== nextRequestVersion) return;
       if (!row) {
         root.replaceChildren(status("未找到该文章，可能已下线或尚未同步。"));
         return;
@@ -92,6 +113,7 @@ function mount(root: HTMLElement): void {
       render(root, row, navigation);
     })
     .catch((error: unknown) => {
+      if (requestVersionByRoot.get(root) !== nextRequestVersion) return;
       root.replaceChildren(status(`加载失败：${error instanceof Error ? error.message : String(error)}`));
     });
 }
@@ -131,6 +153,7 @@ async function loadArticleNavigation(id: string): Promise<NewsArticleNavigation 
 }
 
 function render(root: HTMLElement, row: NewsArticleRow, navigation: NewsArticleNavigation | null): void {
+  const returnPath = newsArticleReturnPathFromSearch(window.location.search);
   const title = asString(row.title) || "未命名文章";
   const url = asString(row.url);
   const sourceName = asString(row.source_name) || "未知来源";
@@ -167,6 +190,11 @@ function render(root: HTMLElement, row: NewsArticleRow, navigation: NewsArticleN
   }
 
   const actions = el("div", "news-detail-actions");
+  const back = document.createElement("a");
+  back.className = "news-detail-original";
+  back.href = returnPath;
+  back.textContent = "返回列表";
+  actions.append(back);
   if (url) {
     const original = document.createElement("a");
     original.className = "news-detail-original";
@@ -178,7 +206,7 @@ function render(root: HTMLElement, row: NewsArticleRow, navigation: NewsArticleN
   }
 
   article.append(header, body, actions);
-  const navigationSection = buildArticleNavigation(navigation);
+  const navigationSection = buildArticleNavigation(navigation, returnPath);
   root.replaceChildren(...(navigationSection ? [article, navigationSection] : [article]));
   document.title = `${title} | AI 资讯`;
 }
@@ -231,32 +259,70 @@ export function resolveArticleNavigation(
   return { previous, next };
 }
 
-function buildArticleNavigation(navigation: NewsArticleNavigation | null): HTMLElement | null {
+function buildArticleNavigation(navigation: NewsArticleNavigation | null, returnPath: string): HTMLElement | null {
   if (!navigation?.previous && !navigation?.next) return null;
 
   const section = el("section", "interview-detail-section interview-detail-nav");
   section.append(el("h2", "interview-detail-section-title", "文章切换"));
 
   const grid = el("div", "interview-detail-nav-grid");
-  if (navigation.previous) grid.append(navigationCard("上一篇", navigation.previous.externalId, navigation.previous.title));
-  if (navigation.next) grid.append(navigationCard("下一篇", navigation.next.externalId, navigation.next.title));
+  if (navigation.previous) grid.append(navigationCard("上一篇", navigation.previous.externalId, navigation.previous.title, returnPath));
+  if (navigation.next) grid.append(navigationCard("下一篇", navigation.next.externalId, navigation.next.title, returnPath));
   section.append(grid);
   return section;
 }
 
-function navigationCard(label: string, externalId: string, title: string): HTMLElement {
+function navigationCard(label: string, externalId: string, title: string, returnPath: string): HTMLElement {
   const link = document.createElement("a");
   link.className = "interview-detail-nav-card";
-  link.href = newsArticleHref(externalId);
+  link.href = newsArticleHref(externalId, returnPath);
   link.append(el("span", "interview-detail-nav-label", label));
   link.append(el("strong", "interview-detail-nav-title", title));
   return link;
 }
 
-export function newsArticleHref(externalId: string): string {
-  return `${BASE}news/article?id=${encodeURIComponent(externalId)}`;
+export function newsArticleHref(externalId: string, returnPath?: string): string {
+  return withReturnPath(`${BASE}news/article?id=${encodeURIComponent(externalId)}`, returnPath);
 }
 
+export function newsArticleReturnPathFromSearch(search: string): string {
+  return safeReturnPathFromSearch(search, `${BASE}news/`);
+}
+
+export function newsArticleIdFromSearch(search: string): string | null {
+  const id = new URLSearchParams(search).get("id")?.trim() || "";
+  return id || null;
+}
+
+export function shouldRefreshNewsArticleDetail(
+  renderedId: string | null | undefined,
+  search: string,
+): boolean {
+  return (renderedId ?? null) !== newsArticleIdFromSearch(search);
+}
+
+function installLocationSync(): void {
+  if (locationSyncInstalled) return;
+  locationSyncInstalled = true;
+
+  const emitLocationChange = () => window.dispatchEvent(new Event(NEWS_LOCATION_CHANGE_EVENT));
+  patchHistoryMethod("pushState", emitLocationChange);
+  patchHistoryMethod("replaceState", emitLocationChange);
+  window.addEventListener("popstate", emitLocationChange);
+  window.addEventListener("hashchange", emitLocationChange);
+}
+
+function patchHistoryMethod(
+  method: "pushState" | "replaceState",
+  onChange: () => void,
+): void {
+  const original = window.history[method];
+  window.history[method] = function patchedHistoryMethod(this: History, ...args: Parameters<History[typeof method]>) {
+    const result = original.apply(this, args);
+    onChange();
+    return result;
+  };
+}
 
 function normalizeText(text: string): string {
   return text.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();

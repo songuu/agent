@@ -3,6 +3,7 @@
 import { INTERVIEW_QUESTIONS } from "../../knowledge-graph/data/interview-questions";
 import { fetchAllPostgrestRows } from "./postgrest-pagination";
 import { rankSimilarInterviewQuestions, type SimilarInterviewQuestion } from "./interview-similarity";
+import { safeReturnPathFromSearch, withReturnPath } from "./list-detail-return";
 
 interface InterviewFaq {
   question?: unknown;
@@ -151,6 +152,7 @@ async function loadArticle(slug: string): Promise<InterviewDetailRow | null> {
 function render(root: HTMLElement, row: InterviewDetailRow): void {
   const title = asString(row.question) || "未命名面试题";
   const slug = asString(row.slug);
+  const returnPath = interviewReturnPathFromSearch(window.location.search);
   const metadata = metadataValue(row.metadata);
   const localFallback = LOCAL_QUESTION_BY_SLUG.get(slug);
   const remoteSummary = normalizeText(asString(metadata.plainTextDescription));
@@ -179,8 +181,8 @@ function render(root: HTMLElement, row: InterviewDetailRow): void {
     faqList,
   });
   const currentQuestion = similarityInputFromRow(row, localFallback, tags);
-  const navigation = buildQuestionNavigation(slug);
-  const recommendations = recommendSimilarQuestions(currentQuestion);
+  const navigation = buildQuestionNavigation(slug, returnPath);
+  const recommendations = recommendSimilarQuestions(currentQuestion, returnPath);
 
   const article = el("article", "news-detail-card");
   const header = el("header", "news-detail-header");
@@ -214,6 +216,11 @@ function render(root: HTMLElement, row: InterviewDetailRow): void {
   }
 
   const actions = el("div", "news-detail-actions");
+  const back = document.createElement("a");
+  back.className = "news-detail-original";
+  back.href = returnPath;
+  back.textContent = "返回题库";
+  actions.append(back);
   if (url) {
     const original = document.createElement("a");
     original.className = "news-detail-original";
@@ -267,7 +274,7 @@ function similarityInputFromRow(
   };
 }
 
-function buildQuestionNavigation(currentSlug: string): HTMLElement | null {
+function buildQuestionNavigation(currentSlug: string, returnPath: string): HTMLElement | null {
   const index = INTERVIEW_QUESTIONS.findIndex((question) => question.slug === currentSlug);
   if (index < 0) return null;
 
@@ -279,22 +286,22 @@ function buildQuestionNavigation(currentSlug: string): HTMLElement | null {
   section.append(sectionHeading("题目切换"));
 
   const grid = el("div", "interview-detail-nav-grid");
-  if (previous) grid.append(navigationCard("上一题", previous.slug, previous.question));
-  if (next) grid.append(navigationCard("下一题", next.slug, next.question));
+  if (previous) grid.append(navigationCard("上一题", previous.slug, previous.question, returnPath));
+  if (next) grid.append(navigationCard("下一题", next.slug, next.question, returnPath));
   section.append(grid);
   return section;
 }
 
-function navigationCard(label: string, slug: string, title: string): HTMLElement {
+function navigationCard(label: string, slug: string, title: string, returnPath: string): HTMLElement {
   const link = document.createElement("a");
   link.className = "interview-detail-nav-card";
-  link.href = interviewDetailHref(slug);
+  link.href = interviewDetailHref(slug, returnPath);
   link.append(el("span", "interview-detail-nav-label", label));
   link.append(el("strong", "interview-detail-nav-title", title));
   return link;
 }
 
-function recommendSimilarQuestions(currentQuestion: SimilarInterviewQuestion): HTMLElement | null {
+function recommendSimilarQuestions(currentQuestion: SimilarInterviewQuestion, returnPath: string): HTMLElement | null {
   const items = rankSimilarInterviewQuestions(INTERVIEW_QUESTIONS, currentQuestion, 3);
   if (items.length === 0) return null;
 
@@ -304,7 +311,7 @@ function recommendSimilarQuestions(currentQuestion: SimilarInterviewQuestion): H
   for (const item of items) {
     const card = document.createElement("a");
     card.className = "interview-detail-related-card";
-    card.href = interviewDetailHref(item.question.slug);
+    card.href = interviewDetailHref(item.question.slug, returnPath);
     card.append(el("span", "interview-detail-related-kind", item.question.categoryLabel));
     card.append(el("strong", "interview-detail-related-title", item.question.question));
     const excerpt = item.question.summaryExcerpt || item.question.rationale || "";
@@ -508,9 +515,14 @@ export function shouldRefreshInterviewDetail(renderedSlug: string | null | undef
   return (renderedSlug ?? null) !== interviewDetailSlugFromSearch(search);
 }
 
-function interviewDetailHref(slug: string): string {
-  const base = import.meta.env.BASE_URL || "/";
-  return `${base}interview/article?id=${encodeURIComponent(slug)}`;
+export function interviewDetailHref(slug: string, returnPath?: string): string {
+  const base = import.meta.env?.BASE_URL || "/";
+  return withReturnPath(`${base}interview/article?id=${encodeURIComponent(slug)}`, returnPath);
+}
+
+export function interviewReturnPathFromSearch(search: string): string {
+  const base = import.meta.env?.BASE_URL || "/";
+  return safeReturnPathFromSearch(search, `${base}interview/`);
 }
 
 function installLocationSync(): void {

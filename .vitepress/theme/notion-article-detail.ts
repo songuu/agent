@@ -4,6 +4,7 @@
 
 import { fetchAllPostgrestRows } from "./postgrest-pagination";
 import { renderNotionMarkdown } from "./notion-markdown";
+import { safeReturnPathFromSearch, withReturnPath } from "./list-detail-return";
 
 declare const __FRONTIER_SUPABASE_CONFIG__:
   | { url: string; anonKey: string; schema: string }
@@ -32,6 +33,7 @@ const DETAIL_COLUMNS = [
   "notion_url",
 ].join(",");
 
+const BASE = (import.meta.env?.BASE_URL ?? "/") as string;
 const initialized = new WeakSet<HTMLElement>();
 
 if (typeof window !== "undefined") {
@@ -54,7 +56,7 @@ function scan(): void {
 
 function mount(root: HTMLElement): void {
   root.classList.add("notion-article-detail");
-  const slug = new URLSearchParams(window.location.search).get("slug");
+  const slug = notionArticleSlugFromSearch(window.location.search);
   if (!slug) {
     root.replaceChildren(status("缺少文章 slug（应通过列表页卡片进入）。"));
     return;
@@ -93,6 +95,7 @@ async function loadArticle(slug: string): Promise<DetailRow | null> {
 
 async function render(root: HTMLElement, row: DetailRow): Promise<void> {
   const title = asString(row.title);
+  const returnPath = notionArticleReturnPathFromSearch(window.location.search);
   const tags = Array.isArray(row.tags) ? row.tags.map(String) : [];
 
   const article = document.createElement("article");
@@ -102,6 +105,11 @@ async function render(root: HTMLElement, row: DetailRow): Promise<void> {
   header.append(el("h1", "notion-detail-title", title));
   const meta = el("div", "notion-detail-meta");
   meta.append(el("span", "notion-detail-date", asString(row.published_date)));
+  const back = document.createElement("a");
+  back.className = "notion-detail-source";
+  back.href = returnPath;
+  back.textContent = "返回列表";
+  meta.append(back);
   for (const tag of tags) meta.append(el("span", "notion-card-tag", tag));
   if (row.notion_url) {
     const link = document.createElement("a");
@@ -134,6 +142,19 @@ async function render(root: HTMLElement, row: DetailRow): Promise<void> {
   const html = await renderNotionMarkdown(asString(row.body_markdown));
   bodyContainer.textContent = "";
   bodyContainer.innerHTML = html;
+}
+
+export function notionArticleSlugFromSearch(search: string): string | null {
+  const slug = new URLSearchParams(search).get("slug")?.trim() || "";
+  return slug || null;
+}
+
+export function notionArticleHref(slug: string, returnPath?: string): string {
+  return withReturnPath(`${BASE}notion/article?slug=${encodeURIComponent(slug)}`, returnPath);
+}
+
+export function notionArticleReturnPathFromSearch(search: string): string {
+  return safeReturnPathFromSearch(search, `${BASE}notion/`);
 }
 
 function el(tag: string, className: string, text?: string): HTMLElement {
