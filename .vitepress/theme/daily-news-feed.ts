@@ -619,6 +619,7 @@ async function renderFeed(root: HTMLElement): Promise<void> {
   listPanel.append(filterBoard, timeline, timelineStatus, pagination);
   layout.append(listPanel);
   root.append(overview, layout);
+  restoreListDetailPosition(root);
 
   filterIndex = await fetchNewsFilterIndex();
   if (!selectedDateWasExplicit) {
@@ -635,8 +636,6 @@ async function renderFeed(root: HTMLElement): Promise<void> {
     );
     timelineStatus.textContent = "";
     pagination.replaceChildren();
-  } else {
-    restoreListDetailPosition(root);
   }
 }
 

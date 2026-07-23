@@ -51,6 +51,7 @@ function scanInterviewClinics(): void {
 function createClinic(root: HTMLElement): void {
   root.classList.add("interview-clinic");
   root.replaceChildren(statusBlock("正在读取面试题题库..."));
+  restoreListDetailPosition(root);
 
   loadInterviewClinicData()
     .then((result) => renderClinic(root, result.questions, result.note))
@@ -154,7 +155,6 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
   renderTabs();
   renderList();
   root.append(tabs, controls, summary, list);
-  restoreListDetailPosition(root);
 
   function replaceInterviewListState(): void {
     const params = new URLSearchParams(window.location.search);

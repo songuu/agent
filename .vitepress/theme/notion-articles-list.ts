@@ -77,6 +77,7 @@ function scan(): void {
 function mount(root: HTMLElement): void {
   root.classList.add("notion-articles");
   root.replaceChildren(status("正在读取 Notion 文章..."));
+  restoreListDetailPosition(root);
   loadArticles()
     .then((articles) => render(root, articles))
     .catch((error: unknown) => {
@@ -216,7 +217,6 @@ function render(root: HTMLElement, articles: NotionArticleView[]): void {
   void pickDefaultDate;
   root.append(hero, controls, tabs, grid);
   update();
-  restoreListDetailPosition(root);
 
   function replaceNotionListState(): void {
     const params = new URLSearchParams(window.location.search);

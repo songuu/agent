@@ -1,0 +1,19 @@
+import { ssrRenderAttrs } from "vue/server-renderer";
+import { useSSRContext } from "vue";
+import { _ as _export_sfc } from "./plugin-vue_export-helper.1tPrXgE0.js";
+const __pageData = JSON.parse('{"title":"B4 · 采样参数与可重复性","description":"","frontmatter":{},"headers":[],"relativePath":"agent-basics/04-sampling-repeatability.md","filePath":"agent-basics/04-sampling-repeatability.md","lastUpdated":1782376068000}');
+const _sfc_main = { name: "agent-basics/04-sampling-repeatability.md" };
+function _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<div${ssrRenderAttrs(_attrs)}><h1 id="b4-·-采样参数与可重复性" tabindex="-1">B4 · 采样参数与可重复性 <a class="header-anchor" href="#b4-·-采样参数与可重复性" aria-label="Permalink to &quot;B4 · 采样参数与可重复性&quot;">​</a></h1><blockquote><p>目标：理解 temperature、top_p、seed 这些参数不是“玄学旋钮”，而是影响稳定性、创造性和评估可复现性的工程变量。</p></blockquote><h2 id="采样在控制什么" tabindex="-1">采样在控制什么 <a class="header-anchor" href="#采样在控制什么" aria-label="Permalink to &quot;采样在控制什么&quot;">​</a></h2><p>模型每一步会给候选 token 一个概率分布。采样参数控制从这个分布里怎么选。</p><table tabindex="0"><thead><tr><th>参数</th><th>作用</th><th>常见用法</th></tr></thead><tbody><tr><td>temperature</td><td>调整分布尖锐程度</td><td>低温用于分类/抽取，高温用于创意</td></tr><tr><td>top_p</td><td>只在累计概率前 p 的候选里采样</td><td>控制候选范围</td></tr><tr><td>seed</td><td>尽量复现随机过程</td><td>用于调试和 eval 稳定</td></tr><tr><td>max_tokens</td><td>限制最大输出长度</td><td>防止长输出失控</td></tr><tr><td>stop</td><td>遇到指定片段停止</td><td>简单协议或模板输出</td></tr></tbody></table><h2 id="参数选择" tabindex="-1">参数选择 <a class="header-anchor" href="#参数选择" aria-label="Permalink to &quot;参数选择&quot;">​</a></h2><table tabindex="0"><thead><tr><th>任务</th><th>推荐倾向</th><th>理由</th></tr></thead><tbody><tr><td>JSON 抽取</td><td>低 temperature</td><td>输出结构要稳定</td></tr><tr><td>分类打标</td><td>低 temperature</td><td>label 不该漂移</td></tr><tr><td>代码修改</td><td>低到中</td><td>需要稳定且能补全细节</td></tr><tr><td>brainstorming</td><td>中到高</td><td>需要多样候选</td></tr><tr><td>产品文案</td><td>中</td><td>兼顾稳定和表达</td></tr><tr><td>LLM-as-judge</td><td>低</td><td>评估要可重复</td></tr></tbody></table><h2 id="可重复性的边界" tabindex="-1">可重复性的边界 <a class="header-anchor" href="#可重复性的边界" aria-label="Permalink to &quot;可重复性的边界&quot;">​</a></h2><p>即使 temperature 设 0，也不代表跨模型版本、跨供应商、跨时间完全一致。原因包括：</p><ul><li>模型权重或 serving 策略更新。</li><li>工具返回内容变化。</li><li>检索结果顺序变化。</li><li>浮点和并行推理细节。</li><li>prompt 中隐含上下文变化。</li></ul><p>所以 eval 不能只依赖“一次输出完全相同”，更适合测结构、关键字段、引用和行为边界。</p><h2 id="工程建议" tabindex="-1">工程建议 <a class="header-anchor" href="#工程建议" aria-label="Permalink to &quot;工程建议&quot;">​</a></h2><ol><li>生产抽取、路由、打分默认低 temperature。</li><li>创意任务可以生成多候选，再用 eval 或规则筛选。</li><li>eval 记录模型、参数、prompt 版本和数据集版本。</li><li>对关键任务测“是否满足契约”，不要测整段文本逐字相同。</li></ol><h2 id="与后续章节的关系" tabindex="-1">与后续章节的关系 <a class="header-anchor" href="#与后续章节的关系" aria-label="Permalink to &quot;与后续章节的关系&quot;">​</a></h2><ul><li>第 03 章先介绍 temperature。</li><li>第 13 章把结构化输出和 schema 结合。</li><li>第 15 章把可重复性转化为回归测试策略。</li><li>第 16 章在 trace 里记录参数，便于排查退化。</li></ul><h2 id="自检练习" tabindex="-1">自检练习 <a class="header-anchor" href="#自检练习" aria-label="Permalink to &quot;自检练习&quot;">​</a></h2><p>为下面任务选择参数倾向，并说明原因：</p><ul><li>从简历里抽取姓名、邮箱、技能列表。</li><li>生成 10 个产品 slogan。</li><li>判断客服回复是否泄露隐私。</li><li>写一个计划并调用工具执行。</li></ul><h2 id="记住一句话" tabindex="-1">记住一句话 <a class="header-anchor" href="#记住一句话" aria-label="Permalink to &quot;记住一句话&quot;">​</a></h2><p>采样参数控制输出分布；工程质量来自契约、评估和记录。</p></div>`);
+}
+const _sfc_setup = _sfc_main.setup;
+_sfc_main.setup = (props, ctx) => {
+  const ssrContext = useSSRContext();
+  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("agent-basics/04-sampling-repeatability.md");
+  return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
+};
+const _04SamplingRepeatability = /* @__PURE__ */ _export_sfc(_sfc_main, [["ssrRender", _sfc_ssrRender]]);
+export {
+  __pageData,
+  _04SamplingRepeatability as default
+};

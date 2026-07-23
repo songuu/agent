@@ -89,7 +89,7 @@ test("list return position aligns the clicked card to its original viewport offs
     savedAt: 1000,
   });
   assert.ok(position);
-  assert.equal(resolveListDetailScrollTop(position, 0, 1876), 1640);
+  assert.equal(resolveListDetailScrollTop(position, 0, 2000), 1764);
   assert.equal(resolveListDetailScrollTop(position, 0, null), 1640);
 });
 
@@ -168,6 +168,108 @@ test("restore consumes the matching record and preserves the clicked card viewpo
   }
 });
 
+test("restore waits for delayed list rendering before positioning the clicked card", () => {
+  const scheduledFrames: FrameRequestCallback[] = [];
+  const scrollCalls: ScrollToOptions[] = [];
+  const removedKeys: string[] = [];
+  const returnPath = "/news/?page=3&pageSize=20";
+  const raw = JSON.stringify({
+    version: 1,
+    returnPath,
+    itemKey: "article-42",
+    scrollX: 0,
+    scrollY: 1640,
+    anchorViewportTop: 236,
+    savedAt: Date.now(),
+  });
+  const anchor = {
+    dataset: { listDetailKey: "article-42" },
+    isConnected: true,
+    getBoundingClientRect: () => ({ top: 2000 }),
+  };
+  let anchorAvailable = false;
+  let mutationCallback: MutationCallback | null = null;
+  let observerDisconnected = false;
+  let observedTarget: unknown = null;
+  let observedOptions: MutationObserverInit | null = null;
+  const root = {
+    isConnected: true,
+    querySelectorAll: () => (anchorAvailable ? [anchor] : []),
+  };
+  const fakeWindow = {
+    location: { pathname: "/news/", search: "?page=3&pageSize=20", hash: "" },
+    sessionStorage: {
+      getItem: () => raw,
+      removeItem: (key: string) => removedKeys.push(key),
+    },
+    scrollX: 0,
+    scrollY: 0,
+    requestAnimationFrame: (callback: FrameRequestCallback) => {
+      scheduledFrames.push(callback);
+      return scheduledFrames.length;
+    },
+    setTimeout: () => 1,
+    clearTimeout: () => undefined,
+    scrollTo: (options: ScrollToOptions) => {
+      scrollCalls.push(options);
+      fakeWindow.scrollX = options.left ?? 0;
+      fakeWindow.scrollY = options.top ?? 0;
+    },
+  };
+  class FakeMutationObserver {
+    constructor(callback: MutationCallback) {
+      mutationCallback = callback;
+    }
+
+    observe(target: Node, options?: MutationObserverInit): void {
+      observedTarget = target;
+      observedOptions = options ?? null;
+    }
+
+    disconnect(): void {
+      observerDisconnected = true;
+    }
+
+    takeRecords(): MutationRecord[] {
+      return [];
+    }
+  }
+  const previousWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
+  const previousMutationObserver = Object.getOwnPropertyDescriptor(globalThis, "MutationObserver");
+  Object.defineProperty(globalThis, "window", { configurable: true, value: fakeWindow });
+  Object.defineProperty(globalThis, "MutationObserver", {
+    configurable: true,
+    value: FakeMutationObserver,
+  });
+
+  try {
+    assert.equal(restoreListDetailPosition(root as unknown as HTMLElement, returnPath), true);
+    while (scheduledFrames.length > 0) scheduledFrames.shift()?.(0);
+
+    assert.equal(scrollCalls.length, 0);
+    assert.equal(removedKeys.length, 0);
+    assert.ok(mutationCallback, "missing target should install a DOM observer");
+    assert.equal(observedTarget, root);
+    assert.deepEqual(observedOptions, { childList: true, subtree: true });
+
+    mutationCallback([], {} as MutationObserver);
+    while (scheduledFrames.length > 0) scheduledFrames.shift()?.(0);
+    assert.equal(scrollCalls.length, 0);
+    assert.equal(removedKeys.length, 0);
+
+    anchorAvailable = true;
+    mutationCallback([], {} as MutationObserver);
+    while (scheduledFrames.length > 0) scheduledFrames.shift()?.(0);
+
+    assert.equal(scrollCalls.at(-1)?.top, 1764);
+    assert.equal(removedKeys.length, 1);
+    assert.equal(observerDisconnected, true);
+  } finally {
+    restoreGlobal("MutationObserver", previousMutationObserver);
+    restoreGlobalWindow(previousWindow);
+  }
+});
+
 test("storage cleanup failure does not interrupt position restoration", () => {
   const returnPath = "/news/?page=2";
   const raw = JSON.stringify({
@@ -202,7 +304,12 @@ test("storage cleanup failure does not interrupt position restoration", () => {
       restoredTop = options.top ?? 0;
     },
   };
-  const root = { isConnected: true, querySelectorAll: () => [] };
+  const anchor = {
+    dataset: { listDetailKey: "article-7" },
+    isConnected: true,
+    getBoundingClientRect: () => ({ top: 900 }),
+  };
+  const root = { isConnected: true, querySelectorAll: () => [anchor] };
   const previousWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
   Object.defineProperty(globalThis, "window", { configurable: true, value: fakeWindow });
 
@@ -220,4 +327,12 @@ function restoreGlobalWindow(previousWindow: PropertyDescriptor | undefined): vo
     return;
   }
   Reflect.deleteProperty(globalThis, "window");
+}
+
+function restoreGlobal(name: string, descriptor: PropertyDescriptor | undefined): void {
+  if (descriptor) {
+    Object.defineProperty(globalThis, name, descriptor);
+    return;
+  }
+  Reflect.deleteProperty(globalThis, name);
 }

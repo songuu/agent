@@ -1,5 +1,6 @@
 const RETURN_PARAM = "from";
 const RETURN_POSITION_STORAGE_PREFIX = "agent-build:list-detail-return:v1:";
+const RETURN_POSITION_WAIT_TIMEOUT_MS = 60_000;
 export const LIST_DETAIL_RETURN_POSITION_TTL_MS = 12 * 60 * 60 * 1000;
 
 export interface ListDetailReturnPosition {
@@ -154,26 +155,93 @@ export function restoreListDetailPosition(
     return false;
   }
 
-  const anchor = [...root.querySelectorAll<HTMLElement>("[data-list-detail-key]")].find(
-    (element) => element.dataset.listDetailKey === position.itemKey,
-  );
+  let observer: MutationObserver | null = null;
+  let waitTimeoutId: number | null = null;
+  let restoreScheduled = false;
+  let disposed = false;
 
-  const restore = (): void => {
-    if (!root.isConnected || currentRelativePath() !== position.returnPath) return;
-    const anchorTop = anchor?.isConnected ? anchor.getBoundingClientRect().top : null;
-    window.scrollTo({
-      left: position.scrollX,
-      top: resolveListDetailScrollTop(position, window.scrollY, anchorTop),
-      behavior: "auto",
-    });
-    removeStoredReturnPosition(storageKey);
+  const findAnchor = (): HTMLElement | null =>
+    [...root.querySelectorAll<HTMLElement>("[data-list-detail-key]")].find(
+      (element) => element.dataset.listDetailKey === position.itemKey,
+    ) ?? null;
+
+  const stopWaiting = (): void => {
+    if (disposed) return;
+    disposed = true;
+    observer?.disconnect();
+    if (waitTimeoutId !== null) window.clearTimeout(waitTimeoutId);
   };
-  if (typeof window.requestAnimationFrame === "function") {
-    window.requestAnimationFrame(() => window.requestAnimationFrame(restore));
-  } else {
-    window.setTimeout(restore, 0);
+
+  const isCurrentList = (): boolean =>
+    root.isConnected && currentRelativePath() === position.returnPath;
+
+  const ensureWaitTimeout = (): void => {
+    if (!observer || waitTimeoutId !== null || disposed) return;
+    waitTimeoutId = window.setTimeout(stopWaiting, RETURN_POSITION_WAIT_TIMEOUT_MS);
+  };
+
+  const tryScheduleRestore = (): boolean => {
+    if (disposed) return false;
+    if (!isCurrentList()) {
+      stopWaiting();
+      return false;
+    }
+    if (restoreScheduled) return true;
+
+    const anchor = findAnchor();
+    if (!anchor) return false;
+    restoreScheduled = true;
+
+    afterNextLayout(() => {
+      restoreScheduled = false;
+      if (disposed) return;
+      if (!isCurrentList()) {
+        stopWaiting();
+        return;
+      }
+
+      // 列表渲染可能替换整棵卡片 DOM；最终测量必须重新按业务 key 查找。
+      const currentAnchor = findAnchor();
+      if (!currentAnchor?.isConnected) {
+        ensureWaitTimeout();
+        return;
+      }
+
+      window.scrollTo({
+        left: position.scrollX,
+        top: resolveListDetailScrollTop(
+          position,
+          window.scrollY,
+          currentAnchor.getBoundingClientRect().top,
+        ),
+        behavior: "auto",
+      });
+      removeStoredReturnPosition(storageKey);
+      stopWaiting();
+    });
+    return true;
+  };
+
+  if (typeof MutationObserver !== "undefined") {
+    observer = new MutationObserver(() => {
+      tryScheduleRestore();
+    });
+    // 先监听再查询，避免目标恰好在二者之间插入而丢失通知。
+    observer.observe(root, { childList: true, subtree: true });
+    ensureWaitTimeout();
   }
+
+  if (tryScheduleRestore()) return true;
+  if (!observer || disposed) return false;
   return true;
+}
+
+function afterNextLayout(callback: () => void): void {
+  if (typeof window.requestAnimationFrame === "function") {
+    window.requestAnimationFrame(() => window.requestAnimationFrame(callback));
+    return;
+  }
+  window.setTimeout(callback, 0);
 }
 
 function removeStoredReturnPosition(storageKey: string): void {

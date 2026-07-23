@@ -65,3 +65,11 @@
 - `agent-build` owns the first implemented container slice: `Dockerfile` targets `site` and `app-runtime`, `deploy/compose/agent-build.compose.yml` runs site/runner/jobs, and `scripts/deploy-container.ps1` deploys via registry or SSH image transfer.
 - Host Nginx remains the TLS/auth/route fan-out layer during migration. Compose services should bind to loopback host ports.
 - Container cutover must be route-by-route: start container on a new local port, health check, switch Nginx, preserve PM2/static rollback until public HTTPS probes pass.
+
+## 2026-07-23 async list-detail return restoration
+
+- Arm return-position restoration after the list root enters its loading state and before the first request starts. A post-fetch-only restore leaves a race between navigation and delayed rendering.
+- Restore by stable business `itemKey`, not by a captured DOM node or absolute `scrollY`. Observe the list root, then re-query and measure the current card after layout because renderers may replace the whole subtree.
+- A missing target is a waiting state: do not scroll and do not consume the session record. Consume it only after the exact target has been positioned at its saved viewport offset.
+- Bound the observer lifetime and deduplicate scheduled frames. Success, route invalidation, and timeout must tear down observer/timer state; timeout keeps the record for a later valid return.
+- Regression tests must make the target appear after restore starts and must use geometry whose expected result differs from the stored absolute scroll value.
