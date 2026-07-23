@@ -242,5 +242,6 @@ jobs:
           done
           home_html="$(mktemp)"
           curl -k -L -s -o "${home_html}" "https://${DOMAIN}/agent-build/"
-          grep -q 'Agent 从零到上框架' "${home_html}"
-          echo "public gateway verified"
+          public_asset_prefix="${BASE_PATH%/}/assets/"
+          grep -Fq "${public_asset_prefix}" "${home_html}"
+          echo "public gateway verified (${public_asset_prefix})"
