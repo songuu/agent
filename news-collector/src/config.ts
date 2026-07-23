@@ -45,6 +45,8 @@ const envSchema = z.object({
   NEWS_RUN_AT_BOOT: boolFromEnv(true),
   NEWS_DRY_RUN: boolFromEnv(false),
   NEWS_FEED_TIMEOUT_MS: z.coerce.number().int().positive().default(15_000),
+  // 避免一次并发打满同一供应商（例如 GitHub Atom），触发连接耗尽和批量超时。
+  NEWS_FEED_CONCURRENCY: z.coerce.number().int().min(1).max(16).default(4),
   // 每源最多取多少条（按 feed 顺序，通常最新在前），防止 arXiv 这类高产源淹没每日 feed。
   NEWS_MAX_PER_SOURCE: z.coerce.number().int().positive().default(30),
   // 富化条数上限；0 = 不富化（即便配了 key 也需显式开，避免默认烧 token）。
@@ -71,6 +73,7 @@ export interface RunConfig {
   readonly dryRun: boolean;
   readonly supabase: SupabaseConfig | null;
   readonly feedTimeoutMs: number;
+  readonly feedConcurrency: number;
   readonly maxPerSource: number;
   readonly enrichMax: number;
   readonly enrichProvider: ProviderName;
@@ -115,6 +118,7 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): RunConfig {
     dryRun,
     supabase,
     feedTimeoutMs: env.NEWS_FEED_TIMEOUT_MS,
+    feedConcurrency: env.NEWS_FEED_CONCURRENCY,
     maxPerSource: env.NEWS_MAX_PER_SOURCE,
     enrichMax: hasProviderCredential(env) ? env.NEWS_ENRICH_MAX : 0,
     enrichProvider: env.LLM_PROVIDER,

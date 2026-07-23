@@ -49,14 +49,14 @@ news-collector/
   .env.example      环境变量模板
 ```
 
-## 来源（2026-06-17 实测）
+## 来源（2026-07-21 实测）
 
 | key | 源 | 类型 | 状态 |
 |-----|----|----|------|
 | qbitai | 量子位 | 中文媒体 | ✅ |
 | aibase-news | AIBase 新闻 | 中文媒体 | ✅ HTML adapter |
-| techweb-it | TechWeb 业界 | 中文媒体 | ✅ 官方 RSS |
-| 36kr-feed | 36Kr | 中文媒体 | ✅ 官方 RSS |
+| techweb-it | TechWeb 业界 | 中文媒体 | ❌ TLS 证书异常（保留注册，默认禁用） |
+| 36kr-feed | 36Kr | 中文媒体 | ❌ 验证码 HTML（保留注册，默认禁用） |
 | ithome | IT之家 | 中文媒体 | ✅ 官方 RSS |
 | sspai | 少数派 | 中文媒体 | ✅ 官方 RSS |
 | the-decoder | The Decoder | 英文媒体 | ✅ |
@@ -76,10 +76,20 @@ news-collector/
 | venturebeat-ai | VentureBeat AI | 英文媒体 | ✅ |
 | mit-tr | MIT Technology Review | 英文媒体 | ✅ |
 | ahead-of-ai | Ahead of AI | 英文媒体 | ✅ |
+| langchain-changelog | LangChain Changelog | Agent 运行时 | ✅ 官方 RSS |
+| cloudflare-ai | Cloudflare AI | Agent 安全与运行时 | ✅ 官方 RSS |
+| openai-codex-releases | OpenAI Codex Releases | Coding Agent | ✅ 官方 Atom |
+| claude-code-releases | Claude Code Releases | Coding Agent | ✅ 官方 Atom |
+| together-ai-blog | Together AI Blog | 模型平台 | ✅ 官方 RSS |
+| gemini-cli-releases | Gemini CLI Releases | Coding Agent | ✅ 官方 Atom |
+| weaviate-blog | Weaviate Blog | 数据与记忆 | ✅ 官方 RSS |
+| redhat-ai | Red Hat AI | 企业运行时 | ✅ 官方 RSS |
+| microsoft-agent-framework-releases | Microsoft Agent Framework Releases | Agent 运行时 | ✅ 官方 Atom |
+| owasp-genai | OWASP GenAI Security Project | 安全治理 | ✅ 官方 RSS |
 | huggingface | Hugging Face Blog | 厂商 | ✅ 官方 RSS |
 | openai | OpenAI News | 厂商 | ✅ 官方 RSS |
 
-加源：编辑 `src/sources.ts` 的 `SOURCES` 数组（key / name / url / kind / lang / 可选 layerHint）。只加入现有 `fetchFeed` 能解析并返回条目的 RSS/Atom 源。
+当前注册 63 个来源，其中 60 个启用。加源：编辑 `src/sources.ts` 的 `SOURCES` 数组（key / name / url / kind / lang / 可选 layerHint）。只加入现有 `fetchFeed` 能实时解析并返回条目的 RSS/Atom 源。
 
 ## 快速开始
 
@@ -137,6 +147,7 @@ pnpm notion:sync
 - `NEWS_ENRICH_MODEL`：兼容旧 collector 配置的专用模型覆盖；通常优先用 `ANTHROPIC_MODEL` / `OPENAI_MODEL`。
 - `NEWS_ARTICLE_CONTENT_ENABLED=true`：抓取原文 HTML 并抽取 bounded `content_text/content_excerpt`，供 `/news/article?id=...` 站内详情页使用。
 - `NEWS_ARTICLE_CONTENT_MAX_ITEMS` / `NEWS_ARTICLE_CONTENT_TIMEOUT_MS`：限制每轮正文抓取数量和单篇超时，防止慢站拖垮采集。
+- `NEWS_FEED_CONCURRENCY`（默认 `4`）：限制来源抓取并发，避免 GitHub Atom 等同域请求被批量超时拖垮。
 - `NEWS_CRON`（默认 `0 8 * * *`）+ `NEWS_TZ`（默认 `Asia/Shanghai`）：调度时刻。
 - `NEWS_RUN_AT_BOOT`（默认 true）：启动时先跑一次。
 
@@ -151,6 +162,9 @@ pm2 start news-collector/ecosystem.config.cjs
 pm2 logs news-collector
 pm2 save && pm2 startup   # 开机自启
 ```
+
+生产独立运行目录可使用 `news-collector/deploy/ecosystem.runtime.config.cjs`；它使用 Node 24 的 TypeScript type stripping，并默认关闭正文补全，以来源抓取和写库的稳定完成为优先。
+
 
 ### systemd
 

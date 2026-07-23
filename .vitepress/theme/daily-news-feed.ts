@@ -17,7 +17,14 @@ import {
   type YearMonth,
 } from "./frontier-date-filter";
 import { fetchAllPostgrestRows, fetchPostgrestPage } from "./postgrest-pagination";
-import { currentRelativePath, positiveIntegerParam, replaceCurrentSearch, withReturnPath } from "./list-detail-return";
+import {
+  currentRelativePath,
+  positiveIntegerParam,
+  rememberListDetailPosition,
+  replaceCurrentSearch,
+  restoreListDetailPosition,
+  withReturnPath,
+} from "./list-detail-return";
 
 const WEEKDAY_LABELS = ["一", "二", "三", "四", "五", "六", "日"] as const;
 const DEFAULT_DATE_LABEL = "6月17日 · 周三";
@@ -482,7 +489,7 @@ async function renderFeed(root: HTMLElement): Promise<void> {
             item,
             rank,
             false,
-            () => openArticleDetail(item),
+            (card) => openArticleDetail(item, card),
           ),
         );
         rank += 1;
@@ -492,8 +499,10 @@ async function renderFeed(root: HTMLElement): Promise<void> {
     }
   }
 
-  function openArticleDetail(item: NewsItemView): void {
-    window.location.href = newsArticleHref(item.externalId, currentRelativePath());
+  function openArticleDetail(item: NewsItemView, anchor: HTMLElement): void {
+    const returnPath = currentRelativePath();
+    rememberListDetailPosition(returnPath, item.externalId, anchor);
+    window.location.href = newsArticleHref(item.externalId, returnPath);
   }
 
   function activeQueryFilters(): string[] {
@@ -626,6 +635,8 @@ async function renderFeed(root: HTMLElement): Promise<void> {
     );
     timelineStatus.textContent = "";
     pagination.replaceChildren();
+  } else {
+    restoreListDetailPosition(root);
   }
 }
 
@@ -802,10 +813,11 @@ function newsCard(
   item: NewsItemView,
   rankNumber: number,
   active: boolean,
-  onSelect: () => void,
+  onSelect: (card: HTMLElement) => void,
 ): HTMLElement {
   const card = document.createElement("article");
   card.className = "frontier-timeline-item";
+  card.dataset.listDetailKey = item.externalId;
   card.tabIndex = 0;
   card.setAttribute("role", "button");
   card.setAttribute("aria-label", `阅读站内详情：${item.title}`);
@@ -857,12 +869,12 @@ function newsCard(
   card.append(marker, content);
   card.addEventListener("click", (event) => {
     if (event.target instanceof Element && event.target.closest("a")) return;
-    onSelect();
+    onSelect(card);
   });
   card.addEventListener("keydown", (event) => {
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
-    onSelect();
+    onSelect(card);
   });
   return card;
 }

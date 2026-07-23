@@ -268,6 +268,33 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 67. 为什么评估 Agent 时不能默认 benchmark ground truth 和评分脚本都是干净的？Auto Benchmark Audit 发现的环境依赖、规格缺口和脆弱评分会怎样扭曲 SWE-bench / Terminal-Bench 这类结果？（→ 15 / 16 / 18 / 19）
 68. AGENTS.md、context files、skills 和 subagents 分别在 coding agent harness 里解决什么问题？为什么说 AGENTS.md 是起点，但不能替代可执行 skill、权限边界和回归验证？（→ 05 / 11 / 12 / 15 / 16 / 19）
 69. AIDev 这类 agent-authored PR 数据集能支持哪些结论，不能支持哪些结论？为什么 93 万个 Agentic-PR 只能作为采用与协作研究基础，而不能直接证明生产率提升？（→ 11 / 15 / 16 / 18 / 19）
+70. OpenAI Agents JS SDK 在 workerd 环境修 tracing lifecycle listeners，同时补 hosted multi-agent 和 GPT-5.6 request controls 文档时，为什么要把边缘运行时、trace 生命周期、托管编排和模型请求参数一起审查？（→ 11 / 12 / 16 / 18 / 19）
+71. MCP v2 beta 迁移时，为什么要把 httpx2/SSE transport、subscriptions/listen、请求取消、resolver sample/list roots、TypeScript shared schema graph 和 exact version pin 放进同一套兼容性测试？（→ 05 / 06 / 11 / 12 / 17 / 18 / 19）
+72. OpenHands cloud 修 conversation created_at 生命周期保留和 MCP SaaS credentials encrypted storage 时，为什么这两类 bug 都属于 coding agent SaaS 的审计与安全边界，而不是普通数据字段修复？（→ 11 / 16 / 17 / 18 / 19）
+73. Langfuse self-hosted monitors / contract-aware code evaluator 和 Phoenix evals 的 F-score、timeout、positive_label 修复说明了什么？为什么 observability 与 eval harness 的字段语义会改变上线门禁结论？（→ 15 / 16 / 17 / 18 / 19）
+74. Mem0 Node SDK 增加多 vector store、多 LLM provider、多 embedder 和 reranking support，并取消默认拉入 provider SDK 时，为什么长期记忆系统要把 provider surface、依赖体积、rerank 策略和供应商锁定一起设计？（→ 07 / 08 / 09 / 15 / 18 / 19）
+75. LLM-as-a-Verifier 和普通 LLM-as-judge 有什么本质区别？为什么连续分数、重复评估、criteria decomposition 和 verifier 进度信号可能比一次性离散打分更适合 agent 回归门禁？（→ 10 / 15 / 16 / 18 / 19）
+76. Hugging Face 披露 autonomous AI agent system 驱动的真实入侵后，为什么 incident response 不能只靠商业 LLM API？数据处理 worker、凭证轮换、本地取证模型和 guardrail lockout 分别在兜什么风险？（→ 05 / 11 / 16 / 17 / 18 / 19）
+77. Shippy 这类高风险行业 agent 为什么要把复杂业务 API 封成确定性 CLI、用每用户 ephemeral sandbox 隔离，并用真实数据 rubric 评估整个 agent，而不是只调一个强模型？（→ 05 / 11 / 15 / 16 / 17 / 18 / 19）
+78. Recursive Harness Self-Improvement 为什么不是普通 prompt tuning？把 harness 当成可优化对象后，trajectory quality、训练数据、inference cost 和低推理强度 agent 的能力上限会怎样改变？（→ 10 / 11 / 15 / 16 / 19 / capstone）
+79. 为什么 coding agent eval 不能只看最终测试 pass/fail？AgentLens 这类 trajectory review 要怎样审查指令遵循、工具调用、错误恢复和自我验证，才能服务 nightly regression？（→ 10 / 12 / 15 / 16 / 19）
+80. 看 DeepSWE 这类 coding agent leaderboard 时，为什么必须同时看任务原创性、harness、agent steps、output tokens、cost 和 effort setting？为什么不能把榜单直接解读成纯模型能力排名？（→ 12 / 15 / 16 / 18 / 19）
+81. ToFu 这类 white-box agent harness 和黑盒 SaaS coding agent 的边界差异是什么？可修改运行逻辑、本地部署、token efficiency、工具接入和复现实验分别带来什么取舍？（→ 05 / 10 / 12 / 15 / 18 / 19 / capstone）
+
+82. Agent Runtime 的 task/turn tracing、实时会话成本和工具会话隔离应该如何设计？（→ 12 / 14 / 16 / 17 / 18 / 19）
+83. Pydantic AI 这类 typed agent stack 相比手写 agent loop 的核心工程收益是什么？（→ 05 / 13 / 15 / 16 / 19）
+84. 为什么 Agent Skill Registry 需要认证、来源证明和晋级流程？（→ 11 / 12 / 17 / 18 / 19）
+85. 把 Coding Agent 做成 SDK 嵌入业务系统时，需要额外评估哪些风险？（→ 05 / 12 / 16 / 17 / 18 / 19 / capstone）
+86. 企业级 Agent/Copilot 为什么需要按成本中心管理 AI Credit？（→ 16 / 18 / 19）
+87. OpenAI Agents SDK JS 这类多包运行时应如何做版本治理和供应链审计？（→ 11 / 12 / 14 / 16 / 17 / 19）
+88. 为什么企业评估 Copilot / coding agent rollout 时，不能只看活跃用户数，而要看 adoption phase、PR throughput、merge velocity 和下一步 enablement？（→ 15 / 16 / 18 / 19）
+89. Copilot 类 coding agent 引入 Gemini 3.6 Flash 这类新模型时，为什么要同时评估 reasoning effort、parallel tool use、usage-based billing 和管理员策略？（→ 12 / 14 / 16 / 18 / 19）
+90. 为什么 Claude Code skills 这类验证循环比“让人记得手动检查”更适合生产 coding agent？standalone、embedded、chained、PR gate 四种位置分别适合什么边界？（→ 10 / 15 / 16 / 18 / 19 / capstone）
+91. Coding agent 失败后，为什么“恢复路由”本身也要做成本校准？什么时候该用便宜模型恢复，什么时候才升级高价模型？（→ 10 / 15 / 16 / 19 / capstone）
+92. 自动化 AI R&D agent 为什么要单独评估 sabotage 和 monitor blind spot？只看最终 artifact 能跑通为什么不够？（→ 10 / 15 / 17 / 18 / 19 / capstone）
+93. 为什么 Agent skill 不应被当成普通 prompt snippet？metadata、references、scripts、assets、tests、hooks 和 rollback 分别解决什么生命周期问题？（→ 11 / 12 / 15 / 17 / 18 / 19）
+94. Agent 防数据泄露为什么不能只靠运行时 policy？部署前对 prompt template、tool interface 和 tool-invocation code 做 preemptive hardening 在兜什么风险？（→ 05 / 15 / 17 / 18 / 19 / capstone）
+
 ### C. 项目深挖类（考你是不是真做过）
 
 > 这一类没有标准题库，面试官会顺着你的简历项目往下钻。**提前给自己出这些题**：
@@ -347,5 +374,8 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 ---
 
 > 配套阅读：[创业指南](./startup-guide.md)（如果你想的不是求职，而是把 demo 做成产品）。
+
+
+
 
 

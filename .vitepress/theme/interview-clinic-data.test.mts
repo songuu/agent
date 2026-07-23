@@ -23,6 +23,7 @@ test("normalizeInterviewQuestionRow：映射 Supabase 行到前端题目结构",
       sourceUrls: ["https://example.com/aws"],
       confidence: "high",
       rationale: "official runtime isolation practice",
+      sourceUpdatedAt: "2026-07-20T06:55:47.000Z",
     },
   });
 
@@ -32,6 +33,7 @@ test("normalizeInterviewQuestionRow：映射 Supabase 行到前端题目结构",
   assert.deepEqual(question.sourceTitles, ["AWS multi-tenancy"]);
   assert.deepEqual(question.sourceUrls, ["https://example.com/aws"]);
   assert.equal(question.confidence, "high");
+  assert.equal(question.collectedDate, "2026-07-20");
 });
 
 test("loadInterviewClinicData：缺少配置时回退本地 bundle", async () => {

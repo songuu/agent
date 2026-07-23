@@ -15,7 +15,14 @@ import {
   type NotionArticleView,
   type TagFilter,
 } from "./notion-articles-filter";
-import { currentRelativePath, replaceCurrentSearch, withReturnPath } from "./list-detail-return";
+import {
+  currentRelativePath,
+  rememberListDetailPosition,
+  replaceCurrentSearch,
+  restoreListDetailPosition,
+  shouldRememberListDetailClick,
+  withReturnPath,
+} from "./list-detail-return";
 
 declare const __FRONTIER_SUPABASE_CONFIG__:
   | { url: string; anonKey: string; schema: string }
@@ -209,6 +216,7 @@ function render(root: HTMLElement, articles: NotionArticleView[]): void {
   void pickDefaultDate;
   root.append(hero, controls, tabs, grid);
   update();
+  restoreListDetailPosition(root);
 
   function replaceNotionListState(): void {
     const params = new URLSearchParams(window.location.search);
@@ -240,7 +248,12 @@ function readNotionListQueryState(search = typeof window === "undefined" ? "" : 
 function card(article: NotionArticleView, returnPath: string): HTMLElement {
   const link = document.createElement("a");
   link.className = "notion-card";
+  link.dataset.listDetailKey = article.slug;
   link.href = notionArticleHref(article.slug, returnPath);
+  link.addEventListener("click", (event) => {
+    if (!shouldRememberListDetailClick(event)) return;
+    rememberListDetailPosition(returnPath, article.slug, link);
+  });
 
   if (article.coverImageUrl) {
     const cover = document.createElement("img");

@@ -52,3 +52,8 @@ test("article content extraction can be disabled", () => {
 
   assert.equal(config.articleContentEnabled, false);
 });
+
+test("feed concurrency defaults to a conservative four workers and accepts overrides", () => {
+  assert.equal(loadConfig({}).feedConcurrency, 4);
+  assert.equal(loadConfig({ NEWS_FEED_CONCURRENCY: "2" }).feedConcurrency, 2);
+});

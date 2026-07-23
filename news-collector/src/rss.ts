@@ -16,6 +16,8 @@ const ACCEPT_FEED =
   "application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.1";
 const ACCEPT_HTML =
   "text/html, application/xhtml+xml;q=0.9, application/xml;q=0.8, */*;q=0.1";
+const ACCEPT_JSON = "application/json, text/plain;q=0.5, */*;q=0.1";
+const ACCEPT_GITHUB_API = "application/vnd.github+json, application/json;q=0.9, */*;q=0.1";
 
 export interface FeedResult {
   readonly source: NewsSource;
@@ -89,21 +91,62 @@ function isRetryableFeedError(error: unknown): boolean {
     /\b504\b/,
     /timed out/i,
     /timeout/i,
+    /fetch failed/i,
+    /operation was aborted/i,
     /socket/i,
     /TLS connection/i,
     /temporar/i,
     /network/i,
+    /Unexpected close tag/i,
     /ECONNRESET/i,
     /ETIMEDOUT/i,
     /EAI_AGAIN/i,
   ].some((pattern) => pattern.test(message));
 }
 
+function githubReleasesApiUrlFromFeed(urlString: string): string | undefined {
+  try {
+    const parsed = new URL(urlString);
+    if (parsed.hostname !== "github.com") return undefined;
+    const match = parsed.pathname.match(/^\/([^/]+)\/([^/]+)\/releases\.atom$/);
+    if (!match?.[1] || !match[2]) return undefined;
+    return `https://api.github.com/repos/${match[1]}/${match[2]}/releases?per_page=10`;
+  } catch {
+    return undefined;
+  }
+}
+
+function isGitHubReleasesApiUrl(urlString: string): boolean {
+  try {
+    const parsed = new URL(urlString);
+    return parsed.hostname === "api.github.com" && /^\/repos\/[^/]+\/[^/]+\/releases$/.test(parsed.pathname);
+  } catch {
+    return false;
+  }
+}
+
+function isGitHubReleaseSource(source: NewsSource): boolean {
+  return source.kind === "release" && (
+    source.format === "github-releases-api" ||
+    isGitHubReleasesApiUrl(source.url) ||
+    githubReleasesApiUrlFromFeed(source.url) !== undefined
+  );
+}
+
+function timeoutMsFor(source: NewsSource, override?: number): number {
+  const configured = source.requestTimeoutMs ?? override ?? DEFAULT_TIMEOUT_MS;
+  return isGitHubReleaseSource(source) ? Math.min(configured, 8_000) : configured;
+}
+
 function retryConfigFor(source: NewsSource): { maxAttempts: number; baseDelayMs: number } {
+  const configuredMaxAttempts =
+    source.retry?.maxAttempts ??
+    (source.critical ? CRITICAL_MAX_ATTEMPTS : DEFAULT_MAX_ATTEMPTS);
+
   return {
-    maxAttempts:
-      source.retry?.maxAttempts ??
-      (source.critical ? CRITICAL_MAX_ATTEMPTS : DEFAULT_MAX_ATTEMPTS),
+    maxAttempts: isGitHubReleaseSource(source)
+      ? Math.min(configuredMaxAttempts, 2)
+      : configuredMaxAttempts,
     baseDelayMs: source.retry?.baseDelayMs ?? DEFAULT_BASE_DELAY_MS,
   };
 }
@@ -163,6 +206,183 @@ async function parseFeedUrl(
 
   throw new Error(errors.join(" | "));
 }
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function nonEmptyString(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function hackerNewsDiscussionUrl(objectId: string): string {
+  return `https://news.ycombinator.com/item?id=${encodeURIComponent(objectId)}`;
+}
+
+/** 解析 Algolia 的 Hacker News 搜索结果；无外链的 Ask/Show HN 回退到讨论页。 */
+export function parseHackerNewsAlgoliaJson(json: string): RawFeedItem[] {
+  let payload: unknown;
+  try {
+    payload = JSON.parse(json);
+  } catch (error: unknown) {
+    throw new Error(`Hacker News Algolia returned invalid JSON: ${getErrorMessage(error)}`);
+  }
+
+  if (!isRecord(payload) || !Array.isArray(payload.hits)) {
+    throw new Error("Hacker News Algolia response is missing hits[]");
+  }
+
+  const items: RawFeedItem[] = [];
+  for (const hit of payload.hits) {
+    if (!isRecord(hit)) continue;
+    const title = nonEmptyString(hit.title) ?? nonEmptyString(hit.story_title);
+    const objectId = nonEmptyString(hit.objectID);
+    if (!title || !objectId) continue;
+
+    const externalUrl = nonEmptyString(hit.url) ?? nonEmptyString(hit.story_url);
+    const link = externalUrl && /^https?:\/\//i.test(externalUrl)
+      ? externalUrl
+      : hackerNewsDiscussionUrl(objectId);
+    items.push({
+      title,
+      link,
+      contentSnippet:
+        nonEmptyString(hit.story_text) ??
+        nonEmptyString(hit.comment_text) ??
+        nonEmptyString(hit.author),
+      isoDate: nonEmptyString(hit.created_at),
+      guid: `hn-${objectId}`,
+    });
+  }
+
+  return usableItems(items);
+}
+
+export function parseGitHubReleasesJson(json: string, source: NewsSource): RawFeedItem[] {
+  let payload: unknown;
+  try {
+    payload = JSON.parse(json);
+  } catch (error: unknown) {
+    throw new Error(`GitHub releases API returned invalid JSON: ${getErrorMessage(error)}`);
+  }
+
+  if (!Array.isArray(payload)) {
+    throw new Error("GitHub releases API response is not an array");
+  }
+
+  const items: RawFeedItem[] = [];
+  for (const release of payload) {
+    if (!isRecord(release)) continue;
+    const title = nonEmptyString(release.name) ?? nonEmptyString(release.tag_name);
+    const link = nonEmptyString(release.html_url);
+    if (!title || !link) continue;
+
+    const tag = nonEmptyString(release.tag_name);
+    const id = asString(release.id) ?? tag ?? link;
+    items.push({
+      title,
+      link,
+      contentSnippet: nonEmptyString(release.body),
+      isoDate: nonEmptyString(release.published_at) ?? nonEmptyString(release.created_at),
+      guid: `${source.key}-${id}`,
+      categories: tag ? [tag] : undefined,
+    });
+  }
+
+  return usableItems(items);
+}
+
+function asGitHubReleasesApiSource(source: NewsSource): NewsSource {
+  const apiUrl = source.format === "github-releases-api"
+    ? source.url
+    : githubReleasesApiUrlFromFeed(source.url);
+  if (!apiUrl) return source;
+
+  const feedFallbacks = [source.url, ...(source.fallbackUrls ?? [])]
+    .filter((url) => url !== apiUrl)
+    .map((url) => ({ url, format: "feed" as const }));
+  return {
+    ...source,
+    url: apiUrl,
+    format: "github-releases-api",
+    fallbackUrls: undefined,
+    fallbacks: [...feedFallbacks, ...(source.fallbacks ?? [])],
+  };
+}
+
+async function fetchGitHubReleasesApi(
+  parser: Parser,
+  source: NewsSource,
+  timeoutMs: number,
+): Promise<RawFeedItem[]> {
+  try {
+    const response = await fetch(source.url, {
+      headers: { "User-Agent": USER_AGENT, Accept: ACCEPT_GITHUB_API },
+      signal: AbortSignal.timeout(timeoutMs),
+      redirect: "follow",
+    });
+    if (!response.ok) {
+      const remaining = response.headers.get("x-ratelimit-remaining");
+      const reset = response.headers.get("x-ratelimit-reset");
+      const rateLimit = remaining !== null || reset !== null
+        ? `; rate-limit remaining=${remaining ?? "?"} reset=${reset ?? "?"}`
+        : "";
+      throw new Error(`Status code ${response.status}${rateLimit}`);
+    }
+    return parseGitHubReleasesJson(await response.text(), source);
+  } catch (primaryError: unknown) {
+    const fallback = source.fallbacks?.find((candidate) => (candidate.format ?? "feed") === "feed");
+    if (!fallback) throw primaryError;
+
+    try {
+      return await parseFeedUrl(
+        parser,
+        { ...source, url: fallback.url, fallbackUrls: undefined, fallbacks: undefined, format: "feed" },
+        timeoutMs,
+      );
+    } catch (fallbackError: unknown) {
+      throw new Error(
+        `GitHub releases API failed: ${getErrorMessage(primaryError)} | ` +
+          `fallback failed: ${getErrorMessage(fallbackError)}`,
+      );
+    }
+  }
+}
+
+async function fetchHackerNewsAlgolia(
+  parser: Parser,
+  source: NewsSource,
+  timeoutMs: number,
+): Promise<RawFeedItem[]> {
+  try {
+    const response = await fetch(source.url, {
+      headers: { "User-Agent": USER_AGENT, Accept: ACCEPT_JSON },
+      signal: AbortSignal.timeout(timeoutMs),
+      redirect: "follow",
+    });
+    if (!response.ok) {
+      throw new Error(`Status code ${response.status}`);
+    }
+    return parseHackerNewsAlgoliaJson(await response.text());
+  } catch (primaryError: unknown) {
+    const fallback = source.fallbacks?.find((candidate) => (candidate.format ?? "feed") === "feed");
+    if (!fallback) throw primaryError;
+
+    try {
+      return await parseFeedUrl(
+        parser,
+        { ...source, url: fallback.url, fallbackUrls: undefined, fallbacks: undefined, format: "feed" },
+        timeoutMs,
+      );
+    } catch (fallbackError: unknown) {
+      throw new Error(
+        `Hacker News primary failed: ${getErrorMessage(primaryError)} | ` +
+          `fallback failed: ${getErrorMessage(fallbackError)}`,
+      );
+    }
+  }
+}
+
 const HTML_ENTITIES: Readonly<Record<string, string>> = {
   amp: "&",
   lt: "<",
@@ -266,16 +486,23 @@ export async function fetchFeed(
   source: NewsSource,
   opts: { timeoutMs?: number } = {},
 ): Promise<FeedResult> {
-  const parser = createParser(opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+  const timeoutMs = timeoutMsFor(source, opts.timeoutMs);
+  const parser = createParser(timeoutMs);
   const { maxAttempts, baseDelayMs } = retryConfigFor(source);
   const errors: string[] = [];
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
-      const items =
-        source.format === "aibase-html"
-          ? await fetchAIBaseHtml(source, opts.timeoutMs ?? DEFAULT_TIMEOUT_MS)
-          : await parseFeedUrl(parser, source, opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+      let items: readonly RawFeedItem[];
+      if (source.format === "aibase-html") {
+        items = await fetchAIBaseHtml(source, timeoutMs);
+      } else if (isGitHubReleaseSource(source)) {
+        items = await fetchGitHubReleasesApi(parser, asGitHubReleasesApiSource(source), timeoutMs);
+      } else if (source.format === "hacker-news-algolia") {
+        items = await fetchHackerNewsAlgolia(parser, source, timeoutMs);
+      } else {
+        items = await parseFeedUrl(parser, source, timeoutMs);
+      }
       return {
         source,
         ok: true,
@@ -312,4 +539,3 @@ export async function fetchFeed(
     diagnostics: summarizeDiagnostics(source, maxAttempts, maxAttempts, errors),
   };
 }
-

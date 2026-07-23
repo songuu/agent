@@ -44,7 +44,13 @@ export type SourceKind =
   | "vendor-blog"
   | "release";
 
-export type SourceFormat = "feed" | "aibase-html";
+export type SourceFormat = "feed" | "aibase-html" | "github-releases-api" | "hacker-news-algolia";
+
+/** 同一内容源的独立备用入口；格式可与主入口不同。 */
+export interface SourceFallback {
+  readonly url: string;
+  readonly format?: SourceFormat;
+}
 
 export type ArticleContentStatus = "not_fetched" | "fetched" | "empty" | "failed";
 
@@ -65,6 +71,8 @@ export interface NewsSource {
   readonly url: string;
   /** 同一来源的备用 feed URL；用于源站迁移或主 URL 间歇失败时兜底。 */
   readonly fallbackUrls?: readonly string[];
+  /** 独立备用入口；可覆盖主入口 format。 */
+  readonly fallbacks?: readonly SourceFallback[];
   readonly format?: SourceFormat;
   readonly kind: SourceKind;
   readonly lang: SourceLang;
@@ -74,6 +82,8 @@ export interface NewsSource {
   readonly critical?: boolean;
   /** 可按源覆盖重试策略。 */
   readonly retry?: SourceRetryPolicy;
+  /** 可按源覆盖单次网络请求超时，避免同域慢源占满 worker。 */
+  readonly requestTimeoutMs?: number;
   /** 是否参与收集；间歇不稳定的源仍可保留 enabled，由抓取层做故障隔离。 */
   readonly enabled: boolean;
 }

@@ -35,6 +35,8 @@ interface InterviewMetadata {
   answerVariants?: unknown;
   contentSections?: unknown;
   contentMarkdown?: unknown;
+  sourceCreatedAt?: unknown;
+  sourceUpdatedAt?: unknown;
 }
 
 interface InterviewAnswerVariant {
@@ -191,7 +193,7 @@ function render(root: HTMLElement, row: InterviewDetailRow): void {
 
   const meta = el("div", "news-detail-meta");
   meta.append(el("span", "news-detail-chip", layer));
-  const date = asString(row.collected_date);
+  const date = resolveInterviewDisplayDate(metadata, asString(row.collected_date));
   if (date) meta.append(el("span", "news-detail-chip", date));
   header.append(meta);
 
@@ -504,6 +506,25 @@ function resolveInterviewDisplayRationale(remoteRationale: string, localRational
     if (candidate && !looksLikeSelectionRationale(candidate)) return candidate;
   }
   return "";
+}
+
+export function resolveInterviewDisplayDate(metadata: InterviewMetadata, fallbackDate: string): string {
+  const candidates = [asString(metadata.sourceUpdatedAt), asString(metadata.sourceCreatedAt), fallbackDate];
+  for (const candidate of candidates) {
+    const normalized = normalizeInterviewDisplayDateValue(candidate);
+    if (normalized) return normalized;
+  }
+  return "";
+}
+
+function normalizeInterviewDisplayDateValue(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  const match = /^(\d{4}-\d{2}-\d{2})/.exec(trimmed);
+  if (match) return match[1];
+  const date = new Date(trimmed);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toISOString().slice(0, 10);
 }
 
 export function interviewDetailSlugFromSearch(search: string): string | null {

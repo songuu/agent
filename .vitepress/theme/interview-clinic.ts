@@ -11,7 +11,14 @@ import {
   type ChapterFilter,
 } from "./interview-clinic-filter";
 import { chapterDisplay, chapterGroup } from "./interview-clinic-chapters.ts";
-import { currentRelativePath, replaceCurrentSearch, withReturnPath } from "./list-detail-return";
+import {
+  currentRelativePath,
+  rememberListDetailPosition,
+  replaceCurrentSearch,
+  restoreListDetailPosition,
+  shouldRememberListDetailClick,
+  withReturnPath,
+} from "./list-detail-return";
 
 const initialized = new WeakSet<HTMLElement>();
 const BASE = (import.meta.env?.BASE_URL ?? "/") as string;
@@ -147,6 +154,7 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
   renderTabs();
   renderList();
   root.append(tabs, controls, summary, list);
+  restoreListDetailPosition(root);
 
   function replaceInterviewListState(): void {
     const params = new URLSearchParams(window.location.search);
@@ -172,13 +180,16 @@ function buildInterviewCard(question: InterviewQuestion, returnPath: string): HT
   article.tabIndex = 0;
   article.setAttribute("role", "link");
   article.setAttribute("aria-label", `打开面试题详情：${question.question}`);
-  article.addEventListener("click", () => {
+  article.dataset.listDetailKey = question.slug;
+  const openDetail = (): void => {
+    rememberListDetailPosition(returnPath, question.slug, article);
     window.location.href = interviewArticleHref(question.slug, returnPath);
-  });
+  };
+  article.addEventListener("click", openDetail);
   article.addEventListener("keydown", (event) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      window.location.href = interviewArticleHref(question.slug, returnPath);
+      openDetail();
     }
   });
 
@@ -201,7 +212,11 @@ function buildInterviewCard(question: InterviewQuestion, returnPath: string): HT
   detailLink.className = "interview-clinic-card-link";
   detailLink.href = interviewArticleHref(question.slug, returnPath);
   detailLink.textContent = "查看全文";
-  detailLink.addEventListener("click", (event) => event.stopPropagation());
+  detailLink.addEventListener("click", (event) => {
+    event.stopPropagation();
+    if (!shouldRememberListDetailClick(event)) return;
+    rememberListDetailPosition(returnPath, question.slug, article);
+  });
   actions.append(detailLink);
   article.append(actions);
 

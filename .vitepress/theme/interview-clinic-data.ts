@@ -36,6 +36,8 @@ interface InterviewQuestionMetadata {
   rationale?: unknown;
   plainTextDescription?: unknown;
   faqList?: unknown;
+  sourceCreatedAt?: unknown;
+  sourceUpdatedAt?: unknown;
 }
 
 export interface InterviewClinicDataResult {
@@ -125,6 +127,12 @@ export function normalizeInterviewQuestionRow(row: InterviewQuestionRow): Interv
   const rationale = remoteRationale ?? localFallback?.rationale;
   const summaryExcerpt = preferredSummaryExcerpt(remoteSummaryExcerpt, remoteRationale, localFallback?.summaryExcerpt);
   const faqList = faqListValue(metadata.faqList) ?? localFallback?.faqList;
+  const displayDate = preferredInterviewDate(
+    optionalStringValue(metadata.sourceUpdatedAt),
+    optionalStringValue(metadata.sourceCreatedAt),
+    optionalStringValue(row.collected_date),
+    localFallback?.collectedDate,
+  );
   return {
     id: stringValue(row.question_id, stringValue(row.slug, "")),
     slug,
@@ -133,7 +141,7 @@ export function normalizeInterviewQuestionRow(row: InterviewQuestionRow): Interv
     question: stringValue(row.question, ""),
     relatedChapters: stringArrayValue(row.related_chapters),
     answerSource: stringValue(row.answer_source, ""),
-    collectedDate: stringValue(row.collected_date, "2026-06-24"),
+    collectedDate: displayDate,
     collectedAt: stringValue(row.collected_at, "2026-06-24T09:00:00+08:00"),
     sortOrder: numberValue(row.sort_order, 0),
     tags: stringArrayValue(row.tags),
@@ -166,6 +174,25 @@ function stringValue(value: unknown, fallback: string): string {
 
 function optionalStringValue(value: unknown): string | undefined {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function preferredInterviewDate(...candidates: Array<string | undefined>): string {
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const normalized = normalizeInterviewDate(candidate);
+    if (normalized) return normalized;
+  }
+  return "2026-06-24";
+}
+
+function normalizeInterviewDate(value: string): string | undefined {
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  const match = /^(\d{4}-\d{2}-\d{2})/.exec(trimmed);
+  if (match) return match[1];
+  const date = new Date(trimmed);
+  if (Number.isNaN(date.getTime())) return undefined;
+  return date.toISOString().slice(0, 10);
 }
 
 function excerptValue(value: unknown): string | undefined {

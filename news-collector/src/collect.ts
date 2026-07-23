@@ -20,6 +20,7 @@ import { upsertNewsItems } from "./store.ts";
 import type { NewsItem, NewsSource } from "./types.ts";
 
 const ARTICLE_CONTENT_CONCURRENCY = 4;
+const DEFAULT_FEED_CONCURRENCY = 4;
 
 export interface SourceOutcome {
   readonly key: string;
@@ -65,6 +66,8 @@ export interface CollectOptions {
   readonly dryRun?: boolean;
   readonly supabase?: SupabaseConfig | null;
   readonly feedTimeoutMs?: number;
+  /** 同时抓取的源数；限制同一供应商的连接突发。 */
+  readonly feedConcurrency?: number;
   /** 每源最多保留多少条（按 feed 顺序）；缺省不限。 */
   readonly maxPerSource?: number;
   readonly enrichMax?: number;
@@ -83,10 +86,14 @@ export async function collectOnce(options: CollectOptions = {}): Promise<Collect
   const supabase = options.supabase ?? null;
   const dryRun = options.dryRun ?? supabase === null;
   const fetchImpl: FetchFeedImpl = options.fetchFeedImpl ?? fetchFeed;
+  const feedConcurrency = options.feedConcurrency ?? DEFAULT_FEED_CONCURRENCY;
 
-  // 并行抓取，单源失败被 fetchFeed 隔离为 ok:false，不会 reject。
-  const feedResults = await Promise.all(
-    sources.map((source) => fetchImpl(source, { timeoutMs: options.feedTimeoutMs })),
+  // 有界并发：GitHub Atom 等同域源数量多，Promise.all 会造成连接耗尽和集体超时。
+  const feedResults = await fetchFeedsBounded(
+    sources,
+    Math.max(1, Math.floor(feedConcurrency)),
+    fetchImpl,
+    options.feedTimeoutMs,
   );
 
   const collected: NewsItem[] = [];
@@ -182,6 +189,31 @@ export async function collectOnce(options: CollectOptions = {}): Promise<Collect
   };
 }
 
+async function fetchFeedsBounded(
+  sources: readonly NewsSource[],
+  concurrency: number,
+  fetchImpl: FetchFeedImpl,
+  timeoutMs: number | undefined,
+): Promise<FeedResult[]> {
+  const results = new Array<FeedResult>(sources.length);
+  let nextIndex = 0;
+
+  async function worker(): Promise<void> {
+    for (;;) {
+      const index = nextIndex;
+      nextIndex += 1;
+      const source = sources[index];
+      if (!source) return;
+      results[index] = await fetchImpl(source, { timeoutMs });
+    }
+  }
+
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, sources.length) }, () => worker()),
+  );
+  return results;
+}
+
 interface AttachArticleContentOptions {
   readonly fetchArticleContentImpl: FetchArticleContentImpl;
   readonly timeoutMs?: number;
@@ -247,6 +279,7 @@ export async function collectFromConfig(
     dryRun: config.dryRun,
     supabase: config.supabase,
     feedTimeoutMs: config.feedTimeoutMs,
+    feedConcurrency: config.feedConcurrency,
     maxPerSource: config.maxPerSource,
     enrichMax: config.enrichMax,
     enrichProvider: config.enrichProvider,

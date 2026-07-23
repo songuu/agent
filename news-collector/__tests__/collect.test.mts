@@ -88,3 +88,28 @@ test("article content extraction attaches station-side body fields when enabled"
   assert.equal(report.items[0]?.contentText, "站内正文第一段。\n\n站内正文第二段。");
   assert.equal(report.items[0]?.contentExcerpt, "站内正文第一段。");
 });
+
+test("feed fetch concurrency is bounded to prevent same-host connection bursts", async () => {
+  const sources: NewsSource[] = Array.from({ length: 6 }, (_, index) => ({
+    ...FIXTURE_SOURCES[0],
+    key: `bounded-${index}`,
+  }));
+  let active = 0;
+  let peak = 0;
+
+  const report = await collectOnce({
+    sources,
+    dryRun: true,
+    feedConcurrency: 2,
+    fetchFeedImpl: async (source) => {
+      active += 1;
+      peak = Math.max(peak, active);
+      await new Promise<void>((resolve) => setTimeout(resolve, 5));
+      active -= 1;
+      return { source, ok: true, items: [], attempts: 1 };
+    },
+  });
+
+  assert.equal(report.sources.length, 6);
+  assert.equal(peak, 2);
+});

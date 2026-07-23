@@ -1,8 +1,8 @@
 // 新闻源注册表。
 //
-// 启用源只保留公开 RSS/Atom feed；HTML 适配器只留作离线测试/后续候选，不直接订阅。
-// 2026-06-25 live probe 只保留可解析且能返回条目的订阅源。
-// 启用源必须经现有 fetchFeed live probe 可解析且能返回条目；已知临时不可用源可保留注册但设为 disabled。
+// 启用源使用公开 RSS/Atom 或文档化的结构化 API；HTML 适配器只用于确有稳定页面结构的来源。
+// 2026-07-21 live probe 只保留可解析且能返回条目的订阅源。
+// 每个启用源必须经 fetchFeed live probe 可解析且能返回条目；人机验证或不可解析来源保留注册但 disabled。
 // 单源失败只 skip+log，不影响其它源——这是真实聚合器的核心健壮性。
 
 import type { NewsSource } from "./types.ts";
@@ -25,6 +25,8 @@ export const SOURCES: readonly NewsSource[] = [
     lang: "zh",
     format: "aibase-html",
     layerHint: "model-platform",
+    critical: true,
+    retry: { maxAttempts: 5, baseDelayMs: 1_000 },
     enabled: true,
   },
 
@@ -34,7 +36,8 @@ export const SOURCES: readonly NewsSource[] = [
     url: "https://www.techweb.com.cn/rss/it.xml",
     kind: "cn-media",
     lang: "zh",
-    enabled: true,
+    // 2026-07-20: production DNS target presents a songuu.top certificate; do not bypass TLS verification.
+    enabled: false,
   },
   {
     key: "36kr-feed",
@@ -43,7 +46,8 @@ export const SOURCES: readonly NewsSource[] = [
     kind: "cn-media",
     lang: "zh",
     layerHint: "product-ui",
-    enabled: true,
+    // 2026-07-20: 入口稳定返回 TTGCaptcha HTML，非 RSS；不绕过人机验证。
+    enabled: false,
   },
   {
     key: "ithome",
@@ -94,9 +98,19 @@ export const SOURCES: readonly NewsSource[] = [
   {
     key: "hn-ai",
     name: "Hacker News · AI",
-    url: "https://hnrss.org/newest?q=AI+OR+LLM+OR+agent&count=30",
+    // Algolia 查询 API 与 hnrss 分属不同服务；避免 hnrss 502 直接造成 HN AI 缺口。
+    url: "https://hn.algolia.com/api/v1/search_by_date?query=AI%20OR%20LLM%20OR%20agent&tags=story&hitsPerPage=30",
+    format: "hacker-news-algolia",
+    fallbacks: [
+      {
+        url: "https://hnrss.org/newest?q=AI+OR+LLM+OR+agent&count=30",
+        format: "feed",
+      },
+    ],
     kind: "community",
     lang: "en",
+    critical: true,
+    retry: { maxAttempts: 5, baseDelayMs: 1_000 },
     enabled: true,
   },
   {
@@ -223,6 +237,102 @@ export const SOURCES: readonly NewsSource[] = [
     lang: "en",
     layerHint: "foundation",
     critical: true,
+    enabled: true,
+  },
+  // —— 2026-07-21 live-probed official AI / Agent engineering feeds ——
+  {
+    key: "langchain-changelog",
+    name: "LangChain Changelog",
+    url: "https://docs.langchain.com/oss/python/releases/changelog/rss.xml",
+    kind: "vendor-blog",
+    lang: "en",
+    layerHint: "runtime",
+    requestTimeoutMs: 12_000,
+    enabled: true,
+  },
+  {
+    key: "cloudflare-ai",
+    name: "Cloudflare AI",
+    url: "https://blog.cloudflare.com/tag/ai/rss/",
+    kind: "vendor-blog",
+    lang: "en",
+    layerHint: "security-governance",
+    enabled: true,
+  },
+  {
+    key: "openai-codex-releases",
+    name: "OpenAI Codex Releases",
+    url: "https://github.com/openai/codex/releases.atom",
+    kind: "release",
+    lang: "en",
+    layerHint: "product-ui",
+    critical: true,
+    enabled: true,
+  },
+  {
+    key: "claude-code-releases",
+    name: "Claude Code Releases",
+    url: "https://github.com/anthropics/claude-code/releases.atom",
+    kind: "release",
+    lang: "en",
+    layerHint: "product-ui",
+    critical: true,
+    enabled: true,
+  },
+  {
+    key: "together-ai-blog",
+    name: "Together AI Blog",
+    url: "https://www.together.ai/blog/rss.xml",
+    kind: "vendor-blog",
+    lang: "en",
+    layerHint: "model-platform",
+    enabled: true,
+  },
+  {
+    key: "gemini-cli-releases",
+    name: "Gemini CLI Releases",
+    url: "https://github.com/google-gemini/gemini-cli/releases.atom",
+    kind: "release",
+    lang: "en",
+    layerHint: "product-ui",
+    critical: true,
+    enabled: true,
+  },
+  {
+    key: "weaviate-blog",
+    name: "Weaviate Blog",
+    url: "https://weaviate.io/blog/rss.xml",
+    kind: "vendor-blog",
+    lang: "en",
+    layerHint: "data-memory",
+    enabled: true,
+  },
+  {
+    key: "redhat-ai",
+    name: "Red Hat AI",
+    url: "https://www.redhat.com/en/rss/blog/channel/artificial-intelligence",
+    kind: "vendor-blog",
+    lang: "en",
+    layerHint: "runtime",
+    enabled: true,
+  },
+  {
+    key: "microsoft-agent-framework-releases",
+    name: "Microsoft Agent Framework Releases",
+    url: "https://github.com/microsoft/agent-framework/releases.atom",
+    kind: "release",
+    lang: "en",
+    layerHint: "runtime",
+    critical: true,
+    enabled: true,
+  },
+  {
+    key: "owasp-genai",
+    name: "OWASP GenAI Security Project",
+    url: "https://genai.owasp.org/feed/",
+    kind: "community",
+    lang: "en",
+    layerHint: "security-governance",
     enabled: true,
   },
   // —— 官方框架 / SDK release feed：补足 Agent 工程实践层 —— 
@@ -487,9 +597,12 @@ export const SOURCES: readonly NewsSource[] = [
     key: "llamaindex-python-releases",
     name: "LlamaIndex Python Releases",
     url: "https://github.com/run-llama/llama_index/releases.atom",
+    fallbackUrls: ["https://github.com/run-llama/llama_index/tags.atom"],
     kind: "release",
     lang: "en",
     layerHint: "data-memory",
+    critical: true,
+    retry: { maxAttempts: 5, baseDelayMs: 1_000 },
     enabled: true,
   },
   {
@@ -506,6 +619,7 @@ export const SOURCES: readonly NewsSource[] = [
     key: "huggingface",
     name: "Hugging Face Blog",
     url: "https://huggingface.co/blog/feed.xml",
+    fallbackUrls: ["https://github.com/huggingface/transformers/releases.atom"],
     kind: "vendor-blog",
     lang: "en",
     critical: true,
@@ -516,6 +630,7 @@ export const SOURCES: readonly NewsSource[] = [
     key: "openai",
     name: "OpenAI News",
     url: "https://openai.com/news/rss.xml",
+    fallbackUrls: ["https://github.com/openai/openai-cookbook/commits/main.atom"],
     kind: "vendor-blog",
     lang: "en",
     layerHint: "model-platform",

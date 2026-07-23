@@ -5,6 +5,7 @@ import { rankSimilarInterviewQuestions } from "./interview-similarity";
 import {
   interviewDetailHref,
   interviewReturnPathFromSearch,
+  resolveInterviewDisplayDate,
   resolveInterviewSummary,
   shouldRefreshInterviewDetail,
 } from "./interview-article-detail";
@@ -33,6 +34,12 @@ test("详情跳转：保留面试题库筛选返回路径", () => {
     "/interview/?category=project",
   );
   assert.equal(interviewReturnPathFromSearch("?id=abc&from=%2F%2Fevil.test"), "/interview/");
+});
+
+test("详情日期：优先显示来源更新时间，其次创建时间，最后回退同步日期", () => {
+  assert.equal(resolveInterviewDisplayDate({ sourceUpdatedAt: "2026-07-20T06:55:47.000Z" }, "2026-07-14"), "2026-07-20");
+  assert.equal(resolveInterviewDisplayDate({ sourceCreatedAt: "2026-06-29T01:09:47.000Z" }, "2026-07-14"), "2026-06-29");
+  assert.equal(resolveInterviewDisplayDate({}, "2026-07-14"), "2026-07-14");
 });
 
 test("详情摘要：远端只有选题说明时必须回退本地真实答案", () => {

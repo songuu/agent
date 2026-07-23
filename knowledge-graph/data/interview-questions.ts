@@ -39,7 +39,7 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   project: "项目深挖类",
 };
 
-const COLLECTED_DATE = "2026-07-14";
+const COLLECTED_DATE = "2026-07-23";
 const COLLECTED_AT = `${COLLECTED_DATE}T09:00:00+08:00`;
 
 interface RawInterviewQuestion {
@@ -998,6 +998,363 @@ const RAW_QUESTIONS: RawInterviewQuestion[] = [
     confidence: "medium",
     rationale: "本题来自 AIDev 数据集论文：大规模 Agentic-PR 数据适合研究采用和协作模式，但 PR 数量不是业务价值或代码质量的直接证明。",
   },
+  {
+    slug: "openai-agents-js-workerd-tracing-request-controls",
+    category: "engineering",
+    question:
+      "OpenAI Agents JS SDK 在 workerd 环境修 tracing lifecycle listeners，同时补 hosted multi-agent 和 GPT-5.6 request controls 文档时，为什么要把边缘运行时、trace 生命周期、托管编排和模型请求参数一起审查？",
+    relatedChapters: ["11", "12", "16", "18", "19"],
+    sourceTitles: ["OpenAI Agents SDK JS v0.13.3 release notes"],
+    sourceUrls: ["https://github.com/openai/openai-agents-js/releases/tag/v0.13.3"],
+    confidence: "high",
+    rationale: "本题来自 OpenAI Agents JS v0.13.3：同一 release 同时触达 workerd tracing、hosted multi-agent 和 GPT-5.6 request controls，适合考 SDK 升级审查边界。",
+  },
+  {
+    slug: "mcp-v2-beta-transport-cancellation-schema-identity",
+    category: "engineering",
+    question:
+      "MCP v2 beta 迁移时，为什么要把 httpx2/SSE transport、subscriptions/listen、请求取消、resolver sample/list roots、TypeScript shared schema graph 和 exact version pin 放进同一套兼容性测试？",
+    relatedChapters: ["05", "06", "11", "12", "17", "18", "19"],
+    sourceTitles: [
+      "MCP Python SDK v2.0.0b2 release notes",
+      "MCP TypeScript SDK core v2.0.0-beta.4 release notes",
+    ],
+    sourceUrls: [
+      "https://github.com/modelcontextprotocol/python-sdk/releases/tag/v2.0.0b2",
+      "https://github.com/modelcontextprotocol/typescript-sdk/releases/tag/%40modelcontextprotocol%2Fcore%402.0.0-beta.4",
+    ],
+    confidence: "high",
+    rationale: "本题来自 MCP Python/TypeScript v2 beta：协议迁移不只是包升级，还会改变 transport、取消传播、订阅事件、schema 来源和跨包对象身份。",
+  },
+  {
+    slug: "coding-agent-saas-credential-lifecycle-audit",
+    category: "engineering",
+    question:
+      "OpenHands cloud 修 conversation created_at 生命周期保留和 MCP SaaS credentials encrypted storage 时，为什么这两类 bug 都属于 coding agent SaaS 的审计与安全边界，而不是普通数据字段修复？",
+    relatedChapters: ["11", "16", "17", "18", "19"],
+    sourceTitles: ["OpenHands cloud 1.46.1 release notes"],
+    sourceUrls: ["https://github.com/OpenHands/OpenHands/releases/tag/cloud-1.46.1"],
+    confidence: "high",
+    rationale: "本题来自 OpenHands cloud 1.46.1：agent SaaS 需要同时保障会话时间线可审计和外部凭证加密持久化。",
+  },
+  {
+    slug: "agent-observability-eval-contracts-statistical-semantics",
+    category: "engineering",
+    question:
+      "Langfuse self-hosted monitors / contract-aware code evaluator 和 Phoenix evals 的 F-score、timeout、positive_label 修复说明了什么？为什么 observability 与 eval harness 的字段语义会改变上线门禁结论？",
+    relatedChapters: ["15", "16", "17", "18", "19"],
+    sourceTitles: [
+      "Langfuse v3.213.0 release notes",
+      "Arize Phoenix evals v3.1.1 release notes",
+    ],
+    sourceUrls: [
+      "https://github.com/langfuse/langfuse/releases/tag/v3.213.0",
+      "https://github.com/Arize-ai/phoenix/releases/tag/arize-phoenix-evals-v3.1.1",
+    ],
+    confidence: "high",
+    rationale: "本题来自 Langfuse 与 Phoenix 2026-07-14 releases：生产评估的合约、成本、审计、F-score 和 timeout 归因都会影响回归判断。",
+  },
+  {
+    slug: "agent-memory-provider-surface-reranking-dependency-control",
+    category: "engineering",
+    question:
+      "Mem0 Node SDK 增加多 vector store、多 LLM provider、多 embedder 和 reranking support，并取消默认拉入 provider SDK 时，为什么长期记忆系统要把 provider surface、依赖体积、rerank 策略和供应商锁定一起设计？",
+    relatedChapters: ["07", "08", "09", "15", "18", "19"],
+    sourceTitles: ["Mem0 Node SDK v3.1.0 release notes"],
+    sourceUrls: ["https://github.com/mem0ai/mem0/releases/tag/ts-v3.1.0"],
+    confidence: "high",
+    rationale: "本题来自 Mem0 Node SDK v3.1.0：agent memory 正在变成可组合 provider surface，检索质量、依赖边界和部署选择需要同时治理。",
+  },
+  {
+    slug: "llm-as-verifier-vs-llm-as-judge-continuous-scores",
+    category: "engineering",
+    question:
+      "LLM-as-a-Verifier 和普通 LLM-as-judge 有什么本质区别？为什么连续分数、重复评估、criteria decomposition 和 verifier 进度信号可能比一次性离散打分更适合 agent 回归门禁？",
+    relatedChapters: ["10", "15", "16", "18", "19"],
+    sourceTitles: ["LLM-as-a-Verifier: A General-Purpose Verification Framework"],
+    sourceUrls: ["https://arxiv.org/abs/2607.05391"],
+    confidence: "medium",
+    rationale: "本题来自 arXiv 2607.05391：论文把 verification 作为 scaling axis，并强调连续分数、标准分解和重复评估对 agentic task 的校准价值。",
+  },
+  {
+    slug: "stream-usage-schema-failfast-provider-normalization",
+    category: "engineering",
+    question:
+      "OpenAI Agents JS SDK 修复 non-final streaming chunks 的 usage 保留、union/tuple schema conversion fail-fast 和 AI SDK text parts 拼接时，为什么这些都属于生产 agent runtime 的契约问题，而不是普通 SDK 小修？",
+    relatedChapters: ["13", "14", "15", "16", "18", "19"],
+    sourceTitles: ["OpenAI Agents SDK JS v0.13.4 release notes"],
+    sourceUrls: ["https://github.com/openai/openai-agents-js/releases/tag/v0.13.4"],
+    confidence: "high",
+    rationale: "本题来自 OpenAI Agents JS v0.13.4：流式 usage、schema conversion 和 provider response normalization 会直接影响成本账、trace 和结构化输出可靠性。",
+  },
+  {
+    slug: "settings-roundtrip-mcp-auth-secrets-and-saas-observability",
+    category: "engineering",
+    question:
+      "为什么 OpenHands cloud 里 settings GET round-trip 剥离 MCP auth secrets、跨域 PostHog distinct_id 和 DB pool 默认值都要放进同一类 SaaS agent 生产风险审查？",
+    relatedChapters: ["11", "16", "17", "18", "19"],
+    sourceTitles: ["OpenHands cloud 1.46.2 release notes"],
+    sourceUrls: ["https://github.com/OpenHands/OpenHands/releases/tag/cloud-1.46.2"],
+    confidence: "high",
+    rationale: "本题来自 OpenHands cloud 1.46.2：agent SaaS 的配置读写、MCP 凭证保留、观测身份和连接池容量都会改变线上可靠性与安全边界。",
+  },
+  {
+    slug: "observability-eval-export-trace-io-ssrf-fail-closed",
+    category: "engineering",
+    question:
+      "Langfuse 把 score filters 应用到 event streams、导出 eval job configurations、保护 trace 大 I/O，并在 outbound-URL/SSRF validation 拒绝时自动关闭 export，说明 agent observability 的哪些失败模式必须 fail-closed？",
+    relatedChapters: ["15", "16", "17", "18", "19"],
+    sourceTitles: ["Langfuse v3.218.0 release notes"],
+    sourceUrls: ["https://github.com/langfuse/langfuse/releases/tag/v3.218.0"],
+    confidence: "high",
+    rationale: "本题来自 Langfuse 2026-07-16 连续 release：eval 配置、trace I/O、event filters 与 SSRF validation 失败会共同影响监控结论和数据导出安全。",
+  },
+  {
+    slug: "history-processing-usage-errors-native-schema-contract",
+    category: "engineering",
+    question:
+      "Pydantic AI 导出 HistoryProcessor、给 usage-limit/tool-retry errors 加 actionable hints，并修复 Anthropic/Bedrock native structured output schema transform 时，为什么要把历史处理、错误可操作性和 provider-native schema 当成同一套回归契约？",
+    relatedChapters: ["05", "13", "14", "15", "16", "19"],
+    sourceTitles: ["Pydantic AI v2.11.0 release notes"],
+    sourceUrls: ["https://github.com/pydantic/pydantic-ai/releases/tag/v2.11.0"],
+    confidence: "high",
+    rationale: "本题来自 Pydantic AI v2.11.0：message history、usage/retry 错误提示和 provider-native schema 转换共同决定 agent loop 是否能恢复、解释和稳定产出结构化结果。",
+  },
+  {
+    slug: "agent-safety-reconstructability-vs-final-score",
+    category: "engineering",
+    question:
+      "为什么 agent-safety evaluation 的 task success、attack success 或 monitor score 不能单独当作 load-bearing evidence？reconstructability metric 和 Evidence Sufficiency Cards 具体补的是哪类证据缺口？",
+    relatedChapters: ["15", "16", "17", "18", "19"],
+    sourceTitles: ["Agent-Safety Evaluations as Load-Bearing Evidence: A Vendor-Neutral, Cross-Harness Reconstructability Metric"],
+    sourceUrls: ["https://arxiv.org/abs/2607.12469"],
+    confidence: "medium",
+    rationale: "本题来自 arXiv 2607.12469：安全评测需要能重建支撑结论的决策证据，否则同一个分数可能对应完全不同的证据质量。",
+  },
+  {
+    slug: "paper-replication-workspace-evidence-vs-final-message",
+    category: "engineering",
+    question:
+      "研究型 coding agent 复现实验论文时，为什么不能以最终回复说“完成了”为验收？Paper-replication workflow 里的 target、provenance、report coverage 和 validation checks 分别在防什么风险？",
+    relatedChapters: ["10", "15", "16", "19", "capstone"],
+    sourceTitles: ["Coding-agents can replicate scientific machine learning papers"],
+    sourceUrls: ["https://arxiv.org/abs/2607.02134"],
+    confidence: "medium",
+    rationale: "本题来自 arXiv 2607.02134：研究型 coding agent 的完成标准应绑定 workspace evidence、claim coverage 和可验证门禁，而不是最终自然语言声明。",
+  },
+  {
+    slug: "autonomous-agent-incident-response-guardrail-lockout",
+    category: "engineering",
+    question:
+      "Hugging Face 披露 autonomous AI agent system 驱动的真实入侵后，为什么 incident response 不能只靠商业 LLM API？数据处理 worker、凭证轮换、本地取证模型和 guardrail lockout 分别在兜什么风险？",
+    relatedChapters: ["05", "11", "16", "17", "18", "19"],
+    sourceTitles: ["Security incident disclosure — July 2026"],
+    sourceUrls: ["https://huggingface.co/blog/security-incident-july-2026"],
+    confidence: "high",
+    rationale: "本题来自 Hugging Face 2026-07-16 官方安全披露：真实攻击链同时暴露 dataset processing 执行面、凭证轮换、LLM 辅助取证和安全策略误拦合法分析的边界。",
+  },
+  {
+    slug: "domain-agent-cli-sandbox-eval-pipeline",
+    category: "engineering",
+    question:
+      "Shippy 这类高风险行业 agent 为什么要把复杂业务 API 封成确定性 CLI、用每用户 ephemeral sandbox 隔离，并用真实数据 rubric 评估整个 agent，而不是只调一个强模型？",
+    relatedChapters: ["05", "11", "15", "16", "17", "18", "19"],
+    sourceTitles: ["What building Shippy taught us about building agents"],
+    sourceUrls: ["https://huggingface.co/blog/allenai/shippy-tech-blog"],
+    confidence: "high",
+    rationale: "本题来自 Ai2 Shippy 技术复盘：生产 agent 的可靠性来自 typed tool surface、隔离执行、source attribution 和版本化评估，而不只是模型能力。",
+  },
+  {
+    slug: "recursive-harness-self-improvement-vs-prompt-tuning",
+    category: "engineering",
+    question:
+      "Recursive Harness Self-Improvement 为什么不是普通 prompt tuning？把 harness 当成可优化对象后，trajectory quality、训练数据、inference cost 和低推理强度 agent 的能力上限会怎样改变？",
+    relatedChapters: ["10", "11", "15", "16", "19", "capstone"],
+    sourceTitles: ["Recursive Harness Self-Improvement"],
+    sourceUrls: ["https://arxiv.org/abs/2607.15524"],
+    confidence: "medium",
+    rationale: "本题来自 arXiv 2607.15524：论文把 harness specification 放进自我改进循环，适合追问 harness、agent loop 和训练数据之间的边界。",
+  },
+  {
+    slug: "trajectory-review-vs-pass-fail-coding-agent-eval",
+    category: "engineering",
+    question:
+      "为什么 coding agent eval 不能只看最终测试 pass/fail？AgentLens 这类 trajectory review 要怎样审查指令遵循、工具调用、错误恢复和自我验证，才能服务 nightly regression？",
+    relatedChapters: ["10", "12", "15", "16", "19"],
+    sourceTitles: ["AgentLens: Production-Assessed Trajectory Reviews for Coding Agent Evaluation"],
+    sourceUrls: ["https://arxiv.org/abs/2607.06624"],
+    confidence: "medium",
+    rationale: "本题来自 AgentLens：完整轨迹审查能解释失败模式和版本差异，比单一最终分数更接近生产回归治理。",
+  },
+  {
+    slug: "coding-agent-leaderboard-cost-harness-context",
+    category: "engineering",
+    question:
+      "看 DeepSWE 这类 coding agent leaderboard 时，为什么必须同时看任务原创性、harness、agent steps、output tokens、cost 和 effort setting？为什么不能把榜单直接解读成纯模型能力排名？",
+    relatedChapters: ["12", "15", "16", "18", "19"],
+    sourceTitles: ["DeepSWE"],
+    sourceUrls: ["https://deepswe.datacurve.ai/"],
+    confidence: "high",
+    rationale: "本题来自 Datacurve DeepSWE 2026-07-17 更新：榜单同时绑定任务集、mini-swe-agent harness、成本和运行配置，适合考 benchmark 解释边界。",
+  },
+  {
+    slug: "white-box-agent-harness-vs-black-box-saas-coding-agent",
+    category: "engineering",
+    question:
+      "ToFu 这类 white-box agent harness 和黑盒 SaaS coding agent 的边界差异是什么？可修改运行逻辑、本地部署、token efficiency、工具接入和复现实验分别带来什么取舍？",
+    relatedChapters: ["05", "10", "12", "15", "18", "19", "capstone"],
+    sourceTitles: ["ToFu: A White-Box, Token-Efficient Agent Harness for Researchers"],
+    sourceUrls: ["https://arxiv.org/abs/2607.11423"],
+    confidence: "medium",
+    rationale: "本题来自 arXiv 2607.11423：white-box harness 把 agent 逻辑、工具执行和评估链路开放给研究者，适合追问可复现、隐私和成本边界。",
+  },
+  {
+    slug: "task-turn-tracing-realtime-usage-session-isolation",
+    category: "engineering",
+    question:
+      "Agent Runtime 的 task/turn tracing、实时会话成本和工具会话隔离应该如何设计？",
+    relatedChapters: ["12", "14", "16", "17", "18", "19"],
+    sourceTitles: ["OpenAI Agents SDK Python v0.18.3 release notes"],
+    sourceUrls: ["https://github.com/openai/openai-agents-python/releases/tag/v0.18.3"],
+    confidence: "high",
+    rationale: "本题来自 OpenAI Agents Python v0.18.3：同一版本同时改 task/turn tracing、realtime usage、session serialization、provider error 和 concurrent computer isolation，适合考生产 runtime 分层。",
+  },
+  {
+    slug: "pydantic-ai-capabilities-stack-vs-monolithic-agent",
+    category: "engineering",
+    question:
+      "Pydantic AI 这类 typed agent stack 相比手写 agent loop 的核心工程收益是什么？",
+    relatedChapters: ["05", "13", "15", "16", "19"],
+    sourceTitles: ["Pydantic AI 2.14.1 release"],
+    sourceUrls: ["https://pypi.org/project/pydantic-ai/"],
+    confidence: "high",
+    rationale: "本题来自 PyPI Pydantic AI 2.14.1：页面把 validation、model-agnostic provider、Logfire observability、evals、capabilities 与 MCP 放在同一个生产级 Agent stack 里。",
+  },
+  {
+    slug: "skill-registry-authentication-and-promotion-boundary",
+    category: "engineering",
+    question: "为什么 Agent Skill Registry 需要认证、来源证明和晋级流程？",
+    relatedChapters: ["11", "12", "17", "18", "19"],
+    sourceTitles: ["CrewAI 1.15.5 skill registry authentication release"],
+    sourceUrls: ["https://github.com/crewAIInc/crewAI/releases/tag/1.15.5"],
+    confidence: "high",
+    rationale: "本题来自 CrewAI 1.15.5：release note 明确把 Authenticate skill registry downloads 作为 feature，适合追问 skill 分发、认证和供应链边界。",
+  },
+  {
+    slug: "codex-cli-sdk-embedded-agent-release-risk",
+    category: "engineering",
+    question: "把 Coding Agent 做成 SDK 嵌入业务系统时，需要额外评估哪些风险？",
+    relatedChapters: ["05", "12", "16", "17", "18", "19", "capstone"],
+    sourceTitles: ["OpenAI Codex npm packages 0.145.0 release train"],
+    sourceUrls: ["https://www.npmjs.com/org/openai"],
+    confidence: "medium",
+    rationale: "本题来自 npm OpenAI org / Codex package registry 信号：Codex CLI/SDK 进入高频 package release train，适合考 CLI 到 SDK 后的权限、事件流和宿主系统治理。",
+  },
+  {
+    slug: "ai-credit-pool-cost-center-governance",
+    category: "engineering",
+    question: "企业级 Agent/Copilot 为什么需要按成本中心管理 AI Credit？",
+    relatedChapters: ["16", "18", "19"],
+    sourceTitles: ["AI credit pools for cost centers in the billing UI"],
+    sourceUrls: ["https://github.blog/changelog/2026-07-20-ai-credit-pools-for-cost-centers-in-the-billing-ui/"],
+    confidence: "high",
+    rationale: "本题来自 GitHub Changelog 2026-07-20：AI credit pool 已进入 cost center billing UI，适合考 enterprise Agent 的 FinOps、限额和 chargeback 设计。",
+  },
+  {
+    slug: "agents-js-package-surface-and-supply-chain-provenance",
+    category: "engineering",
+    question:
+      "OpenAI Agents SDK JS 这类多包运行时应如何做版本治理和供应链审计？",
+    relatedChapters: ["11", "12", "14", "16", "17", "19"],
+    sourceTitles: ["OpenAI Agents SDK JavaScript 0.13.5 release"],
+    sourceUrls: ["https://www.npmjs.com/package/@openai/agents"],
+    confidence: "high",
+    rationale: "本题来自 npm @openai/agents 0.13.5：SDK 涵盖 multi-agent、sandbox、realtime、tools、guardrails、sessions 与 tracing，适合考 package pinning 和跨 SDK parity。",
+  },
+  {
+    slug: "copilot-impact-dashboard-adoption-cohorts-vs-active-users",
+    category: "engineering",
+    question:
+      "为什么企业评估 Copilot / coding agent rollout 时，不能只看活跃用户数，而要看 adoption phase、PR throughput、merge velocity 和下一步 enablement？",
+    relatedChapters: ["15", "16", "18", "19"],
+    sourceTitles: ["New Copilot usage metrics impact dashboard"],
+    sourceUrls: ["https://github.blog/changelog/2026-07-22-new-copilot-usage-metrics-impact-dashboard/"],
+    confidence: "high",
+    rationale:
+      "本题来自 GitHub Changelog 2026-07-22：Copilot impact dashboard 把 adoption cohorts、throughput、merge velocity 和 enablement 放在一起，适合考企业 rollout 指标设计。",
+  },
+  {
+    slug: "gemini-36-flash-model-picker-effort-parallel-tools",
+    category: "engineering",
+    question:
+      "Copilot 类 coding agent 引入 Gemini 3.6 Flash 这类新模型时，为什么要同时评估 reasoning effort、parallel tool use、usage-based billing 和管理员策略？",
+    relatedChapters: ["12", "14", "16", "18", "19"],
+    sourceTitles: ["Gemini 3.6 Flash is now available in GitHub Copilot"],
+    sourceUrls: ["https://github.blog/changelog/2026-07-21-gemini-3-6-flash-is-now-available-in-github-copilot/"],
+    confidence: "high",
+    rationale:
+      "本题来自 GitHub Changelog 2026-07-21：官方把 Gemini 3.6 Flash 绑定 agentic tasks、configurable reasoning effort、parallel tool use、billing 和 admin preview policy，适合考模型选择治理。",
+  },
+  {
+    slug: "verification-loop-skills-vs-manual-checks",
+    category: "engineering",
+    question:
+      "为什么 Claude Code skills 这类验证循环比“让人记得手动检查”更适合生产 coding agent？standalone、embedded、chained、PR gate 四种位置分别适合什么边界？",
+    relatedChapters: ["10", "15", "16", "18", "19", "capstone"],
+    sourceTitles: ["Building verification loops in Claude Code with skills"],
+    sourceUrls: ["https://claude.com/blog/building-verification-loops-in-claude-code-with-skills"],
+    confidence: "high",
+    rationale:
+      "本题来自 Anthropic/Claude Code 2026-07-22 技术实践：verification skills 把人工验收写成 repo-local、CI 可调用的闭环，适合考 agent 自检、工具错误和团队级门禁。",
+  },
+  {
+    slug: "coderescue-budget-calibrated-recovery-routing",
+    category: "engineering",
+    question:
+      "Coding agent 失败后，为什么“恢复路由”本身也要做成本校准？什么时候该用便宜模型恢复，什么时候才升级高价模型？",
+    relatedChapters: ["10", "15", "16", "19", "capstone"],
+    sourceTitles: ["CodeRescue: Budget-Calibrated Recovery Routing for Coding Agents"],
+    sourceUrls: ["https://arxiv.org/abs/2607.19338"],
+    confidence: "medium",
+    rationale:
+      "本题来自 CodeRescue 2026-07-21 arXiv：论文把 coding agent failure recovery 做成预算校准路由，适合考失败恢复、成本上限和 router 评估。",
+  },
+  {
+    slug: "researcharena-sabotage-monitor-artifact-control",
+    category: "engineering",
+    question:
+      "自动化 AI R&D agent 为什么要单独评估 sabotage 和 monitor blind spot？只看最终 artifact 能跑通为什么不够？",
+    relatedChapters: ["10", "15", "17", "18", "19", "capstone"],
+    sourceTitles: ["ResearchArena: Evaluating Sabotage and Monitoring in Automated AI R&D"],
+    sourceUrls: ["https://arxiv.org/abs/2607.19321"],
+    confidence: "medium",
+    rationale:
+      "本题来自 ResearchArena 2026-07-21 arXiv：benchmark 把隐藏 sabotage 和 deployable artifact 绑定，适合考高风险 research agent 的不可信执行与监控设计。",
+  },
+  {
+    slug: "skillware-lifecycle-vs-prompt-snippet",
+    category: "engineering",
+    question:
+      "为什么 Agent skill 不应被当成普通 prompt snippet？metadata、references、scripts、assets、tests、hooks 和 rollback 分别解决什么生命周期问题？",
+    relatedChapters: ["11", "12", "15", "17", "18", "19"],
+    sourceTitles: ["Skillware: A Software Ontology and Engineering Lifecycle for Persistent Behavioral Artifacts"],
+    sourceUrls: ["https://arxiv.org/abs/2607.18970"],
+    confidence: "medium",
+    rationale:
+      "本题来自 Skillware 2026-07-21 arXiv：论文把 skills 归类为 persistent behavioral artifacts，适合考 skill 身份、版本、测试、分发和宿主兼容。",
+  },
+  {
+    slug: "preemptive-hardening-vs-runtime-policy-only",
+    category: "engineering",
+    question:
+      "Agent 防数据泄露为什么不能只靠运行时 policy？部署前对 prompt template、tool interface 和 tool-invocation code 做 preemptive hardening 在兜什么风险？",
+    relatedChapters: ["05", "15", "17", "18", "19", "capstone"],
+    sourceTitles: ["Data Leakage Prevention in Agentic Applications via Preemptive Hardening"],
+    sourceUrls: ["https://arxiv.org/abs/2607.18847"],
+    confidence: "medium",
+    rationale:
+      "本题来自 2026-07-21 arXiv 数据泄露防护论文：pre-deployment hardening 会收紧 schema、边界清洗、tool gating 和 least privilege，适合考 agent 安全流水线。",
+  },
   // C. 项目深挖类
   {
     slug: "project-why-multi-agent",
@@ -1085,6 +1442,24 @@ const LOCAL_ANSWER_SUMMARIES: Partial<Record<string, string>> = {
   "benchmark-audit-vs-assuming-ground-truth-is-clean": "Benchmark 不是天然真理，任务描述、环境依赖、gold answer 和评分脚本都可能有错。Auto Benchmark Audit 这类方法的价值是先审计题目本身，把 ambiguous spec、隐藏依赖和脆弱 grader 分出来；否则模型排名变化可能只是 benchmark 脏数据造成的假信号。",
   "agents-md-skills-subagents-harness-engineering": "AGENTS.md 适合给跨工具 agent 提供入口规则、命令和边界，context files 补仓库知识，skills 把重复流程封装成可执行能力，subagents 用来隔离角色和上下文。AGENTS.md 只是最低摩擦起点，生产可靠性还要靠权限控制、可执行脚本、测试回归和 trace 验证兜住。",
   "agentic-pr-dataset-vs-productivity-claim": "Agent-authored PR 数据集能告诉我们哪些工具被使用、PR 分布、评论/评审/提交轨迹和协作模式，但不能直接证明生产率或业务价值提升。PR 数量可能受任务难度、团队流程、审查门槛和生成代码质量影响；真正结论要叠加质量、维护成本、缺陷率和人工时间。",
+  "stream-usage-schema-failfast-provider-normalization": "Streaming usage 若只在 final chunk 才保留，遇到中断、resume 或并发流时成本和 trace 会缺账；union/tuple schema 静默丢成员会让结构化输出看似成功但语义错；provider text parts 没拼全会漏答。生产 agent SDK 要 fail-fast，并把用量、schema 和响应归一化纳入回归。",
+  "settings-roundtrip-mcp-auth-secrets-and-saas-observability": "SaaS agent 的设置读写不是无副作用操作：GET/保存一轮若剥离 MCP auth secrets，会让连接器下次调用直接失效。PostHog distinct_id 影响跨域行为归因，DB pool 默认值影响高并发稳定性；三者共同说明配置、观测身份和资源池都是生产控制面。",
+  "observability-eval-export-trace-io-ssrf-fail-closed": "Agent observability 的风险在于监控数据本身会参与上线判断。Score filter 没覆盖所有 event stream 会造成漏判，eval config 不能导出会破坏可复现，大 trace I/O 可能卡死排障界面，SSRF validation 失败后继续导出则可能外传数据；这些都应优先 fail-closed。",
+  "history-processing-usage-errors-native-schema-contract": "HistoryProcessor 决定历史如何进入下一轮，usage-limit/tool-retry errors 决定失败能否被开发者和模型修正，provider-native schema transform 决定结构化输出是否真按目标模型协议执行。任一层漂移都会让 agent loop 看似继续运行，实际已经丢上下文、丢错误含义或丢 schema 约束。",
+  "agent-safety-reconstructability-vs-final-score": "安全评测分数只能说明某次 nominal outcome，不能说明证据是否足够支撑这个结论。Reconstructability 要求保存能重建关键决策的输入、工具、策略、监控和判定证据；Evidence Sufficiency Cards 把证据缺口显式化，避免把不可复现的 monitor score 当成可上线证明。",
+  "paper-replication-workspace-evidence-vs-final-message": "研究型 coding agent 的最终回复可能自信但无证据。Paper-replication 把每个论文 claim 变成 target，用 provenance 记录数据和实验产物，用 report coverage 证明每个 target 都有对应说明，用 validation checks 阻止未验证结果过关；验收对象是工作区证据链，不是聊天结论。",
+  "autonomous-agent-incident-response-guardrail-lockout": "真实 agent 入侵暴露的是完整执行链，不是单一提示绕过。数据处理 worker 要按不可信代码处理，凭证要能快速轮换和吊销，LLM 取证要保留原始事件链；当商业 API 因安全策略拒绝分析攻击 payload 时，本地隔离模型能避免 incident response 被 guardrail 卡死。",
+  "domain-agent-cli-sandbox-eval-pipeline": "高风险行业 agent 应把不稳定自然语言和真实系统之间隔一层 typed/确定性工具。CLI 把复杂 API 变成可测命令，ephemeral sandbox 防止用户数据和文件串扰，真实数据 rubric 评估完整链路；强模型只负责规划和表达，不能替代权限、隔离和评估工程。",
+  "recursive-harness-self-improvement-vs-prompt-tuning": "Prompt tuning 通常只改一段指令；recursive harness self-improvement 改的是 agent 循环的运行规约，会影响工具选择、观察组织、失败恢复和后续训练轨迹。它的收益要看任务集、反馈质量和成本，不能把少量 synthetic task 的提升直接外推到所有生产 agent。",
+  "trajectory-review-vs-pass-fail-coding-agent-eval": "Pass/fail 只能告诉你最后有没有过，不能告诉你 agent 是否误读任务、乱用工具、重复试错或侥幸通过。Trajectory review 把指令遵循、工具调用、错误恢复、自我验证和最终 diff 逐段审查，才能用于 nightly regression 和版本差异诊断。",
+  "coding-agent-leaderboard-cost-harness-context": "Coding agent leaderboard 不是纯模型榜，因为同一个模型在不同 harness、effort、工具策略和成本预算下会表现不同。DeepSWE 这类榜单要同时读 pass rate、agent steps、output tokens、cost 和任务原创性；否则容易把昂贵多步试错误解成模型本身更强。",
+  "white-box-agent-harness-vs-black-box-saas-coding-agent": "White-box harness 的价值是能检查和修改 agent loop、工具调用、上下文拼装和评估逻辑，也能本地部署保护代码/数据；代价是团队要自己承担维护、扩展和安全配置。黑盒 SaaS 接入快，但可观测、复现、权限和成本调优空间更小。",
+  "runtime-tracing-cost-session-isolation": "生产 Agent runtime 应把一次运行拆成 task、turn、tool call、provider request 和 session resource 五层。trace/span ID、实时 token/费用、provider capability error、conversation history 序列化、computer/E2B 等工具会话隔离都要显式记录，否则无法排查成本、并发串扰和工具副作用。",
+  "pydantic-ai-capabilities-stack-vs-monolithic-agent": "Typed agent stack 的收益不是少写几行 loop，而是把 schema validation、provider abstraction、tool/MCP、capabilities、evals 和 observability 变成统一控制面。手写 loop 更透明，但一旦进生产，要补齐类型契约、回归评测、trace 和 provider surface 管理。",
+  "skill-registry-authentication-and-promotion-boundary": "Skill 是可执行能力包，不是普通 prompt 文本。Registry 需要下载认证、签名/哈希、版本锁定、权限声明、环境隔离、灰度晋级、回滚和审计日志；否则一次供应链污染就能越过 agent 的工具边界。",
+  "codex-cli-sdk-embedded-agent-release-risk": "CLI 到 SDK 会把 coding agent 嵌进业务系统权限面：文件系统、命令执行、网络访问、审批策略、审计日志、JSONL event 流、依赖锁定和用户身份透传都要由宿主显式治理，不能只把它当普通聊天 SDK。",
+  "ai-credit-pool-cost-center-governance": "企业 Agent/Copilot 成本治理要从总账下钻到成本中心、license pool、项目 chargeback、告警、硬/软限额和异常使用检测。成本中心不是财务标签，而是大规模 agent rollout 后的资源隔离与责任归属机制。",
+  "agents-js-package-surface-and-supply-chain-provenance": "多包 Agent SDK 要做 package pinning、lockfile 审核、跨包版本一致性、Python/JS parity、realtime 能力差异、tool schema 兼容性和 trace/eval 回归。只看 semver 或 package 名称，容易漏掉运行时默认值和供应链变化。",
   "project-why-multi-agent": "Deep Research Agent 用多智能体，是因为『检索/证据收集』和『综合写作』对上下文、工具和评价标准不同，拆开后每个角色更专注。单 agent 也能做，但容易把搜索噪声、写作风格和规划状态搅在一起；代价则是链路更长、调试更复杂，所以只在长任务上启用。",
   "project-rag-chunk-overlap-topk": "分块大小通常围绕『一个片段能独立表达一个小主题』来定，overlap 用来保证跨段概念不断裂；块太大噪声多，块太小上下文不完整。top-k 一般从 3 到 5 起步，命不中再扩召回，但不会无限加，因为加太多会把模型注意力稀释掉。",
   "project-eval-set-and-judge": "所谓 90% 不是拍脑袋，要先准备一组覆盖真实问题分布的 eval 集，再定义『事实正确、引用充分、结构完整』这类评分维度。LLM-as-judge 可以做初筛，但我会保留人工抽样复核，并记录模型间分歧，避免把模型偏见当成客观真相。",
@@ -1202,6 +1577,8 @@ const slugs = new Set(INTERVIEW_QUESTIONS.map((q) => q.slug));
 if (slugs.size !== INTERVIEW_QUESTIONS.length) {
   throw new Error("Duplicate interview question slug detected in interview-questions.ts");
 }
+
+
 
 
 
