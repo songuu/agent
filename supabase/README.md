@@ -2,6 +2,8 @@
 
 This folder stores Supabase-ready SQL for the Agent course site.
 
+迁移 Supabase 地址时，请使用 [MIGRATION.md](./MIGRATION.md)：它覆盖本仓库拥有的内容表、Notion Storage、运行时公开配置、校验与回滚边界。
+
 ## News items
 
 - Table migration: `migrations/20260617120000_create_news_items.sql`
@@ -72,4 +74,6 @@ node node_modules/tsx/dist/cli.mjs scripts/generate-glossary-supabase-seed.ts
 
 Then run the generated `supabase/seed/glossary_terms.sql` in the Supabase SQL editor or through your database connection.
 
-This repository currently does not contain Supabase connection settings, so the scripts generate auditable SQL instead of writing to a remote project implicitly.
+本仓库不跟踪真实 Supabase 连接信息；本地 `.env`、`news-collector/.env` 与迁移 profile 均被忽略。既有脚本会在显式提供 service-role 环境变量后写入单一目标；跨地址迁移请走 `MIGRATION.md` 的双 profile 流程。
+
+

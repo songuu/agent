@@ -21,6 +21,11 @@
     "agent-eval-harness:smoke": "tsx capstone/agent-eval-harness/src/smoke.ts",
     "capstone:smoke": "pnpm support-copilot:smoke && pnpm code-review-crew:smoke && pnpm agent-eval-harness:smoke && pnpm incident-responder:smoke && pnpm feedback-intelligence:smoke && pnpm sales-lead-researcher:smoke && pnpm capstone:catalog:smoke",
     "kg": "tsx knowledge-graph/generate.ts",
+    "supabase:runtime-config": "tsx scripts/write-supabase-runtime-config.ts",
+    "supabase:migrate": "tsx scripts/supabase-migrate/cli.ts",
+    "supabase:move": "tsx scripts/supabase-move.ts",
+    "supabase:cutover": "tsx scripts/supabase-cutover.ts",
+    "supabase:typecheck": "tsc -p tsconfig.supabase-migrate.json --noEmit && tsc -p tsconfig.supabase-public.json --noEmit",
     "supabase:frontier-seed": "tsx scripts/generate-frontier-ecosystem-supabase-seed.ts",
     "supabase:interview-seed": "tsx scripts/generate-interview-questions-supabase-seed.ts",
     "supabase:glossary-seed": "tsx scripts/generate-glossary-supabase-seed.ts",
@@ -47,7 +52,7 @@
     "lg:smoke": "tsx langgraph-advanced/smoke.ts",
     "rag:build-fixture": "tsx scripts/build-embedding-fixture.ts",
     "site:dev": "vitepress dev",
-    "site:build": "vitepress build",
+    "site:build": "pnpm supabase:runtime-config && vitepress build",
     "site:preview": "vitepress preview",
     "demo:server": "tsx scripts/demo-runner/start.mts",
     "demo:server:prod": "tsx scripts/demo-runner/start-production.mts",
@@ -106,4 +111,3 @@
     "vitepress-plugin-mermaid": "^2.0.17"
   }
 }
-

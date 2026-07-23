@@ -4,16 +4,12 @@ import { INTERVIEW_QUESTIONS } from "../../knowledge-graph/data/interview-questi
 import { fetchAllPostgrestRows } from "./postgrest-pagination";
 import { rankSimilarInterviewQuestions, type SimilarInterviewQuestion } from "./interview-similarity";
 import { safeReturnPathFromSearch, withReturnPath } from "./list-detail-return";
+import { getSupabaseRuntimeConfig } from "./supabase-runtime-config";
 
 interface InterviewFaq {
   question?: unknown;
   answer?: unknown;
 }
-
-declare const __FRONTIER_SUPABASE_CONFIG__:
-  | { url: string; anonKey: string; schema: string }
-  | null
-  | undefined;
 
 interface InterviewDetailRow {
   slug?: unknown;
@@ -135,7 +131,7 @@ function refreshRoot(root: HTMLElement, force = false): void {
 }
 
 async function loadArticle(slug: string): Promise<InterviewDetailRow | null> {
-  const config = __FRONTIER_SUPABASE_CONFIG__ ?? null;
+  const config = await getSupabaseRuntimeConfig();
   if (!config?.url || !config.anonKey) {
     throw new Error("缺少 NEXT_PUBLIC_SUPABASE_URL 或 NEXT_PUBLIC_SUPABASE_ANON_KEY");
   }

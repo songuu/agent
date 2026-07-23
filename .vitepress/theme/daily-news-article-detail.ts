@@ -4,11 +4,7 @@
 import { fetchAllPostgrestRows } from "./postgrest-pagination";
 import { cleanNewsSummary } from "./daily-news-feed";
 import { safeReturnPathFromSearch, withReturnPath } from "./list-detail-return";
-
-declare const __FRONTIER_SUPABASE_CONFIG__:
-  | { url: string; anonKey: string; schema: string }
-  | null
-  | undefined;
+import { getSupabaseRuntimeConfig } from "./supabase-runtime-config";
 
 interface NewsArticleRow {
   external_id?: unknown;
@@ -118,8 +114,8 @@ function refreshRoot(root: HTMLElement, force = false): void {
     });
 }
 
-function requireSupabaseConfig(): { url: string; anonKey: string; schema: string } {
-  const config = __FRONTIER_SUPABASE_CONFIG__ ?? null;
+async function requireSupabaseConfig(): Promise<{ url: string; anonKey: string; schema: string }> {
+  const config = await getSupabaseRuntimeConfig();
   if (!config?.url || !config.anonKey) {
     throw new Error("缺少 NEXT_PUBLIC_SUPABASE_URL 或 NEXT_PUBLIC_SUPABASE_ANON_KEY");
   }
@@ -127,7 +123,7 @@ function requireSupabaseConfig(): { url: string; anonKey: string; schema: string
 }
 
 async function loadArticle(id: string): Promise<NewsArticleRow | null> {
-  const config = requireSupabaseConfig();
+  const config = await requireSupabaseConfig();
 
   const rows = await fetchAllPostgrestRows<NewsArticleRow>({
     config,
@@ -141,7 +137,7 @@ async function loadArticle(id: string): Promise<NewsArticleRow | null> {
 }
 
 async function loadArticleNavigation(id: string): Promise<NewsArticleNavigation | null> {
-  const config = requireSupabaseConfig();
+  const config = await requireSupabaseConfig();
   const rows = await fetchAllPostgrestRows<NewsArticleRow>({
     config,
     table: "news_items",

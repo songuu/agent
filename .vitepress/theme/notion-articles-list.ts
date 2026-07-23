@@ -23,11 +23,7 @@ import {
   shouldRememberListDetailClick,
   withReturnPath,
 } from "./list-detail-return";
-
-declare const __FRONTIER_SUPABASE_CONFIG__:
-  | { url: string; anonKey: string; schema: string }
-  | null
-  | undefined;
+import { getSupabaseRuntimeConfig } from "./supabase-runtime-config";
 
 interface NotionArticleRow {
   notion_page_id?: unknown;
@@ -88,7 +84,7 @@ function mount(root: HTMLElement): void {
 }
 
 async function loadArticles(): Promise<NotionArticleView[]> {
-  const config = __FRONTIER_SUPABASE_CONFIG__ ?? null;
+  const config = await getSupabaseRuntimeConfig();
   if (!config?.url || !config.anonKey) {
     throw new Error("缺少 NEXT_PUBLIC_SUPABASE_URL 或 NEXT_PUBLIC_SUPABASE_ANON_KEY");
   }

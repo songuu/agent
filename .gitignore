@@ -38,3 +38,9 @@ docs/plans/.handoff/
 # 生产部署运行手册与脚本（含服务器地址 / 路径 / SSH 目标，绝不提交到公开仓库）
 docs/DEPLOYMENT.md
 scripts/deploy.ps1
+
+# Supabase 迁移本地 profile、回滚快照与校验产物（可能包含连接信息，绝不提交）
+.vitepress/public/supabase-runtime-config.json
+.supabase-migration/
+.env.supabase-source
+.env.supabase-target

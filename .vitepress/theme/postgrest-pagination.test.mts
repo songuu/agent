@@ -87,6 +87,25 @@ test("fetchPostgrestPage returns total count and hasMore from content-range", as
   assert.equal(result.hasMore, true);
 });
 
+test("fetchPostgrestPage can skip exact counts for bounded preview queries", async () => {
+  let requestedInit: RequestInit | undefined;
+  const result = await fetchPostgrestPage<{ id: number }>({
+    config,
+    table: "news_items",
+    select: "external_id",
+    pageSize: 5,
+    count: "none",
+    fetchImpl: async (_input, init) => {
+      requestedInit = init;
+      return response([{ id: 1 }]);
+    },
+  });
+
+  assert.equal(new Headers(requestedInit?.headers).get("Prefer"), null);
+  assert.equal(result.totalCount, null);
+  assert.equal(result.hasMore, false);
+});
+
 test("fetchAllPostgrestRows fails on non-array payload", async () => {
   await assert.rejects(
     fetchAllPostgrestRows({

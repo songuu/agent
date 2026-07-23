@@ -56,6 +56,20 @@ function First-Value([object[]]$Values) {
   }
   return $null
 }
+function Read-EnvFileValue([string]$Path, [string]$Name) {
+  if (-not (Test-Path -LiteralPath $Path)) { return $null }
+  foreach ($line in Get-Content -LiteralPath $Path) {
+    if ($line -match '^\s*#') { continue }
+    $match = [regex]::Match($line, "^\s*$([regex]::Escape($Name))\s*=\s*(.*)$")
+    if (-not $match.Success) { continue }
+    $value = $match.Groups[1].Value.Trim()
+    if ($value.Length -ge 2 -and (($value.StartsWith('"') -and $value.EndsWith('"')) -or ($value.StartsWith("'") -and $value.EndsWith("'")))) {
+      return $value.Substring(1, $value.Length - 2)
+    }
+    return $value
+  }
+  return $null
+}
 
 function Normalize-BasePath([string]$Value) {
   if ([string]::IsNullOrWhiteSpace($Value)) { return "/" }
@@ -157,6 +171,40 @@ if (-not [string]::IsNullOrWhiteSpace($ImageRepository)) {
 }
 
 $allowedOrigins = "${VerifyScheme}://$resolvedDomain"
+$publicConfigEnvFile = if (-not [string]::IsNullOrWhiteSpace($RuntimeEnvFile)) {
+  if (-not (Test-Path -LiteralPath $RuntimeEnvFile)) {
+    throw "Runtime env file does not exist: $RuntimeEnvFile"
+  }
+  $RuntimeEnvFile
+} elseif (Test-Path -LiteralPath ".env") {
+  ".env"
+} else {
+  $null
+}
+$publicSupabaseUrl = if ($publicConfigEnvFile) { Read-EnvFileValue $publicConfigEnvFile "NEXT_PUBLIC_SUPABASE_URL" } else { $null }
+$publicSupabaseAnonKey = if ($publicConfigEnvFile) { Read-EnvFileValue $publicConfigEnvFile "NEXT_PUBLIC_SUPABASE_ANON_KEY" } else { $null }
+$publicSupabaseSchema = if ($publicConfigEnvFile) { First-Value @((Read-EnvFileValue $publicConfigEnvFile "SUPABASE_SCHEMA"), "public") } else { "public" }
+$runtimeSupabaseServiceRole = if ($publicConfigEnvFile) {
+  First-Value @(
+    (Read-EnvFileValue $publicConfigEnvFile "SUPABASE_SERVICE_ROLE_KEY"),
+    (Read-EnvFileValue $publicConfigEnvFile "SUPABASE_SERVICE_ROLE")
+  )
+} else { $null }
+if ([string]::IsNullOrWhiteSpace($publicSupabaseUrl) -xor [string]::IsNullOrWhiteSpace($publicSupabaseAnonKey)) {
+  throw "NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be configured together in $publicConfigEnvFile."
+}
+if (-not [string]::IsNullOrWhiteSpace($publicSupabaseAnonKey) -and $publicSupabaseAnonKey -eq $runtimeSupabaseServiceRole) {
+  throw "NEXT_PUBLIC_SUPABASE_ANON_KEY must not equal the runtime service role key."
+}
+$siteSupabaseBuildArgs = @()
+if (-not [string]::IsNullOrWhiteSpace($publicSupabaseUrl)) {
+  $siteSupabaseBuildArgs += "--build-arg"
+  $siteSupabaseBuildArgs += "NEXT_PUBLIC_SUPABASE_URL=$publicSupabaseUrl"
+  $siteSupabaseBuildArgs += "--build-arg"
+  $siteSupabaseBuildArgs += "NEXT_PUBLIC_SUPABASE_ANON_KEY=$publicSupabaseAnonKey"
+  $siteSupabaseBuildArgs += "--build-arg"
+  $siteSupabaseBuildArgs += "SUPABASE_SCHEMA=$publicSupabaseSchema"
+}
 
 Step "Container deploy config"
 Write-ConfigLine "Provider" "$Provider ($($profile.Label))"
@@ -170,6 +218,11 @@ Write-ConfigLine "RemoteStackDir" $RemoteStackDir
 Write-ConfigLine "UseRegistry" ([string][bool]$UseRegistry)
 Write-ConfigLine "EnableJobs" ([string][bool]$EnableJobs)
 Write-ConfigLine "EnableNotion" ([string][bool]$EnableNotion)
+if ($publicSupabaseUrl) {
+  Write-ConfigLine "Public Supabase" ([uri]$publicSupabaseUrl).GetLeftPart([System.UriPartial]::Authority)
+} else {
+  Write-ConfigLine "Public Supabase" "not configured (site uses fallback/error state)"
+}
 
 if (-not $SkipTests) {
   Step "Gates: typecheck + site + worker tests"
@@ -186,15 +239,18 @@ if (-not $SkipTests) {
 
 if (-not $SkipBuild) {
   Step "Docker build"
-  Invoke-Native "docker" @(
+  # Only browser-safe Supabase values flow into the static-site build stage.
+  # Runtime secrets are uploaded later in agent-build.runtime.env and never become Docker build args.
+  $siteBuildArguments = @(
     "build",
     "--target", "site",
     "--build-arg", "VITEPRESS_BASE=$resolvedBasePath",
     "--build-arg", "DEMO_RUNNER_CLIENT_ENABLED=1",
-    "--build-arg", "DEMO_RUNNER_BASE_URL=$($resolvedBasePath.TrimEnd('/'))/api/demo-runner",
-    "-t", $siteImage,
-    "."
+    "--build-arg", "DEMO_RUNNER_BASE_URL=$($resolvedBasePath.TrimEnd('/'))/api/demo-runner"
   )
+  $siteBuildArguments += $siteSupabaseBuildArgs
+  $siteBuildArguments += @("-t", $siteImage, ".")
+  Invoke-Native "docker" $siteBuildArguments
   Invoke-Native "docker" @(
     "build",
     "--target", "app-runtime",
@@ -248,9 +304,6 @@ if (-not $DryRun) {
     "DEMO_RUNNER_REQUIRE_TOKEN=0"
   )
   if (-not [string]::IsNullOrWhiteSpace($RuntimeEnvFile)) {
-    if (-not (Test-Path -LiteralPath $RuntimeEnvFile)) {
-      throw "Runtime env file does not exist: $RuntimeEnvFile"
-    }
     $runtimeLines += ""
     $runtimeLines += "# Imported from $RuntimeEnvFile at deploy time."
     $runtimeLines += Get-Content -LiteralPath $RuntimeEnvFile

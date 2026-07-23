@@ -73,3 +73,12 @@
 - A missing target is a waiting state: do not scroll and do not consume the session record. Consume it only after the exact target has been positioned at its saved viewport offset.
 - Bound the observer lifetime and deduplicate scheduled frames. Success, route invalidation, and timeout must tear down observer/timer state; timeout keeps the record for a later valid return.
 - Regression tests must make the target appear after restore starts and must use geometry whose expected result differs from the stored absolute scroll value.
+
+## 2026-07-23 task-oriented Agent knowledge portal
+
+- Keep VitePress, static Markdown, existing public URLs, and the current deployment path. Borrow AI HOT's publicly verifiable information architecture principles—curated entry points, complete archives, topic maps, and machine-readable deep links—without copying its brand, content, or private stack.
+- `.vitepress/site-information-architecture.ts` is the single source of truth for the six task-oriented top-level navigation groups and route-scoped sidebars. New public domains must be added there with reachability tests instead of expanding one global sidebar.
+- The root page is a static-first semantic shell organized around Learn, Build, and Intelligence. Client JavaScript may enhance the latest-intelligence section, but every primary journey and the archive fallback must remain usable without JavaScript or Supabase.
+- Homepage intelligence is a bounded public read model: five newest `news_items`, no exact count, existing internal detail routes, `textContent` rendering, explicit unavailable/empty/error states, and a shared eight-second lifecycle deadline spanning runtime config plus data fetch. SPA route disposal must abort both requests and prevent stale DOM writes.
+- Internal homepage links stay base-relative for `/agent-build/` deployments; dynamic detail links reuse the list-detail `from` contract so the user can return to the originating portal state.
+- Portal visuals stay in the `.agent-portal-home` namespace. Dark/light text tokens must preserve WCAG AA contrast, compact action links use at least 44px touch targets, and reduced-motion rules remain part of the regression contract.

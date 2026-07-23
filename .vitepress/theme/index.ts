@@ -1,5 +1,7 @@
 import DefaultTheme from "vitepress/theme";
 import "./custom.css";
+import "./portal-home.css";
+import "./portal-home";
 import "./daily-news-feed";
 import "./daily-news-article-detail";
 import "./demo-runner/client";

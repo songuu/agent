@@ -2,11 +2,12 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { config as loadDotenv } from "dotenv";
-import { defineConfig, type DefaultTheme } from "vitepress";
+import { defineConfig } from "vitepress";
 import { withMermaid } from "vitepress-plugin-mermaid";
 // @ts-ignore markdown-it-task-lists has no bundled types; VitePress loads this config through esbuild.
 import taskLists from "markdown-it-task-lists";
 import { CHAPTERS, type Chapter } from "../knowledge-graph/data/graph";
+import { CONTEXTUAL_SIDEBAR, PRIMARY_NAVIGATION } from "./site-information-architecture";
 import {
   CONCEPT_VISUALS,
   renderConceptVisualHtml,
@@ -56,40 +57,6 @@ function resolveRepoPath(fromMdRelativePath: string, href: string): string {
     else segments.push(part);
   }
   return segments.join("/");
-}
-
-function chapterText(part: string, idxInPart: number, id: string, title: string): string {
-  if (id === "capstone") return `🎓 ${title.replace(/^毕业项目 · /, "")}`;
-  if (part === "进阶 RAG 专题") return `R${idxInPart + 1} ${title}`;
-  if (part === "进阶 LangGraph 专题") return `L${idxInPart + 1} ${title}`;
-  return `${id} ${title}`;
-}
-
-function buildCourseSidebar(): DefaultTheme.SidebarItem[] {
-  const parts = [...new Set(CHAPTERS.map((c) => c.part))];
-  return parts.map((part) => {
-    const chapters = CHAPTERS.filter((c) => c.part === part);
-    return {
-      text: part,
-      collapsed: part !== parts[0],
-      items: chapters.map((c, i) => {
-        const item: DefaultTheme.SidebarItem = {
-          text: chapterText(part, i, c.id, c.title),
-          link: `/${c.dir}/`,
-        };
-        if (c.id !== "21") return item;
-        return {
-          ...item,
-          items: [
-            { text: "热门仓库与源码对话", link: "/source-analysis/repository-matrix" },
-            { text: "LangChain 源码解析", link: "/source-analysis/langchain" },
-            { text: "LangGraph 源码解析", link: "/source-analysis/langgraph" },
-            { text: "LlamaIndex 源码解析", link: "/source-analysis/llamaindex" },
-          ],
-        };
-      }),
-    };
-  });
 }
 
 function buildDemoMarkers(chapters: readonly Chapter[] = CHAPTERS): Map<string, DemoMarker> {
@@ -185,65 +152,6 @@ function serveKgHtmlPlugin() {
   };
 }
 
-const sidebar: DefaultTheme.SidebarItem[] = [
-  {
-    text: "开始",
-    items: [
-      { text: "00 环境搭建", link: "/docs/setup" },
-      { text: "全局课程导航", link: "/docs/navigation" },
-      { text: "项目", link: "/docs/projects" },
-      { text: "已安排", link: "/docs/scheduled" },
-      { text: "完整教学大纲", link: "/docs/curriculum" },
-      { text: "术语表", link: "/docs/glossary" },
-    ],
-  },
-  {
-    text: "基础概念扩展专题",
-    collapsed: true,
-    items: [
-      { text: "B1-B12 扩章地图", link: "/agent-basics/" },
-      { text: "B1 LLM 不是数据库", link: "/agent-basics/01-llm-as-predictor" },
-      { text: "B2 Messages 与 Roles", link: "/agent-basics/02-messages-roles-context" },
-      { text: "B3 Token 与成本", link: "/agent-basics/03-token-latency-cost" },
-      { text: "B4 采样与可重复性", link: "/agent-basics/04-sampling-repeatability" },
-      { text: "B5 输出契约", link: "/agent-basics/05-instructions-output-contracts" },
-      { text: "B6 Tool Calling", link: "/agent-basics/06-tool-calling-mental-model" },
-      { text: "B7 Workflow vs Agent", link: "/agent-basics/07-workflow-vs-agent" },
-      { text: "B8 Memory/RAG/Context", link: "/agent-basics/08-memory-rag-context" },
-      { text: "B9 Structured Output", link: "/agent-basics/09-structured-output-basics" },
-      { text: "B10 Guardrails", link: "/agent-basics/10-guardrails-intro" },
-      { text: "B11 Evaluation 先行", link: "/agent-basics/11-evaluation-first" },
-      { text: "B12 Runtime 地图", link: "/agent-basics/12-framework-runtime-map" },
-    ],
-  },
-  ...buildCourseSidebar(),
-  {
-    text: "知识图谱",
-    collapsed: true,
-    items: [
-      { text: "全局知识图谱", link: "/docs/knowledge-graph" },
-      { text: "交互式图谱（动图）", link: KG_HTML_ROUTE, target: "_blank" },
-      { text: "图谱扩展指南", link: "/knowledge-graph/" },
-    ],
-  },
-  {
-    text: "学完之后",
-    collapsed: true,
-    items: [
-      { text: "💼 求职指南", link: "/docs/career-guide" },
-      { text: "🎯 面试题库", link: "/interview/" },
-      { text: "🚀 创业指南", link: "/docs/startup-guide" },
-      { text: "📁 项目", link: "/docs/projects" },
-      { text: "⏱️ 已安排", link: "/docs/scheduled" },
-      { text: "Agent 学习指南", link: "/docs/agent-learning-guides" },
-      { text: "🧭 RAG 完整架构蓝图", link: "/docs/rag-architecture" },
-      { text: "🏢 企业知识库 Agent 蓝图", link: "/docs/enterprise-knowledge-base-agent" },
-      { text: "🎓 企业知识库 Agent Capstone", link: "/capstone/enterprise-knowledge-base-agent/" },
-      { text: "📚 RAG 系统实战项目", link: "/docs/rag-system-project" },
-    ],
-  },
-];
-
 const demoMarkers = buildDemoMarkers();
 const conceptVisualMarkers = buildConceptVisualMarkers();
 const shouldInjectDemoRunnerToken = process.env.npm_lifecycle_event === "site:dev";
@@ -262,8 +170,8 @@ export default withMermaid(
   defineConfig({
     base: siteBase,
     lang: "zh-CN",
-    title: "Agent 从零到上框架",
-    description: "面向初学者的 AI Agent 开发完整学习路径：纯 TypeScript 手写每个零件，再上框架，进阶 RAG，直到可部署服务。",
+    title: "Agent 工程知识门户",
+    description: "学 Agent、做项目、追前沿的一站式工程知识门户：从底层原理、源码解析到真实项目与每日技术情报。",
     srcDir: ".",
     srcExclude: [
       "docs/plans/**",
@@ -391,53 +299,16 @@ export default withMermaid(
     },
 
     themeConfig: {
-      siteTitle: "🤖 Agent 从零到上框架",
-      nav: [
-        { text: "开始学习", link: "/docs/setup" },
-        { text: "课程总览", link: "/docs/navigation" },
-        {
-          text: "应用入口",
-          items: [
-            { text: "SPIFFE mTLS Agent", link: "https://songuu.top/agent-demo/spiffe/", target: "_blank" },
-            { text: "应用目录", link: "/docs/agent-apps" },
-          ],
-        },
-        { text: "AI 资讯", link: "/news/" },
-        { text: "面试题库", link: "/interview/", activeMatch: "^/interview(?:/|$)" },
-        { text: "Notion 文章", link: "/notion/" },
-        { text: "项目", link: "/docs/projects" },
-        { text: "已安排", link: "/docs/scheduled" },
-        {
-          text: "知识图谱",
-          items: [
-            { text: "全局知识图谱", link: "/docs/knowledge-graph" },
-            { text: "交互式图谱（动图）", link: KG_HTML_ROUTE, target: "_blank" },
-          ],
-        },
-        {
-          text: "指南",
-          items: [
-            { text: "💼 求职指南", link: "/docs/career-guide" },
-            { text: "🎯 面试题库", link: "/interview/" },
-            { text: "🚀 创业指南", link: "/docs/startup-guide" },
-            { text: "📁 项目", link: "/docs/projects" },
-            { text: "⏱️ 已安排", link: "/docs/scheduled" },
-            { text: "Agent 学习指南", link: "/docs/agent-learning-guides" },
-            { text: "🧭 RAG 完整架构", link: "/docs/rag-architecture" },
-            { text: "🏢 企业知识库 Agent", link: "/docs/enterprise-knowledge-base-agent" },
-            { text: "🎓 企业知识库 Agent Capstone", link: "/capstone/enterprise-knowledge-base-agent/" },
-            { text: "📚 RAG 系统实战", link: "/docs/rag-system-project" },
-          ],
-        },
-      ],
-      sidebar,
+      siteTitle: "Agent 工程知识门户",
+      nav: PRIMARY_NAVIGATION,
+      sidebar: CONTEXTUAL_SIDEBAR,
       outline: { level: [2, 3], label: "本页目录" },
       socialLinks: [{ icon: "github", link: GITHUB_REPO }],
       search: {
         provider: "local",
         options: {
           translations: {
-            button: { buttonText: "搜索课程", buttonAriaLabel: "搜索课程" },
+            button: { buttonText: "搜索全站", buttonAriaLabel: "搜索全站" },
             modal: {
               noResultsText: "没有找到相关内容",
               resetButtonTitle: "清空",

@@ -3,16 +3,8 @@ import {
   type InterviewQuestion,
   type InterviewQuestionCategory,
 } from "../../knowledge-graph/data/interview-questions";
-import { fetchAllPostgrestRows, type PostgrestReadConfig } from "./postgrest-pagination";
-
-declare const __FRONTIER_SUPABASE_CONFIG__:
-  | {
-      url: string;
-      anonKey: string;
-      schema: string;
-    }
-  | null
-  | undefined;
+import { fetchAllPostgrestRows } from "./postgrest-pagination";
+import { getSupabaseRuntimeConfig } from "./supabase-runtime-config";
 
 interface InterviewQuestionRow {
   question_id?: unknown;
@@ -72,7 +64,7 @@ const LOCAL_QUESTION_BY_SLUG = new Map(INTERVIEW_QUESTIONS.map((question) => [qu
 export async function loadInterviewClinicData(
   fetchImpl?: typeof fetch,
 ): Promise<InterviewClinicDataResult> {
-  const config = readSupabaseConfig();
+  const config = await getSupabaseRuntimeConfig();
   if (!config?.url || !config.anonKey) {
     return {
       questions: INTERVIEW_QUESTIONS,
@@ -151,20 +143,6 @@ export function normalizeInterviewQuestionRow(row: InterviewQuestionRow): Interv
     rationale,
     summaryExcerpt,
     faqList,
-  };
-}
-
-function readSupabaseConfig(): PostgrestReadConfig | null {
-  const injected =
-    typeof __FRONTIER_SUPABASE_CONFIG__ !== "undefined"
-      ? __FRONTIER_SUPABASE_CONFIG__
-      : ((globalThis as { __FRONTIER_SUPABASE_CONFIG__?: PostgrestReadConfig | null })
-          .__FRONTIER_SUPABASE_CONFIG__ ?? null);
-  if (!injected?.url || !injected.anonKey) return null;
-  return {
-    url: injected.url,
-    anonKey: injected.anonKey,
-    schema: injected.schema || "public",
   };
 }
 

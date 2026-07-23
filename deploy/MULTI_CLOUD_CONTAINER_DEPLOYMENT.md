@@ -103,7 +103,7 @@ Workflow 文件：`.github/workflows/agent-build-deploy.yml`。
 | Secret | 用途 |
 |--------|------|
 | `AGENT_BUILD_SSH_PRIVATE_KEY` | 部署专用 SSH 私钥 |
-| `AGENT_BUILD_PRODUCTION_ENV` | 构建期 `.env` 完整内容，必须含 `NEXT_PUBLIC_SUPABASE_URL` 和 `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
+| `AGENT_BUILD_PRODUCTION_ENV` | 静态构建期 public `.env`，必须含 `NEXT_PUBLIC_SUPABASE_URL` 和 `NEXT_PUBLIC_SUPABASE_ANON_KEY`；禁止 service role |
 | `AGENT_BUILD_DEPLOY_HOST` | 可选，目标主机 hostname/IP，未设置时默认 `47.253.230.197` |
 | `AGENT_BUILD_DEPLOY_USER` | 可选，SSH 用户，未设置时默认 `root` |
 | `AGENT_BUILD_DOMAIN` | 可选，验证域名，未设置时默认 `songuu.top` |
@@ -138,6 +138,13 @@ Workflow 文件：`.github/workflows/agent-build-deploy.yml`。
 6. 目标云 `docker compose up -d`。
 7. 目标云本机 `curl http://127.0.0.1:<SitePort>/healthz`。
 
+### Supabase 配置边界
+
+- 容器部署传入 `-RuntimeEnvFile` 时，脚本只从该文件提取 `NEXT_PUBLIC_SUPABASE_URL`、`NEXT_PUBLIC_SUPABASE_ANON_KEY`、`SUPABASE_SCHEMA` 作为 static-site Docker build args；`Dockerfile` 在 build 阶段生成 `supabase-runtime-config.json`。匿名 key 本身是浏览器公开配置。
+- `.dockerignore` 排除 `.env`/`.env.*`，Docker build args 也不接受 service role。`agent-build-site` 不挂载 `agent-build.runtime.env`，因此静态镜像不会取得服务端 Supabase 密钥。
+- 运行时 env 在构建后才上传到远端，`agent-build-runner`、`news-collector`、`notion-cron` 通过 Compose `env_file` 继承它；其中可含服务端 Supabase 配置。脚本会拒绝 anon key 与 service role key 相同的误配。
+- 两个 cron service 直接用 Node/tsx 入口启动，避免镜像中不存在 `news-collector/.env` 时被 package script 的 `--env-file` 覆盖；其配置只来自 Compose 注入的环境。
+- 迁移时先按 [`supabase/MIGRATION.md`](../supabase/MIGRATION.md) 完成 verify，再用 target runtime env 重新构建、发布 static site 并重启 jobs；仅切本地 `.env` 不会更新远端容器。
 ## 宿主机 Nginx 切换
 
 容器启动后先不要直接替换原 Nginx。推荐顺序：

@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node", "vite/client"],
+    "noUncheckedIndexedAccess": false,
+    "noEmit": true
+  },
+  "include": [
+    ".vitepress/theme/supabase-runtime-config.ts",
+    ".vitepress/theme/supabase-runtime-config.test.mts",
+    ".vitepress/theme/daily-news-feed.ts",
+    ".vitepress/theme/daily-news-article-detail.ts",
+    ".vitepress/theme/frontier-article-archive.ts",
+    ".vitepress/theme/interview-clinic-data.ts",
+    ".vitepress/theme/interview-article-detail.ts",
+    ".vitepress/theme/notion-articles-list.ts",
+    ".vitepress/theme/notion-article-detail.ts"
+  ]
+}

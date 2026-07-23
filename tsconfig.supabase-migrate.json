@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": [
+    "scripts/supabase-migrate/**/*.ts",
+    "scripts/supabase-migrate/**/*.mts",
+    "scripts/supabase-cutover.ts",
+    "scripts/supabase-cutover.test.mts",
+    "scripts/supabase-move.ts",
+    "scripts/supabase-move.test.mts",
+    "scripts/write-supabase-runtime-config.ts",
+    "scripts/write-supabase-runtime-config.test.mts"
+  ]
+}

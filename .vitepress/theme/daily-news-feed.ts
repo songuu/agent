@@ -25,6 +25,7 @@ import {
   restoreListDetailPosition,
   withReturnPath,
 } from "./list-detail-return";
+import { getSupabaseRuntimeConfig } from "./supabase-runtime-config";
 
 const WEEKDAY_LABELS = ["一", "二", "三", "四", "五", "六", "日"] as const;
 const DEFAULT_DATE_LABEL = "6月17日 · 周三";
@@ -32,11 +33,6 @@ const DEFAULT_NEWS_PAGE_SIZE = 10;
 const NEWS_EXCERPT_MAX_LENGTH = 220;
 const NEWS_DETAIL_MAX_LENGTH = 760;
 const NEWS_PAGE_SIZE_OPTIONS = [10, 20, 50] as const;
-
-declare const __FRONTIER_SUPABASE_CONFIG__:
-  | { url: string; anonKey: string; schema: string }
-  | null
-  | undefined;
 
 interface NewsItemView {
   externalId: string;
@@ -159,7 +155,7 @@ async function fetchNewsPage(
   filters: readonly string[],
   pageSize: number = DEFAULT_NEWS_PAGE_SIZE,
 ): Promise<{ items: NewsItemView[]; totalCount: number | null; hasMore: boolean }> {
-  const config = __FRONTIER_SUPABASE_CONFIG__ ?? null;
+  const config = await getSupabaseRuntimeConfig();
   if (!config?.url || !config.anonKey) {
     throw new Error("缺少 NEXT_PUBLIC_SUPABASE_URL 或 NEXT_PUBLIC_SUPABASE_ANON_KEY");
   }
@@ -186,7 +182,7 @@ async function fetchNewsPage(
 }
 
 async function fetchNewsFilterIndex(): Promise<NewsFilterIndexItem[]> {
-  const config = __FRONTIER_SUPABASE_CONFIG__ ?? null;
+  const config = await getSupabaseRuntimeConfig();
   if (!config?.url || !config.anonKey) {
     throw new Error("缺少 NEXT_PUBLIC_SUPABASE_URL 或 NEXT_PUBLIC_SUPABASE_ANON_KEY");
   }

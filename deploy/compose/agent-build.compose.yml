@@ -37,7 +37,7 @@ services:
     container_name: agent-build-news-collector
     profiles: ["jobs"]
     restart: unless-stopped
-    command: ["pnpm", "run", "news:cron"]
+    command: ["node", "--dns-result-order=ipv4first", "node_modules/tsx/dist/cli.mjs", "news-collector/src/cron.ts"]
     env_file:
       - ./agent-build.runtime.env
     environment:
@@ -48,7 +48,7 @@ services:
     container_name: agent-build-notion-cron
     profiles: ["jobs", "notion"]
     restart: unless-stopped
-    command: ["pnpm", "run", "notion:cron"]
+    command: ["node", "--dns-result-order=ipv4first", "node_modules/tsx/dist/cli.mjs", "news-collector/src/notion/cron.ts"]
     env_file:
       - ./agent-build.runtime.env
     environment:

@@ -10,17 +10,9 @@ import {
   type YearMonth,
 } from "./frontier-date-filter";
 import { fetchAllPostgrestRows } from "./postgrest-pagination";
+import { getSupabaseRuntimeConfig } from "./supabase-runtime-config";
 
 const WEEKDAY_LABELS = ["一", "二", "三", "四", "五", "六", "日"] as const;
-
-declare const __FRONTIER_SUPABASE_CONFIG__:
-  | {
-      url: string;
-      anonKey: string;
-      schema: string;
-    }
-  | null
-  | undefined;
 
 interface FrontierArticle {
   id: string;
@@ -121,7 +113,7 @@ function createArchive(root: HTMLElement): void {
 }
 
 async function loadFrontierArticlesFromSupabase(): Promise<FrontierArticle[]> {
-  const config = __FRONTIER_SUPABASE_CONFIG__ ?? null;
+  const config = await getSupabaseRuntimeConfig();
   if (!config?.url || !config.anonKey) {
     throw new Error("缺少 NEXT_PUBLIC_SUPABASE_URL 或 NEXT_PUBLIC_SUPABASE_ANON_KEY");
   }

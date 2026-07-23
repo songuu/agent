@@ -12,6 +12,7 @@ export interface PostgrestPagedReadOptions {
   order?: string[];
   pageSize?: number;
   maxPages?: number;
+  count?: "exact" | "planned" | "estimated" | "none";
   fetchImpl?: typeof fetch;
 }
 
@@ -101,6 +102,7 @@ export async function fetchPostgrestPage<T = unknown>({
   order = [],
   pageSize = DEFAULT_PAGE_SIZE,
   offset = 0,
+  count = "exact",
   fetchImpl = fetch,
 }: PostgrestPagedReadOptions & { offset?: number }): Promise<PostgrestPageResult<T>> {
   const normalizedPageSize = normalizePageSize(pageSize);
@@ -115,13 +117,14 @@ export async function fetchPostgrestPage<T = unknown>({
     normalizedOffset,
   );
 
+  const headers: Record<string, string> = {
+    apikey: config.anonKey,
+    Authorization: `Bearer ${config.anonKey}`,
+    "Accept-Profile": config.schema || "public",
+  };
+  if (count !== "none") headers.Prefer = `count=${count}`;
   const response = await fetchImpl(endpoint, {
-    headers: {
-      apikey: config.anonKey,
-      Authorization: `Bearer ${config.anonKey}`,
-      "Accept-Profile": config.schema || "public",
-      Prefer: "count=exact",
-    },
+    headers,
   });
 
   if (!response.ok) {
