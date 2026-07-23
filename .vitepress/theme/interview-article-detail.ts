@@ -1,7 +1,7 @@
 // 面试题站内详情页：运行时按 ?id=<slug> 读取 interview_questions 单行并渲染正文。
 
 import { INTERVIEW_QUESTIONS } from "../../knowledge-graph/data/interview-questions";
-import { fetchAllPostgrestRows } from "./postgrest-pagination";
+import { fetchAllPostgrestRows } from "./content-pagination";
 import { rankSimilarInterviewQuestions, type SimilarInterviewQuestion } from "./interview-similarity";
 import { safeReturnPathFromSearch, withReturnPath } from "./list-detail-return";
 import { getSupabaseRuntimeConfig } from "./supabase-runtime-config";
@@ -132,12 +132,8 @@ function refreshRoot(root: HTMLElement, force = false): void {
 
 async function loadArticle(slug: string): Promise<InterviewDetailRow | null> {
   const config = await getSupabaseRuntimeConfig();
-  if (!config?.url || !config.anonKey) {
-    throw new Error("缺少 NEXT_PUBLIC_SUPABASE_URL 或 NEXT_PUBLIC_SUPABASE_ANON_KEY");
-  }
-
   const rows = await fetchAllPostgrestRows<InterviewDetailRow>({
-    config: { url: config.url, anonKey: config.anonKey, schema: config.schema || "public" },
+    ...(config ? { config } : {}),
     table: "interview_questions",
     select: DETAIL_COLUMNS,
     filters: [`slug=eq.${slug}`],

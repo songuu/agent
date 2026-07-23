@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node"]
+  },
+  "include": [
+    "src/config.ts",
+    "src/collect.ts",
+    "src/data/**/*.ts",
+    "__tests__/content-repository.test.mts",
+    "__tests__/collect.test.mts",
+    "__tests__/config.test.mts"
+  ]
+}

@@ -3,7 +3,7 @@ import {
   type InterviewQuestion,
   type InterviewQuestionCategory,
 } from "../../knowledge-graph/data/interview-questions";
-import { fetchAllPostgrestRows } from "./postgrest-pagination";
+import { fetchAllPostgrestRows } from "./content-pagination";
 import { getSupabaseRuntimeConfig } from "./supabase-runtime-config";
 
 interface InterviewQuestionRow {
@@ -34,7 +34,7 @@ interface InterviewQuestionMetadata {
 
 export interface InterviewClinicDataResult {
   questions: readonly InterviewQuestion[];
-  source: "supabase" | "bundle";
+  source: "remote" | "bundle";
   note: string;
 }
 
@@ -65,17 +65,10 @@ export async function loadInterviewClinicData(
   fetchImpl?: typeof fetch,
 ): Promise<InterviewClinicDataResult> {
   const config = await getSupabaseRuntimeConfig();
-  if (!config?.url || !config.anonKey) {
-    return {
-      questions: INTERVIEW_QUESTIONS,
-      source: "bundle",
-      note: "当前显示本地题库（缺少公开 Supabase 配置）。",
-    };
-  }
 
   try {
     const rows = await fetchAllPostgrestRows<InterviewQuestionRow>({
-      config,
+      ...(config ? { config } : {}),
       table: "interview_questions",
       select: INTERVIEW_COLUMNS,
       order: ["sort_order.asc"],
@@ -90,21 +83,21 @@ export async function loadInterviewClinicData(
       return {
         questions: INTERVIEW_QUESTIONS,
         source: "bundle",
-        note: "Supabase 题库为空，已回退本地题库。",
+        note: "远端题库为空，已回退本地题库。",
       };
     }
 
     return {
       questions,
-      source: "supabase",
-      note: `当前显示 Supabase 题库（${questions.length} 题）。`,
+      source: "remote",
+      note: `当前显示远端题库（${questions.length} 题）。`,
     };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     return {
       questions: INTERVIEW_QUESTIONS,
       source: "bundle",
-      note: `Supabase 读取失败，已回退本地题库：${message}`,
+      note: `远端内容库读取失败，已回退本地题库：${message}`,
     };
   }
 }

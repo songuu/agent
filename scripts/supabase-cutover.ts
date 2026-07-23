@@ -137,7 +137,7 @@ export async function runSupabaseCutover(options: CutoverOptions): Promise<{
   await assertSuccessfulVerification(artifactRoot, options.migrationId);
   const targetValues = await readTargetValues(targetEnvPath!);
   const runtimeConfig = resolvePublicSupabaseRuntimeConfig(targetValues);
-  if (!runtimeConfig) {
+  if (!runtimeConfig?.supabase) {
     throw new Error("Target profile is missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY.");
   }
 
@@ -223,7 +223,7 @@ async function readTargetValues(targetEnvPath: string): Promise<TargetValues> {
 
 function publicOriginFromTarget(values: TargetValues): string {
   const config = resolvePublicSupabaseRuntimeConfig(values);
-  if (!config) throw new Error("Target profile is missing public Supabase config.");
+  if (!config?.supabase) throw new Error("Target profile is missing public Supabase config.");
   return new URL(config.supabase.url).origin;
 }
 

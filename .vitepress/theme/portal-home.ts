@@ -1,6 +1,6 @@
-import { fetchPostgrestPage } from "./postgrest-pagination";
-import { currentRelativePath, withReturnPath } from "./list-detail-return";
-import { getSupabaseRuntimeConfig, type SupabasePublicConfig } from "./supabase-runtime-config";
+import { fetchPostgrestPage } from "./content-pagination.ts";
+import { currentRelativePath, withReturnPath } from "./list-detail-return.ts";
+import { getSupabaseRuntimeConfig, type SupabasePublicConfig } from "./supabase-runtime-config.ts";
 
 export interface PortalNewsItem {
   externalId: string;
@@ -59,7 +59,7 @@ export function compactPortalSummary(value: string, maxLength = PORTAL_SUMMARY_L
 }
 
 export async function fetchPortalNewsPage(
-  config: SupabasePublicConfig,
+  config: SupabasePublicConfig | undefined,
   fetchImpl: typeof fetch = fetch,
 ): Promise<PortalNewsItem[]> {
   const page = await fetchPostgrestPage<unknown>({
@@ -87,8 +87,6 @@ export async function loadPortalNews(
   timeoutMs = PORTAL_NEWS_TIMEOUT_MS,
   externalSignal?: AbortSignal,
 ): Promise<PortalNewsLoadResult> {
-  if (!config) return { state: "unavailable", items: [] };
-
   const requestController = new AbortController();
   const abortRequest = (): void => requestController.abort();
   if (externalSignal?.aborted) abortRequest();
@@ -101,11 +99,16 @@ export async function loadPortalNews(
     fetchImpl(input, { ...init, signal: requestController.signal });
 
   try {
-    const items = await fetchPortalNewsPage(config, boundedFetch);
+    const items = await fetchPortalNewsPage(config ?? undefined, boundedFetch);
     return items.length > 0 ? { state: "ready", items } : { state: "empty", items: [] };
-  } catch {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!config && /未配置 Supabase 回退|缺少 Content API 配置/.test(message)) {
+      return { state: "unavailable", items: [] };
+    }
     return { state: "error", items: [] };
   } finally {
+
     globalThis.clearTimeout(timeoutId);
     externalSignal?.removeEventListener("abort", abortRequest);
   }

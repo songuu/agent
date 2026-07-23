@@ -16,7 +16,7 @@ import {
   yearMonthOf,
   type YearMonth,
 } from "./frontier-date-filter";
-import { fetchAllPostgrestRows, fetchPostgrestPage } from "./postgrest-pagination";
+import { fetchAllPostgrestRows, fetchPostgrestPage } from "./content-pagination";
 import {
   currentRelativePath,
   positiveIntegerParam,
@@ -156,16 +156,8 @@ async function fetchNewsPage(
   pageSize: number = DEFAULT_NEWS_PAGE_SIZE,
 ): Promise<{ items: NewsItemView[]; totalCount: number | null; hasMore: boolean }> {
   const config = await getSupabaseRuntimeConfig();
-  if (!config?.url || !config.anonKey) {
-    throw new Error("缺少 NEXT_PUBLIC_SUPABASE_URL 或 NEXT_PUBLIC_SUPABASE_ANON_KEY");
-  }
-
   const page = await fetchPostgrestPage<NewsItemRow>({
-    config: {
-      url: config.url,
-      anonKey: config.anonKey,
-      schema: config.schema || "public",
-    },
+    ...(config ? { config } : {}),
     table: "news_items",
     select: NEWS_COLUMNS,
     filters: [...filters],
@@ -183,16 +175,8 @@ async function fetchNewsPage(
 
 async function fetchNewsFilterIndex(): Promise<NewsFilterIndexItem[]> {
   const config = await getSupabaseRuntimeConfig();
-  if (!config?.url || !config.anonKey) {
-    throw new Error("缺少 NEXT_PUBLIC_SUPABASE_URL 或 NEXT_PUBLIC_SUPABASE_ANON_KEY");
-  }
-
   const rows = await fetchAllPostgrestRows<NewsFilterIndexRow>({
-    config: {
-      url: config.url,
-      anonKey: config.anonKey,
-      schema: config.schema || "public",
-    },
+    ...(config ? { config } : {}),
     table: "news_items",
     select: NEWS_FILTER_INDEX_COLUMNS,
     order: ["published_date.desc"],

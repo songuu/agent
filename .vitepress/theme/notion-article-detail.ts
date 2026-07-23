@@ -2,7 +2,7 @@
 //
 // 安全不变量：anon 只读 + status=eq.published；body_markdown 经 markdown-it(html:false)+DOMPurify 渲染。
 
-import { fetchAllPostgrestRows } from "./postgrest-pagination";
+import { fetchAllPostgrestRows } from "./content-pagination";
 import { renderNotionMarkdown } from "./notion-markdown";
 import { safeReturnPathFromSearch, withReturnPath } from "./list-detail-return";
 import { getSupabaseRuntimeConfig } from "./supabase-runtime-config";
@@ -75,11 +75,8 @@ function mount(root: HTMLElement): void {
 
 async function loadArticle(slug: string): Promise<DetailRow | null> {
   const config = await getSupabaseRuntimeConfig();
-  if (!config?.url || !config.anonKey) {
-    throw new Error("缺少 NEXT_PUBLIC_SUPABASE_URL 或 NEXT_PUBLIC_SUPABASE_ANON_KEY");
-  }
   const rows = await fetchAllPostgrestRows<DetailRow>({
-    config: { url: config.url, anonKey: config.anonKey, schema: config.schema || "public" },
+    ...(config ? { config } : {}),
     table: "notion_articles",
     select: DETAIL_COLUMNS,
     filters: [`slug=eq.${slug}`, "status=eq.published"],

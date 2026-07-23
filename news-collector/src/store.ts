@@ -83,7 +83,7 @@ function sanitizeTextForPostgrest(value: string): string {
     if (code >= 0xd800 && code <= 0xdbff) {
       const next = value.charCodeAt(index + 1);
       if (next >= 0xdc00 && next <= 0xdfff) {
-        output += value[index] + value[index + 1];
+        output += value[index]! + value[index + 1]!;
         index += 1;
       }
       continue;

@@ -9,6 +9,7 @@ services:
       - "127.0.0.1:${AGENT_BUILD_SITE_PORT:-8088}:8080"
     depends_on:
       - agent-build-runner
+      - agent-build-content-api
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
       interval: 30s
@@ -32,6 +33,24 @@ services:
     expose:
       - "5174"
 
+  # Read-only data boundary for the static site. It remains healthy while disabled
+  # so legacy Supabase-only deployments do not need a special Compose profile.
+  agent-build-content-api:
+    image: ${AGENT_BUILD_RUNTIME_IMAGE}
+    container_name: agent-build-content-api
+    restart: unless-stopped
+    command: ["pnpm", "run", "content:api:prod"]
+    env_file:
+      - ./agent-build.runtime.env
+    environment:
+      NODE_ENV: production
+      CONTENT_API_HOST: "0.0.0.0"
+      CONTENT_API_PORT: "5180"
+      CONTENT_API_ALLOWED_HOSTS: ${AGENT_BUILD_DOMAIN:-songuu.top}
+      CONTENT_API_ALLOWED_ORIGINS: ${AGENT_BUILD_ALLOWED_ORIGINS:-https://songuu.top}
+      CONTENT_API_ALLOW_MISSING_ORIGIN: "1"
+    expose:
+      - "5180"
   news-collector:
     image: ${AGENT_BUILD_RUNTIME_IMAGE}
     container_name: agent-build-news-collector

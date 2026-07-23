@@ -8,7 +8,7 @@ import {
   filterByDate,
   pickDefaultDate,
 } from "./frontier-date-filter";
-import { fetchAllPostgrestRows } from "./postgrest-pagination";
+import { fetchAllPostgrestRows } from "./content-pagination";
 import {
   availableTags,
   filterArticles,
@@ -85,11 +85,8 @@ function mount(root: HTMLElement): void {
 
 async function loadArticles(): Promise<NotionArticleView[]> {
   const config = await getSupabaseRuntimeConfig();
-  if (!config?.url || !config.anonKey) {
-    throw new Error("缺少 NEXT_PUBLIC_SUPABASE_URL 或 NEXT_PUBLIC_SUPABASE_ANON_KEY");
-  }
   const rows = await fetchAllPostgrestRows<NotionArticleRow>({
-    config: { url: config.url, anonKey: config.anonKey, schema: config.schema || "public" },
+    ...(config ? { config } : {}),
     table: "notion_articles",
     select: LIST_COLUMNS,
     filters: ["status=eq.published"],

@@ -44,3 +44,8 @@ scripts/deploy.ps1
 .supabase-migration/
 .env.supabase-source
 .env.supabase-target
+deploy/compose/agent-build.runtime.env
+# 可替换内容库迁移的本地 profile 与脱敏校验产物
+.content-migration/
+.env.content-source
+.env.content-mysql

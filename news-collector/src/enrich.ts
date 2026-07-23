@@ -115,7 +115,9 @@ async function mapWithConcurrency<T, R>(
   const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
     while (cursor < items.length) {
       const index = cursor++;
-      results[index] = await worker(items[index], index);
+      const item = items[index];
+      if (!item) continue;
+      results[index] = await worker(item, index);
     }
   });
   await Promise.all(runners);

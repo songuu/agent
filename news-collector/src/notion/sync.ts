@@ -1,6 +1,6 @@
 // 同步编排：sources → 增量游标 → 拉页 → 转 markdown(+图片重托管) → 映射 → 校验 → 幂等 upsert。
 //
-// syncNotion 是纯编排，所有副作用（Notion API、Storage、Supabase、时钟）都由 deps 注入，便于离线测：
+// syncNotion 是纯编排，所有副作用（Notion API、资产存储、内容库、时钟）都由 deps 注入，便于离线测：
 // - iteratePages / renderPage / cursorFor / upsert 可替换为读 fixtures 的实现
 // - now 注入固定时间保证确定性
 // - dryRun 跳过出库
@@ -14,11 +14,11 @@ import type { AssetEntry, AssetManifest } from "./asset-manifest.ts";
 import { createImageTransformer } from "./assets.ts";
 import { createNotionClient } from "./client.ts";
 import { convertPageToMarkdown, createConverter } from "./convert.ts";
-import { fetchArticleManifest, fetchMaxLastEdited } from "./cursor.ts";
+import { openContentRepositoryForWorkers } from "../data/runtime.ts";
 import { createPublicDirFallback, createStorageUpload, downloadImage } from "./image-io.ts";
 import { buildArticleQuery, iterateArticlePages, iterateFolderPages } from "./query.ts";
 import { ensureBucket, storageConfigFrom } from "./storage.ts";
-import { upsertNotionArticles, type UpsertResult } from "./store.ts";
+import type { UpsertResult } from "./store.ts";
 import { toNotionArticle } from "./map.ts";
 import { isFolderSource } from "./notion-sources.ts";
 import type { NotionArticle } from "./types.ts";
@@ -171,58 +171,68 @@ export async function syncFromConfig(
     });
   }
 
-  const client = createNotionClient(config.token);
   const supabase = config.supabase;
-  const storageConfig = storageConfigFrom(supabase);
-
-  // 一次性确保 bucket 存在；Storage 不可用时仅告警，单图上传失败会回退 public/。
-  try {
-    await ensureBucket(storageConfig, config.storageBucket);
-  } catch (error: unknown) {
-    process.stderr.write(
-      `[notion-sync] ensureBucket warning: ${error instanceof Error ? error.message : String(error)}\n`,
-    );
-  }
-
-  const storageUpload = createStorageUpload(storageConfig, config.storageBucket);
-  const publicDir = fileURLToPath(new URL("../../../public", import.meta.url));
-  const publicFallback = createPublicDirFallback(publicDir, normalizeBase(process.env.VITEPRESS_BASE));
-
-  const renderPage = async (
-    page: PageObjectResponse,
-    _source: NotionSource,
-  ): Promise<RenderedPage> => {
-    const collected: Record<string, AssetEntry> = {};
-    // 跨次复用：读该页已存的图片 manifest，srcHash 命中则跳过重新下载/上传（未变图片不重传）。
-    const existing: AssetManifest = await fetchArticleManifest(supabase, page.id);
-    const transformer = createImageTransformer({
-      pageId: page.id,
-      existing,
-      download: (url) => downloadImage(url),
-      upload: storageUpload,
-      fallback: publicFallback,
-      collected,
-    });
-    const converter = createConverter(client, { imageTransformer: transformer });
-    const markdown = await convertPageToMarkdown(converter, page.id);
-    return { markdown, assets: collected };
-  };
-
-  return syncNotion({
-    sources: config.sources,
-    now,
-    dryRun: false,
-    maxPages: config.maxPagesPerSync,
-    fullResync: config.fullResync,
-    cursorFor: (source) => fetchMaxLastEdited(supabase, source.key),
-    iteratePages: (source, sinceIso) => {
-      if (isFolderSource(source)) {
-        return iterateFolderPages(client, source, sinceIso);
-      }
-      return iterateArticlePages(client, buildArticleQuery(source, sinceIso, 100));
-    },
-    renderPage,
-    upsert: (articles) => upsertNotionArticles(articles, supabase),
-    ...overrides,
+  const repositoryHandle = await openContentRepositoryForWorkers({
+    config: config.contentRepository,
+    supabase,
   });
+
+  try {
+    const contentRepository = repositoryHandle.repository;
+    const client = createNotionClient(config.token);
+    const storageConfig = storageConfigFrom(supabase);
+
+    // 一次性确保 bucket 存在；Storage 不可用时仅告警，单图上传失败会回退 public/。
+    try {
+      await ensureBucket(storageConfig, config.storageBucket);
+    } catch (error: unknown) {
+      process.stderr.write(
+        `[notion-sync] ensureBucket warning: ${error instanceof Error ? error.message : String(error)}\n`,
+      );
+    }
+
+    const storageUpload = createStorageUpload(storageConfig, config.storageBucket);
+    const publicDir = fileURLToPath(new URL("../../../public", import.meta.url));
+    const publicFallback = createPublicDirFallback(publicDir, normalizeBase(process.env.VITEPRESS_BASE));
+
+    const renderPage = async (
+      page: PageObjectResponse,
+      _source: NotionSource,
+    ): Promise<RenderedPage> => {
+      const collected: Record<string, AssetEntry> = {};
+      // 跨次复用：从当前内容库读 manifest，srcHash 命中则跳过重新下载/上传（未变图片不重传）。
+      const existing: AssetManifest = await contentRepository.fetchNotionAssetManifest(page.id);
+      const transformer = createImageTransformer({
+        pageId: page.id,
+        existing,
+        download: (url) => downloadImage(url),
+        upload: storageUpload,
+        fallback: publicFallback,
+        collected,
+      });
+      const converter = createConverter(client, { imageTransformer: transformer });
+      const markdown = await convertPageToMarkdown(converter, page.id);
+      return { markdown, assets: collected };
+    };
+
+    return await syncNotion({
+      sources: config.sources,
+      now,
+      dryRun: false,
+      maxPages: config.maxPagesPerSync,
+      fullResync: config.fullResync,
+      cursorFor: (source) => contentRepository.fetchNotionCursor(source.key),
+      iteratePages: (source, sinceIso) => {
+        if (isFolderSource(source)) {
+          return iterateFolderPages(client, source, sinceIso);
+        }
+        return iterateArticlePages(client, buildArticleQuery(source, sinceIso, 100));
+      },
+      renderPage,
+      upsert: (articles) => contentRepository.upsertNotionArticles(articles),
+      ...overrides,
+    });
+  } finally {
+    await repositoryHandle.close();
+  }
 }

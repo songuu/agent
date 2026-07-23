@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": [
+    "scripts/content-api/**/*.ts",
+    "scripts/content-api/**/*.mts",
+    "scripts/supabase-migrate/manifest.ts",
+    "scripts/supabase-migrate/types.ts"
+  ]
+}

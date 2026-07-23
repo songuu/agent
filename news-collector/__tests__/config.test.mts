@@ -57,3 +57,36 @@ test("feed concurrency defaults to a conservative four workers and accepts overr
   assert.equal(loadConfig({}).feedConcurrency, 4);
   assert.equal(loadConfig({ NEWS_FEED_CONCURRENCY: "2" }).feedConcurrency, 2);
 });
+
+test("MySQL content repository enables writes without Supabase credentials", () => {
+  const config = loadConfig({
+    CONTENT_REPOSITORY_DRIVER: "mysql",
+    CONTENT_MYSQL_HOST: "mysql.internal",
+    CONTENT_MYSQL_PORT: "3306",
+    CONTENT_MYSQL_DATABASE: "agent_build",
+    CONTENT_MYSQL_USER: "collector",
+    CONTENT_MYSQL_PASSWORD: "private-password",
+    CONTENT_MYSQL_SSL: "true",
+  });
+
+  assert.equal(config.dryRun, false);
+  assert.equal(config.supabase, null);
+  assert.deepEqual(config.contentRepository, {
+    driver: "mysql",
+    mysql: {
+      host: "mysql.internal",
+      port: 3306,
+      database: "agent_build",
+      user: "collector",
+      password: "private-password",
+      ssl: true,
+    },
+  });
+});
+
+test("an explicit incomplete MySQL choice fails instead of falling back to Supabase", () => {
+  assert.throws(
+    () => loadConfig({ CONTENT_REPOSITORY_DRIVER: "mysql", CONTENT_MYSQL_HOST: "mysql.internal" }),
+    /CONTENT_MYSQL_DATABASE/,
+  );
+});

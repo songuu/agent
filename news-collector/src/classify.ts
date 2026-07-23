@@ -189,10 +189,12 @@ export function classify(input: ClassifyInput, source: NewsSource): Classificati
   if (scores.size === 0) {
     layer = source.layerHint ?? "foundation";
   } else {
-    layer = [...scores.entries()].sort((a, b) => {
+    const winner = [...scores.entries()].sort((a, b) => {
       if (b[1] !== a[1]) return b[1] - a[1];
       return PRIORITY.indexOf(a[0]) - PRIORITY.indexOf(b[0]);
-    })[0][0];
+    })[0];
+    // scores 非空时必有 winner；保留 fallback 让严格索引检查也能证明总有合法层级。
+    layer = winner?.[0] ?? source.layerHint ?? "foundation";
   }
 
   const tags = new Set<string>();

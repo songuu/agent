@@ -45,3 +45,25 @@ test("enabled sources come from the registry", () => {
     ],
   );
 });
+
+test("MySQL content repository remains selectable for Notion rows while Supabase serves current assets", () => {
+  const config = loadNotionConfig({
+    ...FULL_ENV,
+    CONTENT_REPOSITORY_DRIVER: "mysql",
+    CONTENT_MYSQL_URL: "mysql://collector:private-password@mysql.internal:3306/agent_build",
+    CONTENT_MYSQL_SSL: "true",
+  });
+
+  assert.equal(config.dryRun, false);
+  assert.deepEqual(config.contentRepository, {
+    driver: "mysql",
+    mysql: {
+      host: "mysql.internal",
+      port: 3306,
+      database: "agent_build",
+      user: "collector",
+      password: "private-password",
+      ssl: true,
+    },
+  });
+});

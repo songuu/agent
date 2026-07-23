@@ -7,7 +7,7 @@ import {
   isPortalPath,
   loadPortalNews,
   normalizePortalNewsRow,
-} from "./portal-home";
+} from "./portal-home.ts";
 
 test("normalizePortalNewsRow keeps only traceable, readable news", () => {
   assert.deepEqual(

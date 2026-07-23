@@ -52,3 +52,31 @@ test("公开 anon key 不能误配为 service role", () => {
     /不能等于/,
   );
 });
+
+test("Content API-only 运行时配置不泄露或依赖 Supabase", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "agent-build-content-api-runtime-config-"));
+  const outputPath = join(dir, "supabase-runtime-config.json");
+  try {
+    const result = await writeSupabaseRuntimeConfig({
+      outputPath,
+      now: new Date("2026-07-23T00:00:00.000Z"),
+      env: { NEXT_PUBLIC_CONTENT_API_BASE_URL: "/agent-build/api/content/v1/" },
+    });
+    assert.equal(result.status, "written");
+    assert.equal(result.publicOrigin, null);
+    assert.deepEqual(JSON.parse(await readFile(outputPath, "utf8")), {
+      version: 1,
+      updatedAt: "2026-07-23T00:00:00.000Z",
+      contentApi: { baseUrl: "/agent-build/api/content/v1" },
+    });
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("Content API 公开地址必须是同源绝对路径", () => {
+  assert.throws(
+    () => resolvePublicSupabaseRuntimeConfig({ NEXT_PUBLIC_CONTENT_API_BASE_URL: "https://elsewhere.example/api" }),
+    /同源绝对路径/,
+  );
+});

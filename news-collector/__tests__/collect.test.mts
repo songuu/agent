@@ -24,7 +24,7 @@ test("invariant #1: a single source failure is isolated, batch survives", async 
   };
 
   const report = await collectOnce({
-    sources: [bad, FIXTURE_SOURCES[0]],
+    sources: [bad, FIXTURE_SOURCES[0]!],
     fetchFeedImpl: impl,
     now: FIXED_NOW,
     dryRun: true,
@@ -68,7 +68,7 @@ test("dryRun does not attempt store; reports counts", async () => {
 
 test("article content extraction attaches station-side body fields when enabled", async () => {
   const report = await collectOnce({
-    sources: [FIXTURE_SOURCES[0]],
+    sources: [FIXTURE_SOURCES[0]!],
     fetchFeedImpl: fixtureFetchFeed,
     now: FIXED_NOW,
     dryRun: true,
@@ -91,7 +91,7 @@ test("article content extraction attaches station-side body fields when enabled"
 
 test("feed fetch concurrency is bounded to prevent same-host connection bursts", async () => {
   const sources: NewsSource[] = Array.from({ length: 6 }, (_, index) => ({
-    ...FIXTURE_SOURCES[0],
+    ...FIXTURE_SOURCES[0]!,
     key: `bounded-${index}`,
   }));
   let active = 0;
@@ -112,4 +112,49 @@ test("feed fetch concurrency is bounded to prevent same-host connection bursts",
 
   assert.equal(report.sources.length, 6);
   assert.equal(peak, 2);
+});
+
+test("content repository receives normalized items and its result drives the report", async () => {
+  let calls = 0;
+  let received = 0;
+  const report = await collectOnce({
+    sources: [FIXTURE_SOURCES[0]!],
+    fetchFeedImpl: fixtureFetchFeed,
+    now: FIXED_NOW,
+    dryRun: false,
+    maxPerSource: 2,
+    contentRepository: {
+      async upsertNewsItems(items) {
+        calls += 1;
+        received = items.length;
+        return { attempted: items.length, invalid: 0, pushed: items.length, tableCount: "0-0/42" };
+      },
+    },
+  });
+
+  assert.equal(calls, 1);
+  assert.equal(received, report.afterDedupe);
+  assert.equal(report.stored, report.afterDedupe);
+  assert.equal(report.tableCount, "0-0/42");
+  assert.equal(report.dryRun, false);
+});
+
+test("dry run never calls an injected content repository", async () => {
+  let calls = 0;
+  const report = await collectOnce({
+    sources: [FIXTURE_SOURCES[0]!],
+    fetchFeedImpl: fixtureFetchFeed,
+    now: FIXED_NOW,
+    dryRun: true,
+    contentRepository: {
+      async upsertNewsItems(items) {
+        calls += 1;
+        return { attempted: items.length, invalid: 0, pushed: items.length, tableCount: "1" };
+      },
+    },
+  });
+
+  assert.equal(calls, 0);
+  assert.equal(report.stored, 0);
+  assert.equal(report.dryRun, true);
 });

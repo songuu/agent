@@ -14,6 +14,8 @@ import { dedupe } from "./dedupe.ts";
 import { enrichItems } from "./enrich.ts";
 import { toNewsItem } from "./normalize.ts";
 import { fetchArticleContent, type ArticleContentResult } from "./article-content.ts";
+import type { ContentRepository } from "./data/content-repository.ts";
+import { openContentRepositoryForWorkers } from "./data/runtime.ts";
 import { fetchFeed, type FeedResult } from "./rss.ts";
 import { enabledSources } from "./sources.ts";
 import { upsertNewsItems } from "./store.ts";
@@ -65,6 +67,8 @@ export interface CollectOptions {
   readonly now?: Date;
   readonly dryRun?: boolean;
   readonly supabase?: SupabaseConfig | null;
+  /** 首选写入端口；保留 supabase 参数只为已有调用者的渐进迁移兼容。 */
+  readonly contentRepository?: Pick<ContentRepository, "upsertNewsItems">;
   readonly feedTimeoutMs?: number;
   /** 同时抓取的源数；限制同一供应商的连接突发。 */
   readonly feedConcurrency?: number;
@@ -84,7 +88,8 @@ export async function collectOnce(options: CollectOptions = {}): Promise<Collect
   const start = options.now ?? new Date();
   const sources = options.sources ?? enabledSources();
   const supabase = options.supabase ?? null;
-  const dryRun = options.dryRun ?? supabase === null;
+  const contentRepository = options.contentRepository;
+  const dryRun = options.dryRun ?? (!contentRepository && supabase === null);
   const fetchImpl: FetchFeedImpl = options.fetchFeedImpl ?? fetchFeed;
   const feedConcurrency = options.feedConcurrency ?? DEFAULT_FEED_CONCURRENCY;
 
@@ -164,10 +169,17 @@ export async function collectOnce(options: CollectOptions = {}): Promise<Collect
 
   let stored = 0;
   let tableCount = "n/a";
-  if (!dryRun && supabase) {
+  if (!dryRun && contentRepository) {
+    const result = await contentRepository.upsertNewsItems(items);
+    stored = result.pushed;
+    tableCount = result.tableCount;
+  } else if (!dryRun && supabase) {
+    // 兼容外部调用 collectOnce({ supabase })；正式 CLI/cron 已统一走 ContentRepository。
     const result = await upsertNewsItems(items, supabase);
     stored = result.pushed;
     tableCount = result.tableCount;
+  } else if (!dryRun) {
+    throw new Error("A content repository is required when NEWS_DRY_RUN is disabled.");
   }
 
   const finish = new Date();
@@ -275,18 +287,32 @@ export async function collectFromConfig(
   config: RunConfig,
   overrides: Partial<CollectOptions> = {},
 ): Promise<CollectReport> {
-  return collectOnce({
-    dryRun: config.dryRun,
-    supabase: config.supabase,
-    feedTimeoutMs: config.feedTimeoutMs,
-    feedConcurrency: config.feedConcurrency,
-    maxPerSource: config.maxPerSource,
-    enrichMax: config.enrichMax,
-    enrichProvider: config.enrichProvider,
-    enrichModel: config.enrichModel,
-    articleContentEnabled: config.articleContentEnabled,
-    articleContentTimeoutMs: config.articleContentTimeoutMs,
-    articleContentMaxItems: config.articleContentMaxItems,
-    ...overrides,
-  });
+  const dryRun = overrides.dryRun ?? config.dryRun;
+  const repositoryHandle =
+    !dryRun && !overrides.contentRepository
+      ? await openContentRepositoryForWorkers({
+          config: config.contentRepository,
+          supabase: config.supabase,
+        })
+      : null;
+
+  try {
+    return await collectOnce({
+      dryRun,
+      supabase: config.supabase,
+      contentRepository: repositoryHandle?.repository,
+      feedTimeoutMs: config.feedTimeoutMs,
+      feedConcurrency: config.feedConcurrency,
+      maxPerSource: config.maxPerSource,
+      enrichMax: config.enrichMax,
+      enrichProvider: config.enrichProvider,
+      enrichModel: config.enrichModel,
+      articleContentEnabled: config.articleContentEnabled,
+      articleContentTimeoutMs: config.articleContentTimeoutMs,
+      articleContentMaxItems: config.articleContentMaxItems,
+      ...overrides,
+    });
+  } finally {
+    await repositoryHandle?.close();
+  }
 }

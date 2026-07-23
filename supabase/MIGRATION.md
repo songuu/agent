@@ -1,6 +1,7 @@
 # Supabase 地址迁移运行手册
 
 本仓库的迁移器覆盖“Agent course 内容数据面”：5 张 `public` 表和 Notion 图片 bucket `notion-assets`。
+> 范围提醒：本手册和 `pnpm supabase:move` 只处理 **Supabase → Supabase** 地址/项目迁移。若目标是自建 MySQL 或其他数据库，请使用 [可替换内容数据层与 Supabase → MySQL 迁移手册](../docs/solutions/2026-07-23-portable-content-data-layer.md)；两者的对象存储、公开 API 与 writer 切换门禁不同，不能混用。
 
 它不把以下对象误报为已迁移：Auth 用户/会话、Edge Functions、Realtime 配置、Dashboard 配置、第三方 cron、未纳入清单的扩展或 bucket。它们需要单独审计并显式迁移。
 

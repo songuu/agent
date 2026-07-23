@@ -1,7 +1,7 @@
 # news-collector · AI 资讯定时收集系统
 
 仿 [ai.codefather.cn/news](https://ai.codefather.cn/news) 的**多源 AI 资讯定时聚合**子系统：
-按计划从多个公开 RSS/Atom 源抓取；启用订阅源必须能被现有抓取器正确解析并返回条目 → 归一 → 规则分类（8 层生态）→ 可选 LLM 富化（Anthropic / OpenAI）→ 去重 → 幂等写入 Supabase。
+按计划从多个公开 RSS/Atom 源抓取；启用订阅源必须能被现有抓取器正确解析并返回条目 → 归一 → 规则分类（8 层生态）→ 可选 LLM 富化（Anthropic / OpenAI）→ 去重 → 通过可替换内容仓库幂等写入 Supabase 或 MySQL。
 
 第 20 章「前沿文章库」直接展示本系统写入的 `news_items` 表；旧的手工策展资料仍保留在知识图谱中，但不再作为文章日历的数据源。
 
@@ -19,7 +19,7 @@ NewsItem
    │  dedupe     —— 批内按 externalId + url 双重去重
    │  enrich?    —— 可选 LLM 摘要+分层；无所选 provider key 时优雅降级为规则结果
    ▼
-store(upsert)   —— PostgREST service_role，on_conflict=external_id 幂等
+ContentRepository(upsert)   —— Supabase/PostgREST 或 MySQL，natural key=external_id 幂等
 ```
 
 ## 目录
@@ -34,7 +34,8 @@ news-collector/
     classify.ts     规则分类（纯函数、确定性）
     enrich.ts       可选 LLM 富化（降级）
     dedupe.ts       批内去重
-    store.ts        Supabase PostgREST upsert（service_role）
+    store.ts        legacy Supabase PostgREST upsert（旧直接调用兼容）
+    data/           ContentRepository、Supabase/MySQL adapters、MySQL schema 与 runtime composition
     config.ts       env 配置（zod 校验）
     collect.ts      编排：collectOnce / collectFromConfig
     report.ts       运行报告格式化
@@ -131,7 +132,7 @@ pnpm supabase:news-seed
 # DDL：直接执行 notion_articles 建表 migration
 supabase/migrations/20260617140000_create_notion_articles.sql
 
-# 同步：需仓库根 .env 中配置 NOTION_TOKEN + Supabase 写入凭据
+# 同步：需 NOTION_TOKEN、关系型内容库凭据；当前图片重托管仍需 Supabase Storage 凭据
 pnpm notion:sync
 ```
 
@@ -139,7 +140,10 @@ pnpm notion:sync
 
 见 [.env.example](./.env.example)。要点：
 
-- `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`：写库必填；**缺失则自动退回 dryRun**（只抓取不写库）。
+- 默认 `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`：兼容原有写库；**缺失则自动退回 dryRun**（只抓取不写库）。
+- `CONTENT_REPOSITORY_DRIVER=mysql` + `CONTENT_MYSQL_URL`（或分项 MySQL 字段）：让新闻写入和 Notion 关系数据改走 MySQL；MySQL 配置不完整会显式报错，绝不回写旧库。
+- `NEXT_PUBLIC_CONTENT_API_BASE_URL`：仅浏览器使用的同源 Content API 路径；不包含数据库地址或密钥。
+- 当前 Notion 图片上传仍依赖 Supabase Storage；完全移除 Supabase 前需迁移 `notion-assets` 并接入独立 AssetStore。
 - `LLM_PROVIDER`：与仓库根 `.env.example` 保持同一套值，支持 `anthropic` / `openai` / `ollama`。
 - `ANTHROPIC_API_KEY` + `ANTHROPIC_MODEL`：`LLM_PROVIDER=anthropic` 时使用。
 - `OPENAI_API_KEY` + `OPENAI_MODEL` + 可选 `OPENAI_BASE_URL`：`LLM_PROVIDER=openai` 时使用；SiliconFlow 等 OpenAI-compatible 平台也走这组配置。
@@ -182,11 +186,12 @@ journalctl -u news-collector -f
 3. **规则分类纯函数确定性**：同输入恒定同层/标签，可离线测、seed 可复现。
 4. **无 key 可完整离线跑**：enrich 优雅降级，smoke/test 全程不触网。
 5. **文章流独立**：`news_items` 独立表承载第 20 章文章流，不碰 `graph.ts` 手工策展 SoT。
-6. **幂等 upsert**：身份 = canonical URL 的 sha256，`on_conflict=external_id` 重复运行不重复入库。
+6. **幂等 upsert**：身份 = canonical URL 的 sha256，`external_id` 是稳定自然键；Supabase 与 MySQL 重复运行都不重复入库。
 
 ## 故障排查
 
 - **某些源 0 items / ✗**：多为间歇 502 或 feed 改版；故障隔离保证其它源照常。改 `src/sources.ts` 增删源。
-- **写库失败 HTTP 401**：service_role key 错或表未建；先跑迁移、核对 `.env`。
-- **dryRun 一直生效**：未配 `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY`，或 `NEWS_DRY_RUN=true`。
+- **Supabase 写库失败 HTTP 401**：service_role key 错或表未建；先跑迁移、核对 `.env`。
+- **MySQL 写库失败**：先确认 `CONTENT_REPOSITORY_DRIVER=mysql` 与 URL/分项字段没有混用，再核对 MySQL 8.0.19+ schema、网络与最小权限账号。
+- **dryRun 一直生效**：默认路径未配 `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY`，或 `NEWS_DRY_RUN=true`；MySQL 路径配置完整时不会因缺 Supabase 而让新闻 collector dryRun。
 - **Windows `tsx → spawn EPERM`**：用 `node --experimental-transform-types news-collector/src/cli-collect.ts` 作为 workaround（见仓库 supabase/README.md）。

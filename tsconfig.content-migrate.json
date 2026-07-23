@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": [
+    "scripts/content-migrate/**/*.ts",
+    "scripts/content-migrate/**/*.mts",
+    "scripts/supabase-migrate/artifacts.ts",
+    "scripts/supabase-migrate/manifest.ts",
+    "scripts/supabase-migrate/profiles.ts",
+    "scripts/supabase-migrate/types.ts",
+    "news-collector/src/data/**/*.ts"
+  ]
+}

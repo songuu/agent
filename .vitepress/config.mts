@@ -49,6 +49,10 @@ interface FrontierSupabaseConfig {
   schema: string;
 }
 
+interface FrontierContentApiConfig {
+  baseUrl: string;
+}
+
 function resolveRepoPath(fromMdRelativePath: string, href: string): string {
   const segments = fromMdRelativePath.split("/").slice(0, -1);
   for (const part of href.split("/")) {
@@ -126,16 +130,35 @@ function readDemoRunnerRuntime(): DemoRunnerRuntime {
 }
 
 function readFrontierSupabaseConfig(): FrontierSupabaseConfig | null {
-  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "").trim();
+  // 仅允许显式 public 变量进入静态 bundle；服务器 service-role URL 绝不能作为回退。
+  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim();
   const anonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "").trim();
   if (!url || !anonKey) return null;
+
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error("NEXT_PUBLIC_SUPABASE_URL 必须是无凭据的 http(s) 地址。");
+  }
+  if (!/^https?:$/.test(parsed.protocol) || parsed.username || parsed.password) {
+    throw new Error("NEXT_PUBLIC_SUPABASE_URL 必须是无凭据的 http(s) 地址。");
+  }
   return {
-    url,
+    url: parsed.toString().replace(/\/+$/, ""),
     anonKey,
     schema: (process.env.SUPABASE_SCHEMA || "public").trim() || "public",
   };
 }
 
+function readFrontierContentApiConfig(): FrontierContentApiConfig | null {
+  const baseUrl = (process.env.NEXT_PUBLIC_CONTENT_API_BASE_URL || "").trim();
+  if (!baseUrl) return null;
+  if (!baseUrl.startsWith("/") || baseUrl.startsWith("//") || baseUrl.includes("\\") || /[?#]/.test(baseUrl)) {
+    throw new Error("NEXT_PUBLIC_CONTENT_API_BASE_URL 必须是同源绝对路径，例如 /agent-build/api/content/v1。");
+  }
+  return { baseUrl: baseUrl.replace(/\/+$/, "") || "/" };
+}
 function serveKgHtmlPlugin() {
   return {
     name: "serve-kg-interactive-html",
@@ -165,6 +188,7 @@ const demoRunnerBaseUrl =
 const demoRunnerClientEnabled = shouldInjectDemoRunnerToken || shouldEnableProductionDemoRunner;
 const siteBase = normalizeBase(process.env.VITEPRESS_BASE);
 const frontierSupabaseConfig = readFrontierSupabaseConfig();
+const frontierContentApiConfig = readFrontierContentApiConfig();
 
 export default withMermaid(
   defineConfig({
@@ -273,6 +297,11 @@ export default withMermaid(
         __DEMO_RUNNER_BASE_URL__: JSON.stringify(demoRunnerBaseUrl),
         __DEMO_RUNNER_CLIENT_ENABLED__: JSON.stringify(demoRunnerClientEnabled),
         __FRONTIER_SUPABASE_CONFIG__: JSON.stringify(frontierSupabaseConfig),
+        __FRONTIER_CONTENT_API_CONFIG__: JSON.stringify(
+          frontierContentApiConfig
+            ? { version: 1, contentApi: frontierContentApiConfig, ...(frontierSupabaseConfig ? { supabase: frontierSupabaseConfig } : {}) }
+            : null,
+        ),
       },
       plugins: [serveKgHtmlPlugin()],
       optimizeDeps: {

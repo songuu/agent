@@ -80,6 +80,14 @@ jobs:
         run: |
           set -euo pipefail
           pnpm typecheck
+          pnpm supabase:typecheck
+          pnpm content:api:typecheck
+          pnpm content:api:test
+          pnpm news:repository:typecheck
+          pnpm news:repository:test
+          pnpm notion:typecheck
+          pnpm content:migrate:mysql:typecheck
+          pnpm content:migrate:mysql:test
           npx tsx knowledge-graph/data/visuals.test.mts
           npx tsx knowledge-graph/generate.test.mts
           npx tsx .vitepress/theme/diagram-zoom.test.mts
@@ -93,10 +101,22 @@ jobs:
             exit 1
           fi
           printf '%s\n' "${AGENT_BUILD_PRODUCTION_ENV}" > .env
-          grep -q '^NEXT_PUBLIC_SUPABASE_URL=' .env || { echo "::error::AGENT_BUILD_PRODUCTION_ENV 缺少 NEXT_PUBLIC_SUPABASE_URL"; exit 1; }
-          grep -q '^NEXT_PUBLIC_SUPABASE_ANON_KEY=' .env || { echo "::error::AGENT_BUILD_PRODUCTION_ENV 缺少 NEXT_PUBLIC_SUPABASE_ANON_KEY"; exit 1; }
-          if grep -Eq '^(SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SERVICE_ROLE)=' .env; then
-            echo "::error::AGENT_BUILD_PRODUCTION_ENV 不应包含 service role secret；静态站只允许 public anon 配置"
+          has_supabase_url=false
+          has_supabase_anon=false
+          has_content_api=false
+          grep -q '^NEXT_PUBLIC_SUPABASE_URL=.' .env && has_supabase_url=true || true
+          grep -q '^NEXT_PUBLIC_SUPABASE_ANON_KEY=.' .env && has_supabase_anon=true || true
+          grep -q '^NEXT_PUBLIC_CONTENT_API_BASE_URL=/' .env && has_content_api=true || true
+          if [ "${has_supabase_url}" != "${has_supabase_anon}" ]; then
+            echo "::error::NEXT_PUBLIC_SUPABASE_URL 与 NEXT_PUBLIC_SUPABASE_ANON_KEY 必须同时配置"
+            exit 1
+          fi
+          if [ "${has_content_api}" != true ] && [ "${has_supabase_url}" != true ]; then
+            echo "::error::AGENT_BUILD_PRODUCTION_ENV 至少需要 NEXT_PUBLIC_CONTENT_API_BASE_URL 或完整 Supabase anon pair"
+            exit 1
+          fi
+          if grep -Eq '^(SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SERVICE_ROLE|CONTENT_MYSQL_)=' .env; then
+            echo "::error::AGENT_BUILD_PRODUCTION_ENV 不应包含 service role 或 MySQL secret；静态站只允许公开路径和可选 anon 配置"
             exit 1
           fi
           echo "Production .env written for build (values masked)."

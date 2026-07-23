@@ -9,7 +9,7 @@ import {
   yearMonthOf,
   type YearMonth,
 } from "./frontier-date-filter";
-import { fetchAllPostgrestRows } from "./postgrest-pagination";
+import { fetchAllPostgrestRows } from "./content-pagination";
 import { getSupabaseRuntimeConfig } from "./supabase-runtime-config";
 
 const WEEKDAY_LABELS = ["一", "二", "三", "四", "五", "六", "日"] as const;
@@ -114,16 +114,8 @@ function createArchive(root: HTMLElement): void {
 
 async function loadFrontierArticlesFromSupabase(): Promise<FrontierArticle[]> {
   const config = await getSupabaseRuntimeConfig();
-  if (!config?.url || !config.anonKey) {
-    throw new Error("缺少 NEXT_PUBLIC_SUPABASE_URL 或 NEXT_PUBLIC_SUPABASE_ANON_KEY");
-  }
-
   const rows = await fetchAllPostgrestRows<FrontierArticleRow>({
-    config: {
-      url: config.url,
-      anonKey: config.anonKey,
-      schema: config.schema || "public",
-    },
+    ...(config ? { config } : {}),
     table: "frontier_ecosystem_articles",
     select: FRONTIER_COLUMNS,
     filters: [`chapter_id=eq.${FRONTIER_CHAPTER_ID}`],

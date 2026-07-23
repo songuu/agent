@@ -5,6 +5,10 @@
 
 import type { ProviderName } from "../../src/shared/llm/index.ts";
 import { z } from "zod";
+import {
+  loadContentRepositoryConfig,
+  type ContentRepositoryConfig,
+} from "./data/repository-config.ts";
 
 const llmProviderSchema = z.enum(["anthropic", "openai", "ollama"]);
 
@@ -72,6 +76,8 @@ export interface RunConfig {
   readonly env: NewsEnv;
   readonly dryRun: boolean;
   readonly supabase: SupabaseConfig | null;
+  /** 内容写入端口；未显式设置时保持 Supabase 兼容行为。 */
+  readonly contentRepository: ContentRepositoryConfig;
   readonly feedTimeoutMs: number;
   readonly feedConcurrency: number;
   readonly maxPerSource: number;
@@ -97,12 +103,14 @@ function hasProviderCredential(env: NewsEnv): boolean {
   }
 }
 
-/** 解析并校验环境；缺 Supabase 凭据时自动退回 dryRun（不写库）。 */
+/** 解析并校验环境；缺选定内容库凭据时自动退回 dryRun（不写库）。 */
 export function loadConfig(source: NodeJS.ProcessEnv = process.env): RunConfig {
   const env = envSchema.parse(source);
+  const contentRepository = loadContentRepositoryConfig(source);
 
   const hasSupabase = Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY);
-  const dryRun = env.NEWS_DRY_RUN || !hasSupabase;
+  const hasWritableRepository = contentRepository.driver === "mysql" || hasSupabase;
+  const dryRun = env.NEWS_DRY_RUN || !hasWritableRepository;
 
   const supabase: SupabaseConfig | null =
     hasSupabase && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY
@@ -117,6 +125,7 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): RunConfig {
     env,
     dryRun,
     supabase,
+    contentRepository,
     feedTimeoutMs: env.NEWS_FEED_TIMEOUT_MS,
     feedConcurrency: env.NEWS_FEED_CONCURRENCY,
     maxPerSource: env.NEWS_MAX_PER_SOURCE,

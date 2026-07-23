@@ -2,10 +2,15 @@
 //
 // 密钥纪律（见 [[secret-never-in-tracked-file]]）：NOTION_TOKEN / SUPABASE_SERVICE_ROLE_KEY
 // 只走环境变量（配合 `--env-file=.env`），绝不写入任何 tracked 文件。
-// 缺 NOTION_TOKEN 或 Supabase 凭据时自动退回 dryRun（不拉取/不写库），CI/本地无凭据也不报错。
+// 缺 Notion token、内容库或当前 Supabase Storage 凭据时自动退回 dryRun（不拉取/不写库），
+// CI/本地无凭据也不报错。关系型内容库可切 MySQL；对象存储尚保持独立边界。
 
 import { z } from "zod";
 import type { SupabaseConfig } from "../config.ts";
+import {
+  loadContentRepositoryConfig,
+  type ContentRepositoryConfig,
+} from "../data/repository-config.ts";
 import { enabledNotionSources, type NotionSource } from "./notion-sources.ts";
 
 const optionalEnvString = z.preprocess((value) => {
@@ -49,10 +54,12 @@ export type NotionEnv = z.infer<typeof envSchema>;
 
 export interface NotionRunConfig {
   readonly env: NotionEnv;
-  /** 缺 token 或缺 Supabase 时为 true：跳过真实拉取/写库。 */
+  /** 缺 token、内容库或当前对象存储凭据时为 true：跳过真实拉取/写库。 */
   readonly dryRun: boolean;
   readonly token: string | null;
+  /** 当前仅供 Supabase Storage 重托管图片使用；不再承担内容表读写。 */
   readonly supabase: SupabaseConfig | null;
+  readonly contentRepository: ContentRepositoryConfig;
   readonly sources: readonly NotionSource[];
   readonly cron: string;
   readonly timezone: string;
@@ -62,15 +69,17 @@ export interface NotionRunConfig {
   readonly fullResync: boolean;
 }
 
-/** 解析并校验环境；缺 NOTION_TOKEN 或 Supabase 凭据时自动退回 dryRun。 */
+/** 解析并校验环境；关系型内容库可选择 MySQL，但当前图片重托管仍需要 Supabase Storage。 */
 export function loadNotionConfig(
   source: NodeJS.ProcessEnv = process.env,
 ): NotionRunConfig {
   const env = envSchema.parse(source);
+  const contentRepository = loadContentRepositoryConfig(source);
 
   const hasSupabase = Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY);
+  const hasContentRepository = contentRepository.driver === "mysql" || hasSupabase;
   const token = env.NOTION_TOKEN ?? null;
-  const dryRun = env.NOTION_DRY_RUN || !token || !hasSupabase;
+  const dryRun = env.NOTION_DRY_RUN || !token || !hasContentRepository || !hasSupabase;
 
   const supabase: SupabaseConfig | null =
     hasSupabase && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY
@@ -86,6 +95,7 @@ export function loadNotionConfig(
     dryRun,
     token,
     supabase,
+    contentRepository,
     sources: enabledNotionSources(),
     cron: env.NOTION_CRON,
     timezone: env.NOTION_TZ,

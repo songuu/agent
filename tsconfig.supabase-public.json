@@ -9,6 +9,13 @@
   "include": [
     ".vitepress/theme/supabase-runtime-config.ts",
     ".vitepress/theme/supabase-runtime-config.test.mts",
+    ".vitepress/theme/content-api-client.ts",
+    ".vitepress/theme/content-api-client.test.mts",
+    ".vitepress/theme/content-pagination.ts",
+    ".vitepress/theme/content-pagination.test.mts",
+    ".vitepress/theme/postgrest-pagination.ts",
+    ".vitepress/theme/portal-home.ts",
+    ".vitepress/theme/portal-home.test.mts",
     ".vitepress/theme/daily-news-feed.ts",
     ".vitepress/theme/daily-news-article-detail.ts",
     ".vitepress/theme/frontier-article-archive.ts",

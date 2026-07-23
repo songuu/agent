@@ -184,6 +184,7 @@ $publicConfigEnvFile = if (-not [string]::IsNullOrWhiteSpace($RuntimeEnvFile)) {
 $publicSupabaseUrl = if ($publicConfigEnvFile) { Read-EnvFileValue $publicConfigEnvFile "NEXT_PUBLIC_SUPABASE_URL" } else { $null }
 $publicSupabaseAnonKey = if ($publicConfigEnvFile) { Read-EnvFileValue $publicConfigEnvFile "NEXT_PUBLIC_SUPABASE_ANON_KEY" } else { $null }
 $publicSupabaseSchema = if ($publicConfigEnvFile) { First-Value @((Read-EnvFileValue $publicConfigEnvFile "SUPABASE_SCHEMA"), "public") } else { "public" }
+$publicContentApiBaseUrl = if ($publicConfigEnvFile) { Read-EnvFileValue $publicConfigEnvFile "NEXT_PUBLIC_CONTENT_API_BASE_URL" } else { $null }
 $runtimeSupabaseServiceRole = if ($publicConfigEnvFile) {
   First-Value @(
     (Read-EnvFileValue $publicConfigEnvFile "SUPABASE_SERVICE_ROLE_KEY"),
@@ -196,14 +197,25 @@ if ([string]::IsNullOrWhiteSpace($publicSupabaseUrl) -xor [string]::IsNullOrWhit
 if (-not [string]::IsNullOrWhiteSpace($publicSupabaseAnonKey) -and $publicSupabaseAnonKey -eq $runtimeSupabaseServiceRole) {
   throw "NEXT_PUBLIC_SUPABASE_ANON_KEY must not equal the runtime service role key."
 }
-$siteSupabaseBuildArgs = @()
+if (-not [string]::IsNullOrWhiteSpace($publicContentApiBaseUrl)) {
+  $contentApiPath = $publicContentApiBaseUrl.Trim()
+  if (-not $contentApiPath.StartsWith("/") -or $contentApiPath.StartsWith("//") -or $contentApiPath.Contains("\") -or $contentApiPath.Contains("?") -or $contentApiPath.Contains("#")) {
+    throw "NEXT_PUBLIC_CONTENT_API_BASE_URL must be a same-origin absolute path, for example /agent-build/api/content/v1."
+  }
+}
+
+$sitePublicDataBuildArgs = @()
 if (-not [string]::IsNullOrWhiteSpace($publicSupabaseUrl)) {
-  $siteSupabaseBuildArgs += "--build-arg"
-  $siteSupabaseBuildArgs += "NEXT_PUBLIC_SUPABASE_URL=$publicSupabaseUrl"
-  $siteSupabaseBuildArgs += "--build-arg"
-  $siteSupabaseBuildArgs += "NEXT_PUBLIC_SUPABASE_ANON_KEY=$publicSupabaseAnonKey"
-  $siteSupabaseBuildArgs += "--build-arg"
-  $siteSupabaseBuildArgs += "SUPABASE_SCHEMA=$publicSupabaseSchema"
+  $sitePublicDataBuildArgs += "--build-arg"
+  $sitePublicDataBuildArgs += "NEXT_PUBLIC_SUPABASE_URL=$publicSupabaseUrl"
+  $sitePublicDataBuildArgs += "--build-arg"
+  $sitePublicDataBuildArgs += "NEXT_PUBLIC_SUPABASE_ANON_KEY=$publicSupabaseAnonKey"
+  $sitePublicDataBuildArgs += "--build-arg"
+  $sitePublicDataBuildArgs += "SUPABASE_SCHEMA=$publicSupabaseSchema"
+}
+if (-not [string]::IsNullOrWhiteSpace($publicContentApiBaseUrl)) {
+  $sitePublicDataBuildArgs += "--build-arg"
+  $sitePublicDataBuildArgs += "NEXT_PUBLIC_CONTENT_API_BASE_URL=$($publicContentApiBaseUrl.TrimEnd('/'))"
 }
 
 Step "Container deploy config"
@@ -223,10 +235,24 @@ if ($publicSupabaseUrl) {
 } else {
   Write-ConfigLine "Public Supabase" "not configured (site uses fallback/error state)"
 }
+if ($publicContentApiBaseUrl) {
+  Write-ConfigLine "Content API" $publicContentApiBaseUrl
+} else {
+  Write-ConfigLine "Content API" "not configured (site keeps Supabase/browser fallback)"
+}
+
 
 if (-not $SkipTests) {
   Step "Gates: typecheck + site + worker tests"
   Invoke-Native "pnpm" @("typecheck")
+  Invoke-Native "pnpm" @("supabase:typecheck")
+  Invoke-Native "pnpm" @("content:api:typecheck")
+  Invoke-Native "pnpm" @("content:api:test")
+  Invoke-Native "pnpm" @("news:repository:typecheck")
+  Invoke-Native "pnpm" @("news:repository:test")
+  Invoke-Native "pnpm" @("notion:typecheck")
+  Invoke-Native "pnpm" @("content:migrate:mysql:typecheck")
+  Invoke-Native "pnpm" @("content:migrate:mysql:test")
   Invoke-Native "npx" @("tsx", "knowledge-graph/data/visuals.test.mts")
   Invoke-Native "npx" @("tsx", "knowledge-graph/generate.test.mts")
   Invoke-Native "npx" @("tsx", ".vitepress/theme/diagram-zoom.test.mts")
@@ -239,8 +265,8 @@ if (-not $SkipTests) {
 
 if (-not $SkipBuild) {
   Step "Docker build"
-  # Only browser-safe Supabase values flow into the static-site build stage.
-  # Runtime secrets are uploaded later in agent-build.runtime.env and never become Docker build args.
+  # Only the browser-safe same-origin Content API path and optional Supabase anon fallback flow into the static-site build stage.
+  # Runtime database secrets are uploaded later in agent-build.runtime.env and never become Docker build args.
   $siteBuildArguments = @(
     "build",
     "--target", "site",
@@ -248,7 +274,7 @@ if (-not $SkipBuild) {
     "--build-arg", "DEMO_RUNNER_CLIENT_ENABLED=1",
     "--build-arg", "DEMO_RUNNER_BASE_URL=$($resolvedBasePath.TrimEnd('/'))/api/demo-runner"
   )
-  $siteBuildArguments += $siteSupabaseBuildArgs
+  $siteBuildArguments += $sitePublicDataBuildArgs
   $siteBuildArguments += @("-t", $siteImage, ".")
   Invoke-Native "docker" $siteBuildArguments
   Invoke-Native "docker" @(
