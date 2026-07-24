@@ -109,7 +109,7 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): RunConfig {
   const contentRepository = loadContentRepositoryConfig(source);
 
   const hasSupabase = Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY);
-  const hasWritableRepository = contentRepository.driver === "mysql" || hasSupabase;
+  const hasWritableRepository = contentRepository.driver !== "supabase" || hasSupabase;
   const dryRun = env.NEWS_DRY_RUN || !hasWritableRepository;
 
   const supabase: SupabaseConfig | null =

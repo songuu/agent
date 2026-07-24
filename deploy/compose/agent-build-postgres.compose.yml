@@ -1,0 +1,61 @@
+services:
+  agent-build-postgres:
+    image: postgres@sha256:742f40ea20b9ff2ff31db5458d127452988a2164df9e17441e191f3b72252193
+    container_name: agent-build-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: agent_build
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_admin_password
+      PGDATA: /var/lib/postgresql/data/pgdata
+      TZ: UTC
+    command:
+      - postgres
+      - -c
+      - shared_buffers=128MB
+      - -c
+      - effective_cache_size=512MB
+      - -c
+      - maintenance_work_mem=64MB
+      - -c
+      - work_mem=4MB
+      - -c
+      - max_connections=40
+      - -c
+      - wal_compression=on
+      - -c
+      - max_wal_size=512MB
+      - -c
+      - log_min_duration_statement=500ms
+      - -c
+      - timezone=UTC
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - ./data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d:ro
+    secrets:
+      - postgres_admin_password
+      - agent_build_reader_password
+      - agent_build_writer_password
+    shm_size: 128mb
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d agent_build"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+secrets:
+  postgres_admin_password:
+    file: ./secrets/postgres-admin-password
+  agent_build_reader_password:
+    file: ./secrets/agent-build-reader-password
+  agent_build_writer_password:
+    file: ./secrets/agent-build-writer-password

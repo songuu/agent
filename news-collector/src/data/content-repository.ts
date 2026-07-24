@@ -16,7 +16,7 @@ export interface ContentUpsertResult {
   readonly tableCount: string;
 }
 
-export type ContentRepositoryProvider = "supabase" | "mysql";
+export type ContentRepositoryProvider = "supabase" | "mysql" | "postgres";
 
 /**
  * 内容库的最小能力集合。

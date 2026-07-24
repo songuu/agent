@@ -226,6 +226,11 @@ export function toContentTableSqlValues(
       if (typeof value === "string") return toMysqlUtcDateTime(value, column);
       throw new Error(`${contract.table}.${column} must be an ISO timestamp or null`);
     }
+    if (value instanceof Date && column.endsWith("_date")) {
+      if (Number.isNaN(value.getTime())) throw new Error(`${contract.table}.${column} must be a valid date`);
+      return value.toISOString().slice(0, 10);
+    }
+
     if (value === null) return null;
     if (typeof value === "string") return sanitizeTextForStorage(value);
     if (typeof value === "number") {

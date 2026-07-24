@@ -1,3 +1,5 @@
+import { loadPostgresConnectionConfig } from "./postgres-config.ts";
+
 // 仅解析内容库选择与 MySQL 私有连接参数。
 // 不在这里创建驱动/连接，避免 package 安装和基础设施选择渗透到业务代码。
 
@@ -10,9 +12,15 @@ export interface MySqlConnectionConfig {
   readonly ssl: boolean;
 }
 
+export interface PostgresConnectionConfig {
+  readonly url: string;
+  readonly ssl: boolean;
+}
+
 export type ContentRepositoryConfig =
   | { readonly driver: "supabase" }
-  | { readonly driver: "mysql"; readonly mysql: MySqlConnectionConfig };
+  | { readonly driver: "mysql"; readonly mysql: MySqlConnectionConfig }
+  | { readonly driver: "postgres"; readonly postgres: PostgresConnectionConfig };
 
 function required(source: NodeJS.ProcessEnv, name: string): string {
   const value = source[name]?.trim();
@@ -127,11 +135,20 @@ export function loadContentRepositoryConfig(
     "CONTENT_MYSQL_PASSWORD",
     "CONTENT_MYSQL_SSL",
   ].some((name) => source[name]?.trim());
-  const driver = requested || (hasMysqlSettings ? "mysql" : "supabase");
+  const hasPostgresSettings = [
+    "CONTENT_POSTGRES_URL",
+    "CONTENT_POSTGRES_READ_URL",
+    "CONTENT_POSTGRES_WRITE_URL",
+    "CONTENT_POSTGRES_SSL",
+  ].some((name) => source[name]?.trim());
+  const driver = requested || (hasPostgresSettings ? "postgres" : hasMysqlSettings ? "mysql" : "supabase");
 
   if (driver === "supabase") return { driver: "supabase" };
-  if (driver !== "mysql") {
-    throw new Error(`Unsupported CONTENT_REPOSITORY_DRIVER: ${requested}. Expected supabase or mysql.`);
+  if (driver === "mysql") return { driver: "mysql", mysql: parseMysqlConnection(source) };
+  if (driver === "postgres") {
+    return { driver: "postgres", postgres: loadPostgresConnectionConfig(source, "write") };
   }
-  return { driver: "mysql", mysql: parseMysqlConnection(source) };
+  throw new Error(
+    `Unsupported CONTENT_REPOSITORY_DRIVER: ${requested}. Expected supabase, mysql, or postgres.`,
+  );
 }

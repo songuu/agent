@@ -4,6 +4,7 @@
 // 持有不可恢复的旧连接；MySQL 的具体驱动也被限制在这个组合根。
 
 import type { SupabaseConfig } from "../config.ts";
+import { openPostgresContentRepository } from "./postgres-runtime.ts";
 import {
   createMySqlContentRepository,
   createMysql2Executor,
@@ -52,6 +53,10 @@ export async function openContentRepositoryForWorkers(input: {
       repository: createSupabaseContentRepository({ config: input.supabase }),
       close: async () => undefined,
     };
+  }
+
+  if (input.config.driver === "postgres") {
+    return openPostgresContentRepository(input.config.postgres);
   }
 
   const moduleName = "mysql2/promise";

@@ -1,5 +1,6 @@
-import type { MySqlConnectionConfig } from "../../news-collector/src/data/repository-config.ts";
+import type { MySqlConnectionConfig, PostgresConnectionConfig } from "../../news-collector/src/data/repository-config.ts";
 import { loadContentRepositoryConfig } from "../../news-collector/src/data/repository-config.ts";
+import { loadPostgresConnectionConfig } from "../../news-collector/src/data/postgres-config.ts";
 import type { FetchLike, FetchRequest, FetchResponse } from "../supabase-migrate/types.ts";
 import {
   contentTable,
@@ -7,8 +8,9 @@ import {
   type ContentReadRepository,
   type ContentReadRequest,
 } from "./contract.ts";
+import { createPostgresContentReadRepository, openPgExecutor, type PostgresQueryExecutor } from "./postgres-repository.ts";
 
-export type ContentBackendConfig = SupabaseContentBackendConfig | MysqlContentBackendConfig;
+export type ContentBackendConfig = SupabaseContentBackendConfig | MysqlContentBackendConfig | PostgresContentBackendConfig;
 
 export interface SupabaseContentBackendConfig {
   readonly driver: "supabase";
@@ -20,6 +22,11 @@ export interface SupabaseContentBackendConfig {
 export interface MysqlContentBackendConfig {
   readonly driver: "mysql";
   readonly mysql: MySqlConnectionConfig;
+}
+
+export interface PostgresContentBackendConfig {
+  readonly driver: "postgres";
+  readonly postgres: PostgresConnectionConfig;
 }
 
 export interface MysqlQueryExecutor {
@@ -36,6 +43,8 @@ export interface ContentRepositoryDependencies {
   readonly fetch?: FetchLike;
   readonly mysqlExecutor?: MysqlQueryExecutor;
   readonly openMysqlExecutor?: (mysql: MySqlConnectionConfig) => Promise<MysqlQueryExecutor>;
+  readonly postgresExecutor?: PostgresQueryExecutor;
+  readonly openPostgresExecutor?: (postgres: PostgresConnectionConfig) => Promise<PostgresQueryExecutor>;
 }
 
 const nativeFetch: FetchLike = (input: string, init?: FetchRequest) =>
@@ -63,9 +72,21 @@ export function loadContentBackendConfig(
     "CONTENT_MYSQL_PASSWORD",
     "CONTENT_MYSQL_SSL",
   ].some((name) => env[name]?.trim());
-  if (!env.CONTENT_REPOSITORY_DRIVER?.trim() && !supabaseUrl && !serviceRoleKey && !hasMysqlSettings) {
+  const hasPostgresSettings = [
+    "CONTENT_POSTGRES_URL",
+    "CONTENT_POSTGRES_READ_URL",
+    "CONTENT_POSTGRES_WRITE_URL",
+    "CONTENT_POSTGRES_SSL",
+  ].some((name) => env[name]?.trim());
+  if (!env.CONTENT_REPOSITORY_DRIVER?.trim() && !supabaseUrl && !serviceRoleKey && !hasMysqlSettings && !hasPostgresSettings) {
     return null;
   }
+
+  const requested = env.CONTENT_REPOSITORY_DRIVER?.trim().toLowerCase();
+  if (requested === "postgres" || (!requested && hasPostgresSettings)) {
+    return { driver: "postgres", postgres: loadPostgresConnectionConfig(env, "read") };
+  }
+
 
   const selected = loadContentRepositoryConfig(env as NodeJS.ProcessEnv);
   if (selected.driver === "mysql") return { driver: "mysql", mysql: selected.mysql };
@@ -93,6 +114,15 @@ export async function openContentReadRepository(
     return {
       repository: createSupabaseContentReadRepository(config, dependencies.fetch ?? nativeFetch),
       close: async () => undefined,
+    };
+  }
+
+  if (config.driver === "postgres") {
+    const executor = dependencies.postgresExecutor
+      ?? (await (dependencies.openPostgresExecutor ?? openPgExecutor)(config.postgres));
+    return {
+      repository: createPostgresContentReadRepository(executor),
+      close: async () => executor.close?.(),
     };
   }
 

@@ -77,7 +77,7 @@ export function loadNotionConfig(
   const contentRepository = loadContentRepositoryConfig(source);
 
   const hasSupabase = Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY);
-  const hasContentRepository = contentRepository.driver === "mysql" || hasSupabase;
+  const hasContentRepository = contentRepository.driver !== "supabase" || hasSupabase;
   const token = env.NOTION_TOKEN ?? null;
   const dryRun = env.NOTION_DRY_RUN || !token || !hasContentRepository || !hasSupabase;
 

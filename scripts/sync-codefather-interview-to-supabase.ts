@@ -1,3 +1,9 @@
+import { buildCodefatherPostgresFallbackReport } from "./codefather-postgres-fallback.ts";
+import {
+  synchronizeCodefatherRowsOnConfiguredPostgres,
+} from "./codefather-postgres-store.ts";
+
+
 type InterviewQuestionCategory = "principle" | "engineering" | "project";
 
 interface CodefatherUser {
@@ -568,7 +574,20 @@ export async function runCodefatherInterviewSync(options: CodefatherSyncOptions 
   let anonCount: number | null = null;
   let remoteDuplicatesDeleted = 0;
 
-  if (!dryRun) {
+  if (!dryRun && process.env.CONTENT_REPOSITORY_DRIVER?.trim().toLowerCase() === "postgres") {
+    const result = await synchronizeCodefatherRowsOnConfiguredPostgres({
+      rows,
+      findDuplicateSlugs: findDuplicateCodefatherStoredSlugs,
+    });
+    remoteDuplicatesDeleted = result.duplicatesDeleted;
+    serviceCount = result.writerCount;
+    anonCount = result.readerCount;
+    if (serviceCount < limit || anonCount < limit) {
+      throw new Error(`PostgreSQL readback below target: writer=${serviceCount}, reader=${anonCount}, target=${limit}`);
+    }
+  }
+
+  if (!dryRun && process.env.CONTENT_REPOSITORY_DRIVER?.trim().toLowerCase() !== "postgres") {
     const baseUrl = options.baseUrl || requireEnv("SUPABASE_URL");
     const serviceRoleKey = options.serviceRoleKey || requireEnv("SUPABASE_SERVICE_ROLE_KEY");
     const anonKey = options.anonKey || requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
@@ -645,6 +664,17 @@ async function buildReadbackFallbackReport(input: {
   readonly options: CodefatherSyncOptions;
   readonly sourceError: unknown;
 }): Promise<CodefatherSyncReport> {
+  if (process.env.CONTENT_REPOSITORY_DRIVER?.trim().toLowerCase() === "postgres") {
+    return await buildCodefatherPostgresFallbackReport({
+      started: input.started,
+      limit: input.limit,
+      pageSize: input.pageSize,
+      tag: input.tag,
+      sourceError: input.sourceError,
+      findDuplicateSlugs: findDuplicateCodefatherStoredSlugs,
+    });
+  }
+
   const baseUrl = input.options.baseUrl || requireEnv("SUPABASE_URL");
   const serviceRoleKey = input.options.serviceRoleKey || requireEnv("SUPABASE_SERVICE_ROLE_KEY");
   const anonKey = input.options.anonKey || requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
