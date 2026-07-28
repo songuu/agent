@@ -36,7 +36,7 @@ function main(): void {
 
   log(
     `[notion-sync] daemon up. cron="${config.cron}" tz=${config.timezone} ` +
-      `dryRun=${config.dryRun} sources=${config.sources.length} bucket=${config.storageBucket}`,
+      `dryRun=${config.dryRun} sources=${config.sources.length} assetBase=${config.assetPublicBaseUrl}`,
   );
 
   const task = cron.schedule(

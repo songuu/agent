@@ -2,39 +2,41 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { loadNotionConfig } from "../src/notion/config.ts";
 
-const FULL_ENV = {
+const PG_ENV = {
   NOTION_TOKEN: "ntn_test",
-  SUPABASE_URL: "https://db.example.com",
-  SUPABASE_SERVICE_ROLE_KEY: "service-role-test",
+  CONTENT_REPOSITORY_DRIVER: "postgres",
+  CONTENT_POSTGRES_WRITE_URL: "postgresql://collector:private-password@127.0.0.1:5432/agent_build",
+  CONTENT_POSTGRES_SSL: "false",
+  NEXT_PUBLIC_CONTENT_API_BASE_URL: "/agent-build/api/content/v1",
 };
 
 test("missing NOTION_TOKEN forces dryRun", () => {
-  const config = loadNotionConfig({ ...FULL_ENV, NOTION_TOKEN: "" });
+  const config = loadNotionConfig({ ...PG_ENV, NOTION_TOKEN: "" });
   assert.equal(config.dryRun, true);
   assert.equal(config.token, null);
 });
 
-test("missing Supabase creds forces dryRun even with a token", () => {
+test("missing PostgreSQL configuration forces dryRun even with a token", () => {
   const config = loadNotionConfig({ NOTION_TOKEN: "ntn_test" });
   assert.equal(config.dryRun, true);
-  assert.equal(config.supabase, null);
+  assert.equal(config.contentRepository.driver, "supabase");
 });
 
-test("token + supabase enables live mode", () => {
-  const config = loadNotionConfig(FULL_ENV);
+test("token + PostgreSQL enables live mode", () => {
+  const config = loadNotionConfig(PG_ENV);
   assert.equal(config.dryRun, false);
   assert.equal(config.token, "ntn_test");
-  assert.ok(config.supabase);
+  assert.equal(config.contentRepository.driver, "postgres");
 });
 
-test("defaults: cron 08:30 staggered from news, bucket", () => {
-  const config = loadNotionConfig(FULL_ENV);
+test("defaults: cron 08:30 staggered from news, same-origin asset path", () => {
+  const config = loadNotionConfig(PG_ENV);
   assert.equal(config.cron, "30 8 * * *");
-  assert.equal(config.storageBucket, "notion-assets");
+  assert.equal(config.assetPublicBaseUrl, "/agent-build/api/content/v1/assets");
 });
 
 test("enabled sources come from the registry", () => {
-  const config = loadNotionConfig(FULL_ENV);
+  const config = loadNotionConfig(PG_ENV);
   assert.deepEqual(
     config.sources.map((source) => source.key),
     [
@@ -46,24 +48,14 @@ test("enabled sources come from the registry", () => {
   );
 });
 
-test("MySQL content repository remains selectable for Notion rows while Supabase serves current assets", () => {
+test("MySQL no longer enables a live Notion sync because assets require PostgreSQL", () => {
   const config = loadNotionConfig({
-    ...FULL_ENV,
+    NOTION_TOKEN: "ntn_test",
     CONTENT_REPOSITORY_DRIVER: "mysql",
     CONTENT_MYSQL_URL: "mysql://collector:private-password@mysql.internal:3306/agent_build",
     CONTENT_MYSQL_SSL: "true",
   });
 
-  assert.equal(config.dryRun, false);
-  assert.deepEqual(config.contentRepository, {
-    driver: "mysql",
-    mysql: {
-      host: "mysql.internal",
-      port: 3306,
-      database: "agent_build",
-      user: "collector",
-      password: "private-password",
-      ssl: true,
-    },
-  });
+  assert.equal(config.dryRun, true);
+  assert.equal(config.contentRepository.driver, "mysql");
 });

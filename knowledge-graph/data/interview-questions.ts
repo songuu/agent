@@ -39,7 +39,7 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   project: "项目深挖类",
 };
 
-const COLLECTED_DATE = "2026-07-23";
+const COLLECTED_DATE = "2026-07-28";
 const COLLECTED_AT = `${COLLECTED_DATE}T09:00:00+08:00`;
 
 interface RawInterviewQuestion {
@@ -1355,6 +1355,126 @@ const RAW_QUESTIONS: RawInterviewQuestion[] = [
     rationale:
       "本题来自 2026-07-21 arXiv 数据泄露防护论文：pre-deployment hardening 会收紧 schema、边界清洗、tool gating 和 least privilege，适合考 agent 安全流水线。",
   },
+  {
+    slug: "programmatic-tool-calling-execution-boundary",
+    category: "engineering",
+    question:
+      "OpenAI Agents SDK 的 Programmatic Tool Calling 为什么不是普通 function calling？当模型能生成 JavaScript 协调多个工具时，allowed_callers、结构化输出、审批、session 和 trace 分别要兜什么执行风险？",
+    relatedChapters: ["05", "11", "12", "15", "16", "17", "18", "19"],
+    sourceTitles: ["OpenAI Agents SDK Python v0.19.0 release notes"],
+    sourceUrls: ["https://github.com/openai/openai-agents-python/releases/tag/v0.19.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 OpenAI Agents Python v0.19.0：Programmatic Tool Calling 把工具协调扩展到受控小程序式执行，适合考权限、审批、会话和轨迹边界。",
+  },
+  {
+    slug: "mcp-2026-07-28-spec-migration-contract",
+    category: "engineering",
+    question:
+      "MCP 2026-07-28 spec 迁移为什么不能只升级 client/server package？wire schema、transport、OAuth、capability merge、migration guide 和 exact version pin 分别要怎样进入兼容性测试？",
+    relatedChapters: ["05", "06", "11", "12", "17", "18", "19"],
+    sourceTitles: ["MCP TypeScript SDK 2.0 packages add 2026-07-28 specification support"],
+    sourceUrls: ["https://github.com/modelcontextprotocol/typescript-sdk/releases/tag/%40modelcontextprotocol%2Fnode%402.0.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 MCP TypeScript SDK v2 release：SDK 开始承载 2026-07-28 specification revision，适合考协议升级、迁移和兼容性门禁。",
+  },
+  {
+    slug: "github-issues-agent-automation-confidence-gates",
+    category: "engineering",
+    question:
+      "GitHub Issues 里的 coding agent automation controls 为什么要用 assignee、label、confidence threshold 和 event controls 约束触发？如果只要有 issue 就自动派给 agent，会放大哪些工单误读和副作用风险？",
+    relatedChapters: ["11", "15", "16", "17", "18", "19"],
+    sourceTitles: ["Agent automation controls in GitHub Issues public preview"],
+    sourceUrls: ["https://github.blog/changelog/2026-07-23-agent-automation-controls-in-github-issues-in-public-preview/"],
+    confidence: "high",
+    rationale:
+      "本题来自 GitHub Changelog：agent automation controls 把 coding agent 接入真实 Issues 工单，适合考触发条件、置信度和人工接管边界。",
+  },
+  {
+    slug: "copilot-opus-model-governance-and-policy-boundary",
+    category: "engineering",
+    question:
+      "Copilot 引入 Claude Opus 5 这类 preview 模型时，为什么要同时评估任务复杂度、成本/延迟、管理员策略、preview 风险和回滚路径？为什么不能把新模型当成无差别默认升级？",
+    relatedChapters: ["12", "14", "15", "16", "18", "19"],
+    sourceTitles: ["Claude Opus 5 is now available in GitHub Copilot"],
+    sourceUrls: ["https://github.blog/changelog/2026-07-24-claude-opus-5-is-now-available-in-github-copilot/"],
+    confidence: "high",
+    rationale:
+      "本题来自 GitHub Changelog 2026-07-24：Claude Opus 5 进入 Copilot public preview，适合追问 coding agent 模型选择、preview rollout 和企业策略边界。",
+  },
+  {
+    slug: "crewai-runtime-model-tool-skill-observability-upgrade",
+    category: "engineering",
+    question:
+      "CrewAI 1.15.7 同时修 GPT-5.6 tools + reasoning_effort、Responses API tool calling、registry skills resolution、skill usage events 和 CVE dependency patch 时，为什么要把模型兼容、工具路径、技能仓库、观测和供应链一起回归？",
+    relatedChapters: ["11", "12", "14", "16", "17", "18", "19"],
+    sourceTitles: ["CrewAI 1.15.7 runtime hardening and skill usage observability"],
+    sourceUrls: ["https://github.com/crewAIInc/crewAI/releases/tag/1.15.7"],
+    confidence: "high",
+    rationale:
+      "本题来自 CrewAI 1.15.7：同一 release 覆盖模型请求、工具调用、skill resolution、observability 和 CVE，适合考 runtime 升级审查清单。",
+  },
+  {
+    slug: "pydantic-ai-external-web-access-region-typed-agent-governance",
+    category: "engineering",
+    question:
+      "Pydantic AI 增加 AdvisorTool、OpenAI WebSearchTool external_web_access、多区域 GoogleCloudProvider 和 graph inspect 时，为什么 typed agent stack 的治理要同时覆盖工具能力、外部网络访问、区域合规和运行图可解释性？",
+    relatedChapters: ["05", "11", "13", "15", "16", "17", "19"],
+    sourceTitles: ["Pydantic AI v2.18.0 release notes"],
+    sourceUrls: ["https://github.com/pydantic/pydantic-ai/releases/tag/v2.18.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 Pydantic AI v2.18.0：release 把 provider portability、外部搜索、区域位置和 graph inspect 放在一起，适合考 typed agent stack 控制面。",
+  },
+  {
+    slug: "trace-router-task-level-routing-vs-call-routing",
+    category: "engineering",
+    question:
+      "Agentic AI 的模型路由为什么不能只按单次 LLM call 独立决策？TRACE-ROUTER 这类 task-consistent online routing 要怎样利用 trace、阶段状态、成本和最终任务 outcome？",
+    relatedChapters: ["10", "15", "16", "18", "19", "capstone"],
+    sourceTitles: ["TRACE-ROUTER: Task-Consistent and Adaptive Online Routing for Agentic AI"],
+    sourceUrls: ["https://arxiv.org/abs/2607.22465"],
+    confidence: "medium",
+    rationale:
+      "本题来自 2026-07-24 arXiv：论文把模型路由从 call-level tradeoff 推到 trace/task-level，适合考成本、质量和长流程 outcome 的统一评估。",
+  },
+  {
+    slug: "skill-regression-tax-vs-average-uplift",
+    category: "engineering",
+    question:
+      "为什么给 LLM Agent 加 skill 不能只看平均 success rate 提升？Regression Tax 要怎样把正迁移、负迁移、任务类型、模型/harness 交互和回滚条件拆开评估？",
+    relatedChapters: ["10", "11", "15", "16", "17", "19"],
+    sourceTitles: ["The Regression Tax: Decomposing Why Skills Help and Hurt LLM Agents"],
+    sourceUrls: ["https://arxiv.org/abs/2607.22520"],
+    confidence: "medium",
+    rationale:
+      "本题来自 2026-07-24 arXiv：论文用近 6000 次运行拆解 skills 的收益和伤害，适合考 skill 上线评估和回滚门禁。",
+  },
+  {
+    slug: "dynamic-capability-scoping-vs-static-credentials",
+    category: "engineering",
+    question:
+      "企业 AI Agent 为什么不能在配置期拿一组长期静态 credentials？Dynamic capability scoping 如何按任务、上下文和工具意图收缩权限，为什么它是越权预防而不是事后检测？",
+    relatedChapters: ["05", "11", "16", "17", "18", "19"],
+    sourceTitles: ["Dynamic Capability Scoping for Enterprise AI Agents"],
+    sourceUrls: ["https://arxiv.org/abs/2607.22445"],
+    confidence: "medium",
+    rationale:
+      "本题来自 2026-07-24 arXiv：论文主张动态最小权限和三源权限架构，适合考企业 agent 的 credential exposure 与权限收缩。",
+  },
+  {
+    slug: "benchmark-protocol-validity-vs-score-claim",
+    category: "engineering",
+    question:
+      "Agent benchmark 高分为什么不一定证明目标能力？Protocol validity 要怎样检查 public solution recovery、evaluation artifact 泄露、grader 侧信道和 capability necessity？",
+    relatedChapters: ["10", "15", "16", "17", "18", "19", "capstone"],
+    sourceTitles: ["Do Agent Benchmarks Measure Capability? Protocol Validity in the Age of Agentic AI"],
+    sourceUrls: ["https://arxiv.org/abs/2607.22368"],
+    confidence: "medium",
+    rationale:
+      "本题来自 2026-07-24 arXiv：论文指出 agent benchmark 协议若允许泄露或捷径，高分无法支撑能力声明，适合考评测有效性。",
+  },
   // C. 项目深挖类
   {
     slug: "project-why-multi-agent",
@@ -1514,7 +1634,17 @@ const LOCAL_ANSWER_SUMMARIES: Partial<Record<string, string>> = {
   "repository-overview-onboarding-vs-source-truth": "仓库 overview 能降低新成员理解成本，但它仍是生成式摘要，不是事实源。工程上应把 README、贡献指南、package/scripts、目录结构和关键源码当成可验证证据链，让 overview 只做导航入口；缺少 README 时可以辅助起草，但必须人工复核技术栈、运行命令和架构边界。",
   "managed-otel-agent-host-vs-local-env-telemetry": "Agent 观测不能只靠开发者本地环境变量，因为本地配置不可审计、不可统一回收，也容易把 token/header 泄露给子进程。Managed OTel 把 endpoint、resource attributes、内容采集范围和认证 header 放进企业控制面；prompt、response、tool content 是否导出必须由策略决定，不能由每个终端临时决定。",
   "stable-crewai-flow-skill-runtime-hardening": "Flow 和 skill 进入 stable 后，风险不只是 API 可用，而是声明式定义、技能装载、repo agent、streaming frame 和反馈处理会一起改变执行边界。升级时要核对 flow input 模板、生成式定义权限、依赖安全修复、模型 catalog cache 和异常反馈路径，避免把 prerelease 中的实验能力无审查地带进生产。",
-  "agent-failure-taxonomy-vs-leaderboard-score": "Leaderboard 均分会掩盖失败类型：一个 agent 可能平均分高，却在工具参数、长上下文、规划、多 agent 协调或安全边界上系统性失败。回归评估要按失败模式分桶，记录轨迹和中间步骤，并单独审查 measurement validity；否则模型看似进步，生产中的端到端可靠性仍可能下降。"
+  "agent-failure-taxonomy-vs-leaderboard-score": "Leaderboard 均分会掩盖失败类型：一个 agent 可能平均分高，却在工具参数、长上下文、规划、多 agent 协调或安全边界上系统性失败。回归评估要按失败模式分桶，记录轨迹和中间步骤，并单独审查 measurement validity；否则模型看似进步，生产中的端到端可靠性仍可能下降。",
+  "programmatic-tool-calling-execution-boundary": "Programmatic Tool Calling 让模型不只是选一个函数，而是生成受控代码协调多个工具。生产设计要限制 allowed_callers、校验结构化输出、保留审批和 session 状态，并让 trace 能重建每个工具调用。",
+  "mcp-2026-07-28-spec-migration-contract": "MCP spec 迁移会同时影响 schema、transport、capability negotiation、auth 和包边界。只升级版本号不能证明兼容，必须用 exact pin、迁移指南和端到端 wire-level 测试验证。",
+  "github-issues-agent-automation-confidence-gates": "工单自动派给 coding agent 前要有触发门槛，否则 issue 标签、上下文和验收标准一旦模糊就会造成错误分派。confidence threshold、label/assignee 和 event controls 是把自动化入口变成可审计 workflow 的边界。",
+  "copilot-opus-model-governance-and-policy-boundary": "新模型进入 Copilot 不等于所有任务都该默认使用。企业要把任务复杂度、preview 稳定性、成本/延迟、管理员开关、入口覆盖和回滚路径一起评估，避免模型升级同时改变质量、费用和合规边界。",
+  "crewai-runtime-model-tool-skill-observability-upgrade": "Agent runtime 升级要按执行面拆开回归：模型请求参数是否兼容、tool path 是否可用、skill registry 是否正确解析、观测事件是否完整、依赖 CVE 是否修复。只看版本号会漏掉生产事故面。",
+  "pydantic-ai-external-web-access-region-typed-agent-governance": "Typed agent stack 的收益不只是类型提示，而是把外部网络访问、区域位置、provider 能力和 graph inspect 都放进可验证控制面。这样才能同时兜住安全、合规、可观测和供应商迁移。",
+  "trace-router-task-level-routing-vs-call-routing": "长流程 agent 的质量由整条任务轨迹决定，单次 call 路由只能优化局部成本/质量。Task-level routing 要读取 trace、阶段状态和历史反馈，在必要时升级模型，而不是每步都重新猜。",
+  "skill-regression-tax-vs-average-uplift": "Skill 可能帮一类任务，也可能伤害另一类任务；平均提升会把负迁移藏起来。上线前要按任务类型、模型、harness 和失败模式分桶，并准备禁用或回滚单个 skill。",
+  "dynamic-capability-scoping-vs-static-credentials": "静态 credentials 会让 agent 在任何任务里都握着过宽权限。Dynamic scoping 按当前任务和工具意图临时授予能力，先减少可暴露凭证，再谈检测和告警。",
+  "benchmark-protocol-validity-vs-score-claim": "Agent benchmark 分数只有在目标能力是完成任务的必要条件时才有意义。若能读到答案、利用评测 artifact 或和 grader 侧信道互动，高分证明的是协议漏洞，不是 agent 能力。"
 };
 
 function chapterAnswerLabel(chapter: string): string {

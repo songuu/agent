@@ -5,7 +5,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, extname, join } from "node:path";
 import type { DownloadedImage } from "./assets.ts";
-import { uploadObject, type StorageConfig } from "./storage.ts";
 
 const EXT_CONTENT_TYPE: Readonly<Record<string, string>> = {
   ".png": "image/png",
@@ -34,15 +33,6 @@ export async function downloadImage(
   const bytes = new Uint8Array(await response.arrayBuffer());
   const contentType = response.headers.get("content-type") ?? guessContentType(url);
   return { bytes, contentType };
-}
-
-/** 绑定一个上传到指定 bucket 的 upload 函数。 */
-export function createStorageUpload(
-  config: StorageConfig,
-  bucket: string,
-  fetchImpl: typeof fetch = fetch,
-): (key: string, image: DownloadedImage) => Promise<string> {
-  return (key, image) => uploadObject(config, bucket, key, image.bytes, image.contentType, fetchImpl);
 }
 
 /**

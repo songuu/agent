@@ -1,4 +1,5 @@
 import type { MySqlConnectionConfig, PostgresConnectionConfig } from "../../news-collector/src/data/repository-config.ts";
+import type { ContentAssetReadRepository } from "./assets.ts";
 import { loadContentRepositoryConfig } from "../../news-collector/src/data/repository-config.ts";
 import { loadPostgresConnectionConfig } from "../../news-collector/src/data/postgres-config.ts";
 import type { FetchLike, FetchRequest, FetchResponse } from "../supabase-migrate/types.ts";
@@ -8,7 +9,12 @@ import {
   type ContentReadRepository,
   type ContentReadRequest,
 } from "./contract.ts";
-import { createPostgresContentReadRepository, openPgExecutor, type PostgresQueryExecutor } from "./postgres-repository.ts";
+import {
+  createPostgresContentAssetReadRepository,
+  createPostgresContentReadRepository,
+  openPgExecutor,
+  type PostgresQueryExecutor,
+} from "./postgres-repository.ts";
 
 export type ContentBackendConfig = SupabaseContentBackendConfig | MysqlContentBackendConfig | PostgresContentBackendConfig;
 
@@ -36,6 +42,7 @@ export interface MysqlQueryExecutor {
 
 export interface ContentRepositoryHandle {
   readonly repository: ContentReadRepository;
+  readonly assetRepository?: ContentAssetReadRepository;
   close(): Promise<void>;
 }
 
@@ -122,6 +129,7 @@ export async function openContentReadRepository(
       ?? (await (dependencies.openPostgresExecutor ?? openPgExecutor)(config.postgres));
     return {
       repository: createPostgresContentReadRepository(executor),
+      assetRepository: createPostgresContentAssetReadRepository(executor),
       close: async () => executor.close?.(),
     };
   }

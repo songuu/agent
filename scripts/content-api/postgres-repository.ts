@@ -1,4 +1,5 @@
 import type { PostgresConnectionConfig } from "../../news-collector/src/data/repository-config.ts";
+import { isPublicAssetContentType, type ContentAsset, type ContentAssetReadRepository, type ContentAssetRequest } from "./assets.ts";
 import {
   contentTable,
   type ContentPage,
@@ -62,6 +63,39 @@ export function createPostgresContentReadRepository(
           ? rows.length === request.limit
           : request.offset + rows.length < totalCount,
       };
+    },
+  };
+}
+
+/**
+ * Asset reads use parameter binding and a fixed public bucket from the request
+ * parser. The database never receives arbitrary identifiers from a URL.
+ */
+export function createPostgresContentAssetReadRepository(
+  executor: PostgresQueryExecutor,
+): ContentAssetReadRepository {
+  return {
+    async readAsset(request: ContentAssetRequest): Promise<ContentAsset | null> {
+      const rows = await executor.execute(
+        [
+          'SELECT "content_type", "data"',
+          'FROM "content_assets"',
+          'WHERE "bucket" = $1 AND "object_key" = $2',
+          'LIMIT 1',
+        ].join(" "),
+        [request.bucket, request.objectKey],
+      );
+      const row = rows[0];
+      if (!row) return null;
+      const contentType = row.content_type;
+      if (!isPublicAssetContentType(contentType)) {
+        throw new Error("PostgreSQL asset has an unsupported content type.");
+      }
+      const value = row.data;
+      if (!(value instanceof Uint8Array)) {
+        throw new Error("PostgreSQL asset payload was not binary.");
+      }
+      return { contentType, bytes: value };
     },
   };
 }

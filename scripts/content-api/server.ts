@@ -1,6 +1,12 @@
 import http from "node:http";
 
 import {
+  ContentAssetRequestError,
+  parseContentAssetRequest,
+  type ContentAssetReadRepository,
+} from "./assets.ts";
+
+import {
   ContentRequestError,
   parseContentReadRequest,
   type ContentReadRepository,
@@ -20,6 +26,7 @@ export const DEFAULT_CONTENT_API_ALLOWED_ORIGINS = [
 
 export interface ContentApiServerOptions {
   readonly repository: ContentReadRepository;
+  readonly assetRepository?: ContentAssetReadRepository;
   readonly allowedHosts?: readonly string[];
   readonly allowedOrigins?: readonly string[];
   readonly allowMissingOrigin?: boolean;
@@ -85,6 +92,20 @@ export function createContentApiServer(options: ContentApiServerOptions): http.S
     }
 
     try {
+      const assetRequest = parseContentAssetRequest(requestUrl);
+      if (assetRequest) {
+        if (!options.assetRepository) {
+          sendJson(res, 404, { ok: false, error: "not_found" });
+          return;
+        }
+        const asset = await options.assetRepository.readAsset(assetRequest);
+        if (!asset) {
+          sendJson(res, 404, { ok: false, error: "not_found" });
+          return;
+        }
+        sendAsset(res, asset.contentType, asset.bytes);
+        return;
+      }
       const request = parseContentReadRequest(requestUrl);
       const page = await options.repository.read(request);
       sendJson(res, 200, {
@@ -93,7 +114,7 @@ export function createContentApiServer(options: ContentApiServerOptions): http.S
         hasMore: page.hasMore,
       });
     } catch (error) {
-      if (error instanceof ContentRequestError) {
+      if (error instanceof ContentRequestError || error instanceof ContentAssetRequestError) {
         sendJson(res, 400, { ok: false, error: error.code, message: error.message });
         return;
       }
@@ -173,6 +194,16 @@ function parseRequestUrl(req: http.IncomingMessage): URL {
 function readSingleHeader(req: http.IncomingMessage, name: string): string | undefined {
   const value = req.headers[name];
   return Array.isArray(value) ? value[0] : value;
+}
+
+function sendAsset(res: http.ServerResponse, contentType: string, bytes: Uint8Array): void {
+  if (res.headersSent) return;
+  res.statusCode = 200;
+  res.setHeader("Content-Type", contentType);
+  res.setHeader("Content-Length", String(bytes.byteLength));
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+  res.end(bytes);
 }
 
 function sendJson(res: http.ServerResponse, status: number, body: unknown): void {

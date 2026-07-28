@@ -6,7 +6,6 @@
 // - dryRun 跳过出库
 // 页处理**顺序**进行：天然节流，避开 Notion ~3 req/s 限流；单页失败被隔离（log+skip）不中断整源。
 
-import { fileURLToPath } from "node:url";
 import type { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import type { NotionRunConfig } from "./config.ts";
 import type { NotionSource } from "./notion-sources.ts";
@@ -15,9 +14,9 @@ import { createImageTransformer } from "./assets.ts";
 import { createNotionClient } from "./client.ts";
 import { convertPageToMarkdown, createConverter } from "./convert.ts";
 import { openContentRepositoryForWorkers } from "../data/runtime.ts";
-import { createPublicDirFallback, createStorageUpload, downloadImage } from "./image-io.ts";
+import { downloadImage } from "./image-io.ts";
 import { buildArticleQuery, iterateArticlePages, iterateFolderPages } from "./query.ts";
-import { ensureBucket, storageConfigFrom } from "./storage.ts";
+import { openPostgresAssetStore } from "./postgres-assets.ts";
 import type { UpsertResult } from "./store.ts";
 import { toNotionArticle } from "./map.ts";
 import { isFolderSource } from "./notion-sources.ts";
@@ -69,12 +68,6 @@ export interface SyncDeps {
     source: NotionSource,
   ) => Promise<RenderedPage>;
   readonly upsert: (articles: readonly NotionArticle[]) => Promise<UpsertResult>;
-}
-
-/** 归一站点 base（mirror .vitepress/config.mts normalizeBase）：空/"/" → "/"；否则 "/sub/"。 */
-function normalizeBase(value: string | undefined): string {
-  if (!value || value.trim() === "" || value === "/") return "/";
-  return `/${value.trim().replace(/^\/+|\/+$/g, "")}/`;
 }
 
 /** 把图片 manifest 合并进 article.metadata.assets（仅当非空）。 */
@@ -155,8 +148,8 @@ export async function syncFromConfig(
 ): Promise<SyncReport> {
   const now = overrides.now ?? new Date();
 
-  // dryRun（缺 token / 缺 Supabase）：用空实现，纯走 sources 报告，不触网不写库。
-  if (config.dryRun || !config.token || !config.supabase) {
+  // dryRun（缺 token / 缺 PostgreSQL 写库）：用空实现，纯走 sources 报告，不触网不写库。
+  if (config.dryRun || !config.token || config.contentRepository.driver !== "postgres") {
     return syncNotion({
       sources: config.sources,
       now,
@@ -171,67 +164,58 @@ export async function syncFromConfig(
     });
   }
 
-  const supabase = config.supabase;
   const repositoryHandle = await openContentRepositoryForWorkers({
     config: config.contentRepository,
-    supabase,
+    supabase: null,
   });
 
   try {
-    const contentRepository = repositoryHandle.repository;
-    const client = createNotionClient(config.token);
-    const storageConfig = storageConfigFrom(supabase);
-
-    // 一次性确保 bucket 存在；Storage 不可用时仅告警，单图上传失败会回退 public/。
-    try {
-      await ensureBucket(storageConfig, config.storageBucket);
-    } catch (error: unknown) {
-      process.stderr.write(
-        `[notion-sync] ensureBucket warning: ${error instanceof Error ? error.message : String(error)}\n`,
-      );
-    }
-
-    const storageUpload = createStorageUpload(storageConfig, config.storageBucket);
-    const publicDir = fileURLToPath(new URL("../../../public", import.meta.url));
-    const publicFallback = createPublicDirFallback(publicDir, normalizeBase(process.env.VITEPRESS_BASE));
-
-    const renderPage = async (
-      page: PageObjectResponse,
-      _source: NotionSource,
-    ): Promise<RenderedPage> => {
-      const collected: Record<string, AssetEntry> = {};
-      // 跨次复用：从当前内容库读 manifest，srcHash 命中则跳过重新下载/上传（未变图片不重传）。
-      const existing: AssetManifest = await contentRepository.fetchNotionAssetManifest(page.id);
-      const transformer = createImageTransformer({
-        pageId: page.id,
-        existing,
-        download: (url) => downloadImage(url),
-        upload: storageUpload,
-        fallback: publicFallback,
-        collected,
-      });
-      const converter = createConverter(client, { imageTransformer: transformer });
-      const markdown = await convertPageToMarkdown(converter, page.id);
-      return { markdown, assets: collected };
-    };
-
-    return await syncNotion({
-      sources: config.sources,
-      now,
-      dryRun: false,
-      maxPages: config.maxPagesPerSync,
-      fullResync: config.fullResync,
-      cursorFor: (source) => contentRepository.fetchNotionCursor(source.key),
-      iteratePages: (source, sinceIso) => {
-        if (isFolderSource(source)) {
-          return iterateFolderPages(client, source, sinceIso);
-        }
-        return iterateArticlePages(client, buildArticleQuery(source, sinceIso, 100));
-      },
-      renderPage,
-      upsert: (articles) => contentRepository.upsertNotionArticles(articles),
-      ...overrides,
+    const assetStore = await openPostgresAssetStore({
+      postgres: config.contentRepository.postgres,
+      publicBaseUrl: config.assetPublicBaseUrl,
     });
+    try {
+      const contentRepository = repositoryHandle.repository;
+      const client = createNotionClient(config.token);
+      const renderPage = async (
+        page: PageObjectResponse,
+        _source: NotionSource,
+      ): Promise<RenderedPage> => {
+        const collected: Record<string, AssetEntry> = {};
+        // 跨次复用：从当前内容库读 manifest，srcHash 命中则跳过重新下载/上传（未变图片不重传）。
+        const existing: AssetManifest = await contentRepository.fetchNotionAssetManifest(page.id);
+        const transformer = createImageTransformer({
+          pageId: page.id,
+          existing,
+          download: (url) => downloadImage(url),
+          upload: assetStore.upload,
+          collected,
+        });
+        const converter = createConverter(client, { imageTransformer: transformer });
+        const markdown = await convertPageToMarkdown(converter, page.id);
+        return { markdown, assets: collected };
+      };
+
+      return await syncNotion({
+        sources: config.sources,
+        now,
+        dryRun: false,
+        maxPages: config.maxPagesPerSync,
+        fullResync: config.fullResync,
+        cursorFor: (source) => contentRepository.fetchNotionCursor(source.key),
+        iteratePages: (source, sinceIso) => {
+          if (isFolderSource(source)) {
+            return iterateFolderPages(client, source, sinceIso);
+          }
+          return iterateArticlePages(client, buildArticleQuery(source, sinceIso, 100));
+        },
+        renderPage,
+        upsert: (articles) => contentRepository.upsertNotionArticles(articles),
+        ...overrides,
+      });
+    } finally {
+      await assetStore.close();
+    }
   } finally {
     await repositoryHandle.close();
   }

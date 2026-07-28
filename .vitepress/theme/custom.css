@@ -384,7 +384,9 @@ body::after {
 
 .vp-doc table {
   border-radius: 8px;
-  overflow: hidden;
+  /* 保留 VitePress 的横向滚动，避免超宽表格被正文/目录布局边界静默裁断。 */
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .vp-doc th {

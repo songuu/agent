@@ -295,6 +295,17 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 93. 为什么 Agent skill 不应被当成普通 prompt snippet？metadata、references、scripts、assets、tests、hooks 和 rollback 分别解决什么生命周期问题？（→ 11 / 12 / 15 / 17 / 18 / 19）
 94. Agent 防数据泄露为什么不能只靠运行时 policy？部署前对 prompt template、tool interface 和 tool-invocation code 做 preemptive hardening 在兜什么风险？（→ 05 / 15 / 17 / 18 / 19 / capstone）
 
+95. OpenAI Agents SDK 的 Programmatic Tool Calling 为什么不是普通 function calling？当模型能生成 JavaScript 协调多个工具时，allowed_callers、结构化输出、审批、session 和 trace 分别要兜什么执行风险？（→ 05 / 11 / 12 / 15 / 16 / 17 / 18 / 19）
+96. MCP 2026-07-28 spec 迁移为什么不能只升级 client/server package？wire schema、transport、OAuth、capability merge、migration guide 和 exact version pin 分别要怎样进入兼容性测试？（→ 05 / 06 / 11 / 12 / 17 / 18 / 19）
+97. GitHub Issues 里的 coding agent automation controls 为什么要用 assignee、label、confidence threshold 和 event controls 约束触发？如果只要有 issue 就自动派给 agent，会放大哪些工单误读和副作用风险？（→ 11 / 15 / 16 / 17 / 18 / 19）
+98. Copilot 引入 Claude Opus 5 这类 preview 模型时，为什么要同时评估任务复杂度、成本/延迟、管理员策略、preview 风险和回滚路径？为什么不能把新模型当成无差别默认升级？（→ 12 / 14 / 15 / 16 / 18 / 19）
+99. CrewAI 1.15.7 同时修 GPT-5.6 tools + reasoning_effort、Responses API tool calling、registry skills resolution、skill usage events 和 CVE dependency patch 时，为什么要把模型兼容、工具路径、技能仓库、观测和供应链一起回归？（→ 11 / 12 / 14 / 16 / 17 / 18 / 19）
+100. Pydantic AI 增加 AdvisorTool、OpenAI WebSearchTool external_web_access、多区域 GoogleCloudProvider 和 graph inspect 时，为什么 typed agent stack 的治理要同时覆盖工具能力、外部网络访问、区域合规和运行图可解释性？（→ 05 / 11 / 13 / 15 / 16 / 17 / 19）
+101. Agentic AI 的模型路由为什么不能只按单次 LLM call 独立决策？TRACE-ROUTER 这类 task-consistent online routing 要怎样利用 trace、阶段状态、成本和最终任务 outcome？（→ 10 / 15 / 16 / 18 / 19 / capstone）
+102. 为什么给 LLM Agent 加 skill 不能只看平均 success rate 提升？Regression Tax 要怎样把正迁移、负迁移、任务类型、模型/harness 交互和回滚条件拆开评估？（→ 10 / 11 / 15 / 16 / 17 / 19）
+103. 企业 AI Agent 为什么不能在配置期拿一组长期静态 credentials？Dynamic capability scoping 如何按任务、上下文和工具意图收缩权限，为什么它是越权预防而不是事后检测？（→ 05 / 11 / 16 / 17 / 18 / 19）
+104. Agent benchmark 高分为什么不一定证明目标能力？Protocol validity 要怎样检查 public solution recovery、evaluation artifact 泄露、grader 侧信道和 capability necessity？（→ 10 / 15 / 16 / 17 / 18 / 19 / capstone）
+
 ### C. 项目深挖类（考你是不是真做过）
 
 > 这一类没有标准题库，面试官会顺着你的简历项目往下钻。**提前给自己出这些题**：

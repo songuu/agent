@@ -27,7 +27,7 @@
     "supabase:cutover": "tsx scripts/supabase-cutover.ts",
     "supabase:typecheck": "tsc -p tsconfig.supabase-migrate.json --noEmit && tsc -p tsconfig.supabase-public.json --noEmit",
     "content:api:prod": "tsx scripts/content-api/start-production.ts",
-    "content:api:test": "node --experimental-transform-types scripts/content-api/contract.test.mts && node --experimental-transform-types scripts/content-api/repository.test.mts && node --experimental-transform-types scripts/content-api/postgres-repository.test.mts && node --experimental-transform-types scripts/content-api/server.test.mts",
+    "content:api:test": "node --experimental-transform-types scripts/content-api/assets.test.mts && node --experimental-transform-types scripts/content-api/contract.test.mts && node --experimental-transform-types scripts/content-api/repository.test.mts && node --experimental-transform-types scripts/content-api/postgres-repository.test.mts && node --experimental-transform-types scripts/content-api/server.test.mts",
     "content:api:typecheck": "tsc -p tsconfig.content-api.json --noEmit",
     "content:migrate:mysql": "tsx scripts/content-migrate/mysql-cli.ts",
     "content:migrate:mysql:test": "node --experimental-transform-types scripts/content-migrate/mysql.test.mts",

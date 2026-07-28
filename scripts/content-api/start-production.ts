@@ -33,6 +33,7 @@ const allowedHosts = readListEnv("CONTENT_API_ALLOWED_HOSTS", ["songuu.top"]);
 const allowedOrigins = readListEnv("CONTENT_API_ALLOWED_ORIGINS", ["https://songuu.top"]);
 const server = await startContentApiServer({
   repository,
+  assetRepository: repositoryHandle?.assetRepository,
   host: process.env.CONTENT_API_HOST?.trim() || "0.0.0.0",
   port,
   allowedHosts,
