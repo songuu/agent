@@ -39,7 +39,7 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   project: "项目深挖类",
 };
 
-const COLLECTED_DATE = "2026-07-28";
+const COLLECTED_DATE = "2026-07-29";
 const COLLECTED_AT = `${COLLECTED_DATE}T09:00:00+08:00`;
 
 interface RawInterviewQuestion {
@@ -1475,6 +1475,126 @@ const RAW_QUESTIONS: RawInterviewQuestion[] = [
     rationale:
       "本题来自 2026-07-24 arXiv：论文指出 agent benchmark 协议若允许泄露或捷径，高分无法支撑能力声明，适合考评测有效性。",
   },
+  {
+    slug: "grok-copilot-model-policy-reasoning-effort",
+    category: "engineering",
+    question:
+      "Copilot 引入 Grok 4.5 这类 preview coding model 时，为什么要同时评估 reasoning effort、500k context、parallel tool dispatch、agentic workflow 适配、管理员启用和成本回滚？",
+    relatedChapters: ["12", "14", "15", "16", "18", "19"],
+    sourceTitles: ["Grok 4.5 is now available in GitHub Copilot"],
+    sourceUrls: ["https://github.blog/changelog/2026-07-28-grok-4-5-is-now-available-in-github-copilot/"],
+    confidence: "high",
+    rationale:
+      "本题来自 2026-07-28 GitHub Changelog：新模型进入 coding agent 入口时，模型能力、工具并发、上下文、成本和组织策略会一起改变。",
+  },
+  {
+    slug: "copilot-app-usage-metrics-surface-attribution",
+    category: "engineering",
+    question:
+      "为什么 Copilot app usage metrics 要按 app surface 汇总 session、request、prompt、token 和 code activity？只看总活跃用户或合并 PR 会漏掉哪些 agent 采用与成本信号？",
+    relatedChapters: ["15", "16", "18", "19"],
+    sourceTitles: ["GitHub Copilot app usage metrics now expand across report rollups"],
+    sourceUrls: ["https://github.blog/changelog/2026-07-28-github-copilot-app-usage-metrics-now-expand-across-report-rollups/"],
+    confidence: "high",
+    rationale:
+      "本题来自 2026-07-28 GitHub Changelog：agentic coding 的采用、留存、成本和产出需要按具体入口归因，而不能只读总量指标。",
+  },
+  {
+    slug: "managed-settings-least-covered-agent-surface",
+    category: "engineering",
+    question:
+      "企业管理 Copilot app 和 Copilot cloud agent 时，为什么要把 plugins、bypass approvals、auto model selection、web search、MCP registry、instructions 和 default model 都纳入 managed settings？",
+    relatedChapters: ["05", "11", "16", "17", "18", "19"],
+    sourceTitles: ["Enterprise managed settings in the GitHub Copilot app and Copilot cloud agent"],
+    sourceUrls: ["https://github.blog/changelog/2026-07-27-enterprise-managed-settings-in-the-github-copilot-app-and-copilot-cloud-agent/"],
+    confidence: "high",
+    rationale:
+      "本题来自 2026-07-27 GitHub Changelog：治理要覆盖最新 agent 入口和最容易漏配的策略面，而不是只管传统 IDE 插件。",
+  },
+  {
+    slug: "jetbrains-agent-otel-mcp-custom-agent-governance",
+    category: "engineering",
+    question:
+      "IDE agent 同时加入 OpenTelemetry、token limit、模型管理、MCP servers、custom agents 和 file editing tools 时，为什么要把遥测、成本、模型、外部工具和文件副作用放在一套回归里看？",
+    relatedChapters: ["05", "11", "12", "14", "16", "17", "18", "19"],
+    sourceTitles: ["GitHub Copilot for JetBrains improved OpenTelemetry configuration, model management, and more"],
+    sourceUrls: ["https://github.blog/changelog/2026-07-27-github-copilot-for-jetbrains-improved-opentelemetry-configuration-model-management-and-more/"],
+    confidence: "high",
+    rationale:
+      "本题来自 2026-07-27 GitHub Changelog：IDE agent 的生产控制面已经跨越观测、预算、模型路由、MCP 工具和文件写入。",
+  },
+  {
+    slug: "mcp-stateless-discover-mrtr-migration",
+    category: "engineering",
+    question:
+      "MCP Go SDK 支持 2026-07-28 spec 时，为什么 stateless core、per-request _meta、server/discover、MRTR、subscriptions/listen、HTTP headers 和废弃 roots/sampling/logging 要一起测？",
+    relatedChapters: ["05", "06", "11", "12", "17", "18", "19"],
+    sourceTitles: ["MCP Go SDK v1.7.0 release notes"],
+    sourceUrls: ["https://github.com/modelcontextprotocol/go-sdk/releases/tag/v1.7.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 2026-07-28 MCP Go SDK release：协议升级同时改变无状态运行、元数据、能力发现、监听订阅、HTTP 兼容和过时 primitive。",
+  },
+  {
+    slug: "long-horizon-planning-opd-mopd-world-model",
+    category: "engineering",
+    question:
+      "为什么长周期 planning agent 的训练/评测不能只看单步答案？OPD、MOPD、CoT world-model transition、teacher consistency 和终局状态依赖分别在暴露什么多轮规划问题？",
+    relatedChapters: ["10", "11", "15", "16", "19", "capstone"],
+    sourceTitles: ["The Physics of Multi-Turn Long-Horizon Planning with Language Models"],
+    sourceUrls: ["https://arxiv.org/abs/2607.24720"],
+    confidence: "medium",
+    rationale:
+      "本题来自 2026-07-27 arXiv：论文把长周期规划拆成状态转移、一致性和多轮蒸馏问题，适合追问 agent 轨迹评估。",
+  },
+  {
+    slug: "facility-agentic-rag-eval-harness",
+    category: "engineering",
+    question:
+      "高风险设施运维里的 Agentic RAG 为什么要同时做 hybrid retrieval、knowledge graph、adaptive RRF、cross-encoder rerank、ReAct/MCP tools 和 operations-grounded evaluation？",
+    relatedChapters: ["08", "09", "15", "19", "rag-hybrid", "rag-agentic", "rag-prod"],
+    sourceTitles: ["APS-RAG: A corrective agentic hybrid RAG and operations-grounded evaluation framework for scientific facility support"],
+    sourceUrls: ["https://arxiv.org/abs/2607.24663"],
+    confidence: "medium",
+    rationale:
+      "本题来自 2026-07-27 arXiv：APS-RAG 把检索融合、知识图谱、agent 工具和领域评测绑在一起，适合考生产 RAG 边界。",
+  },
+  {
+    slug: "appa-taint-confinement-context-branching",
+    category: "engineering",
+    question:
+      "Agentic Permissions Policy Algebra 为什么要追踪 trust-taint 在 prompt context、tool calls、control-flow branching、memory 和 subagents 之间的传播？这和普通 prompt guardrail 有什么本质差异？",
+    relatedChapters: ["05", "07", "11", "17", "18", "19"],
+    sourceTitles: ["Agentic Permissions Policy Algebra for Taint Confinement in LLM Agents"],
+    sourceUrls: ["https://arxiv.org/abs/2607.24625"],
+    confidence: "medium",
+    rationale:
+      "本题来自 2026-07-27 arXiv：APPA 把上下文污染、工具能力和子 agent 授权形式化，适合考 agent 权限模型。",
+  },
+  {
+    slug: "code-repair-loop-evidence-contract",
+    category: "engineering",
+    question:
+      "为什么 multi-agent code repair 不能把“多循环几轮”当可靠性？state-bound evidence、typed revision contract 和 verification gate 分别如何防止空转、误修和不可审计修复？",
+    relatedChapters: ["10", "12", "15", "16", "19", "capstone"],
+    sourceTitles: ["Looping Is Not Reliability: State-Bound Evidence and Typed Revision Contracts for Agentic Code Repair"],
+    sourceUrls: ["https://arxiv.org/abs/2607.24604"],
+    confidence: "medium",
+    rationale:
+      "本题来自 2026-07-27 arXiv：论文强调 coding agent 可靠性来自证据绑定和修订协议，而不是循环次数。",
+  },
+  {
+    slug: "kimi-k3-agentic-rl-sandbox-state-governance",
+    category: "engineering",
+    question:
+      "开源 frontier model 报告强调 Agentic RL、million-token context、persistent rollout 和 sandbox states 时，为什么这会影响 coding/agent benchmark 的复现、成本和安全治理？",
+    relatedChapters: ["10", "12", "15", "16", "18", "19", "capstone"],
+    sourceTitles: ["Kimi K3: Open Frontier Intelligence"],
+    sourceUrls: ["https://arxiv.org/abs/2607.24653"],
+    confidence: "medium",
+    rationale:
+      "本题来自 2026-07-27 arXiv：模型报告把 agentic RL、长上下文和 sandbox state 放进训练/评测资产，适合考开源模型平台治理。",
+  },
   // C. 项目深挖类
   {
     slug: "project-why-multi-agent",
@@ -1580,6 +1700,16 @@ const LOCAL_ANSWER_SUMMARIES: Partial<Record<string, string>> = {
   "codex-cli-sdk-embedded-agent-release-risk": "CLI 到 SDK 会把 coding agent 嵌进业务系统权限面：文件系统、命令执行、网络访问、审批策略、审计日志、JSONL event 流、依赖锁定和用户身份透传都要由宿主显式治理，不能只把它当普通聊天 SDK。",
   "ai-credit-pool-cost-center-governance": "企业 Agent/Copilot 成本治理要从总账下钻到成本中心、license pool、项目 chargeback、告警、硬/软限额和异常使用检测。成本中心不是财务标签，而是大规模 agent rollout 后的资源隔离与责任归属机制。",
   "agents-js-package-surface-and-supply-chain-provenance": "多包 Agent SDK 要做 package pinning、lockfile 审核、跨包版本一致性、Python/JS parity、realtime 能力差异、tool schema 兼容性和 trace/eval 回归。只看 semver 或 package 名称，容易漏掉运行时默认值和供应链变化。",
+  "grok-copilot-model-policy-reasoning-effort": "Preview coding model 进入 Copilot 不是单纯模型升级，因为 reasoning effort、长上下文、并行工具、agentic workflow 支持和直接行动能力会一起改变成本、延迟和副作用半径。企业应先限定入口、记录默认值、观察 token/成功率/回滚指标，再决定是否扩大默认启用。",
+  "copilot-app-usage-metrics-surface-attribution": "按 app surface 归因能看出用户是在 IDE、cloud agent、app 还是其它入口消耗 agent 能力。总活跃用户会掩盖高成本入口、低留存入口和只试用不产出的入口；PR 数又会漏掉研究、解释、规划和失败重试成本。",
+  "managed-settings-least-covered-agent-surface": "治理最危险的缺口通常在新入口，不在已经成熟的 IDE 插件。Managed settings 把插件、审批绕过、自动模型选择、web search、MCP registry、instructions 和默认模型统一管理，是为了让云端 agent、app 和本地入口遵守同一套权限与审计边界。",
+  "jetbrains-agent-otel-mcp-custom-agent-governance": "IDE agent 的风险面已经从补全扩展到可观测、预算、模型路由、MCP 工具、自定义 agent 和文件编辑。它们必须一起回归，因为某个入口打开外部工具或文件写入后，遥测和 token limit 如果没跟上，就会出现不可审计的副作用和成本漂移。",
+  "mcp-stateless-discover-mrtr-migration": "MCP 迁移不是换 SDK 版本，而是换一组 wire-level 合约。Stateless core 改运行状态边界，per-request _meta 改请求上下文，discover/MRTR/listen 改能力发现和实时性，HTTP headers 改互操作，废弃 roots/sampling/logging 则会让旧客户端假兼容。",
+  "long-horizon-planning-opd-mopd-world-model": "长周期 planning 的失败常发生在中间状态转移，而不是最后一句答案。OPD/MOPD 这类方法把 CoT 当作 world-model transition 来训练和比较，teacher consistency 则暴露多老师冲突；评测应看轨迹、状态和终局依赖，而不是只看单步答对率。",
+  "facility-agentic-rag-eval-harness": "设施运维 RAG 要把 dense/sparse/KG 检索、RRF、rerank 和 ReAct/MCP 工具组合起来，是因为真实问题既有术语匹配、结构关系，也有操作步骤和工具反馈。Operations-grounded eval 检查的是系统能否支撑现场决策，而不是语义相似度看起来不错。",
+  "appa-taint-confinement-context-branching": "普通 prompt guardrail 主要约束模型怎么说，APPA 关注的是不可信内容如何在上下文、工具调用、分支、记忆和子 agent 间传播。真正的权限控制要能随数据污染和 delegation 收缩工具能力，否则一个分支里的脏上下文可能污染整个执行链。",
+  "code-repair-loop-evidence-contract": "多循环并不会自动带来可靠性，反而可能重复误修。State-bound evidence 要求每次修订绑定到可核查状态，typed revision contract 限定修改意图和验收条件，verification gate 决定能不能进入下一轮；可靠性来自证据链，不是循环次数。",
+  "kimi-k3-agentic-rl-sandbox-state-governance": "当模型训练开始依赖 Agentic RL、长上下文、persistent rollout 和 sandbox states，benchmark 就不再只是题目和答案。复现要关心状态是否可重放，成本要关心长轨迹 token/工具消耗，安全要关心 sandbox 边界和跨 session 学习会不会泄露或放大错误策略。",
   "project-why-multi-agent": "Deep Research Agent 用多智能体，是因为『检索/证据收集』和『综合写作』对上下文、工具和评价标准不同，拆开后每个角色更专注。单 agent 也能做，但容易把搜索噪声、写作风格和规划状态搅在一起；代价则是链路更长、调试更复杂，所以只在长任务上启用。",
   "project-rag-chunk-overlap-topk": "分块大小通常围绕『一个片段能独立表达一个小主题』来定，overlap 用来保证跨段概念不断裂；块太大噪声多，块太小上下文不完整。top-k 一般从 3 到 5 起步，命不中再扩召回，但不会无限加，因为加太多会把模型注意力稀释掉。",
   "project-eval-set-and-judge": "所谓 90% 不是拍脑袋，要先准备一组覆盖真实问题分布的 eval 集，再定义『事实正确、引用充分、结构完整』这类评分维度。LLM-as-judge 可以做初筛，但我会保留人工抽样复核，并记录模型间分歧，避免把模型偏见当成客观真相。",

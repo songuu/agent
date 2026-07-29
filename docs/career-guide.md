@@ -305,6 +305,16 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 102. 为什么给 LLM Agent 加 skill 不能只看平均 success rate 提升？Regression Tax 要怎样把正迁移、负迁移、任务类型、模型/harness 交互和回滚条件拆开评估？（→ 10 / 11 / 15 / 16 / 17 / 19）
 103. 企业 AI Agent 为什么不能在配置期拿一组长期静态 credentials？Dynamic capability scoping 如何按任务、上下文和工具意图收缩权限，为什么它是越权预防而不是事后检测？（→ 05 / 11 / 16 / 17 / 18 / 19）
 104. Agent benchmark 高分为什么不一定证明目标能力？Protocol validity 要怎样检查 public solution recovery、evaluation artifact 泄露、grader 侧信道和 capability necessity？（→ 10 / 15 / 16 / 17 / 18 / 19 / capstone）
+105. Copilot 引入 Grok 4.5 这类 preview coding model 时，为什么要同时评估 reasoning effort、500k context、parallel tool dispatch、agentic workflow 适配、管理员启用和成本回滚？（→ 12 / 14 / 15 / 16 / 18 / 19）
+106. 为什么 Copilot app usage metrics 要按 app surface 汇总 session、request、prompt、token 和 code activity？只看总活跃用户或合并 PR 会漏掉哪些 agent 采用与成本信号？（→ 15 / 16 / 18 / 19）
+107. 企业管理 Copilot app 和 Copilot cloud agent 时，为什么要把 plugins、bypass approvals、auto model selection、web search、MCP registry、instructions 和 default model 都纳入 managed settings？（→ 05 / 11 / 16 / 17 / 18 / 19）
+108. IDE agent 同时加入 OpenTelemetry、token limit、模型管理、MCP servers、custom agents 和 file editing tools 时，为什么要把遥测、成本、模型、外部工具和文件副作用放在一套回归里看？（→ 05 / 11 / 12 / 14 / 16 / 17 / 18 / 19）
+109. MCP Go SDK 支持 2026-07-28 spec 时，为什么 stateless core、per-request _meta、server/discover、MRTR、subscriptions/listen、HTTP headers 和废弃 roots/sampling/logging 要一起测？（→ 05 / 06 / 11 / 12 / 17 / 18 / 19）
+110. 为什么长周期 planning agent 的训练/评测不能只看单步答案？OPD、MOPD、CoT world-model transition、teacher consistency 和终局状态依赖分别在暴露什么多轮规划问题？（→ 10 / 11 / 15 / 16 / 19 / capstone）
+111. 高风险设施运维里的 Agentic RAG 为什么要同时做 hybrid retrieval、knowledge graph、adaptive RRF、cross-encoder rerank、ReAct/MCP tools 和 operations-grounded evaluation？（→ 08 / 09 / 15 / 19 / rag-hybrid / rag-agentic / rag-prod）
+112. Agentic Permissions Policy Algebra 为什么要追踪 trust-taint 在 prompt context、tool calls、control-flow branching、memory 和 subagents 之间的传播？这和普通 prompt guardrail 有什么本质差异？（→ 05 / 07 / 11 / 17 / 18 / 19）
+113. 为什么 multi-agent code repair 不能把“多循环几轮”当可靠性？state-bound evidence、typed revision contract 和 verification gate 分别如何防止空转、误修和不可审计修复？（→ 10 / 12 / 15 / 16 / 19 / capstone）
+114. 开源 frontier model 报告强调 Agentic RL、million-token context、persistent rollout 和 sandbox states 时，为什么这会影响 coding/agent benchmark 的复现、成本和安全治理？（→ 10 / 12 / 15 / 16 / 18 / 19 / capstone）
 
 ### C. 项目深挖类（考你是不是真做过）
 
