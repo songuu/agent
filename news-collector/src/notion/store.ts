@@ -4,6 +4,7 @@
 // on_conflict=notion_page_id 保证重复运行幂等；出库前逐条 notionArticleSchema 校验挡脏数据。
 
 import type { SupabaseConfig } from "../config.ts";
+import { rejectSupabaseDataWrite } from "../data/supabase-write-policy.ts";
 import { notionArticleSchema, type NotionArticle } from "./types.ts";
 
 export interface UpsertResult {
@@ -55,6 +56,7 @@ export async function upsertNotionArticles(
   config: SupabaseConfig,
   fetchImpl: typeof fetch = fetch,
 ): Promise<UpsertResult> {
+  rejectSupabaseDataWrite("notion_articles legacy Supabase upsert");
   const valid: NotionArticle[] = [];
   let invalid = 0;
   for (const article of articles) {

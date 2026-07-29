@@ -20,14 +20,20 @@ assert.ok(registry.has("19"), "keyless ecosystem demo should be runnable");
 assert.equal(registry.get("19")?.needsKey, "none");
 
 assert.equal(registry.has("18"), false, "server.listen demo should be excluded");
+assert.equal(registry.has("20"), false, "article-library chapter should not expose a terminal demo");
 assert.equal(registry.has("capstone"), false, "interactive capstone CLI should be excluded");
+assert.ok(registry.has("cap-support"), "explicit capstone CLI should be runnable");
+assert.equal(registry.get("cap-support")?.entry, "capstone/support-copilot/src/cli.ts");
 
 for (const demo of registry.values()) {
   assert.ok(
     demo.realpath.startsWith(repoRoot + sep),
     `${demo.id} must resolve inside repo root`,
   );
-  assert.ok(demo.realpath.endsWith(`${sep}index.ts`), `${demo.id} must run index.ts`);
+  assert.ok(demo.realpath.endsWith(".ts"), `${demo.id} must run TypeScript`);
+  if (demo.entry === `${demo.dir}/index.ts`) {
+    assert.ok(demo.realpath.endsWith(`${sep}index.ts`), `${demo.id} default entry must be index.ts`);
+  }
 }
 
 console.log("registry.test.mts: ok");

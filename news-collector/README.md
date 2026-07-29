@@ -1,7 +1,7 @@
 # news-collector · AI 资讯定时收集系统
 
 仿 [ai.codefather.cn/news](https://ai.codefather.cn/news) 的**多源 AI 资讯定时聚合**子系统：
-按计划从多个公开 RSS/Atom 源抓取；启用订阅源必须能被现有抓取器正确解析并返回条目 → 归一 → 规则分类（8 层生态）→ 可选 LLM 富化（Anthropic / OpenAI）→ 去重 → 通过可替换内容仓库幂等写入 Supabase 或 MySQL。
+按计划从多个公开 RSS/Atom 源抓取；启用订阅源必须能被现有抓取器正确解析并返回条目 → 归一 → 规则分类（8 层生态）→ 可选 LLM 富化（Anthropic / OpenAI）→ 去重 → 通过可替换内容仓库幂等写入服务器 PostgreSQL。legacy Supabase/PostgREST 与 MySQL 仅保留迁移/回归兼容。
 
 第 20 章「前沿文章库」直接展示本系统写入的 `news_items` 表；旧的手工策展资料仍保留在知识图谱中，但不再作为文章日历的数据源。
 
@@ -19,7 +19,7 @@ NewsItem
    │  dedupe     —— 批内按 externalId + url 双重去重
    │  enrich?    —— 可选 LLM 摘要+分层；无所选 provider key 时优雅降级为规则结果
    ▼
-ContentRepository(upsert)   —— Supabase/PostgREST 或 MySQL，natural key=external_id 幂等
+ContentRepository(upsert)   —— 当前生产 writer=服务器 PostgreSQL；legacy Supabase/PostgREST/MySQL 仅兼容保留，natural key=external_id 幂等
 ```
 
 ## 目录
@@ -35,7 +35,7 @@ news-collector/
     enrich.ts       可选 LLM 富化（降级）
     dedupe.ts       批内去重
     store.ts        legacy Supabase PostgREST upsert（旧直接调用兼容）
-    data/           ContentRepository、Supabase/MySQL adapters、MySQL schema 与 runtime composition
+    data/           ContentRepository、PostgreSQL/Supabase/MySQL adapters、schema 与 runtime composition
     config.ts       env 配置（zod 校验）
     collect.ts      编排：collectOnce / collectFromConfig
     report.ts       运行报告格式化
@@ -111,7 +111,7 @@ pnpm news:collect
 pnpm news:cron
 ```
 
-## Supabase 建表 + 数据
+## 内容表 DDL + 数据
 
 ```bash
 # DDL（自托管 AIDAP 需在 SQL Editor 执行）：
@@ -122,7 +122,7 @@ pnpm supabase:news-seed
 # 然后在 SQL Editor 执行 supabase/seed/news_items.sql
 ```
 
-页面侧用公开 anon 配置只读 `news_items`；service_role 仅在 Node 收集端使用，绝不进前端 bundle。文章日历按 `published_date` 过滤，`collected_date` 只用于审计采集批次。
+这些 SQL 文件名沿用 `supabase/migrations` 历史目录；当前写入端通过 `CONTENT_POSTGRES_URL` / `CONTENT_POSTGRES_WRITE_URL` 直连服务器 PostgreSQL。文章日历按 `published_date` 过滤，`collected_date` 只用于审计采集批次。
 
 ## Notion 文件夹同步
 
@@ -140,8 +140,8 @@ pnpm notion:sync
 
 见 [.env.example](./.env.example)。要点：
 
-- 默认 `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`：兼容原有写库；**缺失则自动退回 dryRun**（只抓取不写库）。
-- `CONTENT_REPOSITORY_DRIVER=mysql` + `CONTENT_MYSQL_URL`（或分项 MySQL 字段）：让新闻写入和 Notion 关系数据改走 MySQL；MySQL 配置不完整会显式报错，绝不回写旧库。
+- 当前写入型定时任务必须配置 `CONTENT_REPOSITORY_POSTGRES_ONLY=true`、`CONTENT_REPOSITORY_DRIVER=postgres`，以及 `CONTENT_POSTGRES_URL` 或 `CONTENT_POSTGRES_WRITE_URL`；缺少配置时显式失败，不会 dry-run，也不会回写 Supabase。
+- legacy `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` 只供历史迁移、归档或明确 opt-in 的旧手工脚本使用；生产定时 writer 不读取它们作为写入目标。MySQL 配置只保留旧迁移路径。
 - `NEXT_PUBLIC_CONTENT_API_BASE_URL`：仅浏览器使用的同源 Content API 路径；不包含数据库地址或密钥。
 - 当前 Notion 图片上传仍依赖 Supabase Storage；完全移除 Supabase 前需迁移 `notion-assets` 并接入独立 AssetStore。
 - `LLM_PROVIDER`：与仓库根 `.env.example` 保持同一套值，支持 `anthropic` / `openai` / `ollama`。
@@ -186,12 +186,12 @@ journalctl -u news-collector -f
 3. **规则分类纯函数确定性**：同输入恒定同层/标签，可离线测、seed 可复现。
 4. **无 key 可完整离线跑**：enrich 优雅降级，smoke/test 全程不触网。
 5. **文章流独立**：`news_items` 独立表承载第 20 章文章流，不碰 `graph.ts` 手工策展 SoT。
-6. **幂等 upsert**：身份 = canonical URL 的 sha256，`external_id` 是稳定自然键；Supabase 与 MySQL 重复运行都不重复入库。
+6. **幂等 upsert**：身份 = canonical URL 的 sha256，`external_id` 是稳定自然键；PostgreSQL 重复运行不会重复入库。
 
 ## 故障排查
 
 - **某些源 0 items / ✗**：多为间歇 502 或 feed 改版；故障隔离保证其它源照常。改 `src/sources.ts` 增删源。
-- **Supabase 写库失败 HTTP 401**：service_role key 错或表未建；先跑迁移、核对 `.env`。
-- **MySQL 写库失败**：先确认 `CONTENT_REPOSITORY_DRIVER=mysql` 与 URL/分项字段没有混用，再核对 MySQL 8.0.19+ schema、网络与最小权限账号。
-- **dryRun 一直生效**：默认路径未配 `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY`，或 `NEWS_DRY_RUN=true`；MySQL 路径配置完整时不会因缺 Supabase 而让新闻 collector dryRun。
+- **PostgreSQL 写库失败**：先确认 `CONTENT_REPOSITORY_POSTGRES_ONLY=true`、`CONTENT_REPOSITORY_DRIVER=postgres` 和 `CONTENT_POSTGRES_URL` / `CONTENT_POSTGRES_WRITE_URL`，再核对表 schema、网络、SSL 与最小权限账号。
+- **legacy Supabase/MySQL 手工脚本失败**：只在迁移/回归时处理；不要把它们作为当前定时 writer 的成功路径。
+- **dryRun 一直生效**：检查 `NEWS_DRY_RUN=true` 或命令是否显式 dry-run；PostgreSQL-only 配置缺失应直接失败，不应静默 dry-run 或回退 Supabase。
 - **Windows `tsx → spawn EPERM`**：用 `node --experimental-transform-types news-collector/src/cli-collect.ts` 作为 workaround（见仓库 supabase/README.md）。

@@ -1,16 +1,15 @@
-
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
   ContentApiClient,
   adaptPostgrestReadRequest,
   buildContentApiPageUrl,
+  createContentApiClientForPostgrest,
   getContentApiRuntimeConfig,
   normalizeContentApiRuntimeConfig,
   resetContentApiRuntimeConfigCache,
   type ContentApiRuntimeConfig,
 } from "./content-api-client.ts";
-import { resetSupabaseRuntimeConfigCache } from "./supabase-runtime-config.ts";
 
 const supabase = {
   url: "https://project.example.supabase.co",
@@ -18,7 +17,7 @@ const supabase = {
   schema: "public",
 };
 
-test("Content runtime config accepts same-origin HTTP primary and Supabase fallback", () => {
+test("Content runtime config requires same-origin HTTP and ignores Supabase fallback", () => {
   const config = normalizeContentApiRuntimeConfig({
     version: 1,
     contentApi: { baseUrl: "/api/content/v1/" },
@@ -28,21 +27,17 @@ test("Content runtime config accepts same-origin HTTP primary and Supabase fallb
   assert.deepEqual(config, {
     version: 1,
     contentApi: { baseUrl: "/api/content/v1" },
-    supabase,
   });
 
-  assert.deepEqual(
+  assert.equal(
     normalizeContentApiRuntimeConfig({
       version: 1,
       contentApi: { baseUrl: "https://other.example/api/content/v1" },
       supabase,
     }),
-    { version: 1, supabase },
-  );
-  assert.equal(
-    normalizeContentApiRuntimeConfig({ version: 1, contentApi: { baseUrl: "//other.example/api" } }),
     null,
   );
+  assert.equal(normalizeContentApiRuntimeConfig({ version: 1, supabase }), null);
 });
 
 test("same-origin Content API uses the v1 query contract and does not send Supabase keys", async () => {
@@ -58,7 +53,7 @@ test("same-origin Content API uses the v1 query contract and does not send Supab
     pageSize: 2,
     offset: 2,
   };
-  const endpoint = new URL(buildContentApiPageUrl(runtimeConfig.contentApi!, request), "https://site.example");
+  const endpoint = new URL(buildContentApiPageUrl(runtimeConfig.contentApi, request), "https://site.example");
   assert.equal(endpoint.pathname, "/api/content/v1/news");
   assert.equal(endpoint.searchParams.get("fields"), "external_id,title,published_date");
   assert.deepEqual(endpoint.searchParams.getAll("filter"), ["published_date:eq:2026-07-23"]);
@@ -85,16 +80,14 @@ test("same-origin Content API uses the v1 query contract and does not send Supab
   assert.equal(fetchInit?.credentials, "same-origin");
 });
 
-test("PostgREST compatibility maps table/select/raw eq/order to HTTP, then safely falls back", async () => {
+test("PostgREST compatibility maps table/select/raw eq/order to Content API only", async () => {
   const calls: Array<{ url: string; init?: RequestInit }> = [];
   const client = new ContentApiClient(
-    { version: 1, contentApi: { baseUrl: "/api/content/v1" }, supabase },
+    { version: 1, contentApi: { baseUrl: "/api/content/v1" } },
     {
       fetchImpl: async (input, init) => {
-        const url = String(input);
-        calls.push({ url, init });
-        if (url.startsWith("/api/content/v1/")) return response("not deployed", {}, 503);
-        return response([{ external_id: "fallback" }], { "content-range": "0-0/1" });
+        calls.push({ url: String(input), init });
+        return response({ items: [{ external_id: "mapped" }], totalCount: 1, hasMore: false });
       },
     },
   );
@@ -109,23 +102,18 @@ test("PostgREST compatibility maps table/select/raw eq/order to HTTP, then safel
   });
 
   assert.deepEqual(result, {
-    rows: [{ external_id: "fallback" }],
+    rows: [{ external_id: "mapped" }],
     totalCount: 1,
     hasMore: false,
-    source: "supabase",
+    source: "http",
   });
-  assert.equal(calls.length, 2);
+  assert.equal(calls.length, 1);
   const primary = new URL(calls[0]?.url ?? "", "https://site.example");
   assert.equal(primary.pathname, "/api/content/v1/news");
   assert.deepEqual(primary.searchParams.getAll("filter"), ["published_date:eq:2026-07-23"]);
   assert.deepEqual(primary.searchParams.getAll("sort"), ["published_date:desc"]);
-  assert.match(calls[1]?.url ?? "", /rest\/v1\/news_items/);
-  assert.deepEqual(calls[1]?.init?.headers, {
-    apikey: "public-anon-key",
-    Authorization: "Bearer public-anon-key",
-    "Accept-Profile": "public",
-    Prefer: "count=exact",
-  });
+  assert.doesNotMatch(calls[0]?.url ?? "", /rest\/v1\/news_items/);
+  assert.equal(new Headers(calls[0]?.init?.headers).get("apikey"), null);
 
   assert.throws(
     () =>
@@ -139,32 +127,40 @@ test("PostgREST compatibility maps table/select/raw eq/order to HTTP, then safel
   );
 });
 
-test("legacy config without Content API keeps the current direct Supabase path", async () => {
+test("PostgREST compatibility does not fall back to Supabase when Content API fails", async () => {
   const calls: string[] = [];
   const client = new ContentApiClient(
-    { version: 1, supabase },
+    { version: 1, contentApi: { baseUrl: "/api/content/v1" } },
     {
       fetchImpl: async (input) => {
         calls.push(String(input));
-        return response([{ slug: "legacy" }], { "content-range": "0-0/1" });
+        return response("not deployed", {}, 503);
       },
     },
   );
 
-  const result = await client.fetchPostgrestPage<{ slug: string }>({
-    config: supabase,
-    table: "interview_questions",
-    select: "slug",
-    filters: ["slug=eq.legacy"],
-  });
-
-  assert.equal(result.source, "supabase");
-  assert.deepEqual(result.rows, [{ slug: "legacy" }]);
+  await assert.rejects(
+    () =>
+      client.fetchPostgrestPage({
+        config: supabase,
+        table: "interview_questions",
+        select: "slug",
+        filters: ["slug=eq.legacy"],
+      }),
+    /Content API HTTP 503/,
+  );
   assert.equal(calls.length, 1);
-  assert.match(calls[0] ?? "", /rest\/v1\/interview_questions/);
+  assert.doesNotMatch(calls[0] ?? "", /rest\/v1\/interview_questions/);
 });
 
-test("runtime JSON switches primary without rebuilding and is cached per page", async () => {
+test("legacy Supabase-only config is rejected even when supplied as fallback", async () => {
+  await assert.rejects(
+    () => createContentApiClientForPostgrest(supabase, { runtimeConfig: null }),
+    /Supabase 浏览器读取已禁用/,
+  );
+});
+
+test("runtime JSON switches primary without rebuilding and ignores legacy Supabase fields", async () => {
   const holder = globalThis as unknown as {
     window?: { fetch: typeof fetch };
     __FRONTIER_CONTENT_API_CONFIG__?: unknown;
@@ -186,17 +182,14 @@ test("runtime JSON switches primary without rebuilding and is cached per page", 
     assert.deepEqual(await getContentApiRuntimeConfig(), {
       version: 1,
       contentApi: { baseUrl: "/api/content/v1" },
-      supabase,
     });
     assert.deepEqual(await getContentApiRuntimeConfig(), {
       version: 1,
       contentApi: { baseUrl: "/api/content/v1" },
-      supabase,
     });
     assert.equal(requestCount, 1);
   } finally {
     resetContentApiRuntimeConfigCache();
-    resetSupabaseRuntimeConfigCache();
     if (originalWindow) Object.defineProperty(holder, "window", originalWindow);
     else delete holder.window;
     if (originalConfig) Object.defineProperty(holder, "__FRONTIER_CONTENT_API_CONFIG__", originalConfig);
@@ -217,5 +210,3 @@ function response(payload: unknown, headers: Record<string, string> = {}, status
     json: async () => payload,
   } as Response;
 }
-
-

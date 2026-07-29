@@ -19,7 +19,12 @@ function requireEnv(name: string): string {
   return value;
 }
 
+function assertSupabaseWritesAllowed(): never {
+  throw new Error("Supabase/PostgREST data uploads are disabled for this project; use npm run content:frontier-push.");
+}
+
 async function main(): Promise<void> {
+  assertSupabaseWritesAllowed();
   const base = requireEnv("SUPABASE_URL").replace(/\/+$/, "");
   const key = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
   const schema = process.env.SUPABASE_SCHEMA || "public";

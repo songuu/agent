@@ -1,11 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { resetContentApiRuntimeConfigCache } from "./content-api-client.ts";
 import {
   loadInterviewClinicData,
   normalizeInterviewQuestionRow,
 } from "./interview-clinic-data.ts";
 
-test("normalizeInterviewQuestionRow：映射 Supabase 行到前端题目结构", () => {
+test("normalizeInterviewQuestionRow：映射远端行到前端题目结构", () => {
   const question = normalizeInterviewQuestionRow({
     question_id: "iq-31",
     slug: "multi-tenant-agent-runtime-isolation-vs-dedicated-stack",
@@ -36,56 +37,52 @@ test("normalizeInterviewQuestionRow：映射 Supabase 行到前端题目结构",
   assert.equal(question.collectedDate, "2026-07-20");
 });
 
-test("loadInterviewClinicData：缺少配置时回退本地 bundle", async () => {
-  const holder = globalThis as { __FRONTIER_SUPABASE_CONFIG__?: unknown };
-  const original = holder.__FRONTIER_SUPABASE_CONFIG__;
-  delete holder.__FRONTIER_SUPABASE_CONFIG__;
+test("loadInterviewClinicData：缺少 Content API 配置时回退本地 bundle", async () => {
+  clearContentApiConfig();
 
   const result = await loadInterviewClinicData();
 
   assert.equal(result.source, "bundle");
   assert.match(result.note, /本地题库/);
   assert.ok(result.questions.length > 0);
-
-  holder.__FRONTIER_SUPABASE_CONFIG__ = original;
 });
 
-test("loadInterviewClinicData：Supabase 读取成功时优先使用远端数据", async () => {
-  const holder = globalThis as { __FRONTIER_SUPABASE_CONFIG__?: unknown };
-  const original = holder.__FRONTIER_SUPABASE_CONFIG__;
-  holder.__FRONTIER_SUPABASE_CONFIG__ = {
-    url: "https://example.supabase.co",
-    anonKey: "anon-key",
-    schema: "public",
-  };
+test("loadInterviewClinicData：Content API 读取成功时优先使用远端数据", async () => {
+  await withContentApiConfig(async () => {
+    let requestedUrl = "";
+    const result = await loadInterviewClinicData(async (input, init) => {
+      requestedUrl = String(input);
+      assert.equal(new Headers(init?.headers).get("apikey"), null);
+      return new Response(
+        JSON.stringify({
+          items: [
+            {
+              question_id: "iq-01",
+              slug: "demo-slug",
+              category: "principle",
+              category_label: "原理类",
+              question: "demo question",
+              related_chapters: ["01"],
+              answer_source: "chapter readme",
+              collected_date: "2026-06-24",
+              collected_at: "2026-06-24T09:00:00+08:00",
+              sort_order: 1,
+              tags: ["principle"],
+              metadata: {},
+            },
+          ],
+          totalCount: 1,
+          hasMore: false,
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    });
 
-  const result = await loadInterviewClinicData(async () => {
-    return new Response(
-      JSON.stringify([
-        {
-          question_id: "iq-01",
-          slug: "demo-slug",
-          category: "principle",
-          category_label: "原理类",
-          question: "demo question",
-          related_chapters: ["01"],
-          answer_source: "chapter readme",
-          collected_date: "2026-06-24",
-          collected_at: "2026-06-24T09:00:00+08:00",
-          sort_order: 1,
-          tags: ["principle"],
-          metadata: {},
-        },
-      ]),
-      { status: 200, headers: { "content-type": "application/json" } },
-    );
+    assert.match(requestedUrl, /\/api\/content\/v1\/interviews\?/);
+    assert.equal(result.source, "remote");
+    assert.equal(result.questions.length, 1);
+    assert.equal(result.questions[0]?.slug, "demo-slug");
   });
-
-  assert.equal(result.source, "supabase");
-  assert.equal(result.questions.length, 1);
-  assert.equal(result.questions[0]?.slug, "demo-slug");
-
-  holder.__FRONTIER_SUPABASE_CONFIG__ = original;
 });
 
 
@@ -122,3 +119,26 @@ test("normalizeInterviewQuestionRow：远端只有选题说明时优先使用本
   assert.match(question.summaryExcerpt ?? "", /不能只测 recall/);
   assert.doesNotMatch(question.summaryExcerpt ?? "", /^本题覆盖/);
 });
+
+async function withContentApiConfig<T>(fn: () => Promise<T> | T): Promise<T> {
+  const holder = globalThis as typeof globalThis & { __FRONTIER_CONTENT_API_CONFIG__?: unknown };
+  const original = Object.getOwnPropertyDescriptor(holder, "__FRONTIER_CONTENT_API_CONFIG__");
+  try {
+    holder.__FRONTIER_CONTENT_API_CONFIG__ = {
+      version: 1,
+      contentApi: { baseUrl: "/api/content/v1" },
+    };
+    resetContentApiRuntimeConfigCache();
+    return await fn();
+  } finally {
+    resetContentApiRuntimeConfigCache();
+    if (original) Object.defineProperty(holder, "__FRONTIER_CONTENT_API_CONFIG__", original);
+    else delete holder.__FRONTIER_CONTENT_API_CONFIG__;
+  }
+}
+
+function clearContentApiConfig(): void {
+  const holder = globalThis as typeof globalThis & { __FRONTIER_CONTENT_API_CONFIG__?: unknown };
+  delete holder.__FRONTIER_CONTENT_API_CONFIG__;
+  resetContentApiRuntimeConfigCache();
+}

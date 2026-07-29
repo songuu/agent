@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -8,10 +8,11 @@ import {
   writeSupabaseRuntimeConfig,
 } from "./write-supabase-runtime-config.ts";
 
-test("公开运行时配置只写入 URL、anon key 与 schema", async () => {
+test("Supabase public env is ignored and stale runtime config is removed", async () => {
   const dir = await mkdtemp(join(tmpdir(), "agent-build-runtime-config-"));
   const outputPath = join(dir, "supabase-runtime-config.json");
   try {
+    await writeFile(outputPath, JSON.stringify({ version: 1, supabase: { url: "https://old.example" } }), "utf8");
     const result = await writeSupabaseRuntimeConfig({
       outputPath,
       now: new Date("2026-07-23T00:00:00.000Z"),
@@ -23,44 +24,26 @@ test("公开运行时配置只写入 URL、anon key 与 schema", async () => {
       },
     });
 
-    assert.equal(result.status, "written");
-    assert.equal(result.publicOrigin, "https://new-db.example.com");
-    const payload = JSON.parse(await readFile(outputPath, "utf8")) as Record<string, unknown>;
-    assert.deepEqual(payload, {
-      version: 1,
-      updatedAt: "2026-07-23T00:00:00.000Z",
-      supabase: {
-        url: "https://new-db.example.com",
-        anonKey: "anon-only-key",
-        schema: "public",
-      },
-    });
-    assert.doesNotMatch(JSON.stringify(payload), /service-only-key/);
+    assert.equal(result.status, "absent");
+    assert.equal(result.publicOrigin, null);
+    await assert.rejects(readFile(outputPath, "utf8"), /ENOENT/);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
 });
 
-test("公开 anon key 不能误配为 service role", () => {
-  assert.throws(
-    () =>
-      resolvePublicSupabaseRuntimeConfig({
-        NEXT_PUBLIC_SUPABASE_URL: "https://new-db.example.com",
-        NEXT_PUBLIC_SUPABASE_ANON_KEY: "same-secret",
-        SUPABASE_SERVICE_ROLE_KEY: "same-secret",
-      }),
-    /不能等于/,
-  );
-});
-
-test("Content API-only 运行时配置不泄露或依赖 Supabase", async () => {
+test("Content API-only runtime config does not leak or depend on Supabase", async () => {
   const dir = await mkdtemp(join(tmpdir(), "agent-build-content-api-runtime-config-"));
   const outputPath = join(dir, "supabase-runtime-config.json");
   try {
     const result = await writeSupabaseRuntimeConfig({
       outputPath,
       now: new Date("2026-07-23T00:00:00.000Z"),
-      env: { NEXT_PUBLIC_CONTENT_API_BASE_URL: "/agent-build/api/content/v1/" },
+      env: {
+        NEXT_PUBLIC_CONTENT_API_BASE_URL: "/agent-build/api/content/v1/",
+        NEXT_PUBLIC_SUPABASE_URL: "https://ignored.example.com/",
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: "ignored-anon-key",
+      },
     });
     assert.equal(result.status, "written");
     assert.equal(result.publicOrigin, null);
@@ -74,7 +57,7 @@ test("Content API-only 运行时配置不泄露或依赖 Supabase", async () => 
   }
 });
 
-test("Content API 公开地址必须是同源绝对路径", () => {
+test("Content API public URL must be a same-origin absolute path", () => {
   assert.throws(
     () => resolvePublicSupabaseRuntimeConfig({ NEXT_PUBLIC_CONTENT_API_BASE_URL: "https://elsewhere.example/api" }),
     /同源绝对路径/,

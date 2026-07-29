@@ -8,6 +8,7 @@ import type { NotionArticle } from "../notion/types.ts";
 import type { SupabaseConfig } from "../config.ts";
 import type { NewsItem } from "../types.ts";
 import { sanitizeJsonForStorage, validateNewsItems, validateNotionArticles } from "./content-mapping.ts";
+import { rejectSupabaseDataWrite } from "./supabase-write-policy.ts";
 import { getContentTableContract, pickContentRow, type ContentRow, type ContentTableName } from "./content-table-contracts.ts";
 import type { ContentRepository, ContentUpsertResult } from "./content-repository.ts";
 
@@ -90,54 +91,7 @@ async function upsertRows(input: {
   if (input.rows.length === 0) {
     return { attempted: input.attempted, invalid: input.invalid, pushed: 0, tableCount: "0" };
   }
-
-  const base = input.config.url.replace(/\/+$/, "");
-  let pushed = 0;
-  const chunks = chunkRows(input.rows, CONTENT_UPSERT_CHUNK_SIZE);
-  for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
-    const chunk = chunks[chunkIndex]!;
-    const response = await input.fetchImpl(
-      `${base}/rest/v1/${input.table}?on_conflict=${input.conflictKey}`,
-      {
-        method: "POST",
-        headers: {
-          ...serviceHeaders(input.config),
-          "Content-Type": "application/json",
-          "Content-Profile": input.config.schema,
-          Prefer: "resolution=merge-duplicates,return=minimal",
-        },
-        body: JSON.stringify(chunk.map((row) => sanitizeJsonForStorage(row))),
-      },
-    );
-    if (!response.ok) {
-      const detail = await response.text();
-      const start = chunkIndex * CONTENT_UPSERT_CHUNK_SIZE;
-      const end = start + chunk.length - 1;
-      throw new Error(
-        `${input.table} upsert failed: chunk=${chunkIndex + 1}/${chunks.length} rows=${start}-${end} HTTP ${response.status} ${detail.slice(0, 500)}`,
-      );
-    }
-    pushed += chunk.length;
-  }
-
-  const countResponse = await input.fetchImpl(
-    `${base}/rest/v1/${input.table}?select=${input.conflictKey}`,
-    {
-      headers: {
-        ...serviceHeaders(input.config),
-        "Accept-Profile": input.config.schema,
-        Prefer: "count=exact",
-        Range: "0-0",
-      },
-    },
-  );
-
-  return {
-    attempted: input.attempted,
-    invalid: input.invalid,
-    pushed,
-    tableCount: countResponse.headers.get("content-range") ?? "?",
-  };
+  return rejectSupabaseDataWrite(input.table + " Supabase repository upsert");
 }
 
 function metadataObject(value: unknown): Readonly<Record<string, unknown>> | null {

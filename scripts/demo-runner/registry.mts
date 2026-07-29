@@ -37,7 +37,10 @@ export function buildDemoRegistry(
     if (!isInsideRoot(rootRealpath, entryRealpath)) {
       throw new Error(`Demo entry escapes repo root for ${chapter.id}`);
     }
-    if (!entryRealpath.endsWith(`${sep}index.ts`)) {
+    if (!entryRealpath.endsWith(".ts")) {
+      throw new Error(`Demo entry must be a TypeScript file for ${chapter.id}`);
+    }
+    if (!chapter.demo.entry && !entryRealpath.endsWith(`${sep}index.ts`)) {
       throw new Error(`Demo entry must be an index.ts file for ${chapter.id}`);
     }
 

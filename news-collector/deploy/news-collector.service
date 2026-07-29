@@ -2,12 +2,13 @@
 #
 # 安装：
 #   1) 把仓库部署到 /opt/agent-build（或改下方 WorkingDirectory）
-#   2) 在仓库根创建 .env（含 SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY），chmod 600 .env
+#   2) 在仓库根创建 .env（含 CONTENT_REPOSITORY_POSTGRES_ONLY=true、CONTENT_REPOSITORY_DRIVER=postgres、CONTENT_POSTGRES_URL/WRITE_URL），chmod 600 .env
 #   3) sudo cp news-collector/deploy/news-collector.service /etc/systemd/system/
 #   4) sudo systemctl daemon-reload && sudo systemctl enable --now news-collector
 #   5) journalctl -u news-collector -f   # 看日志
 #
 # 注意：--env-file=.env 由 Node 原生加载（dotenv 风格），无需额外 EnvironmentFile。
+# 当前阶段禁止 Supabase writer；缺少 PostgreSQL 配置时服务应启动失败或任务失败。
 
 [Unit]
 Description=AI News Collector (agent-build) — scheduled multi-source RSS aggregation

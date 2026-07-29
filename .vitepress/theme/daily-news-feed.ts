@@ -1,9 +1,8 @@
 // 每日 AI 资讯展示器（仿 ai.codefather.cn/news）。
 //
-// 读取由 news-collector 自动收集的 Supabase `news_items` 表，渲染为 codefather 风格的
-// 日期时间线 + 体系层筛选。复用第 20 章「前沿文章库」的全套 frontier-* CSS 与 date-filter 纯逻辑。
-//
-// 安全不变量：仅使用公开 anon 配置只读；service_role 永不进前端 bundle。
+// 读取由 news-collector 自动收集的服务器 PostgreSQL `news_items` 资源，
+// 经同源 Content API 渲染为 codefather 风格的日期时间线 + 体系层筛选。
+// 安全不变量：浏览器不直连 Supabase/PostgREST，也不持有任何数据库写入密钥。
 
 import { FRONTIER_ECOSYSTEM_LAYERS } from "../../knowledge-graph/data/frontier-ecosystem-layers";
 import type { FrontierEcosystemLayer } from "../../knowledge-graph/data/graph";
@@ -25,7 +24,6 @@ import {
   restoreListDetailPosition,
   withReturnPath,
 } from "./list-detail-return";
-import { getSupabaseRuntimeConfig } from "./supabase-runtime-config";
 
 const WEEKDAY_LABELS = ["一", "二", "三", "四", "五", "六", "日"] as const;
 const DEFAULT_DATE_LABEL = "6月17日 · 周三";
@@ -155,9 +153,7 @@ async function fetchNewsPage(
   filters: readonly string[],
   pageSize: number = DEFAULT_NEWS_PAGE_SIZE,
 ): Promise<{ items: NewsItemView[]; totalCount: number | null; hasMore: boolean }> {
-  const config = await getSupabaseRuntimeConfig();
   const page = await fetchPostgrestPage<NewsItemRow>({
-    ...(config ? { config } : {}),
     table: "news_items",
     select: NEWS_COLUMNS,
     filters: [...filters],
@@ -174,9 +170,7 @@ async function fetchNewsPage(
 }
 
 async function fetchNewsFilterIndex(): Promise<NewsFilterIndexItem[]> {
-  const config = await getSupabaseRuntimeConfig();
   const rows = await fetchAllPostgrestRows<NewsFilterIndexRow>({
-    ...(config ? { config } : {}),
     table: "news_items",
     select: NEWS_FILTER_INDEX_COLUMNS,
     order: ["published_date.desc"],
@@ -612,7 +606,7 @@ async function renderFeed(root: HTMLElement): Promise<void> {
 
   if (items.length === 0) {
     timeline.replaceChildren(
-      statusBlock("每日资讯暂无数据。先运行 news-collector（pnpm news:collect）或导入 news_items seed。"),
+      statusBlock("每日资讯暂无数据。先确认服务器 PostgreSQL 已写入 news_items，并配置同源 Content API。"),
     );
     timelineStatus.textContent = "";
     pagination.replaceChildren();

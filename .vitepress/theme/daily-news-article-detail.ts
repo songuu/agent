@@ -1,10 +1,9 @@
-// AI 资讯站内详情页：运行时按 ?id=<external_id> 读取 news_items 单行并渲染正文。
-// 安全不变量：前端只用 Supabase anon 读；原文跳转是显式按钮。
+// AI 资讯站内详情页：运行时按 ?id=<external_id> 经同源 Content API
+// 读取 news_items 单行并渲染正文；浏览器不直连 Supabase/PostgREST。
 
 import { fetchAllPostgrestRows } from "./content-pagination";
 import { cleanNewsSummary } from "./daily-news-feed";
 import { safeReturnPathFromSearch, withReturnPath } from "./list-detail-return";
-import { getSupabaseRuntimeConfig } from "./supabase-runtime-config";
 
 interface NewsArticleRow {
   external_id?: unknown;
@@ -114,16 +113,8 @@ function refreshRoot(root: HTMLElement, force = false): void {
     });
 }
 
-async function optionalSupabaseConfig(): Promise<{ url: string; anonKey: string; schema: string } | undefined> {
-  const config = await getSupabaseRuntimeConfig();
-  return config ? { url: config.url, anonKey: config.anonKey, schema: config.schema || "public" } : undefined;
-}
-
 async function loadArticle(id: string): Promise<NewsArticleRow | null> {
-  const config = await optionalSupabaseConfig();
-
   const rows = await fetchAllPostgrestRows<NewsArticleRow>({
-    config,
     table: "news_items",
     select: DETAIL_COLUMNS,
     filters: [`external_id=eq.${encodeURIComponent(id)}`],
@@ -134,9 +125,7 @@ async function loadArticle(id: string): Promise<NewsArticleRow | null> {
 }
 
 async function loadArticleNavigation(id: string): Promise<NewsArticleNavigation | null> {
-  const config = await optionalSupabaseConfig();
   const rows = await fetchAllPostgrestRows<NewsArticleRow>({
-    config,
     table: "news_items",
     select: NAVIGATION_COLUMNS,
     order: ["published_date.desc", "published_at.desc"],

@@ -7,6 +7,7 @@ import {
   findDuplicateCodefatherStoredSlugs,
   formatCodefatherSyncFailure,
   readCodefatherCount,
+  resolveCodefatherContentRepositoryDriver,
   runCodefatherInterviewSync,
   toInterviewQuestionRows,
   upsertInterviewQuestionRows,
@@ -84,9 +85,42 @@ test("fetchCodefatherInterviewPosts retries transient HTTP 524", async () => {
   assert.equal(attempts, 3);
 });
 
+test("Codefather sync resolves writer driver through shared content repository config", () => {
+  assert.equal(
+    resolveCodefatherContentRepositoryDriver({
+      CONTENT_POSTGRES_WRITE_URL: "postgresql://writer:private-password@127.0.0.1:5432/agent_build",
+    } as NodeJS.ProcessEnv),
+    "postgres",
+  );
+
+  assert.throws(
+    () =>
+      resolveCodefatherContentRepositoryDriver({
+        CONTENT_REPOSITORY_POSTGRES_ONLY: "true",
+        SUPABASE_URL: "https://supabase.test",
+        SUPABASE_SERVICE_ROLE_KEY: "service-key",
+      } as NodeJS.ProcessEnv),
+    /CONTENT_REPOSITORY_POSTGRES_ONLY=true/,
+  );
+
+  assert.throws(
+    () =>
+      resolveCodefatherContentRepositoryDriver({
+        CONTENT_REPOSITORY_DRIVER: "mysql",
+        CONTENT_MYSQL_HOST: "mysql.internal",
+        CONTENT_MYSQL_DATABASE: "agent_build",
+        CONTENT_MYSQL_USER: "collector",
+        CONTENT_MYSQL_PASSWORD: "private-password",
+      } as NodeJS.ProcessEnv),
+    /requires the server PostgreSQL content repository/,
+  );
+});
+
 test("codefather interview ecosystem config uses safer upsert defaults", () => {
   const app = ecosystemConfig.apps[0];
 
+  assert.equal(app.env.CONTENT_REPOSITORY_POSTGRES_ONLY, "true");
+  assert.equal(app.env.CONTENT_REPOSITORY_DRIVER, "postgres");
   assert.equal(app.env.CODEFATHER_INTERVIEW_UPSERT_BATCH_SIZE, "25");
   assert.equal(app.env.CODEFATHER_INTERVIEW_UPSERT_TIMEOUT_MS, "300000");
 });
@@ -143,121 +177,24 @@ test("dedupeInterviewQuestionRows skips duplicate slug, source URL, and same-day
   assert.equal(result.report.duplicateTitleCount, 1);
 });
 
-test("upsertInterviewQuestionRows sends PostgREST merge-upsert request", async () => {
+test("upsertInterviewQuestionRows refuses legacy Supabase uploads before fetch", async () => {
   const rows = toInterviewQuestionRows([{ id: "1", title: "面试题", tags: ["面试题"] }]);
-  const requests: Array<{ url: string; init: RequestInit }> = [];
-  const fetchImpl: typeof fetch = async (url, init) => {
-    requests.push({ url: String(url), init: init ?? {} });
+  let calls = 0;
+  const fetchImpl: typeof fetch = async () => {
+    calls += 1;
     return new Response(null, { status: 201 });
   };
 
-  await upsertInterviewQuestionRows(rows, {
-    baseUrl: "https://supabase.test/",
-    serviceRoleKey: "service-key",
-    schema: "public",
-    fetchImpl,
-  });
-
-  assert.equal(requests[0].url, "https://supabase.test/rest/v1/interview_questions?on_conflict=slug");
-  assert.equal(
-    (requests[0].init.headers as Record<string, string>).Prefer,
-    "resolution=merge-duplicates,return=minimal",
-  );
-  assert.match(String(requests[0].init.body), /codefather-interview-1/);
-});
-
-test("upsertInterviewQuestionRows splits large payloads into batches", async () => {
-  const rows = toInterviewQuestionRows(
-    [
-      { id: "1", title: "题 1", tags: ["面试题"] },
-      { id: "2", title: "题 2", tags: ["面试题"] },
-      { id: "3", title: "题 3", tags: ["面试题"] },
-    ],
-    new Date("2026-06-30T03:00:00.000Z"),
-  );
-  const requests: Array<{ url: string; init: RequestInit }> = [];
-  const fetchImpl: typeof fetch = async (url, init) => {
-    requests.push({ url: String(url), init: init ?? {} });
-    return new Response(null, { status: 201 });
-  };
-
-  await upsertInterviewQuestionRows(rows, {
-    baseUrl: "https://supabase.test/",
-    serviceRoleKey: "service-key",
-    schema: "public",
-    batchSize: 2,
-    timeoutMs: 12345,
-    fetchImpl,
-  });
-
-  assert.equal(requests.length, 2);
-  assert.match(String(requests[0].init.body), /codefather-interview-1/);
-  assert.match(String(requests[0].init.body), /codefather-interview-2/);
-  assert.doesNotMatch(String(requests[0].init.body), /codefather-interview-3/);
-  assert.match(String(requests[1].init.body), /codefather-interview-3/);
-  assert.equal(requests[0].init.signal instanceof AbortSignal, true);
-});
-
-test("upsertInterviewQuestionRows uses safer default batch size", async () => {
-  const rows = toInterviewQuestionRows(
-    Array.from({ length: 26 }, (_value, index) => ({
-      id: String(index + 1),
-      title: `题 ${index + 1}`,
-      tags: ["面试题"],
-    })),
-    new Date("2026-06-30T03:00:00.000Z"),
-  );
-  const requests: Array<{ url: string; init: RequestInit }> = [];
-  const fetchImpl: typeof fetch = async (url, init) => {
-    requests.push({ url: String(url), init: init ?? {} });
-    return new Response(null, { status: 201 });
-  };
-
-  await upsertInterviewQuestionRows(rows, {
-    baseUrl: "https://supabase.test/",
-    serviceRoleKey: "service-key",
-    schema: "public",
-    fetchImpl,
-  });
-
-  assert.equal(requests.length, 2);
-  assert.match(String(requests[0].init.body), /codefather-interview-25/);
-  assert.doesNotMatch(String(requests[0].init.body), /codefather-interview-26/);
-  assert.match(String(requests[1].init.body), /codefather-interview-26/);
-});
-test("upsertInterviewQuestionRows retries transient fetch failures", async () => {
-  const rows = toInterviewQuestionRows([{ id: "1", title: "面试题", tags: ["面试题"] }]);
-  let attempts = 0;
-  const originalSetTimeout = globalThis.setTimeout;
-  globalThis.setTimeout = ((callback, _delay, ...args) => {
-    if (typeof callback === "function") callback(...args);
-    return 0 as ReturnType<typeof setTimeout>;
-  }) as typeof setTimeout;
-
-  try {
-    const fetchImpl: typeof fetch = async () => {
-      attempts += 1;
-      if (attempts < 3) {
-        const error = new TypeError("fetch failed");
-        Object.defineProperty(error, "cause", {
-          value: Object.assign(new Error("socket hang up"), { code: "ECONNRESET" }),
-        });
-        throw error;
-      }
-      return new Response(null, { status: 201 });
-    };
-
-    await upsertInterviewQuestionRows(rows, {
+  await assert.rejects(
+    () => upsertInterviewQuestionRows(rows, {
       baseUrl: "https://supabase.test/",
       serviceRoleKey: "service-key",
       schema: "public",
       fetchImpl,
-    });
-  } finally {
-    globalThis.setTimeout = originalSetTimeout;
-  }
-
-  assert.equal(attempts, 3);
+    }),
+    /Supabase\/PostgREST data uploads are disabled/,
+  );
+  assert.equal(calls, 0);
 });
 
 test("formatCodefatherSyncFailure includes nested cause details", () => {
@@ -286,7 +223,17 @@ test("readCodefatherCount parses content-range totals", async () => {
   assert.equal(count, 503);
 });
 
-test("runCodefatherInterviewSync writes unique rows and returns service/anon readback", async () => {
+test("runCodefatherInterviewSync rejects Supabase-only writer config before remote write", async () => {
+  const original = {
+    CONTENT_REPOSITORY_DRIVER: process.env.CONTENT_REPOSITORY_DRIVER,
+    CONTENT_REPOSITORY_POSTGRES_ONLY: process.env.CONTENT_REPOSITORY_POSTGRES_ONLY,
+    CONTENT_POSTGRES_URL: process.env.CONTENT_POSTGRES_URL,
+    CONTENT_POSTGRES_WRITE_URL: process.env.CONTENT_POSTGRES_WRITE_URL,
+  };
+  delete process.env.CONTENT_REPOSITORY_DRIVER;
+  delete process.env.CONTENT_REPOSITORY_POSTGRES_ONLY;
+  delete process.env.CONTENT_POSTGRES_URL;
+  delete process.env.CONTENT_POSTGRES_WRITE_URL;
   const requests: Array<{ url: string; method: string }> = [];
   const fetchImpl: typeof fetch = async (url, init) => {
     const requestUrl = String(url);
@@ -301,33 +248,31 @@ test("runCodefatherInterviewSync writes unique rows and returns service/anon rea
         message: "ok",
       });
     }
-    if (requestUrl.includes("on_conflict=slug")) {
-      return new Response(null, { status: 201 });
-    }
-    return new Response("[]", {
-      status: 206,
-      headers: { "content-range": "0-0/501" },
-    });
+    throw new Error("unexpected Supabase/PostgREST request");
   };
 
-  const report = await runCodefatherInterviewSync({
-    limit: 1,
-    pageSize: 20,
-    baseUrl: "https://supabase.test",
-    serviceRoleKey: "service-key",
-    anonKey: "anon-key",
-    schema: "public",
-    fetchImpl,
-    now: new Date("2026-06-30T03:00:00.000Z"),
-  });
+  try {
+    await assert.rejects(
+      () => runCodefatherInterviewSync({
+        limit: 1,
+        pageSize: 20,
+        baseUrl: "https://supabase.test",
+        serviceRoleKey: "service-key",
+        anonKey: "anon-key",
+        schema: "public",
+        fetchImpl,
+        now: new Date("2026-06-30T03:00:00.000Z"),
+      }),
+      /requires the server PostgreSQL content repository/,
+    );
+  } finally {
+    for (const [key, value] of Object.entries(original)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
 
-  assert.equal(report.fetched, 1);
-  assert.equal(report.rows, 1);
-  assert.equal(report.duplicatesSkipped, 0);
-  assert.equal(report.serviceCount, 501);
-  assert.equal(report.anonCount, 501);
-  assert.equal(report.remoteDuplicatesDeleted, 0);
-  assert.equal(requests.filter((request) => request.url.includes("select=slug")).length, 3);
+  assert.equal(requests.filter((request) => request.url.includes("supabase.test")).length, 0);
 });
 test("runCodefatherInterviewSync falls back to healthy readback after retryable Codefather 502", async () => {
   let codefatherAttempts = 0;
@@ -364,26 +309,42 @@ test("runCodefatherInterviewSync falls back to healthy readback after retryable 
       });
     };
 
-    const report = await runCodefatherInterviewSync({
-      limit: 1,
-      pageSize: 20,
-      baseUrl: "https://supabase.test",
-      serviceRoleKey: "service-key",
-      anonKey: "anon-key",
-      schema: "public",
-      fetchImpl,
-    });
+    const original = {
+      CONTENT_REPOSITORY_DRIVER: process.env.CONTENT_REPOSITORY_DRIVER,
+      CONTENT_REPOSITORY_POSTGRES_ONLY: process.env.CONTENT_REPOSITORY_POSTGRES_ONLY,
+      CONTENT_POSTGRES_URL: process.env.CONTENT_POSTGRES_URL,
+      CONTENT_POSTGRES_WRITE_URL: process.env.CONTENT_POSTGRES_WRITE_URL,
+    };
+    delete process.env.CONTENT_REPOSITORY_DRIVER;
+    delete process.env.CONTENT_REPOSITORY_POSTGRES_ONLY;
+    delete process.env.CONTENT_POSTGRES_URL;
+    delete process.env.CONTENT_POSTGRES_WRITE_URL;
+    try {
+      await assert.rejects(
+        () => runCodefatherInterviewSync({
+          limit: 1,
+          pageSize: 20,
+          baseUrl: "https://supabase.test",
+          serviceRoleKey: "service-key",
+          anonKey: "anon-key",
+          schema: "public",
+          fetchImpl,
+        }),
+        /requires the server PostgreSQL content repository/,
+      );
+    } finally {
+      for (const [key, value] of Object.entries(original)) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+    }
 
     assert.equal(codefatherAttempts, 3);
-    assert.equal(report.sourceFetchStatus, "fallback-readback");
-    assert.match(report.sourceFetchError ?? "", /HTTP 502/);
-    assert.equal(report.rows, 1);
-    assert.equal(report.serviceCount, 1);
-    assert.equal(report.anonCount, 1);
   } finally {
     globalThis.setTimeout = originalSetTimeout;
   }
 });
+
 test("findDuplicateCodefatherStoredSlugs and deleteCodefatherRowsBySlug clean remote duplicates", async () => {
   const duplicates = findDuplicateCodefatherStoredSlugs([
     {

@@ -5,7 +5,9 @@
 //   pm2 logs news-collector
 //   pm2 save && pm2 startup     # 开机自启
 //
-// 前置：仓库根已有 .env（含 SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY），且 .env 已被 .gitignore。
+// 前置：仓库根已有 .env，且 .env 已被 .gitignore。
+// 当前阶段定时 writer 必须配置 CONTENT_REPOSITORY_POSTGRES_ONLY=true、
+// CONTENT_REPOSITORY_DRIVER=postgres 和 CONTENT_POSTGRES_URL/WRITE_URL。
 
 const path = require("node:path");
 
@@ -28,6 +30,8 @@ module.exports = {
       time: true,
       env: {
         NODE_ENV: "production",
+        CONTENT_REPOSITORY_POSTGRES_ONLY: "true",
+        CONTENT_REPOSITORY_DRIVER: "postgres",
       },
     },
   ],

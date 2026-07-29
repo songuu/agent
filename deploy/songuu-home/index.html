@@ -196,7 +196,7 @@
         background: var(--line-hi);
       }
 
-      /* ── Feed：桌面管理入口面板。首项主入口横跨，后续入口并排。 ── */
+      /* ── Feed：桌面管理入口面板。奇数入口突出首项，偶数入口保持平衡两列。 ── */
       .feed {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -246,7 +246,7 @@
           0 0 0 1px rgb(var(--accent-rgb) / 0.22),
           0 16px 50px rgb(var(--accent-rgb) / 0.16);
       }
-      .card:first-child {
+      .feed[data-layout="featured"] .card:first-child {
         grid-column: 1 / -1;
         min-height: 184px;
         background:
@@ -254,10 +254,10 @@
           linear-gradient(135deg, rgb(var(--accent-rgb) / 0.12), rgba(91, 140, 255, 0.08) 42%, transparent 72%),
           var(--surface-hi);
       }
-      .card:first-child .card-title {
+      .feed[data-layout="featured"] .card:first-child .card-title {
         font-size: clamp(28px, 3vw, 36px);
       }
-      .card:first-child .card-desc {
+      .feed[data-layout="featured"] .card:first-child .card-desc {
         max-width: 420px;
       }
       .card:focus-visible {
@@ -457,7 +457,7 @@
         .feed {
           grid-template-columns: 1fr;
         }
-        .card:first-child {
+        .feed[data-layout="featured"] .card:first-child {
           grid-column: auto;
         }
         .main {
@@ -539,14 +539,15 @@
 
         <nav class="feed" id="feed" aria-label="目的地入口"></nav>
 
-        <!-- 无 JS 兜底：不复制全部条目(那会与 ENTRIES desync)，只给诚实提示 + 核心直达链接。
+        <!-- 无 JS 兜底：保留全部入口的纯链接；回归测试要求它与 ENTRIES 同步。
              JS 报错(非禁用)时的空白兜底由 script 里 try/catch 的 renderFallback 负责。 -->
         <noscript>
           <p class="lead" style="margin-top: 18px">
             启用 JavaScript 查看全部入口。直达：
             <a style="color: var(--accent)" href="/pipeline/">Pipeline</a> ·
             <a style="color: var(--accent)" href="/agent-build/">Agent Build</a> ·
-            <a style="color: var(--accent)" href="/aicrew/">AICrew Studio</a>
+            <a style="color: var(--accent)" href="/aicrew/">AICrew Studio</a> ·
+            <a style="color: var(--accent)" href="/tech-persistence/">Tech Persistence</a>
           </p>
         </noscript>
       </div>
@@ -592,11 +593,21 @@
           badge: "Studio",
           accent: "94 227 161",
         },
+        {
+          glyph: "T",
+          kicker: "Durable Agent Memory",
+          title: "Tech Persistence",
+          desc: "让 Claude Code 与 Codex 在会话之间持续积累工程记忆。",
+          href: "/tech-persistence/",
+          badge: "Memory",
+          accent: "167 139 250",
+        },
       ];
 
       (function () {
         var feed = document.getElementById("feed");
         if (!feed) return;
+        feed.dataset.layout = ENTRIES.length % 2 === 0 ? "balanced" : "featured";
         var reduceMql = matchMedia("(prefers-reduced-motion: reduce)");
         var fineMql = matchMedia("(pointer: fine)");
         var supportsIO = "IntersectionObserver" in window;

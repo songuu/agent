@@ -10,7 +10,6 @@ import {
   type YearMonth,
 } from "./frontier-date-filter";
 import { fetchAllPostgrestRows } from "./content-pagination";
-import { getSupabaseRuntimeConfig } from "./supabase-runtime-config";
 
 const WEEKDAY_LABELS = ["一", "二", "三", "四", "五", "六", "日"] as const;
 
@@ -104,7 +103,7 @@ function createArchive(root: HTMLElement): void {
   root.classList.add("frontier-archive-shell");
   root.replaceChildren(statusBlock("正在读取前沿文章库..."));
 
-  loadFrontierArticlesFromSupabase()
+  loadFrontierArticles()
     .then((articles) => renderArchive(root, articles))
     .catch((error: unknown) => {
       const message = error instanceof Error ? error.message : String(error);
@@ -112,10 +111,8 @@ function createArchive(root: HTMLElement): void {
     });
 }
 
-async function loadFrontierArticlesFromSupabase(): Promise<FrontierArticle[]> {
-  const config = await getSupabaseRuntimeConfig();
+async function loadFrontierArticles(): Promise<FrontierArticle[]> {
   const rows = await fetchAllPostgrestRows<FrontierArticleRow>({
-    ...(config ? { config } : {}),
     table: "frontier_ecosystem_articles",
     select: FRONTIER_COLUMNS,
     filters: [`chapter_id=eq.${FRONTIER_CHAPTER_ID}`],

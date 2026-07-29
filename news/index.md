@@ -6,7 +6,7 @@ aside: false
 # AI 资讯 · 每日自动收集
 
 > 本页资讯由 [`news-collector`](https://github.com/songuu/agent/tree/master/news-collector) 定时从多源 RSS 聚合自动收集，
-> 经规则分类落入第 19 章的八层生态框架，写入 Supabase `news_items`，页面只读公开 anon 配置渲染。
+> 经规则分类落入第 19 章的八层生态框架，写入服务器 PostgreSQL `news_items`，页面通过同源 Content API 只读渲染。
 > 与第 [20 章 · 前沿文章库](/lessons/20-agent-frontier-news/) 使用同一条文章数据流；日历按 `published_date` 筛选。
 
 <div data-daily-news></div>
@@ -24,7 +24,7 @@ aside: false
 规则分类（8 层生态 + 实体标签 + 语言；纯函数、确定性）
    │  可选 Claude 富化（无 key 自动降级为规则结果）
    ▼
-去重 → 幂等 upsert 到 Supabase news_items（on_conflict=external_id）
+去重 → 幂等 upsert 到服务器 PostgreSQL news_items（on_conflict=external_id）
    ▼
 本页按【发布时间】与【体系层】筛选展示
 ```

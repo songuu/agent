@@ -1,3 +1,5 @@
+import { loadContentRepositoryConfig } from "../news-collector/src/data/repository-config.ts";
+import { rejectSupabaseDataWrite } from "../news-collector/src/data/supabase-write-policy.ts";
 import { buildCodefatherPostgresFallbackReport } from "./codefather-postgres-fallback.ts";
 import {
   synchronizeCodefatherRowsOnConfiguredPostgres,
@@ -181,6 +183,16 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   engineering: "工程类",
   project: "项目深挖类",
 };
+
+export function resolveCodefatherContentRepositoryDriver(
+  source: NodeJS.ProcessEnv = process.env,
+): "postgres" {
+  const config = loadContentRepositoryConfig(source);
+  if (config.driver !== "postgres") {
+    throw new Error("Codefather interview sync requires the server PostgreSQL content repository; Supabase/PostgREST data uploads are disabled.");
+  }
+  return "postgres";
+}
 
 const INTERVIEW_TERMS = [
   "面试",
@@ -386,6 +398,7 @@ export async function upsertInterviewQuestionRows(
   { baseUrl, serviceRoleKey, schema, batchSize, timeoutMs, fetchImpl = fetch }: UpsertOptions,
 ): Promise<void> {
   if (rows.length === 0) return;
+  rejectSupabaseDataWrite("Codefather interview_questions legacy Supabase upsert");
   const endpoint = `${baseUrl.replace(/\/+$/, "")}/rest/v1/interview_questions?on_conflict=slug`;
   const normalizedBatchSize = normalizePositiveInteger(batchSize ?? DEFAULT_UPSERT_BATCH_SIZE, DEFAULT_UPSERT_BATCH_SIZE);
   const normalizedTimeoutMs = normalizePositiveInteger(timeoutMs ?? DEFAULT_UPSERT_TIMEOUT_MS, DEFAULT_UPSERT_TIMEOUT_MS);
@@ -573,8 +586,9 @@ export async function runCodefatherInterviewSync(options: CodefatherSyncOptions 
   let serviceCount: number | null = null;
   let anonCount: number | null = null;
   let remoteDuplicatesDeleted = 0;
+  const repositoryDriver = dryRun ? null : resolveCodefatherContentRepositoryDriver();
 
-  if (!dryRun && process.env.CONTENT_REPOSITORY_DRIVER?.trim().toLowerCase() === "postgres") {
+  if (!dryRun && repositoryDriver === "postgres") {
     const result = await synchronizeCodefatherRowsOnConfiguredPostgres({
       rows,
       findDuplicateSlugs: findDuplicateCodefatherStoredSlugs,
@@ -584,33 +598,6 @@ export async function runCodefatherInterviewSync(options: CodefatherSyncOptions 
     anonCount = result.readerCount;
     if (serviceCount < limit || anonCount < limit) {
       throw new Error(`PostgreSQL readback below target: writer=${serviceCount}, reader=${anonCount}, target=${limit}`);
-    }
-  }
-
-  if (!dryRun && process.env.CONTENT_REPOSITORY_DRIVER?.trim().toLowerCase() !== "postgres") {
-    const baseUrl = options.baseUrl || requireEnv("SUPABASE_URL");
-    const serviceRoleKey = options.serviceRoleKey || requireEnv("SUPABASE_SERVICE_ROLE_KEY");
-    const anonKey = options.anonKey || requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
-
-    await upsertInterviewQuestionRows(rows, {
-      baseUrl,
-      serviceRoleKey,
-      schema,
-      batchSize: options.batchSize,
-      timeoutMs: options.timeoutMs,
-      fetchImpl,
-    });
-    const storedRows = await readCodefatherRows({ baseUrl, key: serviceRoleKey, schema, fetchImpl });
-    const duplicateSlugs = findDuplicateCodefatherStoredSlugs(storedRows);
-    if (duplicateSlugs.length > 0) {
-      await deleteCodefatherRowsBySlug(duplicateSlugs, { baseUrl, serviceRoleKey, schema, fetchImpl });
-      remoteDuplicatesDeleted = duplicateSlugs.length;
-    }
-    serviceCount = await readCodefatherCount({ baseUrl, key: serviceRoleKey, schema, fetchImpl });
-    anonCount = await readCodefatherCount({ baseUrl, key: anonKey, schema, fetchImpl });
-
-    if (serviceCount < limit || anonCount < limit) {
-      throw new Error(`Readback below target: service=${serviceCount}, anon=${anonCount}, target=${limit}`);
     }
   }
 
@@ -664,7 +651,7 @@ async function buildReadbackFallbackReport(input: {
   readonly options: CodefatherSyncOptions;
   readonly sourceError: unknown;
 }): Promise<CodefatherSyncReport> {
-  if (process.env.CONTENT_REPOSITORY_DRIVER?.trim().toLowerCase() === "postgres") {
+  if (resolveCodefatherContentRepositoryDriver() === "postgres") {
     return await buildCodefatherPostgresFallbackReport({
       started: input.started,
       limit: input.limit,
@@ -675,73 +662,7 @@ async function buildReadbackFallbackReport(input: {
     });
   }
 
-  const baseUrl = input.options.baseUrl || requireEnv("SUPABASE_URL");
-  const serviceRoleKey = input.options.serviceRoleKey || requireEnv("SUPABASE_SERVICE_ROLE_KEY");
-  const anonKey = input.options.anonKey || requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
-  let storedRows = await readCodefatherRows({
-    baseUrl,
-    key: serviceRoleKey,
-    schema: input.schema,
-    fetchImpl: input.fetchImpl,
-  });
-  let duplicateSlugs = findDuplicateCodefatherStoredSlugs(storedRows);
-  let remoteDuplicatesDeleted = 0;
-  if (duplicateSlugs.length > 0) {
-    await deleteCodefatherRowsBySlug(duplicateSlugs, {
-      baseUrl,
-      serviceRoleKey,
-      schema: input.schema,
-      fetchImpl: input.fetchImpl,
-    });
-    remoteDuplicatesDeleted = duplicateSlugs.length;
-    storedRows = await readCodefatherRows({
-      baseUrl,
-      key: serviceRoleKey,
-      schema: input.schema,
-      fetchImpl: input.fetchImpl,
-    });
-    duplicateSlugs = findDuplicateCodefatherStoredSlugs(storedRows);
-  }
-  const serviceCount = await readCodefatherCount({
-    baseUrl,
-    key: serviceRoleKey,
-    schema: input.schema,
-    fetchImpl: input.fetchImpl,
-  });
-  const anonCount = await readCodefatherCount({ baseUrl, key: anonKey, schema: input.schema, fetchImpl: input.fetchImpl });
-
-  if (duplicateSlugs.length > 0 || serviceCount < input.limit || anonCount < input.limit) {
-    throw annotateFetchFailure(
-      `Codefather source fetch failed and readback fallback below target service=${serviceCount} anon=${anonCount} duplicates=${duplicateSlugs.length} target=${input.limit}`,
-      input.sourceError,
-    );
-  }
-
-  const sample = storedRows[0];
-  const finished = new Date();
-  return {
-    startedAt: input.started.toISOString(),
-    finishedAt: finished.toISOString(),
-    durationMs: finished.getTime() - input.started.getTime(),
-    sourceFetchStatus: "fallback-readback",
-    sourceFetchError: shortErrorMessage(input.sourceError),
-    limit: input.limit,
-    pageSize: input.pageSize,
-    tag: input.tag,
-    dryRun: false,
-    fetched: 0,
-    rowsBeforeDedupe: storedRows.length,
-    rows: storedRows.length,
-    duplicatesSkipped: 0,
-    duplicateSlugCount: 0,
-    duplicateSourceUrlCount: 0,
-    duplicateTitleCount: 0,
-    remoteDuplicatesDeleted,
-    sampleQuestion: stringValue(sample?.question) || "<readback-fallback>",
-    sampleUrl: sample ? firstStoredSourceUrl(sample) : "",
-    serviceCount,
-    anonCount,
-  };
+  throw annotateFetchFailure("Codefather source fetch failed and PostgreSQL readback fallback is not configured.", input.sourceError);
 }
 export function formatCodefatherSyncFailure(error: unknown): string {
   if (error instanceof Error) {

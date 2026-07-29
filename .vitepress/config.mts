@@ -130,25 +130,9 @@ function readDemoRunnerRuntime(): DemoRunnerRuntime {
 }
 
 function readFrontierSupabaseConfig(): FrontierSupabaseConfig | null {
-  // 仅允许显式 public 变量进入静态 bundle；服务器 service-role URL 绝不能作为回退。
-  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim();
-  const anonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "").trim();
-  if (!url || !anonKey) return null;
-
-  let parsed: URL;
-  try {
-    parsed = new URL(url);
-  } catch {
-    throw new Error("NEXT_PUBLIC_SUPABASE_URL 必须是无凭据的 http(s) 地址。");
-  }
-  if (!/^https?:$/.test(parsed.protocol) || parsed.username || parsed.password) {
-    throw new Error("NEXT_PUBLIC_SUPABASE_URL 必须是无凭据的 http(s) 地址。");
-  }
-  return {
-    url: parsed.toString().replace(/\/+$/, ""),
-    anonKey,
-    schema: (process.env.SUPABASE_SCHEMA || "public").trim() || "public",
-  };
+  // Browser-side Supabase/PostgREST reads are disabled. Keep the injection slot
+  // null so stale NEXT_PUBLIC_SUPABASE_* env values cannot enter the bundle.
+  return null;
 }
 
 function readFrontierContentApiConfig(): FrontierContentApiConfig | null {
@@ -299,7 +283,7 @@ export default withMermaid(
         __FRONTIER_SUPABASE_CONFIG__: JSON.stringify(frontierSupabaseConfig),
         __FRONTIER_CONTENT_API_CONFIG__: JSON.stringify(
           frontierContentApiConfig
-            ? { version: 1, contentApi: frontierContentApiConfig, ...(frontierSupabaseConfig ? { supabase: frontierSupabaseConfig } : {}) }
+            ? { version: 1, contentApi: frontierContentApiConfig }
             : null,
         ),
       },

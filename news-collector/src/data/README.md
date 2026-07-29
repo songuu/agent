@@ -1,6 +1,6 @@
 # 可替换内容库写入层
 
-这个目录把五张应用内容表的写入协议固定为 `ContentRepository`。`news-collector` 与 Notion 同步的关系数据已通过它选择 Supabase/PostgREST 或 MySQL，业务编排不再直接依赖某个数据库驱动：
+这个目录把五张应用内容表的写入协议固定为 `ContentRepository`。`news-collector`、Notion 同步和结构化内容 push 通过它选择 PostgreSQL/MySQL 或遗留 Supabase/PostgREST，业务编排不再直接依赖某个数据库驱动。当前阶段生产 writer 只允许服务器 PostgreSQL：
 
 - `frontier_ecosystem_articles` → `slug`（同时保护 `source_url` 的唯一性）
 - `interview_questions` → `slug`
@@ -14,8 +14,8 @@
 - `content-table-contracts.ts` — 五张表的列、自然键、JSON/时间字段契约
 - `supabase-content-repository.ts` — 当前 PostgREST 协议适配器
 - `mysql-content-repository.ts` — MySQL 参数化写入器、`MySqlExecutor`、`createMysql2Executor`
-- `repository-config.ts` — `CONTENT_REPOSITORY_DRIVER` 和单一 URL/分项 MySQL 私有配置解析
-- `runtime.ts` — worker composition root，按任务创建并关闭 Supabase/MySQL repository
+- `repository-config.ts` — `CONTENT_REPOSITORY_DRIVER`、`CONTENT_REPOSITORY_POSTGRES_ONLY` 和私有数据库配置解析
+- `runtime.ts` — worker composition root，按任务创建并关闭 PostgreSQL/MySQL/Supabase repository
 - `mysql-schema.ts` — `MYSQL_CONTENT_SCHEMA_SQL`，MySQL 8.0.19+ 基线 schema
 
 `mysql-content-repository.ts` 不安装也不 import `mysql2`。部署边界创建连接/连接池后，注入：
@@ -28,7 +28,16 @@ const connection = await createPool({ /* CONTENT_MYSQL_* 私有配置 */ }).getC
 const repository = createMySqlContentRepository({ executor: createMysql2Executor(connection) });
 ```
 
-生产 composition root 已按每次 job 生命周期创建并关闭连接池。密钥只允许服务端环境变量；推荐单一 URL，Content API、worker 与迁移器可共用：
+生产 composition root 已按每次 job 生命周期创建并关闭连接池。密钥只允许服务端环境变量。当前阶段必须显式启用 PostgreSQL-only 写入：
+
+```text
+CONTENT_REPOSITORY_POSTGRES_ONLY=true
+CONTENT_REPOSITORY_DRIVER=postgres
+CONTENT_POSTGRES_URL=postgresql://collector:...@pgsql.internal:5432/agent_build
+CONTENT_POSTGRES_SSL=true
+```
+
+也可使用 `CONTENT_POSTGRES_WRITE_URL` / `CONTENT_POSTGRES_READ_URL` 做最小权限拆分。`CONTENT_POSTGRES_*` 必须指向服务器 PostgreSQL，不能复用 `SUPABASE_DB_URL` 或 Supabase 背后的数据库端点。设置 `CONTENT_REPOSITORY_POSTGRES_ONLY=true` 后，如果配置缺失或 driver 不是 `postgres`，worker 会 fail closed；不会 dry-run，也不会静默写回 Supabase。MySQL 只作为旧迁移路径保留：
 
 ```text
 CONTENT_REPOSITORY_DRIVER=mysql
@@ -36,7 +45,7 @@ CONTENT_MYSQL_URL=mysql://collector:...@db.internal:3306/agent_build
 CONTENT_MYSQL_SSL=true
 ```
 
-也可改用 `CONTENT_MYSQL_HOST/PORT/DATABASE/USER/PASSWORD` 分项配置，但不得和 URL 混用。未设置 `CONTENT_REPOSITORY_DRIVER` 或任何 MySQL 配置时明确保持 `supabase`；设置为 `mysql` 却缺任一私有配置会报错，绝不静默写回旧 Supabase。
+也可改用 `CONTENT_MYSQL_HOST/PORT/DATABASE/USER/PASSWORD` 分项配置，但不得和 URL 混用。legacy Supabase adapter 只保留只读/迁移代码边界；生产定时任务不得依赖 Supabase fallback，任何 Supabase 数据上传入口都会被硬拒绝。
 
 ## MySQL 语义
 

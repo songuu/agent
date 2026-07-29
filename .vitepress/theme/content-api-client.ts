@@ -1,12 +1,6 @@
-import {
-  fetchAllPostgrestRows,
-  fetchPostgrestPage,
-  type PostgrestPagedReadOptions,
-  type PostgrestReadConfig,
-} from "./postgrest-pagination.ts";
-import { getSupabaseRuntimeConfig, type SupabasePublicConfig } from "./supabase-runtime-config.ts";
+import type { PostgrestReadConfig } from "./postgrest-pagination.ts";
 
-// 这个声明给将来的 Vite 注入留出入口；当前部署仍可只提供 supabase 配置。
+// 这个声明给 Vite 注入同源 Content API 配置留出入口。
 declare const __FRONTIER_CONTENT_API_CONFIG__: unknown;
 
 /**
@@ -22,16 +16,15 @@ export interface SameOriginContentApiConfig {
 /**
  * 与 `supabase-runtime-config.json` 共用的可迁移配置契约。
  *
- * 迁移过渡期同时保留两个字段：contentApi 成为主读源，supabase 是只读回退；
- * 彻底切走 Supabase 后只保留 contentApi 即可。
+ * 当前项目数据只能通过同源 Content API 读取；浏览器端 Supabase/PostgREST
+ * 读取已禁用，避免表删除或旧 public env 造成误读。
  */
 export interface ContentApiRuntimeConfig {
   readonly version: 1;
-  readonly contentApi?: SameOriginContentApiConfig;
-  readonly supabase?: SupabasePublicConfig;
+  readonly contentApi: SameOriginContentApiConfig;
 }
 
-export type ContentApiSource = "http" | "supabase";
+export type ContentApiSource = "http";
 export type ContentCountMode = "exact" | "planned" | "estimated" | "none";
 export type ContentScalar = string | number | boolean | null;
 export type ContentFilterOperator = "eq" | "neq" | "lt" | "lte" | "gt" | "gte" | "in" | "is";
@@ -50,7 +43,7 @@ export interface ContentSort {
 
 /**
  * Stable browser read contract. `resource` is an application resource name;
- * during the transition it deliberately matches the existing Supabase table name.
+ * table-shaped legacy callers are mapped to these explicit resources.
  */
 export interface ContentReadRequest {
   readonly resource: string;
@@ -114,6 +107,8 @@ export interface ContentApiRuntimeConfigRequestOptions {
 
 const RUNTIME_CONFIG_FILE = "supabase-runtime-config.json";
 const DEFAULT_RUNTIME_CONFIG_TIMEOUT_MS = 8_000;
+const NO_CONTENT_API_CONFIG_MESSAGE =
+  "缺少同源 Content API 配置；Supabase 浏览器读取已禁用，请配置 NEXT_PUBLIC_CONTENT_API_BASE_URL。";
 const DEFAULT_PAGE_SIZE = 100;
 const MAX_PAGE_SIZE = 1_000;
 const DEFAULT_MAX_PAGES = 100;
@@ -133,13 +128,13 @@ const CONTENT_FILTER_OPERATORS = new Set<ContentFilterOperator>([
 let cachedRuntimeConfig: Promise<ContentApiRuntimeConfig | null> | null = null;
 
 /**
- * Reads the existing runtime JSON without requiring a Vite rebuild. The legacy
- * `{ version: 1, supabase: ... }` shape remains valid as a Supabase-only client.
+ * Reads the existing runtime JSON without requiring a Vite rebuild. Legacy
+ * Supabase-only JSON is ignored; a same-origin Content API is required.
  */
 export function getContentApiRuntimeConfig(
   options: ContentApiRuntimeConfigRequestOptions = {},
 ): Promise<ContentApiRuntimeConfig | null> {
-  if (!isBrowserRuntime()) return resolveCompiledOrSupabaseFallback();
+  if (!isBrowserRuntime()) return resolveCompiledContentApiConfig();
   if (options.signal) return loadBrowserRuntimeConfig(options);
 
   cachedRuntimeConfig ??= loadBrowserRuntimeConfig(options);
@@ -152,22 +147,16 @@ export function resetContentApiRuntimeConfigCache(): void {
 }
 
 /**
- * Parses the public JSON contract. Invalid HTTP configuration is ignored when a
- * valid Supabase fallback exists, so a malformed cutover file cannot take the
- * current site offline.
+ * Parses the public JSON contract. Supabase keys in legacy runtime JSON are
+ * intentionally ignored; a valid same-origin Content API is required.
  */
 export function normalizeContentApiRuntimeConfig(value: unknown): ContentApiRuntimeConfig | null {
   if (!isRecord(value) || value.version !== 1) return null;
 
   const contentApi = normalizeSameOriginContentApi(value.contentApi);
-  const supabase = normalizeSupabaseConfig(value.supabase);
-  if (!contentApi && !supabase) return null;
+  if (!contentApi) return null;
 
-  return {
-    version: 1,
-    ...(contentApi ? { contentApi } : {}),
-    ...(supabase ? { supabase } : {}),
-  };
+  return { version: 1, contentApi };
 }
 
 /**
@@ -216,7 +205,7 @@ export function contentResourceForSupabaseTable(table: string): ContentResource 
   const resource = CONTENT_RESOURCE_BY_SUPABASE_TABLE[
     normalizedTable as keyof typeof CONTENT_RESOURCE_BY_SUPABASE_TABLE
   ];
-  if (!resource) throw new Error("未允许通过 Content API 暴露的 Supabase 表：" + table);
+  if (!resource) throw new Error("未允许通过 Content API 暴露的数据表：" + table);
   return resource;
 }
 export class ContentApiClient {
@@ -230,77 +219,23 @@ export class ContentApiClient {
   }
 
   public async fetchPage<T = unknown>(request: ContentReadRequest): Promise<ContentPageResult<T>> {
-    return this.fetchPageWithFallback<T>(
-      request,
-      this.runtimeConfig.supabase,
-      supabaseTableForContentResource(request.resource),
-      this.fetchImpl,
-    );
+    return this.fetchHttpPage<T>(request, this.fetchImpl);
   }
 
   public async fetchAll<T = unknown>(request: ContentReadRequest): Promise<ContentRowsResult<T>> {
-    return this.fetchAllWithFallback<T>(
-      request,
-      this.runtimeConfig.supabase,
-      supabaseTableForContentResource(request.resource),
-      this.fetchImpl,
-    );
+    return this.fetchAllHttp<T>(request, this.fetchImpl);
   }
 
   public async fetchPostgrestPage<T = unknown>(
     request: PostgrestCompatibleReadRequest,
   ): Promise<ContentPageResult<T>> {
-    return this.fetchPageWithFallback<T>(
-      adaptPostgrestReadRequest(request),
-      this.runtimeConfig.supabase ?? request.config,
-      request.table,
-      request.fetchImpl ?? this.fetchImpl,
-    );
+    return this.fetchHttpPage<T>(adaptPostgrestReadRequest(request), request.fetchImpl ?? this.fetchImpl);
   }
 
   public async fetchAllPostgrestRows<T = unknown>(
     request: PostgrestCompatibleReadRequest,
   ): Promise<ContentRowsResult<T>> {
-    return this.fetchAllWithFallback<T>(
-      adaptPostgrestReadRequest(request),
-      this.runtimeConfig.supabase ?? request.config,
-      request.table,
-      request.fetchImpl ?? this.fetchImpl,
-    );
-  }
-
-  private async fetchPageWithFallback<T>(
-    request: ContentReadRequest,
-    supabase: PostgrestReadConfig | undefined,
-    supabaseTable: string,
-    fetchImpl: typeof fetch,
-  ): Promise<ContentPageResult<T>> {
-    if (this.runtimeConfig.contentApi) {
-      try {
-        return await this.fetchHttpPage<T>(request, fetchImpl);
-      } catch (primaryError) {
-        if (!supabase) throw primaryError;
-        return this.fetchSupabasePage<T>(request, supabase, supabaseTable, fetchImpl, primaryError);
-      }
-    }
-    return this.fetchSupabasePage<T>(request, supabase, supabaseTable, fetchImpl);
-  }
-
-  private async fetchAllWithFallback<T>(
-    request: ContentReadRequest,
-    supabase: PostgrestReadConfig | undefined,
-    supabaseTable: string,
-    fetchImpl: typeof fetch,
-  ): Promise<ContentRowsResult<T>> {
-    if (this.runtimeConfig.contentApi) {
-      try {
-        return await this.fetchAllHttp<T>(request, fetchImpl);
-      } catch (primaryError) {
-        if (!supabase) throw primaryError;
-        return this.fetchAllSupabase<T>(request, supabase, supabaseTable, fetchImpl, primaryError);
-      }
-    }
-    return this.fetchAllSupabase<T>(request, supabase, supabaseTable, fetchImpl);
+    return this.fetchAllHttp<T>(adaptPostgrestReadRequest(request), request.fetchImpl ?? this.fetchImpl);
   }
 
   private async fetchHttpPage<T>(
@@ -308,7 +243,7 @@ export class ContentApiClient {
     fetchImpl: typeof fetch = this.fetchImpl,
   ): Promise<ContentPageResult<T>> {
     const contentApi = this.runtimeConfig.contentApi;
-    if (!contentApi) throw new Error("缺少同源 Content API 配置");
+    if (!contentApi) throw new Error(NO_CONTENT_API_CONFIG_MESSAGE);
 
     const pageSize = normalizePageSize(request.pageSize);
     const offset = normalizeOffset(request.offset);
@@ -342,60 +277,6 @@ export class ContentApiClient {
 
     throw new Error("分页读取超过 " + maxPages + " 页，请缩小查询范围或提高 maxPages");
   }
-
-  private async fetchSupabasePage<T>(
-    request: ContentReadRequest,
-    supabase: PostgrestReadConfig | undefined,
-    supabaseTable: string,
-    fetchImpl: typeof fetch,
-    primaryError?: unknown,
-  ): Promise<ContentPageResult<T>> {
-    try {
-      const page = await fetchPostgrestPage<T>({
-        ...toPostgrestReadOptions(request, this.requireSupabaseConfig(supabase), supabaseTable),
-        offset: normalizeOffset(request.offset),
-        fetchImpl,
-      });
-      return { ...page, source: "supabase" };
-    } catch (fallbackError) {
-      throw combineProviderErrors(primaryError, fallbackError);
-    }
-  }
-
-  private async fetchAllSupabase<T>(
-    request: ContentReadRequest,
-    supabase: PostgrestReadConfig | undefined,
-    supabaseTable: string,
-    fetchImpl: typeof fetch,
-    primaryError?: unknown,
-  ): Promise<ContentRowsResult<T>> {
-    try {
-      const pageSize = normalizePageSize(request.pageSize);
-      const maxPages = normalizeMaxPages(request.maxPages);
-      let offset = normalizeOffset(request.offset);
-      const rows: T[] = [];
-      const readRequest: ContentReadRequest = { ...request, count: request.count ?? "none" };
-
-      for (let pageIndex = 0; pageIndex < maxPages; pageIndex += 1) {
-        const page = await fetchPostgrestPage<T>({
-          ...toPostgrestReadOptions(readRequest, this.requireSupabaseConfig(supabase), supabaseTable),
-          offset,
-          fetchImpl,
-        });
-        rows.push(...page.rows);
-        if (!page.hasMore) return { rows, source: "supabase" };
-        offset += pageSize;
-      }
-
-      throw new Error("分页读取超过 " + maxPages + " 页，请缩小查询范围或提高 maxPages");
-    } catch (fallbackError) {
-      throw combineProviderErrors(primaryError, fallbackError);
-    }
-  }
-  private requireSupabaseConfig(supabase: PostgrestReadConfig | undefined): PostgrestReadConfig {
-    if (!supabase) throw new Error("Content API 不可用，且未配置 Supabase 回退");
-    return supabase;
-  }
 }
 /** Resolves runtime config when needed and creates the provider-neutral client. */
 export async function createContentApiClient(
@@ -403,27 +284,22 @@ export async function createContentApiClient(
 ): Promise<ContentApiClient> {
   const runtimeConfig =
     options.runtimeConfig === undefined ? await getContentApiRuntimeConfig() : options.runtimeConfig;
-  if (!runtimeConfig) {
-    throw new Error("缺少 Content API 配置，也没有可用的 Supabase 公开回退配置");
+  if (!runtimeConfig?.contentApi) {
+    throw new Error(NO_CONTENT_API_CONFIG_MESSAGE);
   }
   return new ContentApiClient(runtimeConfig, options);
 }
 
 export async function createContentApiClientForPostgrest(
-  fallbackConfig: PostgrestReadConfig | undefined,
+  _fallbackConfig: PostgrestReadConfig | undefined,
   options: ContentApiClientOptions = {},
 ): Promise<ContentApiClient> {
   const runtimeConfig =
     options.runtimeConfig === undefined ? await getContentApiRuntimeConfig() : options.runtimeConfig;
-  const supabase = runtimeConfig?.supabase ?? fallbackConfig;
-  return new ContentApiClient(
-    {
-      version: 1,
-      ...(runtimeConfig?.contentApi ? { contentApi: runtimeConfig.contentApi } : {}),
-      ...(supabase ? { supabase } : {}),
-    },
-    options,
-  );
+  if (!runtimeConfig?.contentApi) {
+    throw new Error(NO_CONTENT_API_CONFIG_MESSAGE);
+  }
+  return new ContentApiClient({ version: 1, contentApi: runtimeConfig.contentApi }, options);
 }
 async function loadBrowserRuntimeConfig(
   options: ContentApiRuntimeConfigRequestOptions,
@@ -444,24 +320,20 @@ async function loadBrowserRuntimeConfig(
       cache: "no-store",
       signal: requestController.signal,
     });
-    if (!response.ok) return await resolveCompiledOrSupabaseFallback();
+    if (!response.ok) return resolveCompiledContentApiConfig();
 
-    return normalizeContentApiRuntimeConfig(await response.json()) ?? (await resolveCompiledOrSupabaseFallback());
+    return normalizeContentApiRuntimeConfig(await response.json()) ?? resolveCompiledContentApiConfig();
   } catch (error) {
     if (options.signal?.aborted) throw error;
-    return resolveCompiledOrSupabaseFallback();
+    return resolveCompiledContentApiConfig();
   } finally {
     globalThis.clearTimeout(timeoutId);
     options.signal?.removeEventListener("abort", abortRequest);
   }
 }
 
-async function resolveCompiledOrSupabaseFallback(): Promise<ContentApiRuntimeConfig | null> {
-  const compiled = normalizeContentApiRuntimeConfig(readCompiledContentApiConfig());
-  if (compiled) return compiled;
-
-  const supabase = await getSupabaseRuntimeConfig();
-  return supabase ? { version: 1, supabase } : null;
+function resolveCompiledContentApiConfig(): ContentApiRuntimeConfig | null {
+  return normalizeContentApiRuntimeConfig(readCompiledContentApiConfig());
 }
 
 function readCompiledContentApiConfig(): unknown {
@@ -476,25 +348,6 @@ function normalizeSameOriginContentApi(value: unknown): SameOriginContentApiConf
   const baseUrl = stringField(value.baseUrl);
   if (!baseUrl || !isSameOriginPath(baseUrl)) return null;
   return { baseUrl: baseUrl.replace(/\/+$/, "") || "/" };
-}
-
-function normalizeSupabaseConfig(value: unknown): SupabasePublicConfig | null {
-  if (!isRecord(value)) return null;
-  const url = stringField(value.url);
-  const anonKey = stringField(value.anonKey);
-  const schema = stringField(value.schema) ?? "public";
-  if (!url || !anonKey) return null;
-
-  try {
-    const parsed = new URL(url);
-    if ((parsed.protocol !== "https:" && parsed.protocol !== "http:") || parsed.username || parsed.password) {
-      return null;
-    }
-  } catch {
-    return null;
-  }
-
-  return { url, anonKey, schema };
 }
 
 function isSameOriginPath(value: string): boolean {
@@ -527,42 +380,6 @@ function parseContentApiPage<T>(value: unknown, pageSize: number, offset: number
   return { rows: value.items as T[], totalCount, hasMore, source: "http" };
 }
 
-function toPostgrestReadOptions(
-  request: ContentReadRequest,
-  config: PostgrestReadConfig,
-  table: string,
-): Omit<PostgrestPagedReadOptions, "fetchImpl"> {
-  const fields = normalizeFields(request.fields);
-  return {
-    config,
-    table: normalizePostgrestTable(table),
-    select: fields.join(","),
-    filters: normalizeFilters(request.filters ?? []).map(toPostgrestFilter),
-    order: normalizeSort(request.sort ?? []).map((sort) => sort.field + "." + (sort.direction ?? "asc")),
-    pageSize: normalizePageSize(request.pageSize),
-    maxPages: normalizeMaxPages(request.maxPages),
-    count: request.count ?? "exact",
-  };
-}
-
-function toPostgrestFilter(filter: ContentFilter): string {
-  switch (filter.operator) {
-    case "is":
-      if (filter.value !== null && typeof filter.value !== "boolean") {
-        throw new Error("is 过滤器只接受 null 或 boolean");
-      }
-      return filter.field + "=is." + (filter.value === null ? "null" : String(filter.value));
-    case "in":
-      if (!Array.isArray(filter.value) || filter.value.length === 0) {
-        throw new Error("in 过滤器需要非空数组");
-      }
-      return filter.field + "=in.(" + filter.value.map((value) => postgrestScalar(value as ContentScalar)).join(",") + ")";
-    default:
-      if (Array.isArray(filter.value)) throw new Error(filter.operator + " 过滤器不接受数组");
-      return filter.field + "=" + filter.operator + "." + postgrestScalar(filter.value as ContentScalar);
-  }
-}
-
 function formatHttpFilter(filter: ContentFilter): string {
   switch (filter.operator) {
     case "is":
@@ -583,13 +400,6 @@ function formatHttpFilter(filter: ContentFilter): string {
 
 function postgrestScalar(value: ContentScalar): string {
   return value === null ? "null" : String(value);
-}
-
-function supabaseTableForContentResource(resource: string): string {
-  for (const [table, contentResource] of Object.entries(CONTENT_RESOURCE_BY_SUPABASE_TABLE)) {
-    if (contentResource === resource) return table;
-  }
-  return normalizePostgrestTable(resource);
 }
 
 function normalizeResource(value: string): string {
@@ -675,15 +485,6 @@ function finiteNonNegativeInteger(value: unknown): number | null {
 async function httpError(response: Response, provider: string): Promise<Error> {
   const detail = await response.text();
   return new Error(provider + " HTTP " + response.status + " " + detail.slice(0, 180));
-}
-
-function combineProviderErrors(primaryError: unknown, fallbackError: unknown): Error {
-  if (!primaryError) {
-    return fallbackError instanceof Error ? fallbackError : new Error(String(fallbackError));
-  }
-  const primary = primaryError instanceof Error ? primaryError.message : String(primaryError);
-  const fallback = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
-  return new Error("Content API 失败（" + primary + "）；Supabase 回退也失败（" + fallback + "）");
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

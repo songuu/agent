@@ -1,6 +1,6 @@
-// Notion 文章列表渲染器（运行时 anon 只读，mirror daily-news-feed.ts 模式）。
+// Notion 文章列表渲染器（运行时通过同源 Content API 只读，mirror daily-news-feed.ts 模式）。
 //
-// 安全不变量：仅用公开 anon 配置；service_role 永不进前端 bundle。
+// 安全不变量：浏览器不直连 Supabase/PostgREST；service_role 永不进前端 bundle。
 // 只取卡片列（不含 body_markdown，避免列表 payload 膨胀）；status=eq.published（RLS 也兜底）。
 
 import {
@@ -23,7 +23,6 @@ import {
   shouldRememberListDetailClick,
   withReturnPath,
 } from "./list-detail-return";
-import { getSupabaseRuntimeConfig } from "./supabase-runtime-config";
 
 interface NotionArticleRow {
   notion_page_id?: unknown;
@@ -84,9 +83,7 @@ function mount(root: HTMLElement): void {
 }
 
 async function loadArticles(): Promise<NotionArticleView[]> {
-  const config = await getSupabaseRuntimeConfig();
   const rows = await fetchAllPostgrestRows<NotionArticleRow>({
-    ...(config ? { config } : {}),
     table: "notion_articles",
     select: LIST_COLUMNS,
     filters: ["status=eq.published"],

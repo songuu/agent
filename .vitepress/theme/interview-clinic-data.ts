@@ -4,7 +4,6 @@ import {
   type InterviewQuestionCategory,
 } from "../../knowledge-graph/data/interview-questions";
 import { fetchAllPostgrestRows } from "./content-pagination";
-import { getSupabaseRuntimeConfig } from "./supabase-runtime-config";
 
 interface InterviewQuestionRow {
   question_id?: unknown;
@@ -64,11 +63,8 @@ const LOCAL_QUESTION_BY_SLUG = new Map(INTERVIEW_QUESTIONS.map((question) => [qu
 export async function loadInterviewClinicData(
   fetchImpl?: typeof fetch,
 ): Promise<InterviewClinicDataResult> {
-  const config = await getSupabaseRuntimeConfig();
-
   try {
     const rows = await fetchAllPostgrestRows<InterviewQuestionRow>({
-      ...(config ? { config } : {}),
       table: "interview_questions",
       select: INTERVIEW_COLUMNS,
       order: ["sort_order.asc"],

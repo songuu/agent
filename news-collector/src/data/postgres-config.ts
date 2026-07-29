@@ -11,6 +11,35 @@ function urlName(purpose: "read" | "write"): string {
   return purpose === "read" ? "CONTENT_POSTGRES_READ_URL" : "CONTENT_POSTGRES_WRITE_URL";
 }
 
+function samePostgresEndpoint(left: string, right: string): boolean {
+  try {
+    const leftUrl = new URL(left);
+    const rightUrl = new URL(right);
+    const postgresProtocols = new Set(["postgresql:", "postgres:"]);
+    return (
+      postgresProtocols.has(leftUrl.protocol) &&
+      postgresProtocols.has(rightUrl.protocol) &&
+      leftUrl.hostname.toLowerCase() === rightUrl.hostname.toLowerCase() &&
+      leftUrl.port === rightUrl.port &&
+      leftUrl.username === rightUrl.username &&
+      leftUrl.pathname === rightUrl.pathname
+    );
+  } catch {
+    return false;
+  }
+}
+
+function assertNotSupabaseDatabaseUrl(
+  value: string,
+  name: string,
+  source: Readonly<Record<string, string | undefined>>,
+): void {
+  const supabaseDbUrl = source.SUPABASE_DB_URL?.trim();
+  if (supabaseDbUrl && samePostgresEndpoint(value, supabaseDbUrl)) {
+    throw new Error(name + " must point to the server PostgreSQL database, not SUPABASE_DB_URL or the Supabase backing database.");
+  }
+}
+
 /** Parse one private PostgreSQL URL without exposing it to browser runtime config. */
 export function loadPostgresConnectionConfig(
   source: Readonly<Record<string, string | undefined>>,
@@ -24,6 +53,7 @@ export function loadPostgresConnectionConfig(
   }
   const value = specificUrl || commonUrl;
   if (!value) throw new Error(`Missing required env var for PostgreSQL content repository: ${specificName}`);
+  assertNotSupabaseDatabaseUrl(value, specificName, source);
 
   let parsed: URL;
   try {

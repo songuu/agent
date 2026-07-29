@@ -1,6 +1,5 @@
 import { fetchPostgrestPage } from "./content-pagination.ts";
 import { currentRelativePath, withReturnPath } from "./list-detail-return.ts";
-import { getSupabaseRuntimeConfig, type SupabasePublicConfig } from "./supabase-runtime-config.ts";
 
 export interface PortalNewsItem {
   externalId: string;
@@ -59,11 +58,10 @@ export function compactPortalSummary(value: string, maxLength = PORTAL_SUMMARY_L
 }
 
 export async function fetchPortalNewsPage(
-  config: SupabasePublicConfig | undefined,
+  _legacyConfig: unknown = undefined,
   fetchImpl: typeof fetch = fetch,
 ): Promise<PortalNewsItem[]> {
   const page = await fetchPostgrestPage<unknown>({
-    config,
     table: "news_items",
     select: PORTAL_NEWS_COLUMNS,
     order: ["published_date.desc", "published_at.desc"],
@@ -82,7 +80,7 @@ export async function fetchPortalNewsPage(
 }
 
 export async function loadPortalNews(
-  config: SupabasePublicConfig | null,
+  _legacyConfig: unknown,
   fetchImpl: typeof fetch = fetch,
   timeoutMs = PORTAL_NEWS_TIMEOUT_MS,
   externalSignal?: AbortSignal,
@@ -99,11 +97,11 @@ export async function loadPortalNews(
     fetchImpl(input, { ...init, signal: requestController.signal });
 
   try {
-    const items = await fetchPortalNewsPage(config ?? undefined, boundedFetch);
+    const items = await fetchPortalNewsPage(undefined, boundedFetch);
     return items.length > 0 ? { state: "ready", items } : { state: "empty", items: [] };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    if (!config && /未配置 Supabase 回退|缺少 Content API 配置/.test(message)) {
+    if (/Content API 配置/.test(message)) {
       return { state: "unavailable", items: [] };
     }
     return { state: "error", items: [] };
@@ -167,12 +165,8 @@ async function enhancePortalNews(root: HTMLElement): Promise<void> {
   activeRequests.set(root, lifecycleController);
 
   try {
-    const config = await getSupabaseRuntimeConfig({
-      signal: lifecycleController.signal,
-      timeoutMs: PORTAL_NEWS_TIMEOUT_MS,
-    });
     const result = await loadPortalNews(
-      config,
+      null,
       fetch,
       PORTAL_NEWS_TIMEOUT_MS,
       lifecycleController.signal,

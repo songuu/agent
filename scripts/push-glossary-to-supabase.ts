@@ -13,6 +13,10 @@
 
 import { GLOSSARY_TERMS } from "../knowledge-graph/data/glossary";
 
+function assertSupabaseWritesAllowed(): never {
+  throw new Error("Supabase/PostgREST data uploads are disabled for this project; no PostgreSQL glossary push command exists yet.");
+}
+
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) throw new Error(`Missing required env var: ${name}`);
@@ -20,6 +24,7 @@ function requireEnv(name: string): string {
 }
 
 async function main(): Promise<void> {
+  assertSupabaseWritesAllowed();
   const base = requireEnv("SUPABASE_URL").replace(/\/+$/, "");
   const key = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
   const schema = process.env.SUPABASE_SCHEMA || "public";

@@ -5,6 +5,7 @@
 // 出库前用 newsItemSchema 逐条校验，挡住空标题/坏链接等脏数据。
 
 import type { SupabaseConfig } from "./config.ts";
+import { rejectSupabaseDataWrite } from "./data/supabase-write-policy.ts";
 import { newsItemSchema, type NewsItem } from "./types.ts";
 
 export interface UpsertResult {
@@ -112,6 +113,7 @@ export async function upsertNewsItems(
   config: SupabaseConfig,
   fetchImpl: typeof fetch = fetch,
 ): Promise<UpsertResult> {
+  rejectSupabaseDataWrite("news_items legacy Supabase upsert");
   const valid: NewsItem[] = [];
   let invalid = 0;
   for (const item of items) {

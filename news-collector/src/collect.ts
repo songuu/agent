@@ -18,7 +18,6 @@ import type { ContentRepository } from "./data/content-repository.ts";
 import { openContentRepositoryForWorkers } from "./data/runtime.ts";
 import { fetchFeed, type FeedResult } from "./rss.ts";
 import { enabledSources } from "./sources.ts";
-import { upsertNewsItems } from "./store.ts";
 import type { NewsItem, NewsSource } from "./types.ts";
 
 const ARTICLE_CONTENT_CONCURRENCY = 4;
@@ -67,7 +66,7 @@ export interface CollectOptions {
   readonly now?: Date;
   readonly dryRun?: boolean;
   readonly supabase?: SupabaseConfig | null;
-  /** 首选写入端口；保留 supabase 参数只为已有调用者的渐进迁移兼容。 */
+  /** 首选写入端口；supabase 参数仅用于拒绝旧调用，不能再写入。 */
   readonly contentRepository?: Pick<ContentRepository, "upsertNewsItems">;
   readonly feedTimeoutMs?: number;
   /** 同时抓取的源数；限制同一供应商的连接突发。 */
@@ -89,7 +88,7 @@ export async function collectOnce(options: CollectOptions = {}): Promise<Collect
   const sources = options.sources ?? enabledSources();
   const supabase = options.supabase ?? null;
   const contentRepository = options.contentRepository;
-  const dryRun = options.dryRun ?? (!contentRepository && supabase === null);
+  const dryRun = options.dryRun ?? !contentRepository;
   const fetchImpl: FetchFeedImpl = options.fetchFeedImpl ?? fetchFeed;
   const feedConcurrency = options.feedConcurrency ?? DEFAULT_FEED_CONCURRENCY;
 
@@ -174,10 +173,7 @@ export async function collectOnce(options: CollectOptions = {}): Promise<Collect
     stored = result.pushed;
     tableCount = result.tableCount;
   } else if (!dryRun && supabase) {
-    // 兼容外部调用 collectOnce({ supabase })；正式 CLI/cron 已统一走 ContentRepository。
-    const result = await upsertNewsItems(items, supabase);
-    stored = result.pushed;
-    tableCount = result.tableCount;
+    throw new Error("Supabase/PostgREST data uploads are disabled for news collection; configure the server PostgreSQL content repository.");
   } else if (!dryRun) {
     throw new Error("A content repository is required when NEWS_DRY_RUN is disabled.");
   }

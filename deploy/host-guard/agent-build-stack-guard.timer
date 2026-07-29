@@ -1,0 +1,11 @@
+[Unit]
+Description=Run the production host service guard after boot and periodically
+
+[Timer]
+OnBootSec=45s
+OnUnitActiveSec=5min
+Persistent=true
+Unit=agent-build-stack-guard.service
+
+[Install]
+WantedBy=timers.target

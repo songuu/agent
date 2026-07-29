@@ -118,14 +118,15 @@ function parseMysqlConnection(source: NodeJS.ProcessEnv): MySqlConnectionConfig 
 }
 
 /**
- * 未配置时保持现有 Supabase 行为；明确写 mysql 时绝不静默回退，防止误把生产写入旧库。
- * 可使用单一 CONTENT_MYSQL_URL，或使用分项私有字段；两种形式不能混用。
- * 密码只从服务端环境读取；不要使用 NEXT_PUBLIC_ 前缀或写入 VitePress runtime config。
+ * legacy Supabase driver 仅保留迁移/只读兼容边界；当前生产 writer 必须设置
+ * CONTENT_REPOSITORY_POSTGRES_ONLY=true + CONTENT_REPOSITORY_DRIVER=postgres，
+ * 并使用非 Supabase 的服务器 PostgreSQL URL。worker/runtime 会拒绝 Supabase 写入。
  */
 export function loadContentRepositoryConfig(
   source: NodeJS.ProcessEnv = process.env,
 ): ContentRepositoryConfig {
   const requested = source.CONTENT_REPOSITORY_DRIVER?.trim().toLowerCase();
+  const postgresOnly = parseBoolean(source.CONTENT_REPOSITORY_POSTGRES_ONLY, "CONTENT_REPOSITORY_POSTGRES_ONLY");
   const hasMysqlSettings = [
     "CONTENT_MYSQL_URL",
     "CONTENT_MYSQL_HOST",
@@ -142,6 +143,12 @@ export function loadContentRepositoryConfig(
     "CONTENT_POSTGRES_SSL",
   ].some((name) => source[name]?.trim());
   const driver = requested || (hasPostgresSettings ? "postgres" : hasMysqlSettings ? "mysql" : "supabase");
+
+  if (postgresOnly && driver !== "postgres") {
+    throw new Error(
+      "CONTENT_REPOSITORY_POSTGRES_ONLY=true requires PostgreSQL writer config; refusing to use Supabase/MySQL content repository.",
+    );
+  }
 
   if (driver === "supabase") return { driver: "supabase" };
   if (driver === "mysql") return { driver: "mysql", mysql: parseMysqlConnection(source) };

@@ -11,6 +11,10 @@
 import { SAMPLE_NOTION_ARTICLES } from "../news-collector/src/notion/sample-data.ts";
 import { upsertNotionArticles } from "../news-collector/src/notion/store.ts";
 
+function assertSupabaseWritesAllowed(): never {
+  throw new Error("Supabase/PostgREST data uploads are disabled for this project; use pnpm notion:sync with PostgreSQL content config.");
+}
+
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) throw new Error(`Missing required env var: ${name}`);
@@ -18,6 +22,7 @@ function requireEnv(name: string): string {
 }
 
 async function main(): Promise<void> {
+  assertSupabaseWritesAllowed();
   const config = {
     url: requireEnv("SUPABASE_URL"),
     serviceRoleKey: requireEnv("SUPABASE_SERVICE_ROLE_KEY"),

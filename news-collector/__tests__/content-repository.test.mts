@@ -171,26 +171,23 @@ test("mysql2 bridge is structural: no mysql2 package is imported by the reposito
   assert.deepEqual(calls, [{ statement: "SELECT COUNT(*) AS table_count FROM news_items", values: [] }]);
 });
 
-test("Supabase adapter preserves the current PostgREST write contract without changing callers", async () => {
+test("Supabase adapter refuses data uploads before fetch", async () => {
   const calls: string[] = [];
   const fetchImpl = (async (url: string | URL, init?: RequestInit) => {
-    calls.push(`${init?.method ?? "GET"} ${String(url)}`);
-    if (init?.method === "POST") return new Response(null, { status: 201 });
-    return new Response("[]", { status: 200, headers: { "content-range": "0-0/1" } });
+    calls.push(String(init?.method ?? "GET") + " " + String(url));
+    return new Response(null, { status: 201 });
   }) as unknown as typeof fetch;
   const repository = createSupabaseContentRepository({
     config: { url: "https://db.example.com", serviceRoleKey: "service-role", schema: "public" },
     fetchImpl,
   });
 
-  const result = await repository.upsertNewsItems([sampleNewsItem()]);
-
+  await assert.rejects(
+    () => repository.upsertNewsItems([sampleNewsItem()]),
+    /Supabase\/PostgREST data uploads are disabled/,
+  );
   assert.equal(repository.provider, "supabase");
-  assert.equal(result.pushed, 1);
-  assert.deepEqual(calls, [
-    "POST https://db.example.com/rest/v1/news_items?on_conflict=external_id",
-    "GET https://db.example.com/rest/v1/news_items?select=external_id",
-  ]);
+  assert.deepEqual(calls, []);
 });
 
 test("generic table contracts cover all five content tables and preserve their natural keys", async () => {
@@ -237,24 +234,39 @@ test("generic table contracts cover all five content tables and preserve their n
   assert.equal(calls[0]!.values[15], '["frontier"]');
 });
 
-test("Supabase adapter batches 101 rows exactly like the legacy news writer", async () => {
-  const postBodies: unknown[][] = [];
-  const fetchImpl = (async (_url: string | URL, init?: RequestInit) => {
-    if (init?.method === "POST") {
-      postBodies.push(JSON.parse(String(init.body)) as unknown[]);
-      return new Response(null, { status: 201 });
-    }
-    return new Response("[]", { status: 200, headers: { "content-range": "0-0/101" } });
+test("Supabase adapter refuses generic table uploads before fetch", async () => {
+  let calls = 0;
+  const fetchImpl = (async () => {
+    calls += 1;
+    return new Response(null, { status: 201 });
   }) as unknown as typeof fetch;
   const repository = createSupabaseContentRepository({
     config: { url: "https://db.example.com", serviceRoleKey: "service-role", schema: "public" },
     fetchImpl,
   });
 
-  const result = await repository.upsertNewsItems(
-    Array.from({ length: 101 }, (_, index) => sampleNewsItem(index + 1)),
+  await assert.rejects(
+    () => repository.upsertTableRows("frontier_ecosystem_articles", [{
+      article_id: "frontier-1",
+      slug: "frontier-one",
+      chapter_id: "19",
+      chapter_slug: "frontier",
+      title: "Frontier",
+      source: "Source",
+      source_url: "https://example.com/frontier",
+      kind: "paper",
+      ecosystem_layer: "foundation",
+      ecosystem_layer_label: "基础综述",
+      summary: "summary",
+      collected_date: "2026-07-23",
+      collected_at: "2026-07-23T00:00:00.000Z",
+      read_count: 0,
+      sort_order: 1,
+      tags: ["frontier"],
+      detail_paragraphs: ["detail"],
+      metadata: { confidence: "high" },
+    }]),
+    /Supabase\/PostgREST data uploads are disabled/,
   );
-
-  assert.deepEqual(postBodies.map((body) => body.length), [100, 1]);
-  assert.deepEqual(result, { attempted: 101, invalid: 0, pushed: 101, tableCount: "0-0/101" });
+  assert.equal(calls, 0);
 });

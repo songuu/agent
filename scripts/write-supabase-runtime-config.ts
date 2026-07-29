@@ -5,19 +5,14 @@ import { dirname, resolve } from "node:path";
 import { config as loadDotenv } from "dotenv";
 
 /**
- * Public runtime config for the browser. Supabase stays an optional migration
- * fallback; the primary long-term boundary is a same-origin Content API.
+ * Public runtime config for the browser. Project content must be read through
+ * the same-origin Content API; Supabase/PostgREST browser fallback is disabled.
  */
 export interface SupabaseRuntimeConfig {
   readonly version: 1;
   readonly updatedAt: string;
   readonly contentApi?: {
     readonly baseUrl: string;
-  };
-  readonly supabase?: {
-    readonly url: string;
-    readonly anonKey: string;
-    readonly schema: string;
   };
 }
 
@@ -37,53 +32,20 @@ export interface WriteRuntimeConfigResult {
 const DEFAULT_OUTPUT_PATH = resolve(".vitepress/public/supabase-runtime-config.json");
 
 /**
- * Keeps the historical export name so the Supabase cutover tool remains stable,
- * while allowing a Content-API-only deployment to omit all Supabase public keys.
+ * Keeps the historical export name for existing scripts, but intentionally
+ * ignores NEXT_PUBLIC_SUPABASE_* so stale public env cannot re-enable PostgREST.
  */
 export function resolvePublicSupabaseRuntimeConfig(
   env: Readonly<Record<string, string | undefined>> = process.env,
   now = new Date(),
 ): SupabaseRuntimeConfig | null {
-  const url = (env.NEXT_PUBLIC_SUPABASE_URL ?? "").trim();
-  const anonKey = (env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
   const contentApiBaseUrl = (env.NEXT_PUBLIC_CONTENT_API_BASE_URL ?? "").trim();
-
-  if (!url && !anonKey && !contentApiBaseUrl) return null;
-  if (Boolean(url) !== Boolean(anonKey)) {
-    throw new Error(
-      "NEXT_PUBLIC_SUPABASE_URL 和 NEXT_PUBLIC_SUPABASE_ANON_KEY 必须同时配置，避免发布半切换的公开配置。",
-    );
-  }
-
-  let supabase: SupabaseRuntimeConfig["supabase"];
-  if (url && anonKey) {
-    const parsedUrl = new URL(url);
-    if (!/^https?:$/.test(parsedUrl.protocol) || parsedUrl.username || parsedUrl.password) {
-      throw new Error("NEXT_PUBLIC_SUPABASE_URL 必须是无凭据的 http(s) 地址。");
-    }
-
-    const serviceRoleKey = (env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim();
-    if (serviceRoleKey && serviceRoleKey === anonKey) {
-      throw new Error("NEXT_PUBLIC_SUPABASE_ANON_KEY 不能等于 SUPABASE_SERVICE_ROLE_KEY。");
-    }
-
-    supabase = {
-      url: parsedUrl.toString().replace(/\/+$/, ""),
-      anonKey,
-      schema: (env.SUPABASE_SCHEMA ?? "public").trim() || "public",
-    };
-  }
-
-  const contentApi = contentApiBaseUrl
-    ? { baseUrl: normalizeSameOriginContentApiBaseUrl(contentApiBaseUrl) }
-    : undefined;
-  if (!supabase && !contentApi) return null;
+  if (!contentApiBaseUrl) return null;
 
   return {
     version: 1,
     updatedAt: now.toISOString(),
-    ...(contentApi ? { contentApi } : {}),
-    ...(supabase ? { supabase } : {}),
+    contentApi: { baseUrl: normalizeSameOriginContentApiBaseUrl(contentApiBaseUrl) },
   };
 }
 
@@ -118,7 +80,7 @@ export async function writeSupabaseRuntimeConfig({
   return {
     status: "written",
     outputPath: absoluteOutputPath,
-    publicOrigin: runtimeConfig.supabase ? new URL(runtimeConfig.supabase.url).origin : null,
+    publicOrigin: null,
   };
 }
 
@@ -173,11 +135,12 @@ async function main(): Promise<void> {
   });
   if (result.status === "written") {
     process.stdout.write(
-      `Public data runtime config ${options.dryRun ? "would be written" : "written"}: ${result.publicOrigin ?? "same-origin Content API"}\n`,
+      `Public data runtime config ${options.dryRun ? "would be written" : "written"}: same-origin Content API\n`,
     );
   } else {
-    process.stdout.write("Public data runtime config absent: no Content API or Supabase public source is configured.\n");
+    process.stdout.write("Public data runtime config absent: no Content API is configured; Supabase public source is disabled.\n");
   }
+
 }
 
 const invokedPath = process.argv[1]?.replace(/\\/g, "/") ?? "";

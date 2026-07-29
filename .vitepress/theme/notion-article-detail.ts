@@ -1,11 +1,10 @@
 // Notion 文章详情渲染器（运行时按 ?slug= 取单行 + 全文 markdown 渲染）。
 //
-// 安全不变量：anon 只读 + status=eq.published；body_markdown 经 markdown-it(html:false)+DOMPurify 渲染。
+// 安全不变量：同源 Content API 只读 + status=eq.published；body_markdown 经 markdown-it(html:false)+DOMPurify 渲染。
 
 import { fetchAllPostgrestRows } from "./content-pagination";
 import { renderNotionMarkdown } from "./notion-markdown";
 import { safeReturnPathFromSearch, withReturnPath } from "./list-detail-return";
-import { getSupabaseRuntimeConfig } from "./supabase-runtime-config";
 
 interface DetailRow {
   slug?: unknown;
@@ -74,9 +73,7 @@ function mount(root: HTMLElement): void {
 }
 
 async function loadArticle(slug: string): Promise<DetailRow | null> {
-  const config = await getSupabaseRuntimeConfig();
   const rows = await fetchAllPostgrestRows<DetailRow>({
-    ...(config ? { config } : {}),
     table: "notion_articles",
     select: DETAIL_COLUMNS,
     filters: [`slug=eq.${slug}`, "status=eq.published"],

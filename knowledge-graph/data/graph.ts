@@ -179,7 +179,7 @@ export const CHAPTERS: Chapter[] = [
   { id: "17", slug: "17-safety-and-guardrails", title: "安全与护栏", part: "第六部分 · 生产化", dir: "lessons/17-safety-and-guardrails", demo: { needsKey: "llm" } },
   { id: "18", slug: "18-deployment", title: "部署：把 Agent 变成服务", part: "第六部分 · 生产化", dir: "lessons/18-deployment", demo: { needsKey: "llm", needsServer: true } },
   { id: "19", slug: "19-agent-ecosystem-and-frontier", title: "Agent 前沿发展与生态拆解", part: "第七部分 · 前沿与生态", dir: "lessons/19-agent-ecosystem-and-frontier", demo: { needsKey: "none" } },
-  { id: "20", slug: "20-agent-frontier-news", title: "Agent 前沿文章库", part: "第七部分 · 前沿与生态", dir: "lessons/20-agent-frontier-news", demo: { needsKey: "none" } },
+  { id: "20", slug: "20-agent-frontier-news", title: "Agent 前沿文章库", part: "第七部分 · 前沿与生态", dir: "lessons/20-agent-frontier-news" },
   { id: "21", slug: "source-analysis", title: "源码解析", part: "第八部分 · 源码解析", dir: "source-analysis" },
   { id: "capstone", slug: "deep-research-agent", title: "毕业项目 · Deep Research Agent", part: "毕业项目", dir: "capstone/deep-research-agent", demo: { entry: "capstone/deep-research-agent/src/cli.ts", needsKey: "embedding", interactive: true } },
   { id: "cap-support", slug: "support-copilot", title: "毕业项目 · 客服 Copilot", part: "毕业项目", dir: "capstone/support-copilot", demo: { entry: "capstone/support-copilot/src/cli.ts", needsKey: "none" } },

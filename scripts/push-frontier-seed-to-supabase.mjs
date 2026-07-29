@@ -42,6 +42,10 @@ function requireEnv(name) {
   return value;
 }
 
+function assertSupabaseWritesAllowed() {
+  throw new Error("Supabase/PostgREST data uploads are disabled for this project; use npm run content:frontier-push.");
+}
+
 function unquotePostgresString(value) {
   const trimmed = value.trim();
   if (!trimmed.startsWith("'") || !trimmed.endsWith("'")) return trimmed;
@@ -166,6 +170,7 @@ function parseSeedRows(sql) {
 
 async function main() {
   loadEnv();
+  assertSupabaseWritesAllowed();
 
   const base = requireEnv("SUPABASE_URL").replace(/\/+$/, "");
   const key = requireEnv("SUPABASE_SERVICE_ROLE_KEY");

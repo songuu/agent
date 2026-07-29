@@ -4,7 +4,6 @@ import { INTERVIEW_QUESTIONS } from "../../knowledge-graph/data/interview-questi
 import { fetchAllPostgrestRows } from "./content-pagination";
 import { rankSimilarInterviewQuestions, type SimilarInterviewQuestion } from "./interview-similarity";
 import { safeReturnPathFromSearch, withReturnPath } from "./list-detail-return";
-import { getSupabaseRuntimeConfig } from "./supabase-runtime-config";
 
 interface InterviewFaq {
   question?: unknown;
@@ -131,9 +130,7 @@ function refreshRoot(root: HTMLElement, force = false): void {
 }
 
 async function loadArticle(slug: string): Promise<InterviewDetailRow | null> {
-  const config = await getSupabaseRuntimeConfig();
   const rows = await fetchAllPostgrestRows<InterviewDetailRow>({
-    ...(config ? { config } : {}),
     table: "interview_questions",
     select: DETAIL_COLUMNS,
     filters: [`slug=eq.${slug}`],

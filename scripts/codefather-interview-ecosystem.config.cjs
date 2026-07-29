@@ -27,6 +27,8 @@ module.exports = {
       merge_logs: true,
       env: {
         NODE_ENV: "production",
+        CONTENT_REPOSITORY_POSTGRES_ONLY: "true",
+        CONTENT_REPOSITORY_DRIVER: "postgres",
         CODEFATHER_INTERVIEW_REPO_ROOT: process.env.CODEFATHER_INTERVIEW_REPO_ROOT || repoRoot,
         CODEFATHER_INTERVIEW_CRON: "5 */2 * * *",
         CODEFATHER_INTERVIEW_TZ: "Asia/Shanghai",

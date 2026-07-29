@@ -1,0 +1,11 @@
+[Unit]
+Description=Verify and recover the production host service stack
+Wants=network-online.target
+After=network-online.target nginx.service pm2-root.service
+
+[Service]
+Type=oneshot
+Environment=HOME=/root
+Environment=PM2_HOME=/root/.pm2
+Environment=PATH=/root/.local/share/pnpm:/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin
+ExecStart=/opt/agent-build/host-guard/agent-build-stack-guard.sh

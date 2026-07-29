@@ -8,7 +8,6 @@ import { openPostgresContentRepository } from "./postgres-runtime.ts";
 import {
   createMySqlContentRepository,
   createMysql2Executor,
-  createSupabaseContentRepository,
   type ContentRepository,
   type ContentRepositoryConfig,
 } from "./index.ts";
@@ -46,13 +45,7 @@ export async function openContentRepositoryForWorkers(input: {
   readonly supabase: SupabaseConfig | null;
 }): Promise<ContentRepositoryHandle> {
   if (input.config.driver === "supabase") {
-    if (!input.supabase) {
-      throw new Error("Supabase content repository requires SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.");
-    }
-    return {
-      repository: createSupabaseContentRepository({ config: input.supabase }),
-      close: async () => undefined,
-    };
+    throw new Error("Supabase/PostgREST data uploads are disabled for workers; configure CONTENT_REPOSITORY_DRIVER=postgres and CONTENT_POSTGRES_URL/WRITE_URL.");
   }
 
   if (input.config.driver === "postgres") {
