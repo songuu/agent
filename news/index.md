@@ -7,7 +7,7 @@ aside: false
 
 > 本页资讯由 [`news-collector`](https://github.com/songuu/agent/tree/master/news-collector) 定时从多源 RSS 聚合自动收集，
 > 经规则分类落入第 19 章的八层生态框架，写入服务器 PostgreSQL `news_items`，页面通过同源 Content API 只读渲染。
-> 与第 [20 章 · 前沿文章库](/lessons/20-agent-frontier-news/) 使用同一条文章数据流；日历按 `published_date` 筛选。
+> 与第 [20 章 · 前沿文章库](/lessons/20-agent-frontier-news/) 使用同一条文章数据流；日历与列表按 `collected_date` 筛选，文章卡片保留 `published_date` 作为原文发布时间。
 
 <div data-daily-news></div>
 

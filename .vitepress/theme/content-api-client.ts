@@ -237,7 +237,7 @@ export class ContentApiClient {
     private readonly runtimeConfig: ContentApiRuntimeConfig,
     options: Pick<ContentApiClientOptions, "fetchImpl"> = {},
   ) {
-    this.fetchImpl = options.fetchImpl ?? fetch;
+    this.fetchImpl = options.fetchImpl ?? globalThis.fetch.bind(globalThis);
   }
 
   public async fetchPage<T = unknown>(request: ContentReadRequest): Promise<ContentPageResult<T>> {

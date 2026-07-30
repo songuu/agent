@@ -65,6 +65,31 @@ test("news calendar uses one fixed same-origin endpoint and validates aggregate 
   });
   assert.equal(new URL(requestedUrl, "https://site.example").pathname, "/api/content/v1/news/calendar");
 });
+
+test("ContentApiClient binds the browser global fetch to its native receiver", async () => {
+  const originalFetch = Object.getOwnPropertyDescriptor(globalThis, "fetch");
+  let receiver: unknown;
+  try {
+    Object.defineProperty(globalThis, "fetch", {
+      configurable: true,
+      writable: true,
+      value: function (this: unknown) {
+        receiver = this;
+        return Promise.resolve(response({
+          buckets: [{ date: "2026-07-30", ecosystemLayer: "evaluation", articleCount: 1 }],
+          sourceCounts: [{ ecosystemLayer: "all", sourceCount: 1 }],
+        }));
+      } as typeof fetch,
+    });
+    const client = new ContentApiClient({ version: 1, contentApi: { baseUrl: "/api/content/v1" } });
+    await client.fetchNewsCalendar();
+    assert.equal(receiver, globalThis);
+  } finally {
+    if (originalFetch) Object.defineProperty(globalThis, "fetch", originalFetch);
+    else delete (globalThis as { fetch?: typeof fetch }).fetch;
+  }
+});
+
 test("same-origin Content API uses the v1 query contract and does not send Supabase keys", async () => {
   const runtimeConfig: ContentApiRuntimeConfig = {
     version: 1,
