@@ -136,10 +136,10 @@ export async function runSupabaseCutover(options: CutoverOptions): Promise<{
 
   await assertSuccessfulVerification(artifactRoot, options.migrationId);
   const targetValues = await readTargetValues(targetEnvPath!);
-  const runtimeConfig = resolvePublicSupabaseRuntimeConfig(targetValues);
-  if (!runtimeConfig?.supabase) {
-    throw new Error("Target profile is missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY.");
-  }
+  // The target profile still identifies the database migration destination,
+  // but the browser runtime config no longer carries Supabase credentials.
+  // Keep this value only for the cutover audit record.
+  const publicOrigin = publicOriginFromTarget(targetValues);
 
   const artifactDirectory = assertPathWithin(
     artifactRoot,
@@ -152,7 +152,7 @@ export async function runSupabaseCutover(options: CutoverOptions): Promise<{
     runtimeConfigPath,
     artifactDirectory,
     migrationId: options.migrationId,
-    publicOrigin: new URL(runtimeConfig.supabase.url).origin,
+    publicOrigin,
   });
 
   try {
@@ -222,9 +222,9 @@ async function readTargetValues(targetEnvPath: string): Promise<TargetValues> {
 }
 
 function publicOriginFromTarget(values: TargetValues): string {
-  const config = resolvePublicSupabaseRuntimeConfig(values);
-  if (!config?.supabase) throw new Error("Target profile is missing public Supabase config.");
-  return new URL(config.supabase.url).origin;
+  const publicUrl = values.NEXT_PUBLIC_SUPABASE_URL;
+  if (!publicUrl) throw new Error("Target profile is missing NEXT_PUBLIC_SUPABASE_URL.");
+  return new URL(publicUrl).origin;
 }
 
 async function assertSuccessfulVerification(artifactRoot: string, migrationId: string): Promise<void> {

@@ -103,7 +103,7 @@ Workflow 文件：`.github/workflows/agent-build-deploy.yml`。
 | Secret | 用途 |
 |--------|------|
 | `AGENT_BUILD_SSH_PRIVATE_KEY` | 部署专用 SSH 私钥 |
-| `AGENT_BUILD_PRODUCTION_ENV` | 静态构建期 public `.env`：Content API-only 时只需 `NEXT_PUBLIC_CONTENT_API_BASE_URL`；灰度期可额外含完整 Supabase anon pair；禁止 service role |
+| `AGENT_BUILD_PRODUCTION_ENV` | 静态构建期 public `.env`：必须仅含 `NEXT_PUBLIC_CONTENT_API_BASE_URL`；禁止 Supabase anon/service role |
 | `AGENT_BUILD_DEPLOY_HOST` | 可选，目标主机 hostname/IP，未设置时默认 `47.253.230.197` |
 | `AGENT_BUILD_DEPLOY_USER` | 可选，SSH 用户，未设置时默认 `root` |
 | `AGENT_BUILD_DOMAIN` | 可选，验证域名，未设置时默认 `songuu.top` |
@@ -140,7 +140,7 @@ Workflow 文件：`.github/workflows/agent-build-deploy.yml`。
 
 ### 可替换内容数据配置边界
 
-- 容器部署传入 `-RuntimeEnvFile` 时，脚本只从该文件提取 `NEXT_PUBLIC_CONTENT_API_BASE_URL`、可选完整的 `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` 与 `SUPABASE_SCHEMA` 作为 static-site Docker build args；`Dockerfile` 在 build 阶段生成 runtime JSON。Content API-only 站点不会得到任何数据库 URL/key。
+- 容器部署传入 `-RuntimeEnvFile` 时，静态站只提取 `NEXT_PUBLIC_CONTENT_API_BASE_URL` 作为 Docker build arg；`Dockerfile` 在 build 阶段生成 runtime JSON。浏览器不会得到任何数据库 URL/key。
 - `.dockerignore` 排除 `.env`/`.env.*`，Docker build args 也不接受 service role 或 MySQL 密码。`agent-build-site` 不挂载 `agent-build.runtime.env`，因此静态镜像不会取得服务端数据库密钥。
 - 运行时 env 在构建后才上传到远端，`agent-build-content-api`、`agent-build-runner`、`news-collector`、`notion-cron` 通过 Compose `env_file` 继承它；其中可含服务端 Supabase 或 MySQL 配置。脚本会拒绝 anon key 与 service role key 相同的误配。
 - 两个 cron service 直接用 Node/tsx 入口启动，避免镜像中不存在 `news-collector/.env` 时被 package script 的 `--env-file` 覆盖；其配置只来自 Compose 注入的环境。

@@ -134,7 +134,7 @@ let cachedRuntimeConfig: Promise<ContentApiRuntimeConfig | null> | null = null;
 export function getContentApiRuntimeConfig(
   options: ContentApiRuntimeConfigRequestOptions = {},
 ): Promise<ContentApiRuntimeConfig | null> {
-  if (!isBrowserRuntime()) return resolveCompiledContentApiConfig();
+  if (!isBrowserRuntime()) return Promise.resolve(resolveCompiledContentApiConfig());
   if (options.signal) return loadBrowserRuntimeConfig(options);
 
   cachedRuntimeConfig ??= loadBrowserRuntimeConfig(options);

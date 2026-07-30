@@ -101,22 +101,16 @@ jobs:
             exit 1
           fi
           printf '%s\n' "${AGENT_BUILD_PRODUCTION_ENV}" > .env
-          has_supabase_url=false
-          has_supabase_anon=false
-          has_content_api=false
-          grep -q '^NEXT_PUBLIC_SUPABASE_URL=.' .env && has_supabase_url=true || true
-          grep -q '^NEXT_PUBLIC_SUPABASE_ANON_KEY=.' .env && has_supabase_anon=true || true
-          grep -q '^NEXT_PUBLIC_CONTENT_API_BASE_URL=/' .env && has_content_api=true || true
-          if [ "${has_supabase_url}" != "${has_supabase_anon}" ]; then
-            echo "::error::NEXT_PUBLIC_SUPABASE_URL 与 NEXT_PUBLIC_SUPABASE_ANON_KEY 必须同时配置"
+          if ! grep -q '^NEXT_PUBLIC_CONTENT_API_BASE_URL=/' .env; then
+            echo "::error::AGENT_BUILD_PRODUCTION_ENV 必须配置同源 NEXT_PUBLIC_CONTENT_API_BASE_URL，例如 /agent-build/api/content/v1"
             exit 1
           fi
-          if [ "${has_content_api}" != true ] && [ "${has_supabase_url}" != true ]; then
-            echo "::error::AGENT_BUILD_PRODUCTION_ENV 至少需要 NEXT_PUBLIC_CONTENT_API_BASE_URL 或完整 Supabase anon pair"
+          if grep -Eq '^NEXT_PUBLIC_SUPABASE_(URL|ANON_KEY)=' .env; then
+            echo "::error::AGENT_BUILD_PRODUCTION_ENV 不再允许 NEXT_PUBLIC_SUPABASE_*；浏览器只允许同源 Content API"
             exit 1
           fi
           if grep -Eq '^(SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SERVICE_ROLE|CONTENT_MYSQL_)=' .env; then
-            echo "::error::AGENT_BUILD_PRODUCTION_ENV 不应包含 service role 或 MySQL secret；静态站只允许公开路径和可选 anon 配置"
+            echo "::error::AGENT_BUILD_PRODUCTION_ENV 不应包含 service role 或 MySQL secret；静态站只允许 Content API 公开路径"
             exit 1
           fi
           echo "Production .env written for build (values masked)."

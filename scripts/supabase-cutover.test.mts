@@ -71,6 +71,42 @@ test("cutover 写入前必须有同一 migration id 的全量 verify 通过产�
     /requires a successful verification artifact/,
   );
 });
+test("cutover 计划仍记录目标库来源，但不依赖浏览器 Supabase runtime config", async () => {
+  const ignoredRoot = resolve(".supabase-migration");
+  await mkdir(ignoredRoot, { recursive: true });
+  const artifactRoot = await mkdtemp(join(ignoredRoot, "cutover-plan-test-"));
+  const targetEnvPath = join(artifactRoot, "target.env");
+
+  try {
+    await writeFile(
+      targetEnvPath,
+      [
+        "SUPABASE_URL=https://target.example.test",
+        "SUPABASE_SERVICE_ROLE_KEY=target-service-key",
+        "SUPABASE_DB_URL=postgresql://target-db.example.test/postgres",
+        "NEXT_PUBLIC_SUPABASE_URL=https://target.example.test",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY=target-anon-key",
+      ].join("\n"),
+      "utf8",
+    );
+
+    const result = await runSupabaseCutover({
+      targetEnvPath,
+      activeEnvPaths: [".gitignore"],
+      runtimeConfigPath: ".vitepress/public/supabase-runtime-config.json",
+      artifactRoot,
+      migrationId: "20260730-content-api-cutover",
+      execute: false,
+      confirm: null,
+      rollbackPath: null,
+    });
+
+    assert.equal(result.mode, "plan");
+    assert.equal(result.publicOrigin, "https://target.example.test");
+  } finally {
+    await rm(artifactRoot, { recursive: true, force: true });
+  }
+});
 test("显式 active env 不存在时不应静默跳过", async () => {
   await assert.rejects(
     runSupabaseCutover({

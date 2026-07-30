@@ -181,43 +181,19 @@ $publicConfigEnvFile = if (-not [string]::IsNullOrWhiteSpace($RuntimeEnvFile)) {
 } else {
   $null
 }
-$publicSupabaseUrl = if ($publicConfigEnvFile) { Read-EnvFileValue $publicConfigEnvFile "NEXT_PUBLIC_SUPABASE_URL" } else { $null }
-$publicSupabaseAnonKey = if ($publicConfigEnvFile) { Read-EnvFileValue $publicConfigEnvFile "NEXT_PUBLIC_SUPABASE_ANON_KEY" } else { $null }
-$publicSupabaseSchema = if ($publicConfigEnvFile) { First-Value @((Read-EnvFileValue $publicConfigEnvFile "SUPABASE_SCHEMA"), "public") } else { "public" }
 $publicContentApiBaseUrl = if ($publicConfigEnvFile) { Read-EnvFileValue $publicConfigEnvFile "NEXT_PUBLIC_CONTENT_API_BASE_URL" } else { $null }
-$runtimeSupabaseServiceRole = if ($publicConfigEnvFile) {
-  First-Value @(
-    (Read-EnvFileValue $publicConfigEnvFile "SUPABASE_SERVICE_ROLE_KEY"),
-    (Read-EnvFileValue $publicConfigEnvFile "SUPABASE_SERVICE_ROLE")
-  )
-} else { $null }
-if ([string]::IsNullOrWhiteSpace($publicSupabaseUrl) -xor [string]::IsNullOrWhiteSpace($publicSupabaseAnonKey)) {
-  throw "NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be configured together in $publicConfigEnvFile."
+if ([string]::IsNullOrWhiteSpace($publicContentApiBaseUrl)) {
+  throw "NEXT_PUBLIC_CONTENT_API_BASE_URL is required for static-site deployment."
 }
-if (-not [string]::IsNullOrWhiteSpace($publicSupabaseAnonKey) -and $publicSupabaseAnonKey -eq $runtimeSupabaseServiceRole) {
-  throw "NEXT_PUBLIC_SUPABASE_ANON_KEY must not equal the runtime service role key."
-}
-if (-not [string]::IsNullOrWhiteSpace($publicContentApiBaseUrl)) {
-  $contentApiPath = $publicContentApiBaseUrl.Trim()
-  if (-not $contentApiPath.StartsWith("/") -or $contentApiPath.StartsWith("//") -or $contentApiPath.Contains("\") -or $contentApiPath.Contains("?") -or $contentApiPath.Contains("#")) {
-    throw "NEXT_PUBLIC_CONTENT_API_BASE_URL must be a same-origin absolute path, for example /agent-build/api/content/v1."
-  }
+$contentApiPath = $publicContentApiBaseUrl.Trim()
+if (-not $contentApiPath.StartsWith("/") -or $contentApiPath.StartsWith("//") -or $contentApiPath.Contains("\") -or $contentApiPath.Contains("?") -or $contentApiPath.Contains("#")) {
+  throw "NEXT_PUBLIC_CONTENT_API_BASE_URL must be a same-origin absolute path, for example /agent-build/api/content/v1."
 }
 
-$sitePublicDataBuildArgs = @()
-if (-not [string]::IsNullOrWhiteSpace($publicSupabaseUrl)) {
-  $sitePublicDataBuildArgs += "--build-arg"
-  $sitePublicDataBuildArgs += "NEXT_PUBLIC_SUPABASE_URL=$publicSupabaseUrl"
-  $sitePublicDataBuildArgs += "--build-arg"
-  $sitePublicDataBuildArgs += "NEXT_PUBLIC_SUPABASE_ANON_KEY=$publicSupabaseAnonKey"
-  $sitePublicDataBuildArgs += "--build-arg"
-  $sitePublicDataBuildArgs += "SUPABASE_SCHEMA=$publicSupabaseSchema"
-}
-if (-not [string]::IsNullOrWhiteSpace($publicContentApiBaseUrl)) {
-  $sitePublicDataBuildArgs += "--build-arg"
-  $sitePublicDataBuildArgs += "NEXT_PUBLIC_CONTENT_API_BASE_URL=$($publicContentApiBaseUrl.TrimEnd('/'))"
-}
-
+$sitePublicDataBuildArgs = @(
+  "--build-arg",
+  "NEXT_PUBLIC_CONTENT_API_BASE_URL=$($contentApiPath.TrimEnd('/'))"
+)
 Step "Container deploy config"
 Write-ConfigLine "Provider" "$Provider ($($profile.Label))"
 Write-ConfigLine "DeployHost" $resolvedHost
@@ -230,16 +206,7 @@ Write-ConfigLine "RemoteStackDir" $RemoteStackDir
 Write-ConfigLine "UseRegistry" ([string][bool]$UseRegistry)
 Write-ConfigLine "EnableJobs" ([string][bool]$EnableJobs)
 Write-ConfigLine "EnableNotion" ([string][bool]$EnableNotion)
-if ($publicSupabaseUrl) {
-  Write-ConfigLine "Public Supabase" ([uri]$publicSupabaseUrl).GetLeftPart([System.UriPartial]::Authority)
-} else {
-  Write-ConfigLine "Public Supabase" "not configured (site uses fallback/error state)"
-}
-if ($publicContentApiBaseUrl) {
-  Write-ConfigLine "Content API" $publicContentApiBaseUrl
-} else {
-  Write-ConfigLine "Content API" "not configured (site keeps Supabase/browser fallback)"
-}
+Write-ConfigLine "Content API" $contentApiPath
 
 
 if (-not $SkipTests) {
@@ -265,7 +232,7 @@ if (-not $SkipTests) {
 
 if (-not $SkipBuild) {
   Step "Docker build"
-  # Only the browser-safe same-origin Content API path and optional Supabase anon fallback flow into the static-site build stage.
+  # Only the browser-safe same-origin Content API path flows into the static-site build stage.
   # Runtime database secrets are uploaded later in agent-build.runtime.env and never become Docker build args.
   $siteBuildArguments = @(
     "build",
