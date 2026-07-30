@@ -26,6 +26,11 @@ function sampleNewsItem(index = 1): NewsItem {
     contentExcerpt: "content",
     contentStatus: "fetched",
     contentFetchedAt: "2026-07-23T01:02:03.456Z",
+    titleZh: "测试条目",
+    summaryZh: "中文摘要",
+    contentTextZh: "中文正文",
+    translationStatus: "translated",
+    translatedAt: "2026-07-23T01:03:03.456Z",
     ecosystemLayer: "runtime",
     ecosystemLayerLabel: "Runtime",
     tags: ["agent", "runtime"],
@@ -77,17 +82,21 @@ test("MySQL repository uses bounded parameterized upserts and keeps the current 
   assert.match(calls[0]!.statement, /^INSERT INTO `news_items`/);
   assert.match(calls[0]!.statement, /ON DUPLICATE KEY UPDATE/);
   assert.match(calls[0]!.statement, /`source_key` = IF\(`external_id` = new\.`external_id`, new\.`source_key`, NULL\)/);
-  assert.equal((calls[0]!.statement.match(/\?/g) ?? []).length, 100 * 21);
-  assert.equal(calls[0]!.values.length, 100 * 21);
-  assert.equal(calls[1]!.values.length, 21);
+  assert.match(calls[0]!.statement, /`title_zh` = IF\(.*IF\(`translation_status` = 'translated' AND new\.`translation_status` <> 'translated'/);
+  assert.match(calls[0]!.statement, /`translated_at` = IF\(.*new\.`translated_at`\)/);
+  assert.equal((calls[0]!.statement.match(/\?/g) ?? []).length, 100 * 26);
+  assert.equal(calls[0]!.values.length, 100 * 26);
+  assert.equal(calls[1]!.values.length, 26);
   assert.match(calls[2]!.statement, /^SELECT COUNT\(\*\) AS `table_count` FROM `news_items`$/);
 
-  const firstRow = calls[0]!.values.slice(0, 21);
+  const firstRow = calls[0]!.values.slice(0, 26);
   assert.equal(firstRow[7], "content with an unmatched surrogate ");
   assert.equal(firstRow[10], "2026-07-23 01:02:03.456");
-  assert.equal(firstRow[13], '["agent","runtime"]');
-  assert.equal(firstRow[19], 0);
-  assert.equal(firstRow[20], '{"sourceUrl":"https://example.com/feed","nested":{"value":"ok"}}');
+  assert.equal(firstRow[11], "测试条目");
+  assert.equal(firstRow[15], "2026-07-23 01:03:03.456");
+  assert.equal(firstRow[18], '["agent","runtime"]');
+  assert.equal(firstRow[24], 0);
+  assert.equal(firstRow[25], '{"sourceUrl":"https://example.com/feed","nested":{"value":"ok"}}');
 });
 
 test("MySQL repository validates rows before writing and preserves the all-invalid no-op", async () => {

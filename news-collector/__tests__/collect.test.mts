@@ -89,6 +89,93 @@ test("article content extraction attaches station-side body fields when enabled"
   assert.equal(report.items[0]?.contentExcerpt, "站内正文第一段。");
 });
 
+test("translation runs after article extraction and reports explicit outcomes", async () => {
+  const report = await collectOnce({
+    sources: [FIXTURE_SOURCES[1]!],
+    fetchFeedImpl: fixtureFetchFeed,
+    now: FIXED_NOW,
+    dryRun: true,
+    maxPerSource: 1,
+    articleContentEnabled: true,
+    articleContentMaxItems: 1,
+    fetchArticleContentImpl: async () => ({
+      text: "First fetched paragraph.\n\nSecond fetched paragraph.",
+      excerpt: "First fetched paragraph.",
+      status: "fetched",
+      fetchedAt: FIXED_NOW.toISOString(),
+    }),
+    translationMaxItems: 1,
+    translationClient: {
+      provider: "test",
+      model: "translator",
+      async chat(options) {
+        assert.match(options.messages[0]?.content ?? "", /Second fetched paragraph/);
+        return {
+          text: JSON.stringify({
+            titleZh: "中文标题",
+            summaryZh: "中文摘要",
+            contentParagraphsZh: ["抓取后的第一段。", "抓取后的第二段。"],
+          }),
+          toolCalls: [],
+          stopReason: "stop",
+          usage: { inputTokens: 100, outputTokens: 50 },
+        };
+      },
+    },
+  });
+
+  assert.equal(report.translated, 1);
+  assert.equal(report.translationFailed, 0);
+  assert.equal(report.items[0]?.translationStatus, "translated");
+  assert.equal(
+    report.items[0]?.contentTextZh,
+    "抓取后的第一段。\n\n抓取后的第二段。",
+  );
+});
+
+test("translation prioritizes English article extraction when the content budget is bounded", async () => {
+  const fetchedUrls: string[] = [];
+  const report = await collectOnce({
+    sources: [FIXTURE_SOURCES[0]!, FIXTURE_SOURCES[1]!],
+    fetchFeedImpl: fixtureFetchFeed,
+    now: FIXED_NOW,
+    dryRun: true,
+    maxPerSource: 1,
+    articleContentEnabled: true,
+    articleContentMaxItems: 1,
+    fetchArticleContentImpl: async (url) => {
+      fetchedUrls.push(url);
+      return {
+        text: "First prioritized paragraph.\n\nSecond prioritized paragraph.",
+        excerpt: "First prioritized paragraph.",
+        status: "fetched",
+        fetchedAt: FIXED_NOW.toISOString(),
+      };
+    },
+    translationMaxItems: 1,
+    translationClient: {
+      async chat() {
+        return {
+          text: JSON.stringify({
+            titleZh: "优先翻译的英文标题",
+            summaryZh: "优先翻译的英文摘要",
+            contentParagraphsZh: ["优先翻译第一段。", "优先翻译第二段。"],
+          }),
+          toolCalls: [],
+          stopReason: "stop",
+          usage: { inputTokens: 80, outputTokens: 40 },
+        };
+      },
+    },
+  });
+
+  const english = report.items.find((item) => item.lang === "en");
+  const chinese = report.items.find((item) => item.lang === "zh");
+  assert.deepEqual(fetchedUrls, [english?.url]);
+  assert.equal(english?.translationStatus, "translated");
+  assert.equal(chinese?.contentStatus, "not_fetched");
+});
+
 test("feed fetch concurrency is bounded to prevent same-host connection bursts", async () => {
   const sources: NewsSource[] = Array.from({ length: 6 }, (_, index) => ({
     ...FIXTURE_SOURCES[0]!,

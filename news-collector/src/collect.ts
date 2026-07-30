@@ -14,6 +14,7 @@ import { dedupe } from "./dedupe.ts";
 import { enrichItems } from "./enrich.ts";
 import { toNewsItem } from "./normalize.ts";
 import { fetchArticleContent, type ArticleContentResult } from "./article-content.ts";
+import { translateItems, type TranslationClient } from "./translate.ts";
 import type { ContentRepository } from "./data/content-repository.ts";
 import { openContentRepositoryForWorkers } from "./data/runtime.ts";
 import { fetchFeed, type FeedResult } from "./rss.ts";
@@ -44,6 +45,9 @@ export interface CollectReport {
   readonly contentFetched: number;
   readonly contentEmpty: number;
   readonly contentFailed: number;
+  readonly translated: number;
+  readonly translationFailed: number;
+  readonly translationSkipped: number;
   readonly enriched: number;
   readonly stored: number;
   readonly tableCount: string;
@@ -77,6 +81,13 @@ export interface CollectOptions {
   readonly enrichProvider?: ProviderName;
   readonly enrichModel?: string;
   readonly fetchFeedImpl?: FetchFeedImpl;
+  readonly translationMaxItems?: number;
+  readonly translationProvider?: ProviderName;
+  readonly translationModel?: string;
+  readonly translationConcurrency?: number;
+  readonly translationTimeoutMs?: number;
+  readonly translationMaxAttempts?: number;
+  readonly translationClient?: TranslationClient;
   readonly articleContentEnabled?: boolean;
   readonly articleContentTimeoutMs?: number;
   readonly articleContentMaxItems?: number;
@@ -144,11 +155,26 @@ export async function collectOnce(options: CollectOptions = {}): Promise<Collect
 
   let items = dedupe(collected);
 
+  const translationMaxItems = options.translationMaxItems ?? 0;
   if (options.articleContentEnabled) {
     items = await attachArticleContent(items, {
       fetchArticleContentImpl: options.fetchArticleContentImpl ?? ((url, opts) => fetchArticleContent(url, opts)),
       timeoutMs: options.articleContentTimeoutMs,
       maxItems: options.articleContentMaxItems,
+      now: start,
+      preferEnglish: translationMaxItems > 0,
+    });
+  }
+
+  if (translationMaxItems > 0) {
+    items = await translateItems(items, {
+      maxItems: translationMaxItems,
+      provider: options.translationProvider ?? options.enrichProvider,
+      model: options.translationModel,
+      concurrency: options.translationConcurrency,
+      timeoutMs: options.translationTimeoutMs,
+      maxAttempts: options.translationMaxAttempts,
+      client: options.translationClient,
       now: start,
     });
   }
@@ -161,6 +187,7 @@ export async function collectOnce(options: CollectOptions = {}): Promise<Collect
       model: options.enrichModel,
     });
   }
+
   const enrichedCount = items.filter((item) => item.enriched).length;
   const contentFetched = items.filter((item) => item.contentStatus === "fetched").length;
   const contentEmpty = items.filter((item) => item.contentStatus === "empty").length;
@@ -168,6 +195,9 @@ export async function collectOnce(options: CollectOptions = {}): Promise<Collect
 
   let stored = 0;
   let tableCount = "n/a";
+  const translated = items.filter((item) => item.translationStatus === "translated").length;
+  const translationFailed = items.filter((item) => item.translationStatus === "failed").length;
+  const translationSkipped = items.filter((item) => item.translationStatus === "skipped").length;
   if (!dryRun && contentRepository) {
     const result = await contentRepository.upsertNewsItems(items);
     stored = result.pushed;
@@ -193,6 +223,9 @@ export async function collectOnce(options: CollectOptions = {}): Promise<Collect
     stored,
     tableCount,
     dryRun,
+    translated,
+    translationFailed,
+    translationSkipped,
     items,
   };
 }
@@ -226,6 +259,7 @@ interface AttachArticleContentOptions {
   readonly fetchArticleContentImpl: FetchArticleContentImpl;
   readonly timeoutMs?: number;
   readonly maxItems?: number;
+  readonly preferEnglish?: boolean;
   readonly now: Date;
 }
 
@@ -235,13 +269,20 @@ async function attachArticleContent(
 ): Promise<NewsItem[]> {
   const maxItems = options.maxItems ?? items.length;
   const next = [...items];
+  const indexes = next.map((_, index) => index);
+  const prioritizedIndexes = options.preferEnglish
+    ? [
+        ...indexes.filter((index) => next[index]?.lang === "en"),
+        ...indexes.filter((index) => next[index]?.lang !== "en"),
+      ]
+    : indexes;
+  const selectedIndexes = prioritizedIndexes.slice(0, maxItems);
   let cursor = 0;
 
   async function worker(): Promise<void> {
     for (;;) {
-      const index = cursor;
-      cursor += 1;
-      if (index >= next.length || index >= maxItems) return;
+      const index = selectedIndexes[cursor++];
+      if (index === undefined) return;
       const item = next[index];
       if (!item) return;
       const result = await options.fetchArticleContentImpl(item.url, {
@@ -253,7 +294,7 @@ async function attachArticleContent(
   }
 
   await Promise.all(
-    Array.from({ length: Math.min(ARTICLE_CONTENT_CONCURRENCY, next.length, maxItems) }, () => worker()),
+    Array.from({ length: Math.min(ARTICLE_CONTENT_CONCURRENCY, selectedIndexes.length) }, () => worker()),
   );
   return next;
 }
@@ -303,6 +344,12 @@ export async function collectFromConfig(
       enrichMax: config.enrichMax,
       enrichProvider: config.enrichProvider,
       enrichModel: config.enrichModel,
+      translationMaxItems: config.translationMaxItems,
+      translationProvider: config.enrichProvider,
+      translationModel: config.translationModel,
+      translationConcurrency: config.translationConcurrency,
+      translationTimeoutMs: config.translationTimeoutMs,
+      translationMaxAttempts: config.translationMaxAttempts,
       articleContentEnabled: config.articleContentEnabled,
       articleContentTimeoutMs: config.articleContentTimeoutMs,
       articleContentMaxItems: config.articleContentMaxItems,

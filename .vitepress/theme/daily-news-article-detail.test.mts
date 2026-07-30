@@ -6,6 +6,7 @@ import {
   newsArticleIdFromSearch,
   newsArticleReturnPathFromSearch,
   resolveArticleNavigation,
+  resolveNewsArticleLanguageContent,
   shouldRefreshNewsArticleDetail,
   splitArticleParagraphs,
 } from "./daily-news-article-detail";
@@ -35,6 +36,42 @@ test("buildNewsArticleParagraphs falls back honestly when body missing", () => {
   });
   assert.equal(paragraphs[0], "可读摘要");
   assert.match(paragraphs[1], /暂未抓取/);
+});
+
+test("translated English article defaults to Chinese while preserving original paragraphs", () => {
+  const content = resolveNewsArticleLanguageContent({
+    title: "Original title",
+    titleZh: "中文标题",
+    contentText: "First paragraph.\n\nSecond paragraph.",
+    contentExcerpt: "Original excerpt",
+    summary: "Original summary",
+    contentTextZh: "第一段。\n\n第二段。",
+    translationStatus: "translated",
+  });
+
+  assert.equal(content.title, "中文标题");
+  assert.equal(content.defaultLanguage, "zh");
+  assert.equal(content.canSwitchLanguage, true);
+  assert.deepEqual(content.translatedParagraphs, ["第一段。", "第二段。"]);
+  assert.deepEqual(content.originalParagraphs, ["First paragraph.", "Second paragraph."]);
+});
+
+test("failed or missing translation renders original only and hides the language switch", () => {
+  const content = resolveNewsArticleLanguageContent({
+    title: "Original title",
+    titleZh: "不应展示的标题",
+    contentText: "Original body.",
+    contentExcerpt: "",
+    summary: "",
+    contentTextZh: "不应展示的译文。",
+    translationStatus: "failed",
+  });
+
+  assert.equal(content.title, "Original title");
+  assert.equal(content.defaultLanguage, "original");
+  assert.equal(content.canSwitchLanguage, false);
+  assert.deepEqual(content.translatedParagraphs, []);
+  assert.deepEqual(content.originalParagraphs, ["Original body."]);
 });
 
 test("resolveArticleNavigation：首篇仅展示下一篇", () => {

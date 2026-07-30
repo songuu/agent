@@ -1,7 +1,7 @@
 # news-collector · AI 资讯定时收集系统
 
 仿 [ai.codefather.cn/news](https://ai.codefather.cn/news) 的**多源 AI 资讯定时聚合**子系统：
-按计划从多个公开 RSS/Atom 源抓取；启用订阅源必须能被现有抓取器正确解析并返回条目 → 归一 → 规则分类（8 层生态）→ 可选 LLM 富化（Anthropic / OpenAI）→ 去重 → 通过可替换内容仓库幂等写入服务器 PostgreSQL。legacy Supabase/PostgREST 与 MySQL 仅保留迁移/回归兼容。
+按计划从多个公开 RSS/Atom 源抓取；启用订阅源必须能被现有抓取器正确解析并返回条目 → 归一 → 规则分类（8 层生态）→ 去重 → 原文正文抽取 → 可选英中翻译 → 可选 LLM 富化 → 通过可替换内容仓库幂等写入服务器 PostgreSQL。legacy Supabase/PostgREST 与 MySQL 仅保留迁移/回归兼容。
 
 第 20 章「前沿文章库」直接展示本系统写入的 `news_items` 表；旧的手工策展资料仍保留在知识图谱中，但不再作为文章日历的数据源。
 
@@ -17,6 +17,8 @@ RawFeedItem
    ▼
 NewsItem
    │  dedupe     —— 批内按 externalId + url 双重去重
+   │  article?   —— 有界抓取原文正文；失败保留来源摘要，不伪装全文
+   │  translate? —— 英文正文逐段翻译，原文/译文独立持久化；默认关闭
    │  enrich?    —— 可选 LLM 摘要+分层；无所选 provider key 时优雅降级为规则结果
    ▼
 ContentRepository(upsert)   —— 当前生产 writer=服务器 PostgreSQL；legacy Supabase/PostgREST/MySQL 仅兼容保留，natural key=external_id 幂等
@@ -33,6 +35,7 @@ news-collector/
     normalize.ts    归一化（canonical URL / sha256 身份 / 清洗）
     classify.ts     规则分类（纯函数、确定性）
     enrich.ts       可选 LLM 富化（降级）
+    translate.ts    可选英中翻译（逐段校验、失败隔离、原文保留）
     dedupe.ts       批内去重
     store.ts        legacy Supabase PostgREST upsert（旧直接调用兼容）
     data/           ContentRepository、PostgreSQL/Supabase/MySQL adapters、schema 与 runtime composition
@@ -149,6 +152,12 @@ pnpm notion:sync
 - `OPENAI_API_KEY` + `OPENAI_MODEL` + 可选 `OPENAI_BASE_URL`：`LLM_PROVIDER=openai` 时使用；SiliconFlow 等 OpenAI-compatible 平台也走这组配置。
 - `NEWS_ENRICH_MAX>0` 且所选 provider 可用时才启用 LLM 富化；否则用规则分类，整条管道仍可离线跑。
 - `NEWS_ENRICH_MODEL`：兼容旧 collector 配置的专用模型覆盖；通常优先用 `ANTHROPIC_MODEL` / `OPENAI_MODEL`。
+- `NEWS_TRANSLATION_ENABLED=true`：显式开启英文正文翻译；默认关闭，且仅在正文抽取成功、所选 provider 可用时调用模型。
+- `NEWS_TRANSLATION_MAX_ITEMS`（默认 `40`）/ `NEWS_TRANSLATION_CONCURRENCY`（默认 `2`）：限制单轮成本和并发；翻译失败只标记该条，不阻断整批。
+- `NEWS_TRANSLATION_TIMEOUT_MS`（默认 `120000`）：单篇模型调用的硬超时，避免少数慢请求长期占满翻译并发。
+- `NEWS_TRANSLATION_MAX_ATTEMPTS`（默认 `2`，最大 `3`）：仅对超时、截断 JSON 或段落校验失败的单篇文章重试，不重复调用已成功文章。
+- `NEWS_TRANSLATION_MODEL`：可选翻译专用模型；为空时复用当前 `LLM_PROVIDER` 的默认模型。
+- 原文 `title/summary/content_text` 永不被覆盖；中文写入独立字段。详情页成功译文默认中文并可本地切回原文，未成功时不显示语言开关。
 - `NEWS_ARTICLE_CONTENT_ENABLED=true`：抓取原文 HTML 并抽取 bounded `content_text/content_excerpt`，供 `/news/article?id=...` 站内详情页使用。
 - `NEWS_ARTICLE_CONTENT_MAX_ITEMS` / `NEWS_ARTICLE_CONTENT_TIMEOUT_MS`：限制每轮正文抓取数量和单篇超时，防止慢站拖垮采集。
 - `NEWS_FEED_CONCURRENCY`（默认 `4`）：限制来源抓取并发，避免 GitHub Atom 等同域请求被批量超时拖垮。
@@ -167,7 +176,7 @@ pm2 logs news-collector
 pm2 save && pm2 startup   # 开机自启
 ```
 
-生产独立运行目录可使用 `news-collector/deploy/ecosystem.runtime.config.cjs`；它使用 Node 24 的 TypeScript type stripping，并默认关闭正文补全，以来源抓取和写库的稳定完成为优先。
+生产独立运行目录可使用 `news-collector/deploy/ecosystem.runtime.config.cjs`；它使用 Node 24 的 TypeScript type stripping。正文抽取与翻译仍由 `.env` 的 `NEWS_ARTICLE_CONTENT_*` / `NEWS_TRANSLATION_*` 成本开关控制，部署配置不再强制覆盖。
 
 
 ### systemd

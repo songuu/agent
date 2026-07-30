@@ -55,6 +55,13 @@ const envSchema = z.object({
   NEWS_MAX_PER_SOURCE: z.coerce.number().int().positive().default(30),
   // 富化条数上限；0 = 不富化（即便配了 key 也需显式开，避免默认烧 token）。
   NEWS_ENRICH_MAX: z.coerce.number().int().min(0).default(0),
+  // 翻译是独立的成本开关：需显式开启，且仍受 provider 凭据门控。
+  NEWS_TRANSLATION_ENABLED: boolFromEnv(false),
+  NEWS_TRANSLATION_MAX_ITEMS: z.coerce.number().int().min(0).max(500).default(40),
+  NEWS_TRANSLATION_CONCURRENCY: z.coerce.number().int().min(1).max(8).default(2),
+  NEWS_TRANSLATION_TIMEOUT_MS: z.coerce.number().int().positive().max(600_000).default(120_000),
+  NEWS_TRANSLATION_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(3).default(2),
+  NEWS_TRANSLATION_MODEL: optionalEnvString,
   // 是否抓取原文正文并写入 content_text/content_excerpt。
   NEWS_ARTICLE_CONTENT_ENABLED: boolFromEnv(true),
   NEWS_ARTICLE_CONTENT_TIMEOUT_MS: z.coerce.number().int().positive().default(12_000),
@@ -84,6 +91,11 @@ export interface RunConfig {
   readonly enrichMax: number;
   readonly enrichProvider: ProviderName;
   readonly enrichModel?: string;
+  readonly translationMaxItems: number;
+  readonly translationModel?: string;
+  readonly translationConcurrency: number;
+  readonly translationTimeoutMs: number;
+  readonly translationMaxAttempts: number;
   readonly articleContentEnabled: boolean;
   readonly articleContentTimeoutMs: number;
   readonly articleContentMaxItems: number;
@@ -133,6 +145,11 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): RunConfig {
     enrichProvider: env.LLM_PROVIDER,
     enrichModel: env.NEWS_ENRICH_MODEL,
     articleContentEnabled: env.NEWS_ARTICLE_CONTENT_ENABLED,
+    translationMaxItems: env.NEWS_TRANSLATION_ENABLED && hasProviderCredential(env) ? env.NEWS_TRANSLATION_MAX_ITEMS : 0,
+    translationModel: env.NEWS_TRANSLATION_MODEL,
+    translationConcurrency: env.NEWS_TRANSLATION_CONCURRENCY,
+    translationTimeoutMs: env.NEWS_TRANSLATION_TIMEOUT_MS,
+    translationMaxAttempts: env.NEWS_TRANSLATION_MAX_ATTEMPTS,
     articleContentTimeoutMs: env.NEWS_ARTICLE_CONTENT_TIMEOUT_MS,
     articleContentMaxItems: env.NEWS_ARTICLE_CONTENT_MAX_ITEMS,
     cron: env.NEWS_CRON,

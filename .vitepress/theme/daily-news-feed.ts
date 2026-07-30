@@ -64,6 +64,9 @@ interface ReadableNewsInput {
 interface NewsItemRow {
   external_id?: unknown;
   title?: unknown;
+  title_zh?: unknown;
+  summary_zh?: unknown;
+  translation_status?: unknown;
   url?: unknown;
   summary?: unknown;
   content_excerpt?: unknown;
@@ -107,6 +110,9 @@ interface NewsListQueryState {
 const NEWS_COLUMNS = [
   "external_id",
   "title",
+  "title_zh",
+  "summary_zh",
+  "translation_status",
   "url",
   "summary",
   "content_excerpt",
@@ -894,17 +900,26 @@ function groupByDate(items: NewsItemView[]): Array<{ date: string; label: string
   return [...groups.values()].sort((left, right) => right.date.localeCompare(left.date));
 }
 
+export function preferTranslatedNewsText(original: unknown, translated: unknown, status: unknown): string {
+  const originalText = stringValue(original, "");
+  return stringValue(status, "") === "translated"
+    ? stringValue(translated, originalText)
+    : originalText;
+}
 function normalizeRow(row: NewsItemRow): NewsItemView {
   const collectionDate = normalizeNewsDate(row.collected_date, "2026-06-17");
   const publishedAt = typeof row.published_at === "string" ? row.published_at : null;
   const publishedDate = normalizeNewsDate(row.published_date, publishedAt?.slice(0, 10) ?? collectionDate);
   const layer = layerValue(row.ecosystem_layer);
-  const title = stringValue(row.title, "");
+  const translationReady = stringValue(row.translation_status, "") === "translated";
+  const originalTitle = stringValue(row.title, "");
+  const title = preferTranslatedNewsText(originalTitle, row.title_zh, row.translation_status);
   const sourceName = stringValue(row.source_name, "未知来源");
   const sourceKind = stringValue(row.source_kind, "news");
   const ecosystemLayerLabel = stringValue(row.ecosystem_layer_label, layerLabel(layer));
-  const rawSummary = stringValue(row.summary, "");
-  const rawContentExcerpt = stringValue(row.content_excerpt, "");
+  const originalSummary = stringValue(row.summary, "");
+  const rawSummary = preferTranslatedNewsText(originalSummary, row.summary_zh, row.translation_status);
+  const rawContentExcerpt = translationReady ? "" : stringValue(row.content_excerpt, "");
   const tags = stringArrayValue(row.tags);
   const readableInput: ReadableNewsInput = {
     title,

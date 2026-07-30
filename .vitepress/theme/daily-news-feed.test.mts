@@ -8,6 +8,7 @@ import {
   cleanNewsSummary,
   currentNewsDate,
   normalizeNewsDate,
+  preferTranslatedNewsText,
 } from "./daily-news-feed";
 
 test("buildPaginationTokens returns compact leading window", () => {
@@ -78,4 +79,10 @@ test("buildNewsDetailParagraphs includes cleaned content and context", () => {
   assert.equal(paragraphs[0], "Meta introduced lower-cost smart glasses for consumers.");
   assert.match(paragraphs.at(-1) ?? "", /来源：Example News/);
   assert.match(paragraphs.at(-1) ?? "", /标签：agent、hardware/);
+});
+
+test("translated list text is used only after a successful translation", () => {
+  assert.equal(preferTranslatedNewsText("Original", "中文", "translated"), "中文");
+  assert.equal(preferTranslatedNewsText("Original", "不应展示", "failed"), "Original");
+  assert.equal(preferTranslatedNewsText("Original", "", "translated"), "Original");
 });

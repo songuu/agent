@@ -103,7 +103,7 @@ export const CONTENT_TABLE_CONTRACTS: Readonly<Record<ContentTableName, ContentT
     conflictKey: "external_id",
     columns: NEWS_ITEM_COLUMNS,
     jsonColumns: ["tags", "metadata"],
-    timestampColumns: ["content_fetched_at", "published_at", "collected_at"],
+    timestampColumns: ["content_fetched_at", "translated_at", "published_at", "collected_at"],
     booleanColumns: ["enriched"],
   },
   notion_articles: {

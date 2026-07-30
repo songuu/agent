@@ -94,6 +94,11 @@ CREATE TABLE IF NOT EXISTS news_items (
   content_excerpt TEXT NOT NULL,
   content_status VARCHAR(32) NOT NULL,
   content_fetched_at DATETIME(3) NULL,
+  title_zh TEXT NOT NULL,
+  summary_zh MEDIUMTEXT NOT NULL,
+  content_text_zh MEDIUMTEXT NOT NULL,
+  translation_status VARCHAR(32) NOT NULL DEFAULT 'not_requested',
+  translated_at DATETIME(3) NULL,
   ecosystem_layer VARCHAR(32) NOT NULL,
   ecosystem_layer_label VARCHAR(255) NOT NULL,
   tags JSON NOT NULL,
@@ -114,9 +119,10 @@ CREATE TABLE IF NOT EXISTS news_items (
   KEY news_layer_idx (ecosystem_layer, published_date, published_at),
   KEY news_source_idx (source_key, published_date, published_at),
   KEY news_url_idx (url(191)),
-  FULLTEXT KEY news_search_idx (title, source_name, summary, content_excerpt, content_text),
+  FULLTEXT KEY news_search_idx (title, title_zh, source_name, summary, summary_zh, content_excerpt, content_text, content_text_zh),
   CONSTRAINT news_source_kind_chk CHECK (source_kind IN ('cn-media', 'en-media', 'paper', 'community', 'vendor-blog', 'release')),
   CONSTRAINT news_content_status_chk CHECK (content_status IN ('not_fetched', 'fetched', 'empty', 'failed')),
+  CONSTRAINT news_translation_status_chk CHECK (translation_status IN ('not_requested', 'translated', 'skipped', 'failed')),
   CONSTRAINT news_lang_chk CHECK (lang IN ('zh', 'en'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

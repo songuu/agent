@@ -49,6 +49,30 @@ function quoteIdentifier(identifier: string): string {
   return `"${identifier}"`;
 }
 
+const TRANSLATION_PAYLOAD_COLUMNS = new Set([
+  "title_zh",
+  "summary_zh",
+  "content_text_zh",
+  "translated_at",
+]);
+
+/** 未启用或失败的翻译不能覆盖数据库里已有的成功译文。 */
+function postgresUpdateAssignment(contract: ContentTableContract, column: string): string {
+  const quoted = quoteIdentifier(column);
+  if (contract.table !== "news_items") return `${quoted} = EXCLUDED.${quoted}`;
+
+  const current = `${quoteIdentifier(contract.table)}.${quoted}`;
+  const incomingStatus = `EXCLUDED.${quoteIdentifier("translation_status")}`;
+  const currentStatus = `${quoteIdentifier(contract.table)}.${quoteIdentifier("translation_status")}`;
+  if (TRANSLATION_PAYLOAD_COLUMNS.has(column)) {
+    return `${quoted} = CASE WHEN ${currentStatus} = 'translated' AND ${incomingStatus} <> 'translated' THEN ${current} ELSE EXCLUDED.${quoted} END`;
+  }
+  if (column === "translation_status") {
+    return `${quoted} = CASE WHEN ${incomingStatus} = 'translated' OR ${current} <> 'translated' THEN ${incomingStatus} ELSE ${current} END`;
+  }
+  return `${quoted} = EXCLUDED.${quoted}`;
+}
+
 export function buildPostgresUpsertStatement(
   contract: ContentTableContract,
   rowCount: number,
@@ -63,7 +87,7 @@ export function buildPostgresUpsertStatement(
   ).join(", ");
   const updates = contract.columns
     .filter((column) => column !== contract.conflictKey)
-    .map((column) => `${quoteIdentifier(column)} = EXCLUDED.${quoteIdentifier(column)}`)
+    .map((column) => postgresUpdateAssignment(contract, column))
     .join(", ");
 
   return [

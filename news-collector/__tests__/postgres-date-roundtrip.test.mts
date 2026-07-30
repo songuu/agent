@@ -10,6 +10,7 @@ test("generic PostgreSQL roundtrip normalizes driver Date values for date column
   Object.assign(row, {
     content_fetched_at: null,
     tags: ["postgres"],
+    translated_at: null,
     published_at: null,
     published_date: new Date("2026-07-24T00:00:00.000Z"),
     collected_at: new Date("2026-07-24T01:02:03.456Z"),
@@ -20,7 +21,7 @@ test("generic PostgreSQL roundtrip normalizes driver Date values for date column
 
   const values = toContentTableSqlValues(contract, row);
 
-  assert.equal(values[16], "2026-07-24");
-  assert.equal(values[17], "2026-07-24 01:02:03.456");
-  assert.equal(values[18], "2026-07-24");
+  assert.equal(values[21], "2026-07-24");
+  assert.equal(values[22], "2026-07-24 01:02:03.456");
+  assert.equal(values[23], "2026-07-24");
 });

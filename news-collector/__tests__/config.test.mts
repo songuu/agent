@@ -39,6 +39,42 @@ test("legacy NEWS_ENRICH_MODEL remains an explicit collector override", () => {
   assert.equal(config.enrichMax, 1);
 });
 
+test("article translation is opt-in and still requires the selected provider credential", () => {
+  assert.equal(loadConfig({}).translationMaxItems, 0);
+  assert.equal(
+    loadConfig({
+      NEWS_TRANSLATION_ENABLED: "true",
+      NEWS_TRANSLATION_MAX_ITEMS: "12",
+      LLM_PROVIDER: "openai",
+      OPENAI_API_KEY: "",
+    }).translationMaxItems,
+    0,
+  );
+
+  const enabled = loadConfig({
+    NEWS_TRANSLATION_ENABLED: "true",
+    NEWS_TRANSLATION_MAX_ITEMS: "12",
+    NEWS_TRANSLATION_CONCURRENCY: "3",
+    LLM_PROVIDER: "openai",
+    OPENAI_API_KEY: "test-openai-key",
+  });
+  assert.equal(enabled.translationMaxItems, 12);
+  assert.equal(enabled.translationConcurrency, 3);
+  assert.equal(enabled.translationTimeoutMs, 120000);
+  assert.equal(enabled.translationMaxAttempts, 2);
+  assert.equal(
+    loadConfig({
+      NEWS_TRANSLATION_ENABLED: "true",
+      NEWS_TRANSLATION_TIMEOUT_MS: "45000",
+      NEWS_TRANSLATION_MAX_ATTEMPTS: "3",
+      LLM_PROVIDER: "openai",
+      OPENAI_API_KEY: "test-openai-key",
+    }).translationTimeoutMs,
+    45000,
+  );
+  assert.equal(loadConfig({ NEWS_TRANSLATION_MAX_ATTEMPTS: "3" }).translationMaxAttempts, 3);
+});
+
 test("article content extraction config defaults to enabled with bounded limits", () => {
   const config = loadConfig({});
 

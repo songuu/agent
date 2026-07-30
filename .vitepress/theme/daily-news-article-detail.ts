@@ -8,6 +8,10 @@ import { safeReturnPathFromSearch, withReturnPath } from "./list-detail-return";
 interface NewsArticleRow {
   external_id?: unknown;
   title?: unknown;
+  title_zh?: unknown;
+  summary_zh?: unknown;
+  content_text_zh?: unknown;
+  translation_status?: unknown;
   url?: unknown;
   summary?: unknown;
   content_text?: unknown;
@@ -35,6 +39,10 @@ interface NewsArticleNavigation {
 const DETAIL_COLUMNS = [
   "external_id",
   "title",
+  "title_zh",
+  "summary_zh",
+  "content_text_zh",
+  "translation_status",
   "url",
   "summary",
   "content_text",
@@ -137,17 +145,20 @@ async function loadArticleNavigation(id: string): Promise<NewsArticleNavigation 
 
 function render(root: HTMLElement, row: NewsArticleRow, navigation: NewsArticleNavigation | null): void {
   const returnPath = newsArticleReturnPathFromSearch(window.location.search);
-  const title = asString(row.title) || "未命名文章";
+  const languageContent = resolveNewsArticleLanguageContent({
+    title: asString(row.title) || "未命名文章",
+    titleZh: asString(row.title_zh),
+    contentText: asString(row.content_text),
+    contentExcerpt: asString(row.content_excerpt),
+    summary: asString(row.summary),
+    contentTextZh: asString(row.content_text_zh),
+    translationStatus: asString(row.translation_status),
+  });
+  const title = languageContent.title;
   const url = asString(row.url);
   const sourceName = asString(row.source_name) || "未知来源";
   const layer = asString(row.ecosystem_layer_label) || "未分类";
   const tags = stringArray(row.tags);
-  const paragraphs = buildNewsArticleParagraphs({
-    title,
-    contentText: asString(row.content_text),
-    contentExcerpt: asString(row.content_excerpt),
-    summary: asString(row.summary),
-  });
 
   const article = el("article", "news-detail-card");
   const header = el("header", "news-detail-header");
@@ -168,9 +179,35 @@ function render(root: HTMLElement, row: NewsArticleRow, navigation: NewsArticleN
   }
 
   const body = el("div", "news-detail-body vp-doc");
-  for (const paragraph of paragraphs) {
-    body.append(el("p", "news-detail-paragraph", paragraph));
+  const bodyHeader = el("div", "news-detail-body-header");
+  const bodyLabel = el("span", "news-detail-body-label");
+  bodyHeader.append(bodyLabel);
+  const paragraphsRoot = el("div", "news-detail-paragraphs");
+  let chineseButton: HTMLButtonElement | null = null;
+  let originalButton: HTMLButtonElement | null = null;
+
+  const renderLanguage = (language: "zh" | "original") => {
+    const showChinese = language === "zh" && languageContent.canSwitchLanguage;
+    const selected = showChinese ? languageContent.translatedParagraphs : languageContent.originalParagraphs;
+    paragraphsRoot.replaceChildren(
+      ...selected.map((paragraph) => el("p", "news-detail-paragraph", paragraph)),
+    );
+    bodyLabel.textContent = showChinese ? "正文 · AI 翻译" : "正文 · 原文";
+    chineseButton?.setAttribute("aria-pressed", String(showChinese));
+    originalButton?.setAttribute("aria-pressed", String(!showChinese));
+  };
+
+  if (languageContent.canSwitchLanguage) {
+    const switcher = el("div", "news-detail-language-switch");
+    chineseButton = languageButton("中文");
+    originalButton = languageButton("原文");
+    chineseButton.addEventListener("click", () => renderLanguage("zh"));
+    originalButton.addEventListener("click", () => renderLanguage("original"));
+    switcher.append(chineseButton, originalButton);
+    bodyHeader.append(switcher);
   }
+  body.append(bodyHeader, paragraphsRoot);
+  renderLanguage(languageContent.defaultLanguage);
 
   const actions = el("div", "news-detail-actions");
   const back = document.createElement("a");
@@ -192,6 +229,51 @@ function render(root: HTMLElement, row: NewsArticleRow, navigation: NewsArticleN
   const navigationSection = buildArticleNavigation(navigation, returnPath);
   root.replaceChildren(...(navigationSection ? [article, navigationSection] : [article]));
   document.title = `${title} | AI 资讯`;
+}
+
+export interface ResolveNewsArticleLanguageContentInput {
+  readonly title: string;
+  readonly titleZh: string;
+  readonly contentText: string;
+  readonly contentExcerpt: string;
+  readonly summary: string;
+  readonly contentTextZh: string;
+  readonly translationStatus: string;
+}
+
+export interface ResolvedNewsArticleLanguageContent {
+  readonly title: string;
+  readonly originalParagraphs: readonly string[];
+  readonly translatedParagraphs: readonly string[];
+  readonly defaultLanguage: "zh" | "original";
+  readonly canSwitchLanguage: boolean;
+}
+
+export function resolveNewsArticleLanguageContent(
+  input: ResolveNewsArticleLanguageContentInput,
+): ResolvedNewsArticleLanguageContent {
+  const originalTitle = normalizeText(input.title) || "未命名文章";
+  const originalParagraphs = buildNewsArticleParagraphs({
+    title: originalTitle,
+    contentText: input.contentText,
+    contentExcerpt: input.contentExcerpt,
+    summary: input.summary,
+  });
+  const translatedText =
+    input.translationStatus === "translated"
+      ? normalizeText(input.contentTextZh)
+      : "";
+  const translatedParagraphs = translatedText ? splitArticleParagraphs(translatedText) : [];
+  const canSwitchLanguage = translatedParagraphs.length > 0;
+  const translatedTitle = normalizeText(input.titleZh) || originalTitle;
+
+  return {
+    title: canSwitchLanguage ? translatedTitle : originalTitle,
+    originalParagraphs,
+    translatedParagraphs: canSwitchLanguage ? translatedParagraphs : [],
+    defaultLanguage: canSwitchLanguage ? "zh" : "original",
+    canSwitchLanguage,
+  };
 }
 
 export interface BuildNewsArticleParagraphsInput {
@@ -325,6 +407,15 @@ function formatDate(publishedAt: string, publishedDate: string): string {
     }
   }
   return publishedDate;
+}
+
+function languageButton(label: string): HTMLButtonElement {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "news-detail-language-button";
+  button.textContent = label;
+  button.setAttribute("aria-pressed", "false");
+  return button;
 }
 
 function el(tag: string, className: string, text?: string): HTMLElement {

@@ -26,6 +26,7 @@ export function formatReport(report: CollectReport): string {
   lines.push(
     `  fetched=${report.totalFetched} dedupe=${report.afterDedupe} ` +
       `content=${report.contentFetched}/${report.afterDedupe} fetched empty=${report.contentEmpty} failed=${report.contentFailed} ` +
+      `translation=${report.translated} translated skipped=${report.translationSkipped} failed=${report.translationFailed} ` +
       `enriched=${report.enriched} stored=${report.stored} table=${report.tableCount}`,
   );
 

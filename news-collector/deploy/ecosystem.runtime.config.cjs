@@ -25,8 +25,6 @@ module.exports = {
         NODE_ENV: "production",
         CONTENT_REPOSITORY_POSTGRES_ONLY: "true",
         CONTENT_REPOSITORY_DRIVER: "postgres",
-        // 正文站点不属于来源采集 SLA，避免其反爬/慢响应阻塞每日入库。
-        NEWS_ARTICLE_CONTENT_ENABLED: "false",
         NEWS_FEED_CONCURRENCY: "4",
       },
     },

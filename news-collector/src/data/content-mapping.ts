@@ -20,6 +20,11 @@ export const NEWS_ITEM_COLUMNS = [
   "content_excerpt",
   "content_status",
   "content_fetched_at",
+  "title_zh",
+  "summary_zh",
+  "content_text_zh",
+  "translation_status",
+  "translated_at",
   "ecosystem_layer",
   "ecosystem_layer_label",
   "tags",
@@ -173,6 +178,13 @@ export function toNewsItemSqlValues(item: NewsItem): readonly SqlValue[] {
     item.contentFetchedAt === null
       ? null
       : toMysqlUtcDateTime(item.contentFetchedAt, "content_fetched_at"),
+    sanitizeTextForStorage(item.titleZh),
+    sanitizeTextForStorage(item.summaryZh),
+    sanitizeTextForStorage(item.contentTextZh),
+    sanitizeTextForStorage(item.translationStatus),
+    item.translatedAt === null
+      ? null
+      : toMysqlUtcDateTime(item.translatedAt, "translated_at"),
     sanitizeTextForStorage(item.ecosystemLayer),
     sanitizeTextForStorage(item.ecosystemLayerLabel),
     jsonColumn(item.tags, "news_items.tags"),

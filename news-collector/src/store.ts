@@ -27,6 +27,11 @@ interface NewsItemRow {
   content_excerpt: string;
   content_status: string;
   content_fetched_at: string | null;
+  title_zh: string;
+  summary_zh: string;
+  content_text_zh: string;
+  translation_status: string;
+  translated_at: string | null;
   ecosystem_layer: string;
   ecosystem_layer_label: string;
   tags: readonly string[];
@@ -54,6 +59,11 @@ function toRow(item: NewsItem): NewsItemRow {
     content_excerpt: item.contentExcerpt,
     content_status: item.contentStatus,
     content_fetched_at: item.contentFetchedAt,
+    title_zh: item.titleZh,
+    summary_zh: item.summaryZh,
+    content_text_zh: item.contentTextZh,
+    translation_status: item.translationStatus,
+    translated_at: item.translatedAt,
     ecosystem_layer: item.ecosystemLayer,
     ecosystem_layer_label: item.ecosystemLayerLabel,
     tags: item.tags,

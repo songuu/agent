@@ -85,6 +85,29 @@ function quoteIdentifier(identifier: string): string {
   return `\`${identifier}\``;
 }
 
+const TRANSLATION_PAYLOAD_COLUMNS = new Set([
+  "title_zh",
+  "summary_zh",
+  "content_text_zh",
+  "translated_at",
+]);
+
+/** 未启用或失败的翻译不能覆盖数据库里已有的成功译文。 */
+function mysqlIncomingValue(contract: ContentTableContract, column: string): string {
+  const quoted = quoteIdentifier(column);
+  if (contract.table !== "news_items") return `new.${quoted}`;
+
+  const incomingStatus = `new.${quoteIdentifier("translation_status")}`;
+  const currentStatus = quoteIdentifier("translation_status");
+  if (TRANSLATION_PAYLOAD_COLUMNS.has(column)) {
+    return `IF(${currentStatus} = 'translated' AND ${incomingStatus} <> 'translated', ${quoted}, new.${quoted})`;
+  }
+  if (column === "translation_status") {
+    return `IF(${incomingStatus} = 'translated' OR ${quoted} <> 'translated', ${incomingStatus}, ${quoted})`;
+  }
+  return `new.${quoted}`;
+}
+
 /**
  * MySQL 8.0.19+ row alias 语法；不使用已弃用的 VALUES(column)。
  *
@@ -108,7 +131,7 @@ export function buildMySqlUpsertStatement(
     .filter((column) => column !== contract.conflictKey)
     .map((column) => {
       const quoted = quoteIdentifier(column);
-      return `${quoted} = IF(${conflictKey} = new.${conflictKey}, new.${quoted}, NULL)`;
+      return `${quoted} = IF(${conflictKey} = new.${conflictKey}, ${mysqlIncomingValue(contract, column)}, NULL)`;
     })
     .join(", ");
 

@@ -53,6 +53,7 @@ export interface SourceFallback {
 }
 
 export type ArticleContentStatus = "not_fetched" | "fetched" | "empty" | "failed";
+export type ArticleTranslationStatus = "not_requested" | "translated" | "skipped" | "failed";
 
 export interface SourceRetryPolicy {
   /** 总尝试次数（含首次），默认普通源 3，重点源 5。 */
@@ -127,6 +128,16 @@ export interface NewsItem {
   readonly contentExcerpt: string;
   readonly contentStatus: ArticleContentStatus;
   readonly contentFetchedAt: string | null;
+  /** 中文标题译文；原始 title 永远保留，不被翻译覆盖。 */
+  readonly titleZh: string;
+  /** 中文摘要译文；原始 summary 永远保留。 */
+  readonly summaryZh: string;
+  /** 中文正文译文，段落间仍用双换行分隔。 */
+  readonly contentTextZh: string;
+  /** 翻译生命周期；只有 translated 允许前端展示中文切换。 */
+  readonly translationStatus: ArticleTranslationStatus;
+  /** 最近一次翻译或跳过判定时间。 */
+  readonly translatedAt: string | null;
   readonly ecosystemLayer: EcosystemLayer;
   readonly ecosystemLayerLabel: string;
   readonly tags: readonly string[];
@@ -166,6 +177,11 @@ export const newsItemSchema = z.object({
   contentFetchedAt: z.string().nullable(),
   ecosystemLayer: z.enum(ECOSYSTEM_LAYERS),
   ecosystemLayerLabel: z.string().min(1),
+  titleZh: z.string(),
+  summaryZh: z.string(),
+  contentTextZh: z.string(),
+  translationStatus: z.enum(["not_requested", "translated", "skipped", "failed"]),
+  translatedAt: z.string().nullable(),
   tags: z.array(z.string()),
   lang: z.enum(["zh", "en"]),
   publishedAt: z.string().nullable(),

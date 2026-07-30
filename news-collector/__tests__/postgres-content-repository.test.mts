@@ -21,6 +21,11 @@ function sampleNewsItem(): NewsItem {
     contentExcerpt: "content",
     contentStatus: "fetched",
     contentFetchedAt: "2026-07-24T01:02:03.456Z",
+    titleZh: "PostgreSQL 测试条目",
+    summaryZh: "中文摘要",
+    contentTextZh: "中文正文",
+    translationStatus: "translated",
+    translatedAt: "2026-07-24T01:03:03.456Z",
     ecosystemLayer: "runtime",
     ecosystemLayerLabel: "Runtime",
     tags: ["agent", "postgres"],
@@ -55,10 +60,14 @@ test("PostgreSQL repository uses bounded parameterized upserts and native PG val
   assert.match(calls[0]!.statement, /^INSERT INTO "news_items"/);
   assert.match(calls[0]!.statement, /VALUES \(\$1, \$2,/);
   assert.match(calls[0]!.statement, /ON CONFLICT \("external_id"\) DO UPDATE SET/);
+  assert.match(calls[0]!.statement, /"title_zh" = CASE WHEN "news_items"\."translation_status" = 'translated' AND EXCLUDED\."translation_status" <> 'translated'/);
+  assert.match(calls[0]!.statement, /"translated_at" = CASE WHEN .* ELSE EXCLUDED\."translated_at" END/);
   assert.equal(calls[0]!.values[7], "content with an unmatched surrogate ");
-  assert.deepEqual(calls[0]!.values[13], ["agent", "postgres"]);
-  assert.equal(calls[0]!.values[19], false);
-  assert.deepEqual(calls[0]!.values[20], {
+  assert.equal(calls[0]!.values[11], "PostgreSQL 测试条目");
+  assert.equal(calls[0]!.values[15], "2026-07-24 01:03:03.456");
+  assert.deepEqual(calls[0]!.values[18], ["agent", "postgres"]);
+  assert.equal(calls[0]!.values[24], false);
+  assert.deepEqual(calls[0]!.values[25], {
     sourceUrl: "https://example.com/feed",
     nested: { value: "ok" },
   });
