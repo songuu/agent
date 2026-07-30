@@ -5,12 +5,12 @@ declare const __DEMO_RUNNER_CLIENT_ENABLED__: boolean | undefined;
 type SelectionChatFrameType = "thinking" | "text" | "done" | "error";
 type SelectionChatRole = "user" | "assistant";
 
-interface SelectionChatFrame {
+export interface SelectionChatFrame {
   type: SelectionChatFrameType;
   data: unknown;
 }
 
-interface SelectionChatMessage {
+export interface SelectionChatMessage {
   role: SelectionChatRole;
   content: string;
 }
@@ -21,7 +21,7 @@ interface SelectionOfferInput {
   collapsed: boolean;
 }
 
-interface SelectionChatPayloadInput {
+export interface SelectionChatPayloadInput {
   selectedText: string;
   question: string;
   pageTitle?: string;
@@ -29,7 +29,7 @@ interface SelectionChatPayloadInput {
   messages?: SelectionChatMessage[];
 }
 
-interface SelectionChatPayload {
+export interface SelectionChatPayload {
   selectedText: string;
   question: string;
   pageTitle?: string;
@@ -80,10 +80,11 @@ if (typeof window !== "undefined" && isSelectionChatEnabled()) {
 // only mount when the runner client is enabled at build time or a dev token exists.
 // Otherwise a runner-less build would still show the popover/drawer and every send
 // would fetch a dead 127.0.0.1:5174 endpoint, surfacing a confusing "对话失败".
-function isSelectionChatEnabled(): boolean {
+export function isSelectionChatEnabled(): boolean {
   const enabled =
     typeof __DEMO_RUNNER_CLIENT_ENABLED__ === "boolean" ? __DEMO_RUNNER_CLIENT_ENABLED__ : false;
-  return enabled || Boolean(readBuildConstant(__DEMO_RUNNER_TOKEN__));
+  const token = typeof __DEMO_RUNNER_TOKEN__ === "string" ? __DEMO_RUNNER_TOKEN__ : "";
+  return enabled || Boolean(readBuildConstant(token));
 }
 
 export function normalizeSelectedText(text: string, maxLength = MAX_SELECTED_TEXT_LENGTH): string {
@@ -334,22 +335,15 @@ async function submitQuestion(): Promise<void> {
   }
 }
 
-async function streamSelectionChat(
-  question: string,
-  selectedText: string,
-  turn: ChatTurnElements,
+export async function streamSelectionChatPayload(
+  payload: SelectionChatPayload,
   signal: AbortSignal,
+  onFrame: (frame: SelectionChatFrame) => void,
 ): Promise<void> {
   const response = await fetch(`${readBaseUrl()}/api/selection-chat`, {
     method: "POST",
     headers: selectionChatHeaders(),
-    body: JSON.stringify(createSelectionChatPayload({
-      selectedText,
-      question,
-      pageTitle: document.title,
-      pagePath: window.location.pathname,
-      messages: state.messages.slice(0, -1),
-    })),
+    body: JSON.stringify(payload),
     signal,
   });
   if (!response.ok || !response.body) {
@@ -357,18 +351,10 @@ async function streamSelectionChat(
   }
 
   const parser = createSelectionChatFrameParser((frame) => {
-    if (frame.type === "thinking") {
-      turn.thinking.hidden = false;
-      turn.thinking.textContent += String(frame.data);
-    } else if (frame.type === "text") {
-      turn.answer.textContent += String(frame.data);
-    } else if (frame.type === "error") {
-      throw new Error(String(frame.data));
-    }
+    if (frame.type === "error") throw new Error(String(frame.data));
+    onFrame(frame);
   });
   const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
-  // try/finally so an error/malformed frame (which throws out of parser.push)
-  // still releases the reader and tears down the underlying fetch connection.
   try {
     while (true) {
       const { done, value } = await reader.read();
@@ -379,6 +365,32 @@ async function streamSelectionChat(
   } finally {
     await reader.cancel().catch(() => undefined);
   }
+}
+
+async function streamSelectionChat(
+  question: string,
+  selectedText: string,
+  turn: ChatTurnElements,
+  signal: AbortSignal,
+): Promise<void> {
+  await streamSelectionChatPayload(
+    createSelectionChatPayload({
+      selectedText,
+      question,
+      pageTitle: document.title,
+      pagePath: window.location.pathname,
+      messages: state.messages.slice(0, -1),
+    }),
+    signal,
+    (frame) => {
+      if (frame.type === "thinking") {
+        turn.thinking.hidden = false;
+        turn.thinking.textContent += String(frame.data);
+      } else if (frame.type === "text") {
+        turn.answer.textContent += String(frame.data);
+      }
+    },
+  );
 }
 
 function renderUserMessage(content: string): void {

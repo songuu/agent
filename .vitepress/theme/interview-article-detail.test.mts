@@ -3,8 +3,10 @@ import assert from "node:assert/strict";
 import { INTERVIEW_QUESTIONS } from "../../knowledge-graph/data/interview-questions";
 import { rankSimilarInterviewQuestions } from "./interview-similarity";
 import {
+  buildInterviewAnswerRefreshPayload,
   interviewDetailHref,
   interviewReturnPathFromSearch,
+  nextInterviewAnswerAction,
   resolveInterviewDisplayDate,
   resolveInterviewSummary,
   shouldRefreshInterviewDetail,
@@ -51,6 +53,31 @@ test("详情摘要：远端只有选题说明时必须回退本地真实答案",
 
   assert.match(summary, /不能只测 recall/);
   assert.doesNotMatch(summary, /^本题覆盖/);
+});
+
+test("答案切换：优先展示未读候选，候选耗尽后刷新", () => {
+  assert.deepEqual(nextInterviewAnswerAction(1, 3), { type: "switch", index: 1 });
+  assert.deepEqual(nextInterviewAnswerAction(2, 3), { type: "switch", index: 2 });
+  assert.deepEqual(nextInterviewAnswerAction(3, 3), { type: "refresh" });
+  assert.deepEqual(nextInterviewAnswerAction(1, 1), { type: "refresh" });
+});
+
+test("答案刷新：生成请求必须携带题目、当前答案和事实边界", () => {
+  const payload = buildInterviewAnswerRefreshPayload({
+    question: "为什么不能只看任务成功率？",
+    currentAnswer: "成功不代表过程安全。",
+    referenceText: "还要检查 unintended action 与 harmful action。",
+    pageTitle: "面试题详情",
+    pagePath: "/interview/article?id=agent-safety",
+  });
+
+  assert.match(payload.selectedText, /为什么不能只看任务成功率/);
+  assert.match(payload.selectedText, /成功不代表过程安全/);
+  assert.match(payload.selectedText, /unintended action/);
+  assert.match(payload.question, /换一种表达/);
+  assert.match(payload.question, /不得补充参考材料之外的事实/);
+  assert.equal(payload.pageTitle, "面试题详情");
+  assert.equal(payload.pagePath, "/interview/article?id=agent-safety");
 });
 
 test("相似题推荐：优先同主题，不只看同题型", () => {

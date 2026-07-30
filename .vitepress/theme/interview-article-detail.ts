@@ -4,6 +4,12 @@ import { INTERVIEW_QUESTIONS } from "../../knowledge-graph/data/interview-questi
 import { fetchAllPostgrestRows } from "./content-pagination";
 import { rankSimilarInterviewQuestions, type SimilarInterviewQuestion } from "./interview-similarity";
 import { safeReturnPathFromSearch, withReturnPath } from "./list-detail-return";
+import {
+  createSelectionChatPayload,
+  isSelectionChatEnabled,
+  streamSelectionChatPayload,
+  type SelectionChatPayload,
+} from "./selection-chat";
 
 interface InterviewFaq {
   question?: unknown;
@@ -40,6 +46,19 @@ interface InterviewAnswerVariant {
   kind?: unknown;
 }
 
+interface InterviewAnswerItem {
+  title: string;
+  answer: string;
+  kind: string;
+}
+
+interface InterviewAnswerRefreshContext {
+  question: string;
+  referenceText: string;
+  pageTitle: string;
+  pagePath: string;
+}
+
 interface InterviewContentSection {
   heading?: unknown;
   body?: unknown;
@@ -61,6 +80,7 @@ const initialized = new WeakSet<HTMLElement>();
 const mountedRoots = new Set<HTMLElement>();
 const renderedSlugByRoot = new WeakMap<HTMLElement, string | null>();
 const requestVersionByRoot = new WeakMap<HTMLElement, number>();
+const answerRefreshControllerByRoot = new WeakMap<HTMLElement, AbortController>();
 const LOCAL_QUESTION_BY_SLUG = new Map(INTERVIEW_QUESTIONS.map((question) => [question.slug, question]));
 const CATEGORY_BY_LABEL = new Map(INTERVIEW_QUESTIONS.map((question) => [question.categoryLabel, question.category]));
 const INTERVIEW_LOCATION_CHANGE_EVENT = "agent-build:interview-locationchange";
@@ -82,7 +102,11 @@ function scanInterviewArticleDetail(): void {
   const roots = document.querySelectorAll<HTMLElement>("[data-interview-article]");
   document.body.classList.toggle("interview-article-page", roots.length > 0);
   for (const root of Array.from(mountedRoots)) {
-    if (!document.body.contains(root)) mountedRoots.delete(root);
+    if (!document.body.contains(root)) {
+      answerRefreshControllerByRoot.get(root)?.abort();
+      answerRefreshControllerByRoot.delete(root);
+      mountedRoots.delete(root);
+    }
   }
   roots.forEach((root) => {
     mountedRoots.add(root);
@@ -104,6 +128,8 @@ function refreshRoot(root: HTMLElement, force = false): void {
   const slug = interviewDetailSlugFromSearch(window.location.search);
   const renderedSlug = renderedSlugByRoot.get(root) ?? null;
   if (!force && !shouldRefreshInterviewDetail(renderedSlug, window.location.search)) return;
+  answerRefreshControllerByRoot.get(root)?.abort();
+  answerRefreshControllerByRoot.delete(root);
 
   const nextRequestVersion = (requestVersionByRoot.get(root) ?? 0) + 1;
   requestVersionByRoot.set(root, nextRequestVersion);
@@ -199,7 +225,14 @@ function render(root: HTMLElement, row: InterviewDetailRow): void {
   for (const paragraph of leadParagraphs) {
     body.append(el("p", "news-detail-paragraph", paragraph));
   }
-  if (answerVariants.length > 0) body.append(buildAnswerSection(answerVariants));
+  if (answerVariants.length > 0) {
+    body.append(buildAnswerSection(root, answerVariants, {
+      question: title,
+      referenceText: contentSections.map((item) => `${item.heading}：${item.body}`).join("\n\n") || paragraphs.join("\n\n"),
+      pageTitle: `${title} | 面试题库`,
+      pagePath: window.location.pathname,
+    }));
+  }
   if (contentSections.length > 0) {
     body.append(buildAnalysisSection(contentSections));
   } else {
@@ -319,11 +352,20 @@ function sectionHeading(text: string): HTMLElement {
   return el("h2", "interview-detail-section-title", text);
 }
 
-function buildAnswerSection(items: Array<{ title: string; answer: string; kind: string }>): HTMLElement {
+function buildAnswerSection(
+  root: HTMLElement,
+  items: InterviewAnswerItem[],
+  refreshContext: InterviewAnswerRefreshContext,
+): HTMLElement {
+  const answers = [...items];
+  let currentIndex = 0;
+  let viewedAnswerCount = 1;
+
   const section = el("section", "interview-detail-section interview-answer-section");
   const details = document.createElement("details");
   details.className = "interview-answer-disclosure";
   details.open = true;
+
   const summary = document.createElement("summary");
   summary.className = "interview-answer-summary";
   summary.append(sectionHeading("直接可背的答案"));
@@ -331,17 +373,148 @@ function buildAnswerSection(items: Array<{ title: string; answer: string; kind: 
   summary.append(el("span", "interview-answer-toggle-label interview-answer-toggle-label-open", "收起答案"));
   details.append(summary);
 
+  const content = el("div", "interview-answer-content");
+  const toolbar = el("div", "interview-answer-toolbar");
+  const version = el("span", "interview-answer-version");
+  const refreshButton = document.createElement("button");
+  refreshButton.type = "button";
+  refreshButton.className = "interview-answer-refresh";
+  refreshButton.setAttribute("aria-label", "换一个面试答案");
+  toolbar.append(version, refreshButton);
+
+  const refreshStatus = el("p", "interview-answer-refresh-status");
+  refreshStatus.setAttribute("role", "status");
+  refreshStatus.setAttribute("aria-live", "polite");
+  refreshStatus.hidden = true;
+
   const grid = el("div", "interview-answer-grid");
-  for (const item of items) {
-    const card = el("article", "interview-answer-card");
-    card.append(el("span", "interview-answer-kind", answerKindLabel(item.kind)));
-    card.append(el("h3", "interview-answer-title", item.title));
-    card.append(el("p", "interview-answer-body", item.answer));
-    grid.append(card);
-  }
-  details.append(grid);
+  grid.append(buildAnswerCard(answers[0]));
+
+  const setRefreshStatus = (message: string, state = "") => {
+    refreshStatus.textContent = message;
+    refreshStatus.hidden = !message;
+    if (state) refreshStatus.dataset.state = state;
+    else delete refreshStatus.dataset.state;
+  };
+  const updateControls = () => {
+    const action = nextInterviewAnswerAction(viewedAnswerCount, answers.length);
+    const canCycle = action.type === "switch" || (!isSelectionChatEnabled() && answers.length > 1);
+    refreshButton.textContent = canCycle ? "换一个答案" : "刷新答案";
+    version.textContent = answers.length > 1 ? `答案 ${currentIndex + 1} / ${answers.length}` : "当前答案";
+  };
+  const showAnswer = (index: number) => {
+    currentIndex = index;
+    grid.replaceChildren(buildAnswerCard(answers[currentIndex]));
+    updateControls();
+  };
+
+  refreshButton.addEventListener("click", async () => {
+    setRefreshStatus("");
+    const action = nextInterviewAnswerAction(viewedAnswerCount, answers.length);
+    if (action.type === "switch") {
+      viewedAnswerCount = Math.max(viewedAnswerCount, action.index + 1);
+      showAnswer(action.index);
+      return;
+    }
+
+    if (!isSelectionChatEnabled()) {
+      if (answers.length > 1) {
+        showAnswer((currentIndex + 1) % answers.length);
+        return;
+      }
+      setRefreshStatus("当前环境未启用答案刷新服务，原答案已保留。", "error");
+      return;
+    }
+
+    const controller = new AbortController();
+    answerRefreshControllerByRoot.get(root)?.abort();
+    answerRefreshControllerByRoot.set(root, controller);
+    refreshButton.disabled = true;
+    refreshButton.textContent = "正在刷新...";
+    setRefreshStatus("正在生成一版新的可背答案...");
+    let generatedAnswer = "";
+
+    try {
+      const payload = buildInterviewAnswerRefreshPayload({
+        ...refreshContext,
+        currentAnswer: answers[currentIndex].answer,
+      });
+      await streamSelectionChatPayload(payload, controller.signal, (frame) => {
+        if (!section.isConnected) {
+          controller.abort();
+          return;
+        }
+        if (frame.type === "text") generatedAnswer += String(frame.data);
+      });
+
+      const normalizedAnswer = normalizeText(generatedAnswer);
+      if (!normalizedAnswer) throw new Error("模型未返回有效答案");
+      answers.push({ title: "换一种答法", answer: normalizedAnswer, kind: "generated" });
+      viewedAnswerCount = answers.length;
+      showAnswer(answers.length - 1);
+      setRefreshStatus("已生成一版新答案。", "success");
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      const detail = error instanceof Error ? error.message : String(error);
+      setRefreshStatus(`刷新失败：${detail}。当前答案已保留。`, "error");
+    } finally {
+      if (answerRefreshControllerByRoot.get(root) === controller) {
+        answerRefreshControllerByRoot.delete(root);
+      }
+      refreshButton.disabled = false;
+      updateControls();
+    }
+  });
+
+  updateControls();
+  content.append(toolbar, refreshStatus, grid);
+  details.append(content);
   section.append(details);
   return section;
+}
+
+function buildAnswerCard(item: InterviewAnswerItem): HTMLElement {
+  const card = el("article", "interview-answer-card");
+  card.append(el("span", "interview-answer-kind", answerKindLabel(item.kind)));
+  card.append(el("h3", "interview-answer-title", item.title));
+  card.append(el("p", "interview-answer-body", item.answer));
+  return card;
+}
+
+export function nextInterviewAnswerAction(
+  viewedAnswerCount: number,
+  answerCount: number,
+): { type: "switch"; index: number } | { type: "refresh" } {
+  const safeAnswerCount = Math.max(0, Math.floor(answerCount));
+  const safeViewedCount = Math.max(0, Math.floor(viewedAnswerCount));
+  if (safeViewedCount < safeAnswerCount) {
+    return { type: "switch", index: safeViewedCount };
+  }
+  return { type: "refresh" };
+}
+
+export function buildInterviewAnswerRefreshPayload(input: {
+  question: string;
+  currentAnswer: string;
+  referenceText: string;
+  pageTitle?: string;
+  pagePath?: string;
+}): SelectionChatPayload {
+  return createSelectionChatPayload({
+    selectedText: [
+      `面试题：${input.question}`,
+      `当前答案：${input.currentAnswer}`,
+      input.referenceText ? `参考材料：${input.referenceText}` : "",
+    ].filter(Boolean).join("\n\n"),
+    question: [
+      "请基于上面的题目和参考材料，把当前答案换一种表达，生成一版新的中文面试口述答案。",
+      "要求：结论先行，控制在 4 到 6 句，表达自然、具体，突出关键概念之间的边界。",
+      "不得补充参考材料之外的事实，不要提及你正在改写，也不要输出标题或 Markdown 代码块。",
+    ].join(""),
+    pageTitle: input.pageTitle,
+    pagePath: input.pagePath,
+    messages: [],
+  });
 }
 
 function buildAnalysisSection(items: Array<{ heading: string; body: string; level: number }>): HTMLElement {
@@ -372,6 +545,7 @@ function splitSectionParagraphs(body: string): string[] {
 }
 
 function answerKindLabel(kind: string): string {
+  if (kind === "generated") return "AI 刷新版";
   if (kind === "faq") return "追问回答";
   if (kind === "section") return "分层拆解";
   return "速答版";

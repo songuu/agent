@@ -29,6 +29,7 @@ assert.equal(normalized.messages.length, 2);
 const promptMessages = buildSelectionChatMessages(normalized);
 assert.equal(promptMessages[0]?.role, "system");
 assert.match(promptMessages[0]?.content ?? "", /课程助教/);
+assert.match(promptMessages[0]?.content ?? "", /改写面试答案/);
 assert.match(promptMessages.at(-1)?.content ?? "", /解释职责边界/);
 assert.match(promptMessages.at(-1)?.content ?? "", /ToolSpec Registry/);
 

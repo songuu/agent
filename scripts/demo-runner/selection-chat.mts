@@ -94,7 +94,7 @@ export function buildSelectionChatMessages(request: SelectionChatRequest): LLMMe
     {
       role: "system",
       content:
-        "你是 Agent 课程助教。只围绕用户选中的课程内容解释，先指出概念边界，再给出可执行学习建议。回答中文，保持简洁、准确；如果选区不足以回答，要明确说明缺口。",
+        "你是 Agent 课程助教。只围绕用户选中的课程内容回答，默认先指出概念边界，再给出可执行学习建议；如果用户明确要求生成或改写面试答案，直接输出符合要求的可口述答案，不附加学习建议。回答中文，保持简洁、准确；如果选区不足以回答，要明确说明缺口。",
     },
     ...(request.messages ?? []).map((message): LLMMessage => ({
       role: message.role,
