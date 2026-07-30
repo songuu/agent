@@ -104,6 +104,59 @@ test("MySQL repository does not issue a count query for bounded previews", async
   assert.equal(page.hasMore, false);
 });
 
+test("MySQL news calendar aggregates by date and ecosystem layer in the database", async () => {
+  const calls: Array<{ sql: string; values: readonly unknown[] }> = [];
+  const repository = createMysqlContentReadRepository({
+    async execute(sql, values) {
+      calls.push({ sql, values });
+      if (sql.includes("DATE_FORMAT")) {
+        return [{ date: "2026-07-30", ecosystem_layer: "model-platform", article_count: "20" }];
+      }
+      if (sql.includes("GROUP BY `ecosystem_layer`")) {
+        return [{ ecosystem_layer: "model-platform", source_count: "3" }];
+      }
+      if (sql.includes("COUNT(DISTINCT `source_name`)")) return [{ source_count: "8" }];
+      return [];
+    },
+  });
+
+  const summary = await repository.readNewsCalendar();
+  assert.deepEqual(summary, {
+    buckets: [{ date: "2026-07-30", ecosystemLayer: "model-platform", articleCount: 20 }],
+    sourceCounts: [
+      { ecosystemLayer: "all", sourceCount: 8 },
+      { ecosystemLayer: "model-platform", sourceCount: 3 },
+    ],
+  });
+  assert.match(calls[0]?.sql ?? "", /DATE_FORMAT\(`collected_date`, '%Y-%m-%d'\)/);
+  assert.match(calls[0]?.sql ?? "", /GROUP BY `collected_date`, `ecosystem_layer`/);
+  assert.deepEqual(calls[0]?.values, []);
+});
+
+test("Supabase compatibility path aggregates rows on the server, not in the browser", async () => {
+  let requestedUrl = "";
+  const repository = createSupabaseContentReadRepository(
+    { driver: "supabase", url: "https://supabase.test", serviceRoleKey: "service-role", schema: "public" },
+    async (url) => {
+      requestedUrl = url;
+      return response([
+        { collected_date: "2026-07-30", ecosystem_layer: "model-platform", source_name: "AIBase" },
+        { collected_date: "2026-07-30", ecosystem_layer: "model-platform", source_name: "AIBase" },
+      ]);
+    },
+  );
+
+  assert.deepEqual(await repository.readNewsCalendar(), {
+    buckets: [{ date: "2026-07-30", ecosystemLayer: "model-platform", articleCount: 2 }],
+    sourceCounts: [
+      { ecosystemLayer: "all", sourceCount: 1 },
+      { ecosystemLayer: "model-platform", sourceCount: 1 },
+    ],
+  });
+  const endpoint = new URL(requestedUrl);
+  assert.equal(endpoint.searchParams.get("select"), "collected_date,ecosystem_layer,source_name");
+  assert.equal(endpoint.searchParams.get("limit"), "1000");
+});
 test("backend config accepts one MySQL URL for both API and workers, plus the Supabase fallback", () => {
   assert.deepEqual(
     loadContentBackendConfig({ CONTENT_REPOSITORY_DRIVER: "mysql", CONTENT_MYSQL_URL: "mysql://user:pass@db.test:3306/content" }),

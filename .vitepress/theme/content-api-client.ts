@@ -94,6 +94,23 @@ export interface ContentRowsResult<T> {
   readonly source: ContentApiSource;
 }
 
+/** Compact server-side aggregation for the news calendar. */
+export interface NewsCalendarBucket {
+  readonly date: string;
+  readonly ecosystemLayer: string;
+  readonly articleCount: number;
+}
+
+export interface NewsCalendarSourceCount {
+  readonly ecosystemLayer: string;
+  readonly sourceCount: number;
+}
+
+export interface NewsCalendarSummary {
+  readonly buckets: readonly NewsCalendarBucket[];
+  readonly sourceCounts: readonly NewsCalendarSourceCount[];
+}
+
 export interface ContentApiClientOptions {
   /** Omit to resolve the shared static runtime config once in the browser. */
   readonly runtimeConfig?: ContentApiRuntimeConfig | null;
@@ -187,6 +204,11 @@ export function buildContentApiPageUrl(
   return baseUrl + "/" + encodeURIComponent(resource) + "?" + search.toString();
 }
 
+/** Builds the fixed, query-free endpoint for server-side news calendar aggregation. */
+export function buildNewsCalendarUrl(config: SameOriginContentApiConfig): string {
+  const baseUrl = config.baseUrl.replace(/\/+$/, "");
+  return `${baseUrl}/news/calendar`;
+}
 export function adaptPostgrestReadRequest(request: PostgrestCompatibleReadRequest): ContentReadRequest {
   return {
     resource: contentResourceForSupabaseTable(request.table),
@@ -224,6 +246,18 @@ export class ContentApiClient {
 
   public async fetchAll<T = unknown>(request: ContentReadRequest): Promise<ContentRowsResult<T>> {
     return this.fetchAllHttp<T>(request, this.fetchImpl);
+  }
+
+  public async fetchNewsCalendar(): Promise<NewsCalendarSummary> {
+    const contentApi = this.runtimeConfig.contentApi;
+    if (!contentApi) throw new Error(NO_CONTENT_API_CONFIG_MESSAGE);
+
+    const response = await this.fetchImpl(buildNewsCalendarUrl(contentApi), {
+      headers: { Accept: "application/json" },
+      credentials: "same-origin",
+    });
+    if (!response.ok) throw await httpError(response, "Content API");
+    return parseNewsCalendarSummary(await response.json());
   }
 
   public async fetchPostgrestPage<T = unknown>(
@@ -364,6 +398,30 @@ function runtimeConfigUrl(): string {
   return `${base.endsWith("/") ? base : `${base}/`}${RUNTIME_CONFIG_FILE}`;
 }
 
+function parseNewsCalendarSummary(value: unknown): NewsCalendarSummary {
+  if (!isRecord(value) || !Array.isArray(value.buckets) || !Array.isArray(value.sourceCounts)) {
+    throw new Error("Content API 日历返回格式无效。");
+  }
+  return {
+    buckets: value.buckets.map((item) => {
+      if (!isRecord(item)) throw new Error("Content API 日历分桶无效。");
+      const date = stringField(item.date);
+      const ecosystemLayer = stringField(item.ecosystemLayer);
+      const articleCount = finiteNonNegativeInteger(item.articleCount);
+      if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !ecosystemLayer || articleCount === null) {
+        throw new Error("Content API 日历分桶无效。");
+      }
+      return { date, ecosystemLayer, articleCount };
+    }),
+    sourceCounts: value.sourceCounts.map((item) => {
+      if (!isRecord(item)) throw new Error("Content API 日历来源统计无效。");
+      const ecosystemLayer = stringField(item.ecosystemLayer);
+      const sourceCount = finiteNonNegativeInteger(item.sourceCount);
+      if (!ecosystemLayer || sourceCount === null) throw new Error("Content API 日历来源统计无效。");
+      return { ecosystemLayer, sourceCount };
+    }),
+  };
+}
 function parseContentApiPage<T>(value: unknown, pageSize: number, offset: number): ContentPageResult<T> {
   if (!isRecord(value) || !Array.isArray(value.items)) {
     throw new Error("Content API 返回格式无效：需要 items 数组");

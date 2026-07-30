@@ -13,6 +13,7 @@ import {
 } from "./contract.ts";
 
 export const CONTENT_API_PATH_PREFIX = "/api/content/v1/";
+export const NEWS_CALENDAR_PATH = "/api/content/v1/news/calendar";
 export const DEFAULT_CONTENT_API_HOST = "127.0.0.1";
 export const DEFAULT_CONTENT_API_PORT = 5180;
 export const DEFAULT_CONTENT_API_ALLOWED_HOSTS = [
@@ -92,6 +93,14 @@ export function createContentApiServer(options: ContentApiServerOptions): http.S
     }
 
     try {
+      if (requestUrl.pathname === NEWS_CALENDAR_PATH) {
+        if ([...requestUrl.searchParams.keys()].length > 0) {
+          throw new ContentRequestError("unknown_parameter", "News calendar does not accept query parameters.");
+        }
+        const calendar = await options.repository.readNewsCalendar();
+        sendJson(res, 200, calendar, "public, max-age=300, stale-while-revalidate=300");
+        return;
+      }
       const assetRequest = parseContentAssetRequest(requestUrl);
       if (assetRequest) {
         if (!options.assetRepository) {
@@ -206,11 +215,11 @@ function sendAsset(res: http.ServerResponse, contentType: string, bytes: Uint8Ar
   res.end(bytes);
 }
 
-function sendJson(res: http.ServerResponse, status: number, body: unknown): void {
+function sendJson(res: http.ServerResponse, status: number, body: unknown, cacheControl = "no-store"): void {
   if (res.headersSent) return;
   res.statusCode = status;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.setHeader("X-Content-Type-Options", "nosniff");
-  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Cache-Control", cacheControl);
   res.end(`${JSON.stringify(body)}\n`);
 }

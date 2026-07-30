@@ -8,6 +8,9 @@ import {
   type ContentPage,
   type ContentReadRepository,
   type ContentReadRequest,
+  type NewsCalendarBucket,
+  type NewsCalendarSourceCount,
+  type NewsCalendarSummary,
 } from "./contract.ts";
 import {
   createPostgresContentAssetReadRepository,
@@ -184,6 +187,9 @@ export function createSupabaseContentReadRepository(
           totalCount === null ? payload.length === request.limit : request.offset + payload.length < totalCount,
       };
     },
+    async readNewsCalendar(): Promise<NewsCalendarSummary> {
+      return readSupabaseNewsCalendar(baseUrl, config, fetchImpl);
+    },
   };
 }
 
@@ -215,6 +221,34 @@ export function createMysqlContentReadRepository(executor: MysqlQueryExecutor): 
         totalCount,
         hasMore: totalCount === null ? items.length === request.limit : request.offset + items.length < totalCount,
       };
+    },
+    async readNewsCalendar(): Promise<NewsCalendarSummary> {
+      const bucketRows = await executor.execute(
+        [
+          'SELECT DATE_FORMAT(`collected_date`, \'%Y-%m-%d\') AS `date`,',
+          '       `ecosystem_layer` AS `ecosystem_layer`,',
+          '       COUNT(*) AS `article_count`',
+          'FROM `news_items`',
+          'GROUP BY `collected_date`, `ecosystem_layer`',
+          'ORDER BY `collected_date` DESC, `ecosystem_layer` ASC',
+        ].join(" "),
+        [],
+      );
+      const layerSourceRows = await executor.execute(
+        [
+          'SELECT `ecosystem_layer` AS `ecosystem_layer`,',
+          '       COUNT(DISTINCT `source_name`) AS `source_count`',
+          'FROM `news_items`',
+          'GROUP BY `ecosystem_layer`',
+          'ORDER BY `ecosystem_layer` ASC',
+        ].join(" "),
+        [],
+      );
+      const allSourceRows = await executor.execute(
+        'SELECT COUNT(DISTINCT `source_name`) AS `source_count` FROM `news_items`',
+        [],
+      );
+      return calendarSummaryFromAggregateRows(bucketRows, layerSourceRows, allSourceRows, "MySQL");
     },
   };
 }
@@ -291,6 +325,132 @@ function parseMysqlCount(rows: readonly Record<string, unknown>[]): number {
   return total;
 }
 
+async function readSupabaseNewsCalendar(
+  baseUrl: string,
+  config: SupabaseContentBackendConfig,
+  fetchImpl: FetchLike,
+): Promise<NewsCalendarSummary> {
+  const rows: Record<string, unknown>[] = [];
+  const pageSize = 1_000;
+  for (let page = 0; page < 100; page += 1) {
+    const search = new URLSearchParams({
+      select: "collected_date,ecosystem_layer,source_name",
+      order: "collected_date.desc",
+      limit: String(pageSize),
+      offset: String(page * pageSize),
+    });
+    const response = await fetchImpl(`${baseUrl}/rest/v1/news_items?${search.toString()}`, {
+      headers: {
+        apikey: config.serviceRoleKey,
+        Authorization: `Bearer ${config.serviceRoleKey}`,
+        "Accept-Profile": config.schema,
+      },
+    });
+    if (!response.ok) {
+      const detail = await response.text();
+      throw new Error(`Supabase news calendar read failed: HTTP ${response.status} ${detail.slice(0, 180)}`);
+    }
+    const rawPayload = await response.text();
+    let payload: unknown;
+    try {
+      payload = JSON.parse(rawPayload) as unknown;
+    } catch {
+      throw new Error("Supabase news calendar read returned invalid JSON.");
+    }
+    if (!Array.isArray(payload) || payload.some((item) => !isRecord(item))) {
+      throw new Error("Supabase news calendar read returned invalid rows.");
+    }
+    rows.push(...payload as Record<string, unknown>[]);
+    if (payload.length < pageSize) return calendarSummaryFromNewsRows(rows, "Supabase");
+  }
+  throw new Error("Supabase news calendar read exceeded 100 pages.");
+}
+
+function calendarSummaryFromAggregateRows(
+  bucketRows: readonly Record<string, unknown>[],
+  layerSourceRows: readonly Record<string, unknown>[],
+  allSourceRows: readonly Record<string, unknown>[],
+  provider: string,
+): NewsCalendarSummary {
+  return {
+    buckets: bucketRows.map((row) => normalizeCalendarBucket(row, provider)),
+    sourceCounts: [
+      { ecosystemLayer: "all", sourceCount: calendarCount(allSourceRows[0], "source_count", provider) },
+      ...layerSourceRows.map((row) => normalizeCalendarSourceCount(row, provider)),
+    ],
+  };
+}
+
+function calendarSummaryFromNewsRows(rows: readonly Record<string, unknown>[], provider: string): NewsCalendarSummary {
+  const bucketCounts = new Map<string, NewsCalendarBucket>();
+  const sourceNames = new Set<string>();
+  const sourceNamesByLayer = new Map<string, Set<string>>();
+  for (const row of rows) {
+    const date = calendarDate(row.collected_date, provider);
+    const ecosystemLayer = calendarString(row, "ecosystem_layer", provider);
+    const sourceName = calendarString(row, "source_name", provider);
+    const key = `${date}\u0000${ecosystemLayer}`;
+    const existing = bucketCounts.get(key);
+    bucketCounts.set(key, {
+      date,
+      ecosystemLayer,
+      articleCount: (existing?.articleCount ?? 0) + 1,
+    });
+    sourceNames.add(sourceName);
+    const layerSources = sourceNamesByLayer.get(ecosystemLayer) ?? new Set<string>();
+    layerSources.add(sourceName);
+    sourceNamesByLayer.set(ecosystemLayer, layerSources);
+  }
+  return {
+    buckets: [...bucketCounts.values()].sort((left, right) =>
+      right.date.localeCompare(left.date) || left.ecosystemLayer.localeCompare(right.ecosystemLayer)),
+    sourceCounts: [
+      { ecosystemLayer: "all", sourceCount: sourceNames.size },
+      ...[...sourceNamesByLayer.entries()]
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([ecosystemLayer, names]) => ({ ecosystemLayer, sourceCount: names.size })),
+    ],
+  };
+}
+
+function normalizeCalendarBucket(row: Record<string, unknown>, provider: string): NewsCalendarBucket {
+  return {
+    date: calendarDate(row.date, provider),
+    ecosystemLayer: calendarString(row, "ecosystem_layer", provider),
+    articleCount: calendarCount(row, "article_count", provider),
+  };
+}
+
+function normalizeCalendarSourceCount(row: Record<string, unknown>, provider: string): NewsCalendarSourceCount {
+  return {
+    ecosystemLayer: calendarString(row, "ecosystem_layer", provider),
+    sourceCount: calendarCount(row, "source_count", provider),
+  };
+}
+
+function calendarDate(value: unknown, provider: string): string {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    throw new Error(`${provider} news calendar date was invalid.`);
+  }
+  return value;
+}
+
+function calendarString(row: Record<string, unknown>, field: string, provider: string): string {
+  const value = row[field];
+  if (typeof value !== "string" || !value.trim()) throw new Error(`${provider} news calendar ${field} was invalid.`);
+  return value;
+}
+
+function calendarCount(row: Record<string, unknown> | undefined, field: string, provider: string): number {
+  const value = row?.[field];
+  const parsed = typeof value === "number" ? value : Number(value);
+  if (!Number.isSafeInteger(parsed) || parsed < 0) throw new Error(`${provider} news calendar ${field} was invalid.`);
+  return parsed;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
 function parseContentRangeTotal(value: string | null): number | null {
   if (!value) return null;
   const match = /\/(\d+)$/.exec(value);

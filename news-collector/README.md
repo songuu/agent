@@ -122,7 +122,7 @@ pnpm supabase:news-seed
 # 然后在 SQL Editor 执行 supabase/seed/news_items.sql
 ```
 
-这些 SQL 文件名沿用 `supabase/migrations` 历史目录；当前写入端通过 `CONTENT_POSTGRES_URL` / `CONTENT_POSTGRES_WRITE_URL` 直连服务器 PostgreSQL。文章日历按 `published_date` 过滤，`collected_date` 只用于审计采集批次。
+这些 SQL 文件名沿用 `supabase/migrations` 历史目录；当前写入端通过 `CONTENT_POSTGRES_URL` / `CONTENT_POSTGRES_WRITE_URL` 直连服务器 PostgreSQL。文章列表和日历按 `collected_date` 过滤，以完整显示当天采集入库的内容；`published_date` 仍保留原文发布时间，用于文章元数据展示。
 
 ## Notion 文件夹同步
 

@@ -20,6 +20,9 @@ async function withServer(
         seen.push(request);
         return repository.read(request);
       },
+      async readNewsCalendar() {
+        return repository.readNewsCalendar();
+      },
     },
     allowedHosts,
     allowedOrigins,
@@ -38,6 +41,15 @@ async function withServer(
 const successfulRepository: ContentReadRepository = {
   async read() {
     return { items: [{ external_id: "one", title: "One" }], totalCount: 1, hasMore: false };
+  },
+  async readNewsCalendar() {
+    return {
+      buckets: [{ date: "2026-07-30", ecosystemLayer: "model-platform", articleCount: 20 }],
+      sourceCounts: [
+        { ecosystemLayer: "all", sourceCount: 8 },
+        { ecosystemLayer: "model-platform", sourceCount: 3 },
+      ],
+    };
   },
 };
 
@@ -60,6 +72,24 @@ test("serves a validated public content page without database details", async ()
   });
 });
 
+test("serves compact server-aggregated news calendar buckets", async () => {
+  await withServer(successfulRepository, async (port) => {
+    const result = await request(port, "/api/content/v1/news/calendar");
+    assert.equal(result.status, 200);
+    assert.deepEqual(result.json, {
+      buckets: [{ date: "2026-07-30", ecosystemLayer: "model-platform", articleCount: 20 }],
+      sourceCounts: [
+        { ecosystemLayer: "all", sourceCount: 8 },
+        { ecosystemLayer: "model-platform", sourceCount: 3 },
+      ],
+    });
+    assert.match(result.headers["cache-control"] ?? "", /max-age=300/);
+
+    const invalid = await request(port, "/api/content/v1/news/calendar?limit=1");
+    assert.equal(invalid.status, 400);
+    assert.equal(invalid.json.error, "unknown_parameter");
+  });
+});
 test("rejects unsupported methods before reaching the repository", async () => {
   await withServer(successfulRepository, async (port, seen) => {
     const result = await request(port, "/api/content/v1/news?fields=external_id", { method: "POST" });
@@ -108,7 +138,7 @@ test("reports invalid client input as a 400 without invoking the repository", as
 
 test("returns an opaque availability error for backend failures", async () => {
   await withServer(
-    { async read() { throw new Error("mysql://user:secret@db.test was unavailable"); } },
+    { async read() { throw new Error("mysql://user:secret@db.test was unavailable"); }, async readNewsCalendar() { throw new Error("mysql://user:secret@db.test was unavailable"); } },
     async (port) => {
       const result = await request(port, "/api/content/v1/news?fields=external_id");
       assert.equal(result.status, 503);

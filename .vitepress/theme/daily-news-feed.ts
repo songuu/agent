@@ -10,12 +10,12 @@ import {
   availableDates,
   buildCalendarMonth,
   filterByDate,
-  pickDefaultDate,
   shiftMonth,
   yearMonthOf,
   type YearMonth,
 } from "./frontier-date-filter";
-import { fetchAllPostgrestRows, fetchPostgrestPage } from "./content-pagination";
+import { fetchPostgrestPage } from "./content-pagination";
+import { createContentApiClient } from "./content-api-client";
 import {
   currentRelativePath,
   positiveIntegerParam,
@@ -31,6 +31,7 @@ const DEFAULT_NEWS_PAGE_SIZE = 10;
 const NEWS_EXCERPT_MAX_LENGTH = 220;
 const NEWS_DETAIL_MAX_LENGTH = 760;
 const NEWS_PAGE_SIZE_OPTIONS = [10, 20, 50] as const;
+const NEWS_TIME_ZONE = "Asia/Shanghai";
 
 interface NewsItemView {
   externalId: string;
@@ -42,7 +43,7 @@ interface NewsItemView {
   contentExcerpt: string;
   ecosystemLayer: FrontierEcosystemLayer;
   ecosystemLayerLabel: string;
-  /** date-filter helper uses this field as the article date; it is sourced from published_date. */
+  /** date-filter helper uses this field as the article date; it is sourced from collected_date. */
   collectedDate: string;
   publishedAt: string | null;
   publishedDate: string;
@@ -77,16 +78,20 @@ interface NewsItemRow {
   tags?: unknown;
 }
 
-interface NewsFilterIndexRow {
-  published_date?: unknown;
-  ecosystem_layer?: unknown;
-  source_name?: unknown;
-}
-
 interface NewsFilterIndexItem {
   collectedDate: string;
   ecosystemLayer: FrontierEcosystemLayer;
-  sourceName: string;
+  articleCount: number;
+}
+
+interface NewsSourceCount {
+  readonly layer: LayerFilter;
+  readonly count: number;
+}
+
+interface NewsFilterIndex {
+  readonly items: NewsFilterIndexItem[];
+  readonly sourceCounts: NewsSourceCount[];
 }
 
 type LayerFilter = FrontierEcosystemLayer | "all";
@@ -116,7 +121,6 @@ const NEWS_COLUMNS = [
   "tags",
 ].join(",");
 
-const NEWS_FILTER_INDEX_COLUMNS = ["published_date", "ecosystem_layer", "source_name"].join(",");
 const BASE = (import.meta.env?.BASE_URL ?? "/") as string;
 
 const initialized = new WeakSet<HTMLElement>();
@@ -157,7 +161,7 @@ async function fetchNewsPage(
     table: "news_items",
     select: NEWS_COLUMNS,
     filters: [...filters],
-    order: ["published_date.desc", "published_at.desc"],
+    order: ["collected_date.desc", "published_date.desc"],
     pageSize,
     offset,
   });
@@ -169,15 +173,19 @@ async function fetchNewsPage(
   };
 }
 
-async function fetchNewsFilterIndex(): Promise<NewsFilterIndexItem[]> {
-  const rows = await fetchAllPostgrestRows<NewsFilterIndexRow>({
-    table: "news_items",
-    select: NEWS_FILTER_INDEX_COLUMNS,
-    order: ["published_date.desc"],
-    pageSize: 1000,
+async function fetchNewsFilterIndex(): Promise<NewsFilterIndex> {
+  const calendar = await (await createContentApiClient()).fetchNewsCalendar();
+  const items = calendar.buckets.map((bucket) => ({
+    collectedDate: bucket.date,
+    ecosystemLayer: layerValue(bucket.ecosystemLayer),
+    articleCount: bucket.articleCount,
+  }));
+  const sourceCounts = calendar.sourceCounts.flatMap((entry): NewsSourceCount[] => {
+    if (entry.ecosystemLayer === "all") return [{ layer: "all", count: entry.sourceCount }];
+    if (!FRONTIER_ECOSYSTEM_LAYERS.some((layer) => layer.id === entry.ecosystemLayer)) return [];
+    return [{ layer: entry.ecosystemLayer as FrontierEcosystemLayer, count: entry.sourceCount }];
   });
-
-  return rows.map(normalizeFilterIndexRow);
+  return { items, sourceCounts };
 }
 
 async function renderFeed(root: HTMLElement): Promise<void> {
@@ -189,6 +197,7 @@ async function renderFeed(root: HTMLElement): Promise<void> {
   let selectedDateWasExplicit = initialState.hasDate;
   let calendarMonth: YearMonth = { year: 2026, month: 6 };
   let filterIndex: NewsFilterIndexItem[] = [];
+  let sourceCounts: NewsSourceCount[] = [];
   let items: NewsItemView[] = [];
   let totalCount: number | null = null;
   let currentPage = initialState.page;
@@ -207,7 +216,7 @@ async function renderFeed(root: HTMLElement): Promise<void> {
   title.textContent = "AI 前沿文章";
   const description = document.createElement("p");
   description.textContent =
-    "由 news-collector 从多源 RSS 聚合；按发布时间与体系层筛选，每条保留来源、摘要与原文入口。";
+    "由 news-collector 从多源 RSS 聚合；按采集日期与体系层筛选，每条保留来源、摘要与原文入口。";
   titleGroup.append(eyebrow, title, description);
 
   const stats = document.createElement("div");
@@ -260,12 +269,20 @@ async function renderFeed(root: HTMLElement): Promise<void> {
     return items;
   }
 
+  function articleCount(index: readonly NewsFilterIndexItem[]): number {
+    return index.reduce((total, item) => total + item.articleCount, 0);
+  }
+
   function layerCount(layer: LayerFilter): number {
-    return filterByDate(indexLayerScoped(layer), selectedDate).length;
+    return articleCount(filterByDate(indexLayerScoped(layer), selectedDate));
   }
 
   function dateCount(date: string): number {
-    return indexLayerScoped().filter((item) => item.collectedDate.slice(0, 10) === date).length;
+    return articleCount(indexLayerScoped().filter((item) => item.collectedDate.slice(0, 10) === date));
+  }
+
+  function sourceCount(layer: LayerFilter = selectedLayer): number {
+    return sourceCounts.find((entry) => entry.layer === layer)?.count ?? 0;
   }
 
   function selectedDateLabel(): string {
@@ -274,7 +291,8 @@ async function renderFeed(root: HTMLElement): Promise<void> {
   }
 
   function alignDateToLayer(): void {
-    if (selectedDate === null) return;
+    // 初始日期始终是今天，即使当天在当前体系层没有文章也不能被静默跳回旧日期。
+    if (selectedDate === null || !selectedDateWasExplicit) return;
     const dates = availableDates(indexLayerScoped());
     if (dates.includes(selectedDate)) return;
     selectedDate = dates[0] ?? null;
@@ -284,7 +302,7 @@ async function renderFeed(root: HTMLElement): Promise<void> {
 
   function syncFilterState(): void {
     if (selectedDate === null && !selectedDateWasExplicit) {
-      selectedDate = pickDefaultDate(filterIndex);
+      selectedDate = currentNewsDate();
     }
     alignDateToLayer();
     calendarMonth =
@@ -315,7 +333,7 @@ async function renderFeed(root: HTMLElement): Promise<void> {
       statItem(String(totalCount ?? items.length), "文章"),
       statItem(String(availableDates(indexLayerScoped()).length), "日期"),
       statItem(String(new Set(indexLayerScoped().map((i) => i.ecosystemLayer)).size), "体系层"),
-      statItem(String(new Set(indexLayerScoped().map((i) => i.sourceName)).size), "来源"),
+      statItem(String(sourceCount()), "来源"),
     );
     renderFilters();
     renderCalendar();
@@ -374,7 +392,7 @@ async function renderFeed(root: HTMLElement): Promise<void> {
 
     const current = document.createElement("p");
     current.className = "frontier-cal-current";
-    current.textContent = `${selectedDateLabel()} · ${selectedDate === null ? totalCount ?? filterIndex.length : dateCount(selectedDate)} 篇`;
+    current.textContent = `${selectedDateLabel()} · ${selectedDate === null ? totalCount ?? articleCount(indexLayerScoped()) : dateCount(selectedDate)} 篇`;
 
     const weekdays = document.createElement("div");
     weekdays.className = "frontier-cal-weekdays";
@@ -417,7 +435,7 @@ async function renderFeed(root: HTMLElement): Promise<void> {
     const all = document.createElement("button");
     all.type = "button";
     all.className = "frontier-cal-all";
-    all.textContent = `全部日期 (${indexLayerScoped().length})`;
+    all.textContent = `全部日期 (${articleCount(indexLayerScoped())})`;
     if (selectedDate === null) all.dataset.active = "true";
     all.addEventListener("click", () => {
       selectedDate = null;
@@ -595,14 +613,20 @@ async function renderFeed(root: HTMLElement): Promise<void> {
   root.append(overview, layout);
   restoreListDetailPosition(root);
 
-  filterIndex = await fetchNewsFilterIndex();
+  // 日历只接收服务端按日期与体系层聚合后的分桶，不再把文章明细下载到浏览器。
+  const filterIndexPromise = fetchNewsFilterIndex();
   if (!selectedDateWasExplicit) {
-    selectedDate = pickDefaultDate(filterIndex);
-  } else {
-    alignDateToLayer();
+    selectedDate = currentNewsDate();
   }
-  calendarMonth = yearMonthOf(selectedDate) ?? yearMonthOf(availableDates(filterIndex)[0] ?? null) ?? calendarMonth;
-  await loadPage(currentPage);
+  calendarMonth = yearMonthOf(selectedDate) ?? calendarMonth;
+
+  const firstPagePromise = loadPage(currentPage);
+  const calendarIndex = await filterIndexPromise;
+  filterIndex = calendarIndex.items;
+  sourceCounts = calendarIndex.sourceCounts;
+  if (selectedDateWasExplicit) alignDateToLayer();
+  renderAll();
+  await firstPagePromise;
 
   if (items.length === 0) {
     timeline.replaceChildren(
@@ -618,7 +642,7 @@ function readNewsListQueryState(search = typeof window === "undefined" ? "" : wi
   const layer = layerFilterValue(params.get("layer"));
   const hasDate = params.has("date");
   const rawDate = params.get("date")?.trim() || "";
-  const date = rawDate === "all" ? null : dateStringValue(rawDate, "") || null;
+  const date = rawDate === "all" ? null : normalizeNewsDate(rawDate, "") || null;
   const page = positiveIntegerParam(params, "page", 1);
   const rawPageSize = positiveIntegerParam(params, "pageSize", DEFAULT_NEWS_PAGE_SIZE);
   const pageSize = NEWS_PAGE_SIZE_OPTIONS.includes(rawPageSize as (typeof NEWS_PAGE_SIZE_OPTIONS)[number])
@@ -689,7 +713,7 @@ export function buildPaginationTokens(
 export function buildNewsFilters(layer: LayerFilter, date: string | null): string[] {
   const filters: string[] = [];
   if (layer !== "all") filters.push(`ecosystem_layer=eq.${layer}`);
-  if (date !== null) filters.push(`published_date=eq.${date}`);
+  if (date !== null) filters.push(`collected_date=eq.${date}`);
   return filters;
 }
 
@@ -871,9 +895,9 @@ function groupByDate(items: NewsItemView[]): Array<{ date: string; label: string
 }
 
 function normalizeRow(row: NewsItemRow): NewsItemView {
-  const collectionDate = stringValue(row.collected_date, "2026-06-17");
+  const collectionDate = normalizeNewsDate(row.collected_date, "2026-06-17");
   const publishedAt = typeof row.published_at === "string" ? row.published_at : null;
-  const publishedDate = dateStringValue(row.published_date, publishedAt?.slice(0, 10) ?? collectionDate);
+  const publishedDate = normalizeNewsDate(row.published_date, publishedAt?.slice(0, 10) ?? collectionDate);
   const layer = layerValue(row.ecosystem_layer);
   const title = stringValue(row.title, "");
   const sourceName = stringValue(row.source_name, "未知来源");
@@ -900,7 +924,7 @@ function normalizeRow(row: NewsItemRow): NewsItemView {
     sourceKind,
     ecosystemLayer: layer,
     ecosystemLayerLabel,
-    collectedDate: publishedDate,
+    collectedDate: collectionDate,
     publishedAt,
     publishedDate,
     collectionDate,
@@ -909,15 +933,6 @@ function normalizeRow(row: NewsItemRow): NewsItemView {
   };
 }
 
-function normalizeFilterIndexRow(row: NewsFilterIndexRow): NewsFilterIndexItem {
-  const publishedDate = dateStringValue(row.published_date, "2026-06-17");
-  const ecosystemLayer = layerValue(row.ecosystem_layer);
-  return {
-    collectedDate: publishedDate,
-    ecosystemLayer,
-    sourceName: stringValue(row.source_name, "未知来源"),
-  };
-}
 
 function statItem(value: string, label: string): HTMLDivElement {
   const item = document.createElement("div");
@@ -941,8 +956,29 @@ function stringValue(value: unknown, fallback: string): string {
   return typeof value === "string" && value.trim() ? value : fallback;
 }
 
-function dateStringValue(value: unknown, fallback: string): string {
-  return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : fallback;
+export function normalizeNewsDate(value: unknown, fallback: string): string {
+  if (typeof value !== "string") return fallback;
+  const raw = value.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+
+  const instant = new Date(raw);
+  if (Number.isNaN(instant.getTime())) return fallback;
+
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: NEWS_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(instant);
+  const values = new Map(parts.map((part) => [part.type, part.value]));
+  const year = values.get("year");
+  const month = values.get("month");
+  const day = values.get("day");
+  return year && month && day ? `${year}-${month}-${day}` : fallback;
+}
+
+export function currentNewsDate(now: Date = new Date()): string {
+  return normalizeNewsDate(now.toISOString(), "2026-06-17");
 }
 
 function numberValue(value: unknown, fallback: number): number {

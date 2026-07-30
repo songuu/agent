@@ -4,6 +4,9 @@ import {
   contentTable,
   type ContentPage,
   type ContentReadRepository,
+  type NewsCalendarBucket,
+  type NewsCalendarSourceCount,
+  type NewsCalendarSummary,
 } from "./contract.ts";
 
 export interface PostgresQueryExecutor {
@@ -64,7 +67,75 @@ export function createPostgresContentReadRepository(
           : request.offset + rows.length < totalCount,
       };
     },
+    async readNewsCalendar(): Promise<NewsCalendarSummary> {
+      const bucketRows = await executor.execute(
+        [
+          'SELECT to_char("collected_date", \'YYYY-MM-DD\') AS "date",',
+          '       "ecosystem_layer" AS "ecosystem_layer",',
+          '       COUNT(*)::int AS "article_count"',
+          'FROM "news_items"',
+          'GROUP BY "collected_date", "ecosystem_layer"',
+          'ORDER BY "collected_date" DESC, "ecosystem_layer" ASC',
+        ].join(" "),
+        [],
+      );
+      const layerSourceRows = await executor.execute(
+        [
+          'SELECT "ecosystem_layer" AS "ecosystem_layer",',
+          '       COUNT(DISTINCT "source_name")::int AS "source_count"',
+          'FROM "news_items"',
+          'GROUP BY "ecosystem_layer"',
+          'ORDER BY "ecosystem_layer" ASC',
+        ].join(" "),
+        [],
+      );
+      const allSourceRows = await executor.execute(
+        'SELECT COUNT(DISTINCT "source_name")::int AS "source_count" FROM "news_items"',
+        [],
+      );
+      return {
+        buckets: bucketRows.map(normalizeNewsCalendarBucket),
+        sourceCounts: [
+          { ecosystemLayer: "all", sourceCount: aggregateCount(allSourceRows, "source_count") },
+          ...layerSourceRows.map(normalizeNewsCalendarSourceCount),
+        ],
+      };
+    },
   };
+}
+
+function aggregateCount(rows: readonly Record<string, unknown>[], field: string): number {
+  return numericField(rows[0], field);
+}
+
+function normalizeNewsCalendarBucket(row: Record<string, unknown>): NewsCalendarBucket {
+  const date = stringField(row, "date");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("PostgreSQL calendar bucket date was invalid.");
+  return {
+    date,
+    ecosystemLayer: stringField(row, "ecosystem_layer"),
+    articleCount: numericField(row, "article_count"),
+  };
+}
+
+function normalizeNewsCalendarSourceCount(row: Record<string, unknown>): NewsCalendarSourceCount {
+  return {
+    ecosystemLayer: stringField(row, "ecosystem_layer"),
+    sourceCount: numericField(row, "source_count"),
+  };
+}
+
+function stringField(row: Record<string, unknown> | undefined, field: string): string {
+  const value = row?.[field];
+  if (typeof value !== "string" || !value.trim()) throw new Error(`PostgreSQL calendar ${field} was invalid.`);
+  return value;
+}
+
+function numericField(row: Record<string, unknown> | undefined, field: string): number {
+  const value = row?.[field];
+  const parsed = typeof value === "number" ? value : Number(value);
+  if (!Number.isSafeInteger(parsed) || parsed < 0) throw new Error(`PostgreSQL calendar ${field} was invalid.`);
+  return parsed;
 }
 
 /**

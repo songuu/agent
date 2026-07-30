@@ -62,6 +62,9 @@ function unavailableRepository(message: string): ContentReadRepository {
     async read() {
       throw new Error(message);
     },
+    async readNewsCalendar() {
+      throw new Error(message);
+    },
   };
 }
 

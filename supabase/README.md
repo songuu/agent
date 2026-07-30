@@ -10,7 +10,7 @@ This folder stores Supabase-ready SQL for the Agent course site.
 - Generated seed/upsert: `seed/news_items.sql`
 - Source of truth: `news-collector` RSS pipeline -> `NewsItem`
 - Site chapter: `/lessons/20-agent-frontier-news/` and `/news/`
-- Calendar filter field: `published_date`; `collected_date` is only the collection batch date.
+- Calendar/list filter field: `collected_date`, so newly collected content is visible in its collection batch; `published_date` remains original publication context.
 - Demo rows: 8 articles (published_date: 2026-06-15 = 2, 2026-06-16 = 6).
 
 Apply order:

@@ -6,6 +6,8 @@ import {
   buildPaginationTokens,
   buildReadableNewsSummary,
   cleanNewsSummary,
+  currentNewsDate,
+  normalizeNewsDate,
 } from "./daily-news-feed";
 
 test("buildPaginationTokens returns compact leading window", () => {
@@ -20,15 +22,25 @@ test("buildPaginationTokens returns compact trailing window", () => {
   assert.deepEqual(buildPaginationTokens(20, 19), [1, "...", 17, 18, 19, 20]);
 });
 
-test("buildNewsFilters includes layer and date when both are active", () => {
+test("buildNewsFilters uses collected_date so every article captured that day remains queryable", () => {
   assert.deepEqual(buildNewsFilters("runtime", "2026-06-18"), [
     "ecosystem_layer=eq.runtime",
-    "published_date=eq.2026-06-18",
+    "collected_date=eq.2026-06-18",
   ]);
 });
 
 test("buildNewsFilters omits inactive filters", () => {
   assert.deepEqual(buildNewsFilters("all", null), []);
+});
+
+test("normalizeNewsDate preserves date-only values and converts UTC timestamps to China dates", () => {
+  assert.equal(normalizeNewsDate("2026-07-29", "fallback"), "2026-07-29");
+  assert.equal(normalizeNewsDate("2026-07-29T16:00:00.000Z", "fallback"), "2026-07-30");
+  assert.equal(normalizeNewsDate("not-a-date", "fallback"), "fallback");
+});
+
+test("currentNewsDate uses the China calendar day", () => {
+  assert.equal(currentNewsDate(new Date("2026-07-29T16:00:00.000Z")), "2026-07-30");
 });
 
 test("cleanNewsSummary removes link-only Hacker News metadata", () => {

@@ -19,6 +19,7 @@ interface NewsArticleRow {
   tags?: unknown;
   published_at?: unknown;
   published_date?: unknown;
+  collected_date?: unknown;
 }
 
 interface NewsArticleNavigationItem {
@@ -47,7 +48,7 @@ const DETAIL_COLUMNS = [
   "published_date",
 ].join(",");
 
-const NAVIGATION_COLUMNS = ["external_id", "title", "published_at", "published_date"].join(",");
+const NAVIGATION_COLUMNS = ["external_id", "title", "collected_date", "published_date"].join(",");
 const BASE = (import.meta.env?.BASE_URL ?? "/") as string;
 
 const initialized = new WeakSet<HTMLElement>();
@@ -128,7 +129,7 @@ async function loadArticleNavigation(id: string): Promise<NewsArticleNavigation 
   const rows = await fetchAllPostgrestRows<NewsArticleRow>({
     table: "news_items",
     select: NAVIGATION_COLUMNS,
-    order: ["published_date.desc", "published_at.desc"],
+    order: ["collected_date.desc", "published_date.desc"],
     pageSize: 1000,
   });
   return resolveArticleNavigation(rows, id);

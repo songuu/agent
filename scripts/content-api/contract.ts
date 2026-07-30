@@ -31,8 +31,30 @@ export interface ContentPage {
   readonly hasMore: boolean;
 }
 
+/**
+ * A compact calendar bucket for the public news archive. The date is always a
+ * serialized database DATE (YYYY-MM-DD), never a driver-specific Date value.
+ */
+export interface NewsCalendarBucket {
+  readonly date: string;
+  readonly ecosystemLayer: string;
+  readonly articleCount: number;
+}
+
+/** Distinct source totals for all news and for each ecosystem layer. */
+export interface NewsCalendarSourceCount {
+  readonly ecosystemLayer: string;
+  readonly sourceCount: number;
+}
+
+export interface NewsCalendarSummary {
+  readonly buckets: readonly NewsCalendarBucket[];
+  readonly sourceCounts: readonly NewsCalendarSourceCount[];
+}
+
 export interface ContentReadRepository {
   read(request: ContentReadRequest): Promise<ContentPage>;
+  readNewsCalendar(): Promise<NewsCalendarSummary>;
 }
 
 export const CONTENT_RESOURCE_TABLES: Readonly<Record<ContentResource, string>> = {

@@ -4,6 +4,7 @@ import {
   ContentApiClient,
   adaptPostgrestReadRequest,
   buildContentApiPageUrl,
+  buildNewsCalendarUrl,
   createContentApiClientForPostgrest,
   getContentApiRuntimeConfig,
   normalizeContentApiRuntimeConfig,
@@ -40,6 +41,30 @@ test("Content runtime config requires same-origin HTTP and ignores Supabase fall
   assert.equal(normalizeContentApiRuntimeConfig({ version: 1, supabase }), null);
 });
 
+test("news calendar uses one fixed same-origin endpoint and validates aggregate payload", async () => {
+  const runtimeConfig: ContentApiRuntimeConfig = {
+    version: 1,
+    contentApi: { baseUrl: "/api/content/v1" },
+  };
+  assert.equal(buildNewsCalendarUrl(runtimeConfig.contentApi), "/api/content/v1/news/calendar");
+
+  let requestedUrl = "";
+  const client = new ContentApiClient(runtimeConfig, {
+    fetchImpl: async (input) => {
+      requestedUrl = String(input);
+      return response({
+        buckets: [{ date: "2026-07-30", ecosystemLayer: "model-platform", articleCount: 20 }],
+        sourceCounts: [{ ecosystemLayer: "all", sourceCount: 8 }],
+      });
+    },
+  });
+  const result = await client.fetchNewsCalendar();
+  assert.deepEqual(result, {
+    buckets: [{ date: "2026-07-30", ecosystemLayer: "model-platform", articleCount: 20 }],
+    sourceCounts: [{ ecosystemLayer: "all", sourceCount: 8 }],
+  });
+  assert.equal(new URL(requestedUrl, "https://site.example").pathname, "/api/content/v1/news/calendar");
+});
 test("same-origin Content API uses the v1 query contract and does not send Supabase keys", async () => {
   const runtimeConfig: ContentApiRuntimeConfig = {
     version: 1,
