@@ -26,7 +26,7 @@ aside: false
    ▼
 去重 → 幂等 upsert 到服务器 PostgreSQL news_items（on_conflict=external_id）
    ▼
-本页按【发布时间】与【体系层】筛选展示
+本页按【采集日期】与【体系层】筛选展示
 ```
 
 部署为独立 Node 常驻服务（node-cron + pm2/systemd），按 `NEWS_CRON`（默认每日 08:00 Asia/Shanghai）周期收集。
