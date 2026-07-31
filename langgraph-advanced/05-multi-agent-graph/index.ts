@@ -1,5 +1,5 @@
 /**
- * 进阶 LangGraph · 第 05 章 demo（收官）：多 Agent 编排 —— supervisor 调度 / 并行异构 team
+ * 进阶 LangGraph · 第 05 章 demo：多 Agent 编排 —— supervisor 调度 / 并行异构 team
  *
  * 这个 demo 演示什么？
  *   前四章把单张图讲透了。真实系统常把多个专职 agent 编排进一张图，本章离线演示两种最常见拓扑：
@@ -8,6 +8,7 @@
  *     图2) parallel team（并行异构）：从 fork 点同时触发多个不同角色的 agent 并行干活，结果经 append
  *          reducer 汇集，再由 join 排序聚合——「多个专才并行协作，最后合稿」。
  *   agent 全是【纯函数节点】（确定规则，不调模型），离线确定可回归。
+ *   本章完成 StateGraph 核心机制阶段；下一章 L6 把 runtime stream 投影到 user/debug/audit 产品边界。
  *
  * 教学结论由【构造保证】，用 invariant() 运行时硬核对，且全部【旋钮无关】（改 TASKS/TOPIC 不会误报崩）：
  *   supervisor 每任务恰好处理一次、按队首顺序、路由到正确 worker、队空即终止；
@@ -44,8 +45,8 @@ async function main(): Promise<void> {
 
   // 纯 JS 里算出每条任务的期望结果（旋钮无关：改 TASKS 期望自动重算）。
   const expected = TASKS.map(computeTaskResult);
-  const workerCalls = r1.log.filter((entry) => entry.endsWith("Agent")).length;
-  const superviseCalls = r1.log.filter((entry) => entry === "supervise").length;
+  const workerCalls = r1.log.filter((entry: string) => entry.endsWith("Agent")).length;
+  const superviseCalls = r1.log.filter((entry: string) => entry === "supervise").length;
 
   divider("结论核对（运行时判定，旋钮无关）");
   // ① 每个任务恰好被处理一次：队列清空、产出条数 === 任务数、worker 调用 === 任务数。
@@ -58,7 +59,7 @@ async function main(): Promise<void> {
   console.log(`  ② ${color("按类型路由", "cyan")}：supervisor 的条件边按 task 前缀分发——math→求和、upper→大写、echo→原样，逐条与纯函数期望一致`);
 
   // ③ 顺序保持：supervisor 每轮取队首 ⇒ 产出顺序 === 输入任务顺序。
-  invariant(r1.results.every((value, i) => value === expected[i]), "产出顺序应与输入任务顺序一致");
+  invariant(r1.results.every((value: string, i: number) => value === expected[i]), "产出顺序应与输入任务顺序一致");
   console.log(`  ③ ${color("顺序保持", "cyan")}：supervisor 每轮取队首，产出顺序与输入一致（中心化调度是串行的）`);
 
   // ④ 终止：队列空时 supervisor 路由到 END；它比 worker 多跑一次（最后那次空队列收工）。

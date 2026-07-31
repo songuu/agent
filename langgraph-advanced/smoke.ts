@@ -23,6 +23,9 @@ import {
   buildTeamGraph,
   computeTaskResult,
   TEAM_ROLES,
+  collectEventStream,
+  normalizeStreamFrame,
+  projectStreamFrames,
 } from "../src/shared/langgraph";
 import { Command } from "@langchain/langgraph";
 
@@ -206,7 +209,7 @@ console.log("== Human-in-the-Loop：interrupt 暂停 / payload 读取 / Command 
   await g.invoke({ amount: AMOUNT }, C);
   const plain = await g.invoke({ amount: 999 }, C);
   const snapC = await g.getState(C);
-  check("暂停时普通 invoke 不 resume（仍 pending 且重跑 propose×2）", plain.status === "pending" && JSON.stringify(snapC.next) === JSON.stringify(["humanReview"]) && plain.log.filter((x) => x.startsWith("propose")).length === 2);
+  check("暂停时普通 invoke 不 resume（仍 pending 且重跑 propose×2）", plain.status === "pending" && JSON.stringify(snapC.next) === JSON.stringify(["humanReview"]) && plain.log.filter((x: string) => x.startsWith("propose")).length === 2);
 }
 
 console.log("== 多 Agent 编排：supervisor 调度循环 / 并行异构 team（确定图，离线）==");
@@ -218,11 +221,11 @@ console.log("== 多 Agent 编排：supervisor 调度循环 / 并行异构 team�
   const expected = TASKS.map(computeTaskResult);
   check("supervisor 每任务处理一次（队列清空 + 产出数 === 任务数）", r1.pending.length === 0 && r1.results.length === TASKS.length, `pending=${r1.pending.length} results=${r1.results.length}`);
   check("supervisor 按类型路由且顺序保持（逐条 === 纯函数期望）", JSON.stringify(r1.results) === JSON.stringify(expected), JSON.stringify(r1.results));
-  check("worker 调用次数 === 任务数", r1.log.filter((x) => x.endsWith("Agent")).length === TASKS.length);
-  check("supervisor 跑 任务数+1 次（最后空队列收工）", r1.log.filter((x) => x === "supervise").length === TASKS.length + 1);
+  check("worker 调用次数 === 任务数", r1.log.filter((x: string) => x.endsWith("Agent")).length === TASKS.length);
+  check("supervisor 跑 任务数+1 次（最后空队列收工）", r1.log.filter((x: string) => x === "supervise").length === TASKS.length + 1);
   // 空任务：直接收工，无 worker、无产出。
   const empty = await buildSupervisorGraph().invoke({ pending: [] });
-  check("空任务队列直接收工（无产出、无 worker）", empty.results.length === 0 && empty.log.filter((x) => x.endsWith("Agent")).length === 0);
+  check("空任务队列直接收工（无产出、无 worker）", empty.results.length === 0 && empty.log.filter((x: string) => x.endsWith("Agent")).length === 0);
 
   // 图2：并行异构 team——每角色一条、join 排序聚合、顺序无关确定。
   const TOPIC = "agents";
@@ -233,6 +236,64 @@ console.log("== 多 Agent 编排：supervisor 调度循环 / 并行异构 team�
   check("贡献集合 === 各角色对主题的产出（按集合比对，顺序无关）", JSON.stringify([...r2.contributions].sort()) === JSON.stringify(expectedSet), JSON.stringify(r2.contributions));
   check("join 排序聚合 → report 确定", r2.report === expectedSet.join(" | "), JSON.stringify(r2.report));
   check("并行 team 两次 invoke report 逐字相等（确定）", (await team.invoke({ topic: TOPIC })).report === r2.report);
+}
+
+console.log("== Event streaming：raw mode 归一化 / user-debug-audit 投影 / 安全 fallback（确定图，离线）==");
+{
+  const fixtureFrames: unknown[] = [
+    ["custom", { type: "progress", stage: "prepare", message: "准备输入" }],
+    ["updates", { prepare: { normalizedInput: "agent stream" } }],
+    ["values", { status: "prepared" }],
+    ["future-mode", { secret: "internal" }],
+    ["custom", { type: "progress", stage: 42, message: "malformed" }],
+    ["updates", null],
+    ["values", "malformed"],
+    ["custom", { type: "progress", stage: "finalize", message: "生成结果" }],
+  ];
+  const fixtureBefore = JSON.stringify(fixtureFrames);
+  const fixtureProjection = projectStreamFrames(fixtureFrames);
+
+  check("custom progress 只进入 user 投影", fixtureProjection.user.length === 2 && fixtureProjection.debug.every((event) => event.mode !== "custom"));
+  check("user progress 保持输入顺序", fixtureProjection.user.map((event) => (event.payload as { stage?: string }).stage).join(",") === "prepare,finalize");
+  check("updates 只进入 debug 且提取节点名", fixtureProjection.debug.length === 1 && fixtureProjection.debug[0]?.node === "prepare");
+  check("values 进入 audit", fixtureProjection.audit.some((event) => event.mode === "values" && event.kind === "state-snapshot"));
+  check("未知 mode 与畸形 custom/updates/values 安全降级为 audit/unknown", fixtureProjection.audit.filter((event) => event.kind === "unknown").length === 4);
+  check("projector 不修改 raw frame 或 payload", JSON.stringify(fixtureFrames) === fixtureBefore);
+  check("全局 sequence 连续递增", fixtureProjection.events.every((event, index) => event.sequence === index));
+
+  const progressWithSecret = normalizeStreamFrame([
+    "custom",
+    {
+      type: "progress",
+      stage: "prepare",
+      message: "准备输入",
+      apiToken: "SECRET",
+    },
+  ]);
+  check(
+    "user progress 只投影 allowlist 字段，不夹带额外敏感字段",
+    progressWithSecret.audience === "user" &&
+      JSON.stringify(progressWithSecret.payload) ===
+        JSON.stringify({ type: "progress", stage: "prepare", message: "准备输入" }),
+    JSON.stringify(progressWithSecret),
+  );
+  const whitespaceProgress = normalizeStreamFrame(["custom", { type: "progress", stage: " ", message: "准备输入" }]);
+  check("空白 stage 的 progress 安全降级到 audit", whitespaceProgress.audience === "audit" && whitespaceProgress.kind === "unknown");
+
+  const first = await collectEventStream("  Agent stream  ");
+  const expectedModes = ["values", "custom", "updates", "values", "custom", "updates", "values"];
+  check("真实 multi-mode stream 顺序符合 0.2.74 实测", JSON.stringify(first.frames.map((frame) => frame[0])) === JSON.stringify(expectedModes), JSON.stringify(first.frames));
+  check("真实 user progress 顺序为 prepare→finalize", first.projection.user.map((event) => (event.payload as { stage?: string }).stage).join(",") === "prepare,finalize");
+  check("真实 debug 节点顺序为 prepare→finalize", first.projection.debug.map((event) => event.node).join(",") === "prepare,finalize");
+  check("values 包含初始/prepare 后/终态三份快照", first.projection.audit.filter((event) => event.mode === "values").length === 3);
+  check("最后 values 与 invoke 终态等价", JSON.stringify(first.projection.finalState) === JSON.stringify(first.finalState));
+
+  const second = await collectEventStream("  Agent stream  ");
+  check("同输入两次 raw frames 与投影逐字相等", JSON.stringify(first) === JSON.stringify(second));
+
+  const empty = await collectEventStream("");
+  check("空输入不抛错且仍完成", empty.finalState.status === "completed" && empty.finalState.steps.length === 2);
+  check("空输入仍有两条用户进度事件", empty.projection.user.length === 2);
 }
 
 console.log(`\n结果：${passed} 通过 / ${failed} 失败`);

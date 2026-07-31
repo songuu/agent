@@ -79,7 +79,7 @@ pnpm site:live
 
 ## 全局导航
 
-想直接跳到具体课程，走 [**全局课程导航**](./docs/navigation.md)。如果你想按 agent 类型、岗位目标或生产能力倒推学习路线，走 [**Agent 学习指南与分类地图**](./docs/agent-learning-guides.md)。它们一起整理了第 00–21 章、B1-B12 基础指南、28 个毕业项目、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone、RAG 系统实战项目和源码解析。
+想直接跳到具体课程，走 [**全局课程导航**](./docs/navigation.md)。如果你想按 agent 类型、岗位目标或生产能力倒推学习路线，走 [**Agent 学习指南与分类地图**](./docs/agent-learning-guides.md)。如果你要把 2026 年 agent 趋势落成工程边界，读 [**Agent 趋势与五平面架构蓝图**](./docs/agent-trends-architecture.md)。它们一起整理了第 00–21 章、B1-B12 基础指南、28 个毕业项目、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone、RAG 系统实战项目和源码解析。
 
 ---
 
@@ -229,6 +229,9 @@ pnpm site:live
 | R4 | [查询改写](./rag-advanced/04-query-transformation/) | ⭐⭐⭐ | multi-query、HyDE |
 | R5 | [RAG 评估](./rag-advanced/05-rag-evaluation/) | ⭐⭐⭐ | 上下文相关性 / 忠实度 / 答案相关性 |
 | R6 | [生产化 RAG](./rag-advanced/06-production-rag/) | ⭐⭐⭐⭐ | metadata 过滤、持久化、增量、全链路 |
+| **进阶专题** | **LangGraph 生产化（langgraph-advanced）** | | |
+| L6 | [Event streaming 与前端投影](./langgraph-advanced/06-event-streaming/) | ⭐⭐⭐⭐ | 把 `values` / `updates` / `custom` 归一化为 user/debug/audit 安全事件 |
+| 🧭 | [2026 Agent 趋势与五平面架构](./docs/agent-trends-architecture.md) | ⭐⭐⭐⭐ | intelligence、control、execution、interoperability、assurance 五平面及落地优先级 |
 | 🧭 | [RAG 完整架构蓝图](./docs/rag-architecture.md) | ⭐⭐⭐⭐ | ingestion、query、eval、governance、deployment 系统边界 |
 | 🏢 | [企业知识库 Agent 蓝图](./docs/enterprise-knowledge-base-agent.md) | ⭐⭐⭐⭐ | 把 RAG、记忆、工具、事件流、定时任务和部署串成企业级作品集 |
 | 📚 | [RAG 系统实战项目](./docs/rag-system-project.md) | ⭐⭐⭐⭐ | 连接到 `songuu/rag-system`，从课程最小 RAG 走向生产级知识库系统 |
@@ -248,6 +251,7 @@ agent/
 │   ├── career-guide.md        # 💼 求职指南
 │   ├── startup-guide.md       # 🚀 创业指南
 │   ├── agent-learning-guides.md # Agent 学习指南与分类地图
+│   ├── agent-trends-architecture.md # 🧭 2026 Agent 趋势与五平面架构
 │   ├── rag-architecture.md    # 🧭 RAG 完整架构蓝图
 │   ├── enterprise-knowledge-base-agent.md # 🏢 企业知识库 Agent 蓝图
 │   └── rag-system-project.md  # 📚 RAG 系统实战项目
@@ -285,6 +289,8 @@ agent/
 - 💼 [**求职指南**](./docs/career-guide.md)：岗位画像、技能清单、用本项目写简历、高频面试题。
 - 🚀 [**创业指南**](./docs/startup-guide.md)：机会判断、MVP 裁剪、成本控制、上线 checklist。
 - [**Agent 学习指南与分类地图**](./docs/agent-learning-guides.md)：按学习阶段、agent 类型、工程能力和岗位路线拆解全项目。
+- 🧭 [**2026 Agent 趋势与五平面架构**](./docs/agent-trends-architecture.md)：把 harness、外置状态、隔离执行、协议互操作与 trajectory/outcome assurance 组织成可渐进落地的工程框架。
+- 🧩 [**进阶 LangGraph · L6 Event streaming**](./langgraph-advanced/06-event-streaming/)：用真实 multi-mode stream 建立 user/debug/audit 投影边界，避免前端直接绑定框架 chunk。
 - 🔬 [**进阶 RAG 专题**](./rag-advanced/01-chunking-strategies/)：分块策略、混合检索、重排、查询改写、评估、生产化六章，把第 08/09 章的最小 RAG 补成生产级，能力沉淀在 `src/shared/rag/`。
 - [**源码解析**](./source-analysis/)：先从热门库卡片或仓库矩阵解析器定位任意 GitHub 仓库的包/文件边界，再用源码对话检索 raw source 和行号引用，再切 CodeMap 对照职责层，再顺着官方源码入口读 LangChain、LangGraph、LlamaIndex，把“会用框架”推进到“能看懂和调试框架”。
 - 🧭 [**RAG 完整架构蓝图**](./docs/rag-architecture.md)：把 RAG demo 升级成可维护系统，覆盖写入路径、查询路径、数据模型、API 边界、安全治理、质量闭环和部署拓扑。

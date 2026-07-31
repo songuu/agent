@@ -104,7 +104,7 @@ START
 2. 跳到 `pregel/main.py`，只追执行循环、stream、checkpoint 相关函数。
 3. 回到 `chat_agent_executor.py`，看预制 ReAct 图如何使用这些底层能力。
 4. 读 `tool_node.py`，确认 tool call -> ToolMessage 的闭环。
-5. 对照本仓库 `langgraph-advanced/` 的 L1-L5，每章只证明一个机制。
+5. 对照本仓库 `langgraph-advanced/` 的 L1-L6，每章只证明一个机制；L6 专门验证 stream mode 与 user/debug/audit 边界投影。
 
 ## 和手写版的对照
 

@@ -237,10 +237,10 @@ export const CONCEPT_VISUALS: ConceptVisual[] = [
   {
     chapter: "19",
     kind: "layers",
-    title: "Agent 生态是一组可替换的工程层",
-    summary: "协议、SDK、运行时、工具、治理和部署各管一层；选型时从需求向下拆，不从名词向上堆。",
-    steps: ["Model", "Tools", "Protocol", "SDK", "Runtime", "Governance"],
-    takeaway: "生态地图的价值，是帮你判断该买哪层、手写哪层。",
+    title: "Agent 工程五平面：从模型能力走到可运营产品",
+    summary: "把快速变化的生态名词收束成五个稳定边界：智能与上下文负责判断，控制与会话负责推进，执行与工具负责行动，互操作与协作负责跨系统连接，保障与产品负责让结果可见、可评、可控。",
+    steps: ["智能与上下文", "控制与会话", "执行与工具", "互操作与协作", "保障与产品"],
+    takeaway: "框架会换，五个工程问题不会；先判断缺哪个平面，再决定购买、复用还是手写。",
   },
   {
     chapter: "20",
@@ -444,6 +444,14 @@ export const CONCEPT_VISUALS: ConceptVisual[] = [
     takeaway: "多 Agent 不是堆人数，而是选对拓扑——中心化调度还是并行协作，全建立在前四章的 channel/reducer/条件边/Send 之上。",
   },
   {
+    chapter: "lg-streaming",
+    kind: "stream",
+    title: "Event streaming：同一条运行流，投影成用户、调试与审计视图",
+    summary: "LangGraph 多模式 stream 用 mode + payload 区分 custom 业务进度、updates 节点增量和 values 完整快照；归一化器保留顺序，再通过白名单投影把可公开进度给用户、内部状态给调试与审计。",
+    steps: ["接收多模式事件帧", "识别 custom / updates / values", "保留顺序并归一化", "白名单投影到不同受众", "未知事件安全降级"],
+    takeaway: "流式体验不是把所有 state 推给浏览器；先定义事件语义，再按受众做最小披露。",
+  },
+  {
     chapter: "21",
     kind: "layers",
     title: "源码解析：从入口函数读到运行时边界",
@@ -527,8 +535,8 @@ const CONCEPT_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> =
     { tone: "warning", label: "易错边界", body: "能本地跑一次不等于能服务化；长期运行需要可并发、可观测、可优雅退出。" },
   ],
   "19": [
-    { tone: "core", label: "核心判断", body: "Agent 生态要按层拆：模型、工具、协议、SDK、运行时、治理和部署各管一段。" },
-    { tone: "warning", label: "易错边界", body: "不要从名词堆栈出发选型；先从产品需求反推必须购买或自建的层。" },
+    { tone: "core", label: "核心判断", body: "Agent 工程可稳定拆成五个平面：智能与上下文、控制与会话、执行与工具、互操作与协作、保障与产品；框架只是各平面的可替换实现。" },
+    { tone: "warning", label: "易错边界", body: "五平面不是五个必须独立部署的服务，也不是厂商清单；它是查缺补漏和划清责任的架构视角。" },
   ],
   "20": [
     { tone: "core", label: "核心判断", body: "前沿文章库要服务阅读路径：先按日期和体系层定位，再用文章卡片核对摘要、来源和原文。" },
@@ -630,6 +638,10 @@ const CONCEPT_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> =
   "lg-multiagent": [
     { tone: "core", label: "核心判断", body: "多 Agent 就是把多个专职节点编排进一张图：supervisor 用条件边中心化调度（串行、顺序可控），parallel team 用 fork/join 并行协作（并行、靠 append reducer 合并）；选哪种拓扑取决于任务能否并行、是否需要顺序与集中控制。" },
     { tone: "warning", label: "易错边界", body: "并行 agent 的产出顺序不保证（与完成顺序有关），跨 agent 聚合必须靠 reducer + 排序消除顺序依赖，别假设边的书写顺序就是执行/收集顺序；supervisor 的循环边必须有终止条件（队列空 → END），否则要靠 recursionLimit 兜底。" },
+  ],
+  "lg-streaming": [
+    { tone: "core", label: "核心判断", body: "多模式事件帧先保留 mode、payload 与顺序，再投影成用户、调试、审计视图；custom/updates/values 是不同语义，不应混成一条无类型日志。" },
+    { tone: "warning", label: "易错边界", body: "不要把完整 state、调试 payload 或未知事件直接透传前端；用户视图采用白名单最小披露，未知 mode 显式降级到内部通道。" },
   ],
   "21": [
     { tone: "core", label: "核心判断", body: "读框架源码先找入口函数和 runtime，再追状态、工具、检索、停止条件；不要停在公开 API 名字上。" },

@@ -63,3 +63,24 @@ export type {
   TeamState,
   TeamGraph,
 } from "./multiAgentGraphs";
+
+// 第 06 章：Event streaming 与前端投影 —— raw updates/values/custom → user/debug/audit
+export {
+  buildEventStreamingGraph,
+  collectEventStream,
+  EVENT_STREAM_MODES,
+  normalizeStreamFrame,
+  projectStreamFrames,
+} from "./eventStreaming";
+export type {
+  CollectedEventStream,
+  EventAudience,
+  EventStreamingGraph,
+  EventStreamingState,
+  ProgressEvent,
+  ProjectedEventKind,
+  ProjectedStreamEvent,
+  ProjectionStreamMode,
+  RawStreamFrame,
+  StreamProjection,
+} from "./eventStreaming";

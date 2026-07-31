@@ -274,6 +274,7 @@ graph TB
   n_c02_stream["stream() 流式输出（第02章）"]
   n_c06_run_agent_loop["runAgent 循环（第06章）"]
   n_c18_sse_streaming["SSE 流式接口 (/chat/stream)（第18章）"]
+  n_lges_custom_progress["custom 业务进度（第lg-streaming章）"]
   n_c14_token_streaming -->|应用| n_c14_perceived_latency
   n_c14_token_streaming -->|对比| n_c14_progress_streaming
   n_c14_abort_controller -->|深化| n_c14_consumer_side_cancel
@@ -282,8 +283,9 @@ graph TB
   n_c14_token_streaming -->|深化| n_c02_stream
   n_c14_progress_streaming -->|应用| n_c06_run_agent_loop
   n_c18_sse_streaming -->|深化| n_c14_token_streaming
+  n_lges_custom_progress -->|深化| n_c14_progress_streaming
   class n_c14_token_streaming,n_c14_perceived_latency,n_c14_progress_streaming,n_c14_abort_controller,n_c14_consumer_side_cancel,n_c14_graceful_cleanup own;
-  class n_c02_stream,n_c06_run_agent_loop,n_c18_sse_streaming cross;
+  class n_c02_stream,n_c06_run_agent_loop,n_c18_sse_streaming,n_lges_custom_progress cross;
   linkStyle 0 stroke:#059669,stroke-width:2px;
   linkStyle 1 stroke:#db2777,stroke-width:2px;
   linkStyle 2 stroke:#7c3aed,stroke-width:2px;
@@ -292,6 +294,7 @@ graph TB
   linkStyle 5 stroke:#7c3aed,stroke-width:2px;
   linkStyle 6 stroke:#059669,stroke-width:2px;
   linkStyle 7 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 8 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -299,6 +302,7 @@ graph TB
 - `Token 流式输出 (typewriter)` —**深化**→ `stream() 流式输出`（第 02 章）
 - `进度流 (onStep)` —**应用**→ `runAgent 循环`（第 06 章）
 - `SSE 流式接口 (/chat/stream)` —**深化**→ `Token 流式输出 (typewriter)`（第 18 章）
+- `custom 业务进度` —**深化**→ `进度流 (onStep)`（第 lg-streaming 章）
 
 ### 延伸阅读
 

@@ -185,6 +185,7 @@ graph TB
   n_lghitl_read_payload["读取 interrupt payload（第lg-hitl章）"]
   n_lghitl_command_resume["Command(resume) 续跑（第lg-hitl章）"]
   n_lghitl_plain_invoke_pitfall["易错：普通 invoke 不 resume（第lg-hitl章）"]
+  n_lges_values_snapshot["values 完整快照（第lg-streaming章）"]
   n_lgcp_checkpointer -->|前置| n_lgcp_persist_accumulate
   n_lgcp_persist_accumulate -->|应用| n_lgcp_getstate
   n_lgcp_getstate -->|组成| n_lgcp_history
@@ -200,8 +201,9 @@ graph TB
   n_lghitl_read_payload -->|应用| n_lgcp_getstate
   n_lghitl_command_resume -->|对比| n_lgcp_time_travel
   n_lghitl_plain_invoke_pitfall -->|深化| n_lgcp_persist_accumulate
+  n_lges_values_snapshot -->|对比| n_lgcp_getstate
   class n_lgcp_checkpointer,n_lgcp_persist_accumulate,n_lgcp_getstate,n_lgcp_history,n_lgcp_time_travel own;
-  class n_lgsg_edges_compile,n_lgsg_reducer,n_c07_conversation_as_array,n_c06_run_agent_loop,n_lgrt_loop,n_c12_langgraph,n_lghitl_interrupt,n_lghitl_read_payload,n_lghitl_command_resume,n_lghitl_plain_invoke_pitfall cross;
+  class n_lgsg_edges_compile,n_lgsg_reducer,n_c07_conversation_as_array,n_c06_run_agent_loop,n_lgrt_loop,n_c12_langgraph,n_lghitl_interrupt,n_lghitl_read_payload,n_lghitl_command_resume,n_lghitl_plain_invoke_pitfall,n_lges_values_snapshot cross;
   linkStyle 0 stroke:#2563eb,stroke-width:2px;
   linkStyle 1 stroke:#059669,stroke-width:2px;
   linkStyle 2 stroke:#d97706,stroke-width:2px;
@@ -217,6 +219,7 @@ graph TB
   linkStyle 12 stroke:#059669,stroke-width:2px;
   linkStyle 13 stroke:#db2777,stroke-width:2px;
   linkStyle 14 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 15 stroke:#db2777,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -231,6 +234,7 @@ graph TB
 - `读取 interrupt payload` —**应用**→ `getState 状态快照`（第 lg-hitl 章）
 - `Command(resume) 续跑` —**对比**→ `updateState 改写与时间旅行`（第 lg-hitl 章）
 - `易错：普通 invoke 不 resume` —**深化**→ `跨 invoke 持久化累积`（第 lg-hitl 章）
+- `values 完整快照` —**对比**→ `getState 状态快照`（第 lg-streaming 章）
 
 ### 延伸阅读
 

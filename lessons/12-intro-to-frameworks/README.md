@@ -314,7 +314,7 @@ graph TB
 
 ### 延伸阅读
 
-- [Vercel AI SDK 官方文档](https://sdk.vercel.ai/docs) — generateText / streamText / tool / maxSteps 的权威参考 `doc`
+- [Vercel AI SDK 4→5 migration（legacy maxSteps）](https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0) — 本仓库仍 pin ai ^4.0.0；第 12 章的 maxSteps 属 legacy v4 API，官方从 v5 起改用 stopWhen / prepareStep，不能把它当作当前 AI SDK 7 的参考 `doc`
 - [LangGraph.js 官方文档](https://langchain-ai.github.io/langgraphjs/) — StateGraph / createReactAgent / checkpointer 的权威参考 `doc`
 
 > 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。

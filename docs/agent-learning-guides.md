@@ -136,14 +136,14 @@
 
 1. B7: workflow vs agent。
 2. 10-11: reasoning pattern 和 multi-agent orchestration。
-3. langgraph-advanced L1-L5。
+3. langgraph-advanced L1-L6：从 StateGraph 核心机制走到安全事件流与前端投影。
 4. code-review-crew: 多角色评审和合并策略。
 5. sales-lead-researcher: 用 B2B 线索研究练证据链、评分和受约束话术。
 
 ### 框架源码路线
 
 1. 12: 先理解 LangGraph.js / Vercel AI SDK 帮你托管了哪些运行时能力。
-2. langgraph-advanced L1-L5: 先用可运行小例子看 StateGraph、checkpoint、HITL、多 agent。
+2. langgraph-advanced L1-L6: 先用可运行小例子看 StateGraph、checkpoint、HITL、多 agent，再用 L6 理解事件流与 user/debug/audit 边界投影。
 3. source-analysis: 先用仓库矩阵解析器定位任意 GitHub 仓库，再用源码对话检索源码行号证据，再用 CodeMap 对照文件职责，最后顺着官方源码入口读 LangChain、LangGraph、LlamaIndex。
 4. 19-20: 回到生态地图和前沿文章库，用源码视角判断框架边界和选型风险。
 

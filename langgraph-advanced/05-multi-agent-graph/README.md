@@ -1,6 +1,6 @@
 # 多 Agent 编排：supervisor / 并行 team
 
-> 所属：进阶 LangGraph 专题 · 把多个专职 agent 编排进一张图（本轨道收官）
+> 所属：进阶 LangGraph 专题 · 把多个专职 agent 编排进一张图（StateGraph 核心机制阶段完成）
 > 预计用时：40 分钟 | 难度：⭐⭐⭐⭐
 > 全局导航：[课程导航](../../docs/navigation.md) · [完整大纲](../../docs/curriculum.md) · [知识图谱](../../docs/knowledge-graph.md)
 
@@ -242,6 +242,6 @@ graph TB
 - **supervisor（中心化调度）**：条件边按类型派活 + 循环边回到 supervisor + 队空终止；串行、顺序可控；对应第 11 章手写的 supervisor+worker。
 - **parallel team（并行异构）**：fork 一次连出多条边并行、join 聚合；并行产出顺序**契约上不保证**（纯同步本地虽确定，但不可依赖），必须 append reducer + 排序消除顺序依赖。
 - **选拓扑**：有依赖/需顺序/需集中决策 → supervisor；相互独立可并行 → parallel team。
-- **本轨道收官**：从 [01 手写 StateGraph](../01-stategraph-basics/README.md) → [02 条件边](../02-conditional-routing/README.md) → [03 checkpointer](../03-checkpointing/README.md) → [04 human-in-the-loop](../04-human-in-the-loop/README.md) → 05 多 Agent，你已经把 LangGraph 的 channel/reducer/节点/边/条件路由/持久化/中断恢复/多 agent 编排**从零拼齐**。再往后是 streaming 事件流、LCEL 链式组合等工程化主题——但底层都是这套图机制。
+- **核心机制阶段完成**：从 [01 手写 StateGraph](../01-stategraph-basics/README.md) → [02 条件边](../02-conditional-routing/README.md) → [03 checkpointer](../03-checkpointing/README.md) → [04 human-in-the-loop](../04-human-in-the-loop/README.md) → 05 多 Agent，你已经把 LangGraph 的 channel/reducer/节点/边/条件路由/持久化/中断恢复/多 agent 编排**从零拼齐**。下一章 [06 Event streaming 与前端投影](../06-event-streaming/README.md) 会把运行时的 `values` / `updates` / `custom` 转换为 user/debug/audit 安全事件，进入产品化事件边界。
 
 > 💡 **面试会问**：supervisor 和 parallel team 拓扑各适合什么任务？为什么并行 agent 的产出要排序聚合、不能直接用？supervisor 的循环怎么保证终止？它和第 11 章手写的多 agent 有什么异同？

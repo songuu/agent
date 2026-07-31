@@ -191,6 +191,7 @@ graph TB
   n_lgcp_checkpointer["Checkpointer 与 thread_id（第lg-checkpoint章）"]
   n_lgcp_persist_accumulate["跨 invoke 持久化累积（第lg-checkpoint章）"]
   n_lgma_order_independent_join["join 顺序无关聚合（第lg-multiagent章）"]
+  n_lges_updates_delta["updates 节点增量（第lg-streaming章）"]
   n_srca_langgraph_runtime -->|深化| n_lgsg_edges_compile
   n_lgsg_state_channels -->|组成| n_lgsg_reducer
   n_lgsg_state_channels -->|前置| n_lgsg_node_partial
@@ -209,8 +210,9 @@ graph TB
   n_lgcp_checkpointer -->|深化| n_lgsg_edges_compile
   n_lgcp_persist_accumulate -->|应用| n_lgsg_reducer
   n_lgma_order_independent_join -->|应用| n_lgsg_reducer
+  n_lges_updates_delta -->|深化| n_lgsg_node_partial
   class n_lgsg_state_channels,n_lgsg_reducer,n_lgsg_node_partial,n_lgsg_edges_compile,n_lgsg_vs_prebuilt own;
-  class n_srca_langgraph_runtime,n_c12_react_agent,n_c12_state_graph,n_c12_langgraph,n_c06_run_agent_loop,n_c07_conversation_as_array,n_c12_framework_choice,n_lgrt_conditional_edge,n_lgrt_loop,n_lgrt_send_fanout,n_lgcp_checkpointer,n_lgcp_persist_accumulate,n_lgma_order_independent_join cross;
+  class n_srca_langgraph_runtime,n_c12_react_agent,n_c12_state_graph,n_c12_langgraph,n_c06_run_agent_loop,n_c07_conversation_as_array,n_c12_framework_choice,n_lgrt_conditional_edge,n_lgrt_loop,n_lgrt_send_fanout,n_lgcp_checkpointer,n_lgcp_persist_accumulate,n_lgma_order_independent_join,n_lges_updates_delta cross;
   linkStyle 0 stroke:#7c3aed,stroke-width:2px;
   linkStyle 1 stroke:#d97706,stroke-width:2px;
   linkStyle 2 stroke:#2563eb,stroke-width:2px;
@@ -229,6 +231,7 @@ graph TB
   linkStyle 15 stroke:#7c3aed,stroke-width:2px;
   linkStyle 16 stroke:#059669,stroke-width:2px;
   linkStyle 17 stroke:#059669,stroke-width:2px;
+  linkStyle 18 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -246,6 +249,7 @@ graph TB
 - `Checkpointer 与 thread_id` —**深化**→ `边与 compile/invoke`（第 lg-checkpoint 章）
 - `跨 invoke 持久化累积` —**应用**→ `channel reducer`（第 lg-checkpoint 章）
 - `join 顺序无关聚合` —**应用**→ `channel reducer`（第 lg-multiagent 章）
+- `updates 节点增量` —**深化**→ `节点返回 partial 更新`（第 lg-streaming 章）
 
 ### 延伸阅读
 

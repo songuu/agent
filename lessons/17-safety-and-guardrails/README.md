@@ -218,6 +218,7 @@ graph TB
   n_cragsec_injection_detection["注入检测与隔离（第rag-security章）"]
   n_cragsec_pii_redaction["PII 出口脱敏（第rag-security章）"]
   n_cragsec_defense_in_depth["RAG 纵深防御（第rag-security章）"]
+  n_lges_safe_projection["安全前端投影（第lg-streaming章）"]
   n_c17_prompt_injection -->|前置| n_c17_trust_boundary
   n_c17_trust_boundary -->|应用| n_c17_isolate_and_label
   n_c17_defense_in_depth -->|组成| n_c17_isolate_and_label
@@ -236,8 +237,9 @@ graph TB
   n_cragsec_injection_detection -->|应用| n_c17_isolate_and_label
   n_cragsec_pii_redaction -->|深化| n_c17_pii_redaction
   n_cragsec_defense_in_depth -->|深化| n_c17_defense_in_depth
+  n_lges_safe_projection -->|应用| n_c17_output_validation
   class n_c17_prompt_injection,n_c17_trust_boundary,n_c17_isolate_and_label,n_c17_defense_in_depth,n_c17_output_validation,n_c17_pii_redaction,n_c17_human_in_the_loop own;
-  class n_c09_augment_prompt,n_c06_tool_registry,n_csup_hitl,n_cinc_approval,n_cragprod_metadata_filter,n_cragsec_untrusted_retrieval,n_cragsec_injection_detection,n_cragsec_pii_redaction,n_cragsec_defense_in_depth cross;
+  class n_c09_augment_prompt,n_c06_tool_registry,n_csup_hitl,n_cinc_approval,n_cragprod_metadata_filter,n_cragsec_untrusted_retrieval,n_cragsec_injection_detection,n_cragsec_pii_redaction,n_cragsec_defense_in_depth,n_lges_safe_projection cross;
   linkStyle 0 stroke:#2563eb,stroke-width:2px;
   linkStyle 1 stroke:#059669,stroke-width:2px;
   linkStyle 2 stroke:#d97706,stroke-width:2px;
@@ -256,6 +258,7 @@ graph TB
   linkStyle 15 stroke:#059669,stroke-width:2px;
   linkStyle 16 stroke:#7c3aed,stroke-width:2px;
   linkStyle 17 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 18 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -270,6 +273,7 @@ graph TB
 - `注入检测与隔离` —**应用**→ `隔离 + 标注 (wrapUntrusted)`（第 rag-security 章）
 - `PII 出口脱敏` —**深化**→ `PII 脱敏`（第 rag-security 章）
 - `RAG 纵深防御` —**深化**→ `纵深防御`（第 rag-security 章）
+- `安全前端投影` —**应用**→ `出口行为校验`（第 lg-streaming 章）
 
 ### 延伸阅读
 

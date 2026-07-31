@@ -1,0 +1,8 @@
+{
+  "//": "LangGraph 专题的真实 typecheck；主 tsconfig 不包含 langgraph-advanced demo/smoke。",
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/shared/langgraph/**/*.ts",
+    "langgraph-advanced/**/*.ts"
+  ]
+}

@@ -206,6 +206,7 @@ export const CHAPTERS: Chapter[] = [
   { id: "lg-checkpoint", slug: "03-checkpointing", title: "Checkpointer 持久化与时间旅行", part: "进阶 LangGraph 专题", dir: "langgraph-advanced/03-checkpointing", demo: { needsKey: "none" } },
   { id: "lg-hitl", slug: "04-human-in-the-loop", title: "Human-in-the-Loop（interrupt 审批门）", part: "进阶 LangGraph 专题", dir: "langgraph-advanced/04-human-in-the-loop", demo: { needsKey: "none" } },
   { id: "lg-multiagent", slug: "05-multi-agent-graph", title: "多 Agent 编排（supervisor / 并行 team）", part: "进阶 LangGraph 专题", dir: "langgraph-advanced/05-multi-agent-graph", demo: { needsKey: "none" } },
+  { id: "lg-streaming", slug: "06-event-streaming", title: "Event streaming 与安全前端投影", part: "进阶 LangGraph 专题", dir: "langgraph-advanced/06-event-streaming", demo: { needsKey: "none" } },
 ];
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -341,7 +342,8 @@ export const CONCEPTS: Concept[] = [
   { id: "c18-secret-safety", label: "密钥安全 (Secrets)", chapter: "18", summary: "key 只从环境变量读，绝不进代码/响应/日志" },
   { id: "c18-sse-streaming", label: "SSE 流式接口 (/chat/stream)", chapter: "18", summary: "text/event-stream 把 token 逐字推前端，断开做消费侧取消" },
   { id: "c18-deploy-checklist", label: "部署 checklist 与 Docker", chapter: "18", summary: "端口从 env 读、健康检查、优雅退出、Dockerfile 与上线自查清单" },
-  { id: "c19-ecosystem-layers", label: "Agent 生态分层", chapter: "19", summary: "把 agent 栈拆成 8 个可替换工程层的拆解框架" },
+  { id: "c19-ecosystem-layers", label: "Agent 生态分层", chapter: "19", summary: "把 agent 栈拆成可替换工程层的拆解框架，避免被单一框架名词绑架" },
+  { id: "c19-five-plane-architecture", label: "Agent 工程五平面", chapter: "19", summary: "用智能与上下文、控制与会话、执行与工具、互操作与协作、保障与产品五个平面审视生产 agent" },
   { id: "c19-mcp", label: "MCP (模型上下文协议)", chapter: "19", summary: "标准化 agent 连接外部工具/数据/资源的协议，AI 的 USB-C" },
   { id: "c19-a2a", label: "A2A (Agent2Agent)", chapter: "19", summary: "标准化不同厂商 agent 间发现、通信与协作的协议" },
   { id: "c19-agent-sdk", label: "Agent SDK", chapter: "19", summary: "封装 loop/handoff/guardrail/session 的开发层，如 OpenAI/Vercel SDK" },
@@ -507,6 +509,13 @@ export const CONCEPTS: Concept[] = [
   { id: "lgma-worker-routing", label: "按类型路由到 worker", chapter: "lg-multiagent", summary: "supervisor 的条件边读队首任务类型，返回对应 worker 节点名（math/upper/echo）；队列空则返回 END 收工" },
   { id: "lgma-parallel-team", label: "并行异构 team（fork/join）", chapter: "lg-multiagent", summary: "从 fork 点一次连出多条边，多个不同角色 agent 在同一 super-step 并行执行，结果汇入 join——并行、靠 reducer 合并" },
   { id: "lgma-order-independent-join", label: "join 顺序无关聚合", chapter: "lg-multiagent", summary: "并行产出的原始顺序不保证，append reducer 汇集后 join 先排序再聚合，使最终报告与各 agent 完成顺序无关、确定可回归" },
+
+  // 进阶 LangGraph · 第 06 章 Event streaming 与安全前端投影
+  { id: "lges-multi-mode-frame", label: "多模式事件帧 (mode, payload)", chapter: "lg-streaming", summary: "多模式 stream 把 mode 与 payload 组成统一帧；归一化时必须保留通道语义和原始顺序" },
+  { id: "lges-custom-progress", label: "custom 业务进度", chapter: "lg-streaming", summary: "节点主动发出面向用户的阶段进度，不必把内部 state 或调试事件直接暴露给前端" },
+  { id: "lges-updates-delta", label: "updates 节点增量", chapter: "lg-streaming", summary: "每个 super-step 只发本轮节点写入的 partial state，适合解释哪个节点改变了什么" },
+  { id: "lges-values-snapshot", label: "values 完整快照", chapter: "lg-streaming", summary: "每个 super-step 发合并后的完整 state，适合恢复视图与核对最终投影，但载荷通常比 delta 更大" },
+  { id: "lges-safe-projection", label: "安全前端投影", chapter: "lg-streaming", summary: "把原始事件白名单映射为 user/debug/audit 通道，未知事件显式降级，敏感内部状态不进入用户视图" },
 
   // 第 21 章 · 源码解析
   { id: "srca-reading-map", label: "源码阅读路线", chapter: "21", summary: "按入口函数、runtime、状态/工具/检索、停止条件四层读框架源码" },
@@ -679,6 +688,10 @@ export const RELATIONS: Relation[] = [
   { from: "c19-stack-selection", to: "c19-ecosystem-layers", type: "应用", note: "选型方法建立在分层框架之上：先问缺哪一层" },
   { from: "c19-stack-selection", to: "c19-agent-sdk", type: "应用", note: "依据约束在 SDK/runtime/协议间做取舍" },
   { from: "c19-governance", to: "c19-orchestration-runtime", type: "应用", note: "HITL 与 tracing 常落在 runtime 的风险节点上" },
+  { from: "c19-ecosystem-layers", to: "c19-five-plane-architecture", type: "深化", note: "五平面把生态部件重新组织成生产系统的智能、控制、执行、互操作与保障边界" },
+  { from: "c19-five-plane-architecture", to: "c19-orchestration-runtime", type: "应用", note: "控制与会话平面用 runtime 承担状态推进、checkpoint、恢复与人工中断" },
+  { from: "c19-five-plane-architecture", to: "c19-mcp", type: "应用", note: "互操作与协作平面用 MCP 连接工具和上下文能力，但不让协议替代业务控制流" },
+  { from: "c19-five-plane-architecture", to: "c19-governance", type: "深化", note: "保障与产品平面把 outcome、trajectory、权限、人工 gate 和用户状态组织成统一验收边界" },
   { from: "c20-news-archive", to: "c20-date-filter", type: "组成", note: "文章库用日期筛选保留资料收集时间线" },
   { from: "c20-news-archive", to: "c20-layer-filter", type: "组成", note: "文章库用体系层筛选承接第 19 章生态分层" },
   { from: "c20-news-archive", to: "c20-article-detail", type: "组成", note: "文章卡片承载摘要、来源、体系层和原文入口" },
@@ -1003,6 +1016,21 @@ export const RELATIONS: Relation[] = [
   { from: "lgma-supervisor", to: "lgrt-loop", type: "应用", note: "supervisor↔worker 的「派活→回到 supervisor」正是第02章的循环边 + 终止条件（队列空）" },
   { from: "lgma-parallel-team", to: "lgrt-send-fanout", type: "对比", note: "fork/join 是固定的多个异构角色并行；第02章 Send 是动态扇出同构 worker——并行的两种形态" },
   { from: "lgma-order-independent-join", to: "lgsg-reducer", type: "应用", note: "并行产出「顺序无关」靠的正是第01章的 append reducer 把各 agent 输出合并" },
+
+  // ── 进阶 LangGraph 专题：Event streaming 与安全前端投影 章内关系 ──
+  { from: "lges-multi-mode-frame", to: "lges-custom-progress", type: "组成", note: "custom 是多模式事件帧中承载业务进度的通道" },
+  { from: "lges-multi-mode-frame", to: "lges-updates-delta", type: "组成", note: "updates 是多模式事件帧中的节点 partial state 增量" },
+  { from: "lges-multi-mode-frame", to: "lges-values-snapshot", type: "组成", note: "values 是多模式事件帧中的合并后完整状态快照" },
+  { from: "lges-updates-delta", to: "lges-values-snapshot", type: "对比", note: "updates 载荷小且解释本步变化；values 载荷大但直接给出当前完整状态" },
+  { from: "lges-multi-mode-frame", to: "lges-safe-projection", type: "应用", note: "统一事件帧先经过安全投影，再按 user/debug/audit 交给不同消费者" },
+  { from: "lges-custom-progress", to: "lges-safe-projection", type: "应用", note: "只有显式允许的 custom 业务进度进入用户视图，其余内容留在内部通道" },
+
+  // ── Event streaming 跨章关系（接回 StateGraph / Checkpoint / 主课 UX 与安全）──
+  { from: "lges-updates-delta", to: "lgsg-node-partial", type: "深化", note: "updates 把第01章节点返回的 partial state 变成可消费的逐步事件" },
+  { from: "lges-values-snapshot", to: "lgcp-getstate", type: "对比", note: "values 是运行中逐步投影；getState 是按 thread 读取持久化快照，时间与用途不同" },
+  { from: "lges-custom-progress", to: "c14-progress-streaming", type: "深化", note: "第14章 onStep 进度流在图运行时中对应 custom 业务事件" },
+  { from: "lges-safe-projection", to: "c16-span-trace-tree", type: "应用", note: "debug/audit 投影可进入 trace，而用户视图只保留可公开的业务状态" },
+  { from: "lges-safe-projection", to: "c17-output-validation", type: "应用", note: "安全投影在流事件出口执行白名单、降级与敏感字段边界校验" },
 ];
 
 export const ARTICLES: Article[] = [
@@ -1040,7 +1068,7 @@ export const ARTICLES: Article[] = [
   { title: "Codex Docs · Custom instructions with AGENTS.md", url: "https://developers.openai.com/codex/guides/agents-md", kind: "doc", chapters: ["11"], note: "OpenAI Codex 官方 AGENTS.md 文档：全局、项目、子目录指令链与覆盖规则" },
   { title: "OpenAI Agents SDK · Guardrails and human review", url: "https://developers.openai.com/api/docs/guides/agents/guardrails-approvals", kind: "doc", source: "OpenAI", chapters: ["11","19"], note: "OpenAI 官方：guardrails 与 human-in-the-loop approvals 控制敏感工具和副作用" },
   { title: "OpenAI Agents SDK · Integrations and observability", url: "https://developers.openai.com/api/docs/guides/agents/integrations-observability", kind: "doc", source: "OpenAI", chapters: ["11","19"], note: "OpenAI 官方：tracing 记录 model calls、tool calls、handoffs、guardrails 与 custom spans" },
-  { title: "Vercel AI SDK 官方文档", url: "https://sdk.vercel.ai/docs", kind: "doc", source: "Vercel", chapters: ["12","19"], note: "generateText / streamText / tool / maxSteps 的权威参考" },
+  { title: "Vercel AI SDK 4→5 migration（legacy maxSteps）", url: "https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0", kind: "doc", source: "Vercel", chapters: ["12"], note: "本仓库仍 pin ai ^4.0.0；第 12 章的 maxSteps 属 legacy v4 API，官方从 v5 起改用 stopWhen / prepareStep，不能把它当作当前 AI SDK 7 的参考" },
   { title: "LangGraph.js 官方文档", url: "https://langchain-ai.github.io/langgraphjs/", kind: "doc", chapters: ["12"], note: "StateGraph / createReactAgent / checkpointer 的权威参考" },
   { title: "Zod - TypeScript-first schema validation", url: "https://zod.dev/", kind: "doc", chapters: ["13"], note: "z.object / z.infer / safeParse 官方文档" },
   { title: "Vercel AI SDK - generateObject", url: "https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-object", kind: "doc", chapters: ["13"], note: "框架内建结构化输出 API 参考" },
@@ -1055,12 +1083,12 @@ export const ARTICLES: Article[] = [
   { title: "Node.js HTTP module documentation", url: "https://nodejs.org/api/http.html", kind: "doc", chapters: ["18"], note: "node:http 内置模块文档，本章无框架起服务的基础" },
   { title: "Model Context Protocol: What is MCP?", url: "https://modelcontextprotocol.io/docs/getting-started/intro", kind: "doc", source: "Model Context Protocol", chapters: ["19"], note: "MCP 官方入门，工具/数据连接标准化的一手来源" },
   { title: "Model Context Protocol specification repository", url: "https://github.com/modelcontextprotocol/modelcontextprotocol", kind: "doc", source: "Model Context Protocol", chapters: ["19"], note: "MCP 官方 specification 与文档仓库，用于复核协议层术语、版本与实现边界" },
-  { title: "A2A Protocol specification", url: "https://github.com/a2aproject/A2A/blob/main/docs/specification.md", kind: "doc", source: "A2A Project", chapters: ["19"], note: "A2A 官方 specification，对应 agent card、task/message、artifact/status 等跨 agent 协作对象" },
-  { title: "Google Developers Blog · Announcing the Agent2Agent Protocol (A2A)", url: "https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/", kind: "blog", source: "Google Developers Blog", chapters: ["19"], note: "Google Cloud 官方 A2A 发布文章，解释协议动机、设计原则、Agent Card、task/artifact/status 等生态背景" },
+  { title: "A2A v1.0 specification", url: "https://a2a-protocol.org/latest/specification/", kind: "doc", source: "A2A Project", chapters: ["19"], note: "首个 stable、production-ready A2A 规范；覆盖多协议绑定、版本协商、多租户、签名 Agent Card 与 task/message/artifact/status，并保留 v0.3/v1.0 渐进迁移边界" },
+  { title: "A2A v1.0 announcement", url: "https://a2a-protocol.org/latest/announcing-1.0/", kind: "blog", source: "A2A Project", chapters: ["19"], note: "A2A 官方 v1.0 公告：首个 stable/production-ready 版本，说明 breaking interaction protocol、multi-protocol bindings、版本协商、多租户、签名 Agent Card 与 v0.3/v1.0 渐进迁移" },
   { title: "Google Agent Development Kit (ADK) docs", url: "https://adk.dev/", kind: "doc", source: "Google ADK", chapters: ["19"], note: "Google ADK 官方文档，对应 Google 生态里的 agent 开发框架与多 agent 工程实践" },
   { title: "LangGraph overview", url: "https://docs.langchain.com/oss/javascript/langgraph/overview", kind: "doc", source: "LangChain", chapters: ["19"], note: "编排 runtime 代表，长任务持久化与 human-in-the-loop 官方文档" },
   { title: "LangSmith Observability", url: "https://docs.langchain.com/langsmith/observability", kind: "doc", source: "LangChain", chapters: ["19"], note: "LangSmith 官方观测文档，对应 agent tracing、调试、线上监控与评估治理层" },
-  { title: "Vercel AI SDK 5 announcement", url: "https://vercel.com/blog/ai-sdk-5", kind: "blog", source: "Vercel", chapters: ["19"], note: "Vercel 官方 AI SDK 5 发布文章，对应前端流式 UI、typed messages、tooling 与产品体验层趋势" },
+  { title: "Vercel AI SDK 7", url: "https://vercel.com/changelog/ai-sdk-7", kind: "blog", source: "Vercel", chapters: ["19"], note: "Vercel 官方 AI SDK 7 发布说明：新增 durable WorkflowAgent、sandbox、tool approval、harness adapters 与 telemetry，同时要求 Node.js 22 + ESM 迁移验证" },
   { title: "Vercel AI SDK UI · Chatbot", url: "https://ai-sdk.dev/docs/ai-sdk-ui/chatbot", kind: "doc", source: "Vercel", chapters: ["19"], note: "Vercel AI SDK UI 官方 chatbot 文档，对应产品/UI 层的对话体验与状态管理" },
   { title: "CrewAI introduction", url: "https://docs.crewai.com/en/introduction", kind: "doc", source: "CrewAI", chapters: ["19"], note: "CrewAI 官方入门，对应企业流程自动化、Flows 与 Crews 的团队/流程 runtime 心智模型" },
   { title: "CrewAI Flows", url: "https://docs.crewai.com/en/concepts/flows", kind: "doc", source: "CrewAI", chapters: ["19"], note: "CrewAI 官方 Flows 文档，对应事件驱动 workflow、状态管理、条件控制流与长期流程编排" },
@@ -3738,6 +3766,8 @@ export const ARTICLES: Article[] = [
   { title: "LangGraph.js · How to wait for user input using interrupt", url: "https://langchain-ai.github.io/langgraphjs/how-tos/wait-user-input-functional/", kind: "doc", chapters: ["lg-hitl"], note: "用 interrupt 暂停等用户输入、再用 Command({resume}) 续跑的官方 how-to，对应本章审批门 demo" },
   { title: "LangGraph.js · Multi-agent systems（概念）", url: "https://langchain-ai.github.io/langgraphjs/concepts/multi_agent/", kind: "doc", chapters: ["lg-multiagent"], note: "官方多 agent 拓扑总览：supervisor、network、hierarchical 等——本章 supervisor / parallel team 的权威参考" },
   { title: "LangGraph.js · Agent supervisor（教程）", url: "https://langchain-ai.github.io/langgraphjs/tutorials/multi_agent/agent_supervisor/", kind: "doc", chapters: ["lg-multiagent"], note: "一个 supervisor 用条件边把任务派给多个 worker agent 的官方教程，对应本章图1 的中心化调度循环" },
+  { title: "LangGraph.js · Streaming", url: "https://docs.langchain.com/oss/javascript/langgraph/streaming", kind: "doc", source: "LangChain", chapters: ["lg-streaming"], note: "LangGraph 官方 streaming 文档：解释 values、updates、custom 等模式及多模式消费，是本章事件帧与投影契约的权威来源" },
+  { title: "LangGraph.js · Event streaming", url: "https://docs.langchain.com/oss/javascript/langgraph/event-streaming", kind: "doc", source: "LangChain", chapters: ["lg-streaming"], note: "LangGraph 官方 event streaming 文档：说明图运行事件如何被客户端消费，对应本章从运行时事件到安全前端投影的边界" },
   { title: "DeepWiki", url: "https://deepwiki.com/", kind: "doc", source: "DeepWiki", chapters: ["21"], note: "源码仓库 Wiki 参考形态：热门仓库入口、目录化 Wiki、Relevant source files、源码对话、CodeMap 和源码引用" },
   { title: "LangChain v1 agents source", url: "https://github.com/langchain-ai/langchain/blob/master/libs/langchain_v1/langchain/agents/factory.py", kind: "doc", source: "LangChain", chapters: ["21"], note: "LangChain 官方源码入口：create_agent 如何组装模型、工具、middleware、structured output 与 agent runtime" },
   { title: "LangGraph StateGraph and Pregel runtime source", url: "https://github.com/langchain-ai/langgraph/blob/main/libs/langgraph/langgraph/graph/state.py", kind: "doc", source: "LangGraph", chapters: ["21"], note: "LangGraph 官方源码入口：StateGraph 的 state schema、channel reducer、node、edge 与 compile" },

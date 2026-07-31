@@ -43,7 +43,7 @@
 
 > 提示：全程用便宜模型（如 `gpt-4o-mini` / `claude-haiku`）跑完成本很低；第 16 章会专门教你怎么算账和省钱。
 
-想直接跳到任意课程，使用 [全局课程导航](./navigation.md)。想按 agent 类型、岗位目标或生产能力倒推学习路线，使用 [Agent 学习指南与分类地图](./agent-learning-guides.md)。这两页按顺序、按主题整理了第 00–21 章、B1-B12 基础指南、毕业项目、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone、RAG 系统实战项目和源码解析。
+想直接跳到任意课程，使用 [全局课程导航](./navigation.md)。想按 agent 类型、岗位目标或生产能力倒推学习路线，使用 [Agent 学习指南与分类地图](./agent-learning-guides.md)。这两页按顺序、按主题整理了第 00–21 章、B1-B12 基础指南、毕业项目、2026 Agent 五平面架构蓝图、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone、RAG 系统实战项目和源码解析。
 
 ### 三层学习法
 
@@ -83,10 +83,11 @@
 | 第 21 章 · 源码解析 | source-analysis 章节 + 仓库矩阵/源码对话/CodeMap + 3 篇深入页 | ~5 小时 |
 | 🎓 毕业项目（28 个）· Deep Research / 客服 / 评审 / 评测 / 告警响应 / 反馈洞察 / 销售线索 / 企业知识库 | 综合 | ~88–124 小时 |
 | 🔬 进阶 RAG 专题 | rag-advanced ×11 | ~7–9 小时 |
-| 🧩 进阶 LangGraph 专题 | langgraph-advanced ×5 + 生产化扩章地图 | ~4–6 小时 |
+| 🧩 进阶 LangGraph 专题 | langgraph-advanced ×6 + 生产化扩章地图 | ~4–6 小时 |
+| 🧭 2026 Agent 趋势与五平面架构 | 架构阅读 | ~1 小时 |
 | 🧭 RAG 完整架构蓝图 | 架构阅读 | ~1 小时 |
 | 🏢 企业知识库 Agent 蓝图 | 纵向项目设计 | ~1 小时 |
-| **合计** | **21 章 + 基础概念扩展 + 28 个毕业项目 + RAG 专题 + LangGraph 专题 + 架构蓝图 + 企业知识库蓝图** | **约 128.5–173.5 小时**（不含动手扩展） |
+| **合计** | **21 章 + 基础概念扩展 + 28 个毕业项目 + RAG 专题 + LangGraph 专题 + Agent 架构蓝图 + RAG 架构蓝图 + 企业知识库蓝图** | **约 129.5–174.5 小时**（不含动手扩展） |
 
 > 按每天投入 1–1.5 小时算，大约 **3–4 周**可以完整走完一遍。建议分散学、多动手，比一口气刷完更扎实。
 
@@ -261,7 +262,7 @@
 
 | # | 标题 | 难度 | 预计 | 一句话简介 | 链接 |
 |---|------|------|------|------------|------|
-| 19 | Agent 前沿发展与生态拆解 | ⭐⭐⭐ | 70 分钟 | 从模型接口、工具协议、Agent SDK、编排 runtime、RAG、UI、观测、安全八层拆解当前生态，并练习按需求选型 | [../lessons/19-agent-ecosystem-and-frontier/README.md](../lessons/19-agent-ecosystem-and-frontier/README.md) |
+| 19 | Agent 前沿发展与生态拆解 | ⭐⭐⭐ | 70 分钟 | 保留八层生态选型视图，并用五平面生产架构解释 harness、外置状态、协议分层、拓扑感知多 agent、轨迹评估与隔离治理 | [../lessons/19-agent-ecosystem-and-frontier/README.md](../lessons/19-agent-ecosystem-and-frontier/README.md) |
 | 20 | Agent 前沿文章库 | ⭐⭐ | 45 分钟 | 按日期和体系层浏览前沿资料，查看摘要、来源、标签与原文入口 | [../lessons/20-agent-frontier-news/README.md](../lessons/20-agent-frontier-news/README.md) |
 
 ### 第 21 章 · 源码解析（source-analysis）
@@ -316,6 +317,14 @@
 | 🎓 | 现场服务调度 Agent | ⭐⭐⭐⭐☆ | 3-4 小时 | 一个派单调度工作流，输出工单优先级、技师匹配、备件检查、路线建议和 SLA 风险。 | [../capstone/field-service-dispatch/README.md](../capstone/field-service-dispatch/README.md) |
 | 🎓 | 隐私数据请求 Agent | ⭐⭐⭐⭐⭐ | 4-5 小时 | 一个隐私请求处理工作流，输出请求分类、身份验证缺口、系统清单、导出/删除计划和审计记录。 | [../capstone/privacy-dsr-automation/README.md](../capstone/privacy-dsr-automation/README.md) |
 
+### 🧭 2026 Agent 趋势与五平面架构蓝图
+
+> 目标：把近期 Agent 趋势从厂商名词还原为可恢复、可验证、可治理的生产责任与演进 gate。
+
+| # | 标题 | 难度 | 预计 | 一句话简介 | 链接 |
+|---|------|------|------|------------|------|
+| 🧭 | 2026 Agent 趋势与五平面架构 | ⭐⭐⭐⭐ | 60 分钟 | 用七条证据化趋势、五平面职责、L0–L4 成熟度和决策矩阵规划 agent 系统演进 | [./agent-trends-architecture.md](./agent-trends-architecture.md) |
+
 ### 🧭 RAG 完整架构蓝图
 
 > 目标：把仓库里的最小 RAG、进阶 RAG 和毕业项目 RAG 工具，整理成可落地到独立知识库产品的系统架构。
@@ -355,7 +364,7 @@
 
 ### 🧩 进阶 LangGraph 专题（langgraph-advanced）
 
-> 目标：把第 12 章的 LangGraph 入门继续往下挖，先用纯函数节点讲透状态图机制，再收集生产化章节路线。已完成 L1-L5；L6-L11 是生产化扩章地图，等逐章补齐六件套后再进入知识图谱。
+> 目标：把第 12 章的 LangGraph 入门继续往下挖，先用纯函数节点讲透状态图机制，再收集生产化章节路线。已完成 L1-L6；L7-L11 是生产化扩章地图，等逐章补齐六件套后再进入知识图谱。
 
 | # | 标题 | 难度 | 预计 | 一句话简介 | 链接 |
 |---|------|------|------|------------|------|
@@ -364,7 +373,8 @@
 | L3 | Checkpointer 持久化与时间旅行 | ⭐⭐⭐⭐ | 50 分钟 | 用 `thread_id`、`getState`、history、`updateState` 解释图的可恢复状态线 | [../langgraph-advanced/03-checkpointing/README.md](../langgraph-advanced/03-checkpointing/README.md) |
 | L4 | Human-in-the-Loop | ⭐⭐⭐⭐ | 50 分钟 | `interrupt` 暂停、读取 payload、`Command(resume)` 续跑，做危险操作审批门 | [../langgraph-advanced/04-human-in-the-loop/README.md](../langgraph-advanced/04-human-in-the-loop/README.md) |
 | L5 | 多 Agent 编排 | ⭐⭐⭐⭐ | 60 分钟 | supervisor 中心调度与并行 team fork/join，两种拓扑串起前四章机制 | [../langgraph-advanced/05-multi-agent-graph/README.md](../langgraph-advanced/05-multi-agent-graph/README.md) |
-| L6-L11 | 生产化扩章地图 | ⭐⭐⭐⭐ | 规划中 | event streaming、store、subgraph、fault tolerance、test/migration、deploy/observability 的章节候选与实现顺序 | [../langgraph-advanced/README.md#生产化扩章地图](../langgraph-advanced/README.md#生产化扩章地图) |
+| L6 | Event streaming 与前端投影 | ⭐⭐⭐⭐ | 45 分钟 | 用真实 multi-mode stream 区分 `values` / `updates` / `custom`，归一化为 user/debug/audit 安全事件 | [../langgraph-advanced/06-event-streaming/README.md](../langgraph-advanced/06-event-streaming/README.md) |
+| L7-L11 | 生产化扩章地图 | ⭐⭐⭐⭐ | 规划中 | store、subgraph、fault tolerance、test/migration、deploy/observability 的章节候选与实现顺序 | [../langgraph-advanced/README.md#生产化扩章地图](../langgraph-advanced/README.md#生产化扩章地图) |
 
 ---
 
@@ -377,6 +387,7 @@
 - **按 Agent 类型选路线** → 看 [Agent 学习指南与分类地图](./agent-learning-guides.md)：按 Chat、Tool、Workflow、Research、Copilot、Multi-agent、Coding、Monitoring 等类型倒推能力清单。
 - 🔬 **进阶 RAG（仓库内）** → 看 [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md)：分块、混合检索、重排、查询改写、评估、生产化、安全、索引与上下文工程，把第 08/09 章的最小 RAG 补成生产级，能力沉淀在 `src/shared/rag/`。
 - 🧩 **进阶 LangGraph（仓库内）** → 看 [进阶 LangGraph 专题](../langgraph-advanced/README.md)：从 StateGraph 机制走到 production runtime 的扩章地图。
+- 🧭 **Agent 架构演进** → 看 [2026 Agent 趋势与五平面架构蓝图](./agent-trends-architecture.md)：把 harness、上下文/记忆/工件、协议边界、多 agent 拓扑、评估、身份与隔离还原为生产责任和演进 gate。
 - **源码解析** → 看 [源码解析路线](../source-analysis/README.md)：先从热门库卡片或仓库矩阵定位源码边界，再用源码对话检索行号证据，并用 CodeMap 对照职责层，再顺着 LangChain、LangGraph、LlamaIndex 官方源码入口读懂框架运行时。
 - 🧭 **RAG 架构设计** → 看 [RAG 完整架构蓝图](./rag-architecture.md)：把 demo 能力组织成写入路径、查询路径、数据模型、安全治理、质量闭环和部署拓扑。
 - 🏢 **企业知识库 Agent** → 看 [企业知识库 Agent 蓝图](./enterprise-knowledge-base-agent.md)：把 RAG、记忆、工具、流式 UX、定时任务和部署串成一个企业级作品集。

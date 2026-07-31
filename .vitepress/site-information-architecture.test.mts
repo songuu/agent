@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
   CONTEXTUAL_SIDEBAR,
@@ -70,7 +71,32 @@ test("chapter-driven domains keep their full catalogs", () => {
   assert.equal(ragLinks.filter((link) => link.startsWith("/rag-advanced/")).length, 11);
   assert.equal(
     langGraphLinks.filter((link) => link.startsWith("/langgraph-advanced/")).length,
-    5,
+    6,
   );
+  assert.ok(langGraphLinks.includes("/langgraph-advanced/06-event-streaming/"));
   assert.equal(capstoneLinks.filter((link) => link.startsWith("/capstone/")).length, 28);
+});
+
+test("docs sidebar exposes the agent trends architecture blueprint", () => {
+  const links = collectSidebarLinks(CONTEXTUAL_SIDEBAR["/docs/"]);
+  assert.ok(links.includes("/docs/agent-trends-architecture"));
+});
+
+test("public LangGraph learning paths include L6 and no longer call L5 the finale", () => {
+  const learningGuide = readFileSync(
+    new URL("../docs/agent-learning-guides.md", import.meta.url),
+    "utf8",
+  );
+  const sourceGuide = readFileSync(new URL("../source-analysis/langgraph.md", import.meta.url), "utf8");
+  const l5Readme = readFileSync(
+    new URL("../langgraph-advanced/05-multi-agent-graph/README.md", import.meta.url),
+    "utf8",
+  );
+  const l5Demo = readFileSync(new URL("../langgraph-advanced/05-multi-agent-graph/index.ts", import.meta.url), "utf8");
+
+  assert.doesNotMatch(`${learningGuide}\n${sourceGuide}`, /L1-L5/);
+  assert.match(learningGuide, /L1-L6/);
+  assert.match(sourceGuide, /L1-L6/);
+  assert.doesNotMatch(`${l5Readme}\n${l5Demo}`, /本轨道收官|demo（收官）/);
+  assert.match(l5Readme, /06-event-streaming|L6/);
 });

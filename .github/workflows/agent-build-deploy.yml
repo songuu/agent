@@ -80,6 +80,8 @@ jobs:
         run: |
           set -euo pipefail
           pnpm typecheck
+          pnpm lg:typecheck
+          pnpm lg:smoke
           pnpm supabase:typecheck
           pnpm content:api:typecheck
           pnpm content:api:test
@@ -90,6 +92,8 @@ jobs:
           pnpm content:migrate:mysql:test
           npx tsx knowledge-graph/data/visuals.test.mts
           npx tsx knowledge-graph/generate.test.mts
+          pnpm agent:trends:test
+          npx tsx .vitepress/site-information-architecture.test.mts
           npx tsx .vitepress/theme/diagram-zoom.test.mts
           npx tsx .vitepress/theme/reduced-motion.test.mts
 

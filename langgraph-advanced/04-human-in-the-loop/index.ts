@@ -85,7 +85,7 @@ async function main(): Promise<void> {
   await graph.invoke({ amount: AMOUNT }, threadOops);
   const plain = await graph.invoke({ amount: 999 }, threadOops); // 普通输入，不是 Command
   const oopsSnap = await graph.getState(threadOops);
-  const proposeCount = plain.log.filter((entry) => entry.startsWith("propose")).length;
+  const proposeCount = plain.log.filter((entry: string) => entry.startsWith("propose")).length;
   // ⑥ 普通 invoke 不 resume：仍停在 humanReview、status 仍 pending、propose 跑了两次（重跑）。
   invariant(plain.status === "pending", "普通 invoke 不应 resume，status 仍 pending");
   invariant(JSON.stringify(oopsSnap.next) === JSON.stringify(["humanReview"]), "普通 invoke 后应仍暂停在 humanReview");

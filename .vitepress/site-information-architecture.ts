@@ -241,6 +241,7 @@ const docsSidebar: SiteSidebarItem[] = [
       { text: "Agent 学习指南", link: "/docs/agent-learning-guides" },
       { text: "求职指南", link: "/docs/career-guide" },
       { text: "创业指南", link: "/docs/startup-guide" },
+      { text: "2026 Agent 五平面架构", link: "/docs/agent-trends-architecture" },
       { text: "RAG 完整架构", link: "/docs/rag-architecture" },
       { text: "企业知识库 Agent", link: "/docs/enterprise-knowledge-base-agent" },
     ],

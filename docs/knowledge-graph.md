@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **65** 个单元、**329** 个概念、**457** 条关系、**255** 篇关联文章。
+共 **66** 个单元、**335** 个概念、**472** 条关系、**257** 篇关联文章。
 
 ## 章节地图
 
@@ -96,6 +96,7 @@ flowchart LR
     C_lg-checkpoint["lg-checkpoint Checkpointer 持久化与时间旅行"]
     C_lg-hitl["lg-hitl Human-in-the-Loop（interrupt 审批门）"]
     C_lg-multiagent["lg-multiagent 多 Agent 编排（supervisor / 并行 team）"]
+    C_lg-streaming["lg-streaming Event streaming 与安全前端投影"]
   end
   C_01 --> C_02
   C_02 --> C_03
@@ -161,6 +162,7 @@ flowchart LR
   C_lg-routing --> C_lg-checkpoint
   C_lg-checkpoint --> C_lg-hitl
   C_lg-hitl --> C_lg-multiagent
+  C_lg-multiagent --> C_lg-streaming
 ```
 
 ## 概念图谱
@@ -311,6 +313,7 @@ graph LR
   end
   subgraph G6["第七部分 · 前沿与生态"]
     n_c19_ecosystem_layers["Agent 生态分层"]
+    n_c19_five_plane_architecture["Agent 工程五平面"]
     n_c19_mcp["MCP (模型上下文协议)"]
     n_c19_a2a["A2A (Agent2Agent)"]
     n_c19_agent_sdk["Agent SDK"]
@@ -519,6 +522,11 @@ graph LR
     n_lgma_worker_routing["按类型路由到 worker"]
     n_lgma_parallel_team["并行异构 team（fork/join）"]
     n_lgma_order_independent_join["join 顺序无关聚合"]
+    n_lges_multi_mode_frame["多模式事件帧 (mode, payload)"]
+    n_lges_custom_progress["custom 业务进度"]
+    n_lges_updates_delta["updates 节点增量"]
+    n_lges_values_snapshot["values 完整快照"]
+    n_lges_safe_projection["安全前端投影"]
   end
   n_c01_llm_vs_agent -->|深化| n_c01_agent_formula
   n_c01_agent_formula -->|组成| n_c01_react_loop
@@ -675,6 +683,10 @@ graph LR
   n_c19_stack_selection -->|应用| n_c19_ecosystem_layers
   n_c19_stack_selection -->|应用| n_c19_agent_sdk
   n_c19_governance -->|应用| n_c19_orchestration_runtime
+  n_c19_ecosystem_layers -->|深化| n_c19_five_plane_architecture
+  n_c19_five_plane_architecture -->|应用| n_c19_orchestration_runtime
+  n_c19_five_plane_architecture -->|应用| n_c19_mcp
+  n_c19_five_plane_architecture -->|深化| n_c19_governance
   n_c20_news_archive -->|组成| n_c20_date_filter
   n_c20_news_archive -->|组成| n_c20_layer_filter
   n_c20_news_archive -->|组成| n_c20_article_detail
@@ -977,6 +989,17 @@ graph LR
   n_lgma_supervisor -->|应用| n_lgrt_loop
   n_lgma_parallel_team -->|对比| n_lgrt_send_fanout
   n_lgma_order_independent_join -->|应用| n_lgsg_reducer
+  n_lges_multi_mode_frame -->|组成| n_lges_custom_progress
+  n_lges_multi_mode_frame -->|组成| n_lges_updates_delta
+  n_lges_multi_mode_frame -->|组成| n_lges_values_snapshot
+  n_lges_updates_delta -->|对比| n_lges_values_snapshot
+  n_lges_multi_mode_frame -->|应用| n_lges_safe_projection
+  n_lges_custom_progress -->|应用| n_lges_safe_projection
+  n_lges_updates_delta -->|深化| n_lgsg_node_partial
+  n_lges_values_snapshot -->|对比| n_lgcp_getstate
+  n_lges_custom_progress -->|深化| n_c14_progress_streaming
+  n_lges_safe_projection -->|应用| n_c16_span_trace_tree
+  n_lges_safe_projection -->|应用| n_c17_output_validation
 ```
 
 ## 概念索引
@@ -1111,7 +1134,8 @@ graph LR
 | 密钥安全 (Secrets) | [18 部署：把 Agent 变成服务](../lessons/18-deployment/README.md) | key 只从环境变量读，绝不进代码/响应/日志 |
 | SSE 流式接口 (/chat/stream) | [18 部署：把 Agent 变成服务](../lessons/18-deployment/README.md) | text/event-stream 把 token 逐字推前端，断开做消费侧取消 |
 | 部署 checklist 与 Docker | [18 部署：把 Agent 变成服务](../lessons/18-deployment/README.md) | 端口从 env 读、健康检查、优雅退出、Dockerfile 与上线自查清单 |
-| Agent 生态分层 | [19 Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | 把 agent 栈拆成 8 个可替换工程层的拆解框架 |
+| Agent 生态分层 | [19 Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | 把 agent 栈拆成可替换工程层的拆解框架，避免被单一框架名词绑架 |
+| Agent 工程五平面 | [19 Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | 用智能与上下文、控制与会话、执行与工具、互操作与协作、保障与产品五个平面审视生产 agent |
 | MCP (模型上下文协议) | [19 Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | 标准化 agent 连接外部工具/数据/资源的协议，AI 的 USB-C |
 | A2A (Agent2Agent) | [19 Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | 标准化不同厂商 agent 间发现、通信与协作的协议 |
 | Agent SDK | [19 Agent 前沿发展与生态拆解](../lessons/19-agent-ecosystem-and-frontier/README.md) | 封装 loop/handoff/guardrail/session 的开发层，如 OpenAI/Vercel SDK |
@@ -1300,6 +1324,11 @@ graph LR
 | 按类型路由到 worker | [lg-multiagent 多 Agent 编排（supervisor / 并行 team）](../langgraph-advanced/05-multi-agent-graph/README.md) | supervisor 的条件边读队首任务类型，返回对应 worker 节点名（math/upper/echo）；队列空则返回 END 收工 |
 | 并行异构 team（fork/join） | [lg-multiagent 多 Agent 编排（supervisor / 并行 team）](../langgraph-advanced/05-multi-agent-graph/README.md) | 从 fork 点一次连出多条边，多个不同角色 agent 在同一 super-step 并行执行，结果汇入 join——并行、靠 reducer 合并 |
 | join 顺序无关聚合 | [lg-multiagent 多 Agent 编排（supervisor / 并行 team）](../langgraph-advanced/05-multi-agent-graph/README.md) | 并行产出的原始顺序不保证，append reducer 汇集后 join 先排序再聚合，使最终报告与各 agent 完成顺序无关、确定可回归 |
+| 多模式事件帧 (mode, payload) | [lg-streaming Event streaming 与安全前端投影](../langgraph-advanced/06-event-streaming/README.md) | 多模式 stream 把 mode 与 payload 组成统一帧；归一化时必须保留通道语义和原始顺序 |
+| custom 业务进度 | [lg-streaming Event streaming 与安全前端投影](../langgraph-advanced/06-event-streaming/README.md) | 节点主动发出面向用户的阶段进度，不必把内部 state 或调试事件直接暴露给前端 |
+| updates 节点增量 | [lg-streaming Event streaming 与安全前端投影](../langgraph-advanced/06-event-streaming/README.md) | 每个 super-step 只发本轮节点写入的 partial state，适合解释哪个节点改变了什么 |
+| values 完整快照 | [lg-streaming Event streaming 与安全前端投影](../langgraph-advanced/06-event-streaming/README.md) | 每个 super-step 发合并后的完整 state，适合恢复视图与核对最终投影，但载荷通常比 delta 更大 |
+| 安全前端投影 | [lg-streaming Event streaming 与安全前端投影](../langgraph-advanced/06-event-streaming/README.md) | 把原始事件白名单映射为 user/debug/audit 通道，未知事件显式降级，敏感内部状态不进入用户视图 |
 | 源码阅读路线 | [21 源码解析](../source-analysis/README.md) | 按入口函数、runtime、状态/工具/检索、停止条件四层读框架源码 |
 | 热门库直接解读 | [21 源码解析](../source-analysis/README.md) | 参照 DeepWiki 首页，把热门仓库做成可点击的源码解析入口 |
 | 仓库矩阵解析器 | [21 源码解析](../source-analysis/README.md) | 从热门库卡片或 GitHub 仓库输入后生成目录/包矩阵、Relevant Source Files、源码对话、CodeMap、语言分布和阅读路径 |
@@ -1353,7 +1382,7 @@ graph LR
 | [Codex Docs · Custom instructions with AGENTS.md](https://developers.openai.com/codex/guides/agents-md) | developers.openai.com | doc | 11 | OpenAI Codex 官方 AGENTS.md 文档：全局、项目、子目录指令链与覆盖规则 |
 | [OpenAI Agents SDK · Guardrails and human review](https://developers.openai.com/api/docs/guides/agents/guardrails-approvals) | OpenAI | doc | 11, 19 | OpenAI 官方：guardrails 与 human-in-the-loop approvals 控制敏感工具和副作用 |
 | [OpenAI Agents SDK · Integrations and observability](https://developers.openai.com/api/docs/guides/agents/integrations-observability) | OpenAI | doc | 11, 19 | OpenAI 官方：tracing 记录 model calls、tool calls、handoffs、guardrails 与 custom spans |
-| [Vercel AI SDK 官方文档](https://sdk.vercel.ai/docs) | Vercel | doc | 12, 19 | generateText / streamText / tool / maxSteps 的权威参考 |
+| [Vercel AI SDK 4→5 migration（legacy maxSteps）](https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0) | Vercel | doc | 12 | 本仓库仍 pin ai ^4.0.0；第 12 章的 maxSteps 属 legacy v4 API，官方从 v5 起改用 stopWhen / prepareStep，不能把它当作当前 AI SDK 7 的参考 |
 | [LangGraph.js 官方文档](https://langchain-ai.github.io/langgraphjs/) | langchain-ai.github.io | doc | 12 | StateGraph / createReactAgent / checkpointer 的权威参考 |
 | [Zod - TypeScript-first schema validation](https://zod.dev/) | zod.dev | doc | 13 | z.object / z.infer / safeParse 官方文档 |
 | [Vercel AI SDK - generateObject](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-object) | ai-sdk.dev | doc | 13 | 框架内建结构化输出 API 参考 |
@@ -1368,12 +1397,12 @@ graph LR
 | [Node.js HTTP module documentation](https://nodejs.org/api/http.html) | nodejs.org | doc | 18 | node:http 内置模块文档，本章无框架起服务的基础 |
 | [Model Context Protocol: What is MCP?](https://modelcontextprotocol.io/docs/getting-started/intro) | Model Context Protocol | doc | 19 | MCP 官方入门，工具/数据连接标准化的一手来源 |
 | [Model Context Protocol specification repository](https://github.com/modelcontextprotocol/modelcontextprotocol) | Model Context Protocol | doc | 19 | MCP 官方 specification 与文档仓库，用于复核协议层术语、版本与实现边界 |
-| [A2A Protocol specification](https://github.com/a2aproject/A2A/blob/main/docs/specification.md) | A2A Project | doc | 19 | A2A 官方 specification，对应 agent card、task/message、artifact/status 等跨 agent 协作对象 |
-| [Google Developers Blog · Announcing the Agent2Agent Protocol (A2A)](https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/) | Google Developers Blog | blog | 19 | Google Cloud 官方 A2A 发布文章，解释协议动机、设计原则、Agent Card、task/artifact/status 等生态背景 |
+| [A2A v1.0 specification](https://a2a-protocol.org/latest/specification/) | A2A Project | doc | 19 | 首个 stable、production-ready A2A 规范；覆盖多协议绑定、版本协商、多租户、签名 Agent Card 与 task/message/artifact/status，并保留 v0.3/v1.0 渐进迁移边界 |
+| [A2A v1.0 announcement](https://a2a-protocol.org/latest/announcing-1.0/) | A2A Project | blog | 19 | A2A 官方 v1.0 公告：首个 stable/production-ready 版本，说明 breaking interaction protocol、multi-protocol bindings、版本协商、多租户、签名 Agent Card 与 v0.3/v1.0 渐进迁移 |
 | [Google Agent Development Kit (ADK) docs](https://adk.dev/) | Google ADK | doc | 19 | Google ADK 官方文档，对应 Google 生态里的 agent 开发框架与多 agent 工程实践 |
 | [LangGraph overview](https://docs.langchain.com/oss/javascript/langgraph/overview) | LangChain | doc | 19 | 编排 runtime 代表，长任务持久化与 human-in-the-loop 官方文档 |
 | [LangSmith Observability](https://docs.langchain.com/langsmith/observability) | LangChain | doc | 19 | LangSmith 官方观测文档，对应 agent tracing、调试、线上监控与评估治理层 |
-| [Vercel AI SDK 5 announcement](https://vercel.com/blog/ai-sdk-5) | Vercel | blog | 19 | Vercel 官方 AI SDK 5 发布文章，对应前端流式 UI、typed messages、tooling 与产品体验层趋势 |
+| [Vercel AI SDK 7](https://vercel.com/changelog/ai-sdk-7) | Vercel | blog | 19 | Vercel 官方 AI SDK 7 发布说明：新增 durable WorkflowAgent、sandbox、tool approval、harness adapters 与 telemetry，同时要求 Node.js 22 + ESM 迁移验证 |
 | [Vercel AI SDK UI · Chatbot](https://ai-sdk.dev/docs/ai-sdk-ui/chatbot) | Vercel | doc | 19 | Vercel AI SDK UI 官方 chatbot 文档，对应产品/UI 层的对话体验与状态管理 |
 | [CrewAI introduction](https://docs.crewai.com/en/introduction) | CrewAI | doc | 19 | CrewAI 官方入门，对应企业流程自动化、Flows 与 Crews 的团队/流程 runtime 心智模型 |
 | [CrewAI Flows](https://docs.crewai.com/en/concepts/flows) | CrewAI | doc | 19 | CrewAI 官方 Flows 文档，对应事件驱动 workflow、状态管理、条件控制流与长期流程编排 |
@@ -1570,6 +1599,8 @@ graph LR
 | [LangGraph.js · How to wait for user input using interrupt](https://langchain-ai.github.io/langgraphjs/how-tos/wait-user-input-functional/) | langchain-ai.github.io | doc | lg-hitl | 用 interrupt 暂停等用户输入、再用 Command({resume}) 续跑的官方 how-to，对应本章审批门 demo |
 | [LangGraph.js · Multi-agent systems（概念）](https://langchain-ai.github.io/langgraphjs/concepts/multi_agent/) | langchain-ai.github.io | doc | lg-multiagent | 官方多 agent 拓扑总览：supervisor、network、hierarchical 等——本章 supervisor / parallel team 的权威参考 |
 | [LangGraph.js · Agent supervisor（教程）](https://langchain-ai.github.io/langgraphjs/tutorials/multi_agent/agent_supervisor/) | langchain-ai.github.io | doc | lg-multiagent | 一个 supervisor 用条件边把任务派给多个 worker agent 的官方教程，对应本章图1 的中心化调度循环 |
+| [LangGraph.js · Streaming](https://docs.langchain.com/oss/javascript/langgraph/streaming) | LangChain | doc | lg-streaming | LangGraph 官方 streaming 文档：解释 values、updates、custom 等模式及多模式消费，是本章事件帧与投影契约的权威来源 |
+| [LangGraph.js · Event streaming](https://docs.langchain.com/oss/javascript/langgraph/event-streaming) | LangChain | doc | lg-streaming | LangGraph 官方 event streaming 文档：说明图运行事件如何被客户端消费，对应本章从运行时事件到安全前端投影的边界 |
 | [DeepWiki](https://deepwiki.com/) | DeepWiki | doc | 21 | 源码仓库 Wiki 参考形态：热门仓库入口、目录化 Wiki、Relevant source files、源码对话、CodeMap 和源码引用 |
 | [LangChain v1 agents source](https://github.com/langchain-ai/langchain/blob/master/libs/langchain_v1/langchain/agents/factory.py) | LangChain | doc | 21 | LangChain 官方源码入口：create_agent 如何组装模型、工具、middleware、structured output 与 agent runtime |
 | [LangGraph StateGraph and Pregel runtime source](https://github.com/langchain-ai/langgraph/blob/main/libs/langgraph/langgraph/graph/state.py) | LangGraph | doc | 21 | LangGraph 官方源码入口：StateGraph 的 state schema、channel reducer、node、edge 与 compile |

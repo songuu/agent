@@ -19,6 +19,7 @@
 | 毕业项目 | 想把前面能力组装成完整作品 | [毕业项目总览（28 个）](../capstone/README.md) · [Deep Research Agent](../capstone/deep-research-agent/README.md) · [客服 Copilot](../capstone/support-copilot/README.md) · [代码评审团](../capstone/code-review-crew/README.md) · [Agent 评测与回归门](../capstone/agent-eval-harness/README.md) · [告警响应](../capstone/incident-responder/README.md) · [反馈洞察](../capstone/feedback-intelligence/README.md) · [销售线索研究](../capstone/sales-lead-researcher/README.md) · [企业知识库 Agent](../capstone/enterprise-knowledge-base-agent/README.md) |
 | 进阶 RAG 专题 | 想把最小 RAG 补成生产级（分块/混合/精排/改写/评估/生产化） | [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md) |
 | 进阶 LangGraph 专题 | 想把第 12 章的框架入门补成状态图、持久化、HITL、多 agent 与生产化路线 | [进阶 LangGraph 专题](../langgraph-advanced/README.md) |
+| 2026 Agent 架构蓝图 | 想把近期 agent 趋势落成可演进的工程框架，而不是继续堆框架名 | [五平面架构与落地路线](./agent-trends-architecture.md) |
 | RAG 完整架构 | 想把 RAG 从 demo 设计成可维护系统 | [RAG 完整架构蓝图](./rag-architecture.md) |
 | 企业知识库 Agent | 想把 RAG、记忆、工具、流式 UX、评估和部署串成一个企业级作品集 | [企业知识库 Agent 蓝图](./enterprise-knowledge-base-agent.md) · [企业知识库 Agent Capstone](../capstone/enterprise-knowledge-base-agent/README.md) |
 | RAG 实战项目 | 想从课程最小 RAG 走向生产级知识库系统 | [仓库内 checkpoint](../capstone/rag-system/README.md) · [songuu/rag-system 连接指南](./rag-system-project.md) |
@@ -79,6 +80,7 @@
 | 🎓 | 供应链管理实战 | [供应链风险雷达 Agent](../capstone/supply-chain-risk-radar/README.md) | 一个供应链风险工作流，输出风险评分、影响 SKU、替代供应商、行动建议和监控节奏。 |
 | 🎓 | 服务交付实战 | [现场服务调度 Agent](../capstone/field-service-dispatch/README.md) | 一个派单调度工作流，输出工单优先级、技师匹配、备件检查、路线建议和 SLA 风险。 |
 | 🎓 | 隐私合规实战 | [隐私数据请求 Agent](../capstone/privacy-dsr-automation/README.md) | 一个隐私请求处理工作流，输出请求分类、身份验证缺口、系统清单、导出/删除计划和审计记录。 |
+| 🧭 | Agent 架构蓝图 | [2026 Agent 趋势与五平面架构](./agent-trends-architecture.md) | intelligence、control、execution、interoperability、assurance 五平面及分阶段落地路线 |
 | 🧭 | 架构蓝图 | [RAG 完整架构蓝图](./rag-architecture.md) | ingestion、query、eval、governance、deployment 系统边界 |
 | 🏢 | 纵向蓝图 | [企业知识库 Agent 蓝图](./enterprise-knowledge-base-agent.md) | RAG、记忆、Agent runtime、事件流、定时任务、部署里程碑 |
 | 📚 | 进阶项目 | [RAG System Checkpoint](../capstone/rag-system/README.md) → [RAG 系统实战项目](./rag-system-project.md) | 仓库内验收最小 RAG 系统闭环，再连接 `songuu/rag-system` |
@@ -103,7 +105,7 @@
 
 ## 进阶 LangGraph 专题（langgraph-advanced）
 
-> 第 12 章打地基后的状态图深化。已完成 L1-L5；生产化扩章 L6-L11 先收集在专题首页，待逐章补齐六件套后再进入知识图谱。
+> 第 12 章打地基后的状态图深化。已完成 L1-L6；生产化扩章 L7-L11 先收集在专题首页，待逐章补齐六件套后再进入知识图谱。
 
 | # | 专题 | 链接 | 核心能力 |
 |---|------|------|----------|
@@ -112,7 +114,8 @@
 | L3 | Checkpointer 持久化与时间旅行 | [03-checkpointing](../langgraph-advanced/03-checkpointing/README.md) | thread、checkpoint、history、time travel |
 | L4 | Human-in-the-Loop | [04-human-in-the-loop](../langgraph-advanced/04-human-in-the-loop/README.md) | `interrupt`、payload、`Command(resume)` |
 | L5 | 多 Agent 编排 | [05-multi-agent-graph](../langgraph-advanced/05-multi-agent-graph/README.md) | supervisor、worker routing、parallel team |
-| L6-L11 | 生产化扩章地图 | [专题首页](../langgraph-advanced/README.md#生产化扩章地图) | event streaming、store、subgraph、fault tolerance、test/migration、deploy/observability |
+| L6 | Event streaming 与前端投影 | [06-event-streaming](../langgraph-advanced/06-event-streaming/README.md) | `values` / `updates` / `custom` 与 user/debug/audit 安全投影 |
+| L7-L11 | 生产化扩章地图 | [专题首页](../langgraph-advanced/README.md#生产化扩章地图) | store、subgraph、fault tolerance、test/migration、deploy/observability |
 
 ## 第 21 章 · 源码解析（source-analysis）
 

@@ -13,6 +13,13 @@ interface EcosystemLayer {
   examples: string[];
 }
 
+interface ProductionPlane {
+  plane: string;
+  owns: string[];
+  contract: string;
+  boundary: string;
+}
+
 interface Scenario {
   name: string;
   constraints: string[];
@@ -34,7 +41,7 @@ const layers: EcosystemLayer[] = [
   {
     layer: "Agent SDK 层",
     question: "谁负责 loop、handoff、guardrails、session、trace?",
-    examples: ["OpenAI Agents SDK", "Vercel AI SDK Agent", "custom runAgent"],
+    examples: ["OpenAI Agents SDK", "Vercel AI SDK 7 WorkflowAgent", "custom runAgent"],
   },
   {
     layer: "编排 runtime 层",
@@ -63,12 +70,45 @@ const layers: EcosystemLayer[] = [
   },
 ];
 
+const productionPlanes: ProductionPlane[] = [
+  {
+    plane: "1. Intelligence & Context",
+    owns: ["models", "instructions/skills", "RAG", "memory", "context budget"],
+    contract: "Goal + evidence + schema -> structured intent + citations + uncertainty",
+    boundary: "提出下一步，但不把模型文本当成已经完成的业务结果。",
+  },
+  {
+    plane: "2. Control & Harness",
+    owns: ["session lifecycle", "workflow/loop", "checkpoint", "retry/cancel", "budget/lease"],
+    contract: "Checkpoint + policy snapshot -> next state + execution intent + recovery point",
+    boundary: "控制任务和恢复，不直接持有高权限凭证或绕过执行策略。",
+  },
+  {
+    plane: "3. Execution & Capability",
+    owns: ["sandbox", "tools", "credentials", "timeouts", "idempotent side effects"],
+    contract: "Validated capability request -> result/error + state diff + artifact + audit id",
+    boundary: "执行经过授权的意图，不自主扩大权限或宣布整个任务成功。",
+  },
+  {
+    plane: "4. Interoperability & Coordination",
+    owns: ["MCP", "A2A", "capability discovery", "delegation", "task/artifact/status"],
+    contract: "Version + identity + task boundary -> traceable delegation + compatibility result",
+    boundary: "标准化通信，不替代内部 workflow、身份治理或对远端结果的验证。",
+  },
+  {
+    plane: "5. Assurance & Experience",
+    owns: ["event projection", "HITL", "trace/eval", "policy gates", "cost/SLO", "outcome evidence"],
+    contract: "Events + real state diff + evidence -> pass/block/review + explainable user state",
+    boundary: "证明结果并呈现风险，不把有日志误判成结果正确。",
+  },
+];
+
 const scenarios: Scenario[] = [
   {
     name: "前端聊天产品",
     constraints: ["TypeScript 全栈", "流式体验", "工具调用状态要显示给用户"],
-    recommendedStack: ["Vercel AI SDK", "custom tools", "tracing/eval later"],
-    why: "主要矛盾在 UI、streaming、类型安全和产品体验，不是复杂长任务恢复。",
+    recommendedStack: ["Vercel AI SDK 7", "custom tools", "tracing/eval later"],
+    why: "主要矛盾在 UI、streaming、类型安全和产品体验；可恢复的有界 workflow 可评估 WorkflowAgent，显式复杂状态拓扑仍与 graph runtime 对照。",
   },
   {
     name: "企业长任务审批流",
@@ -139,6 +179,17 @@ function printUpgradePath(): void {
   for (const step of steps) console.log(step);
 }
 
+function printProductionPlanes(): void {
+  printSection("Production responsibility planes");
+  for (const plane of productionPlanes) {
+    console.log(`\n${plane.plane}`);
+    console.log(`  Owns: ${plane.owns.join(", ")}`);
+    console.log(`  Contract: ${plane.contract}`);
+    console.log(`  Boundary: ${plane.boundary}`);
+  }
+}
+
 printLayers();
 printScenarios();
 printUpgradePath();
+printProductionPlanes();
