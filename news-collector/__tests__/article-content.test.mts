@@ -100,6 +100,25 @@ If you want to find out just how badly Meta bungled the creation of its new Appl
   assert.doesNotMatch(result.text, /EXPERT OPINION/);
 });
 
+test("fetchArticleContent treats Hacker News discussion pages as empty content", async () => {
+  let calls = 0;
+  const fetchImpl = async (): Promise<Response> => {
+    calls += 1;
+    throw new Error("HN discussion pages should not be fetched for article body extraction");
+  };
+
+  const result = await fetchArticleContent(
+    "https://news.ycombinator.com/item?id=49068241",
+    { now: new Date("2026-07-31T00:00:00.000Z") },
+    fetchImpl as typeof fetch,
+  );
+
+  assert.equal(calls, 0);
+  assert.equal(result.status, "empty");
+  assert.equal(result.fetchedAt, "2026-07-31T00:00:00.000Z");
+  assert.match(result.error ?? "", /Hacker News discussion/);
+});
+
 test("buildArticleExcerpt uses first readable paragraph", () => {
   assert.equal(
     buildArticleExcerpt("第一段是正文摘要，应该用于列表展示。\n\n第二段只在详情页继续展示。", 30),

@@ -75,7 +75,6 @@ test("2026-07-21 live-probed official feeds stay enabled at their verified URLs"
     "weaviate-blog": "https://weaviate.io/blog/rss.xml",
     "redhat-ai": "https://www.redhat.com/en/rss/blog/channel/artificial-intelligence",
     "microsoft-agent-framework-releases": "https://github.com/microsoft/agent-framework/releases.atom",
-    "owasp-genai": "https://genai.owasp.org/feed/",
   } as const;
   const enabled = new Map(enabledSources().map((source) => [source.key, source]));
 
@@ -106,7 +105,7 @@ test("high-value sources have independent fallbacks for transient upstream failu
   }
 });
 test("challenge-protected sources stay documented but disabled", () => {
-  for (const key of ["linuxdo-latest", "36kr-feed", "techweb-it"]) {
+  for (const key of ["linuxdo-latest", "36kr-feed", "techweb-it", "owasp-genai"]) {
     const source = SOURCES.find((candidate) => candidate.key === key);
 
     assert.ok(source, `${key} should remain documented in the source registry`);

@@ -6,6 +6,7 @@
 import cron from "node-cron";
 import { collectFromConfig } from "./collect.ts";
 import { loadConfig, type RunConfig } from "./config.ts";
+import { notifyCollectReport, notifyRunFailure } from "./notify.ts";
 import { formatReport } from "./report.ts";
 
 function log(message: string): void {
@@ -20,12 +21,19 @@ async function runOnce(config: RunConfig): Promise<void> {
   try {
     const report = await collectFromConfig(config);
     log(formatReport(report));
+    try {
+      await notifyCollectReport(report, config.notification);
+    } catch (error: unknown) {
+      logError(`[news-collector] Feishu notification failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
   } catch (error: unknown) {
-    logError(
-      `[news-collector] run failed: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
-    );
+    const message = `[news-collector] run failed: ${error instanceof Error ? error.message : String(error)}`;
+    logError(message);
+    try {
+      await notifyRunFailure(error, config.notification);
+    } catch (notifyError: unknown) {
+      logError(`[news-collector] Feishu notification failed: ${notifyError instanceof Error ? notifyError.message : String(notifyError)}`);
+    }
   }
 }
 
@@ -40,7 +48,8 @@ function main(): void {
     `[news-collector] daemon up. cron="${config.cron}" tz=${config.timezone} ` +
       `dryRun=${config.dryRun} enrichProvider=${config.enrichProvider} enrichMax=${config.enrichMax} ` +
       `translationMax=${config.translationMaxItems} translationConcurrency=${config.translationConcurrency} ` +
-      `translationTimeoutMs=${config.translationTimeoutMs} translationMaxAttempts=${config.translationMaxAttempts}`,
+      `translationTimeoutMs=${config.translationTimeoutMs} translationMaxAttempts=${config.translationMaxAttempts} ` +
+      `notify=${config.notification.feishuWebhookUrl ? "feishu" : "off"}`,
   );
 
   const task = cron.schedule(

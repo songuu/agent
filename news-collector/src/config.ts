@@ -67,6 +67,12 @@ const envSchema = z.object({
   NEWS_ARTICLE_CONTENT_TIMEOUT_MS: z.coerce.number().int().positive().default(12_000),
   // 每轮最多抓正文的文章数，避免首次/大批量运行拖垮采集。
   NEWS_ARTICLE_CONTENT_MAX_ITEMS: z.coerce.number().int().min(0).default(80),
+  // 飞书自定义机器人告警；空值=只打日志不通知。
+  NEWS_FEISHU_WEBHOOK_URL: optionalEnvUrl,
+  NEWS_FEISHU_WEBHOOK_SECRET: optionalEnvString,
+  NEWS_NOTIFY_ON_SOURCE_FAILURE: boolFromEnv(true),
+  NEWS_NOTIFY_ON_CONTENT_FAILURE: boolFromEnv(false),
+  NEWS_NOTIFY_ON_TRANSLATION_FAILURE: boolFromEnv(false),
   // 兼容旧 collector 配置；优先建议使用 ANTHROPIC_MODEL / OPENAI_MODEL。
   NEWS_ENRICH_MODEL: optionalEnvString,
 });
@@ -99,9 +105,18 @@ export interface RunConfig {
   readonly articleContentEnabled: boolean;
   readonly articleContentTimeoutMs: number;
   readonly articleContentMaxItems: number;
+  readonly notification: NewsNotificationConfig;
   readonly cron: string;
   readonly timezone: string;
   readonly runAtBoot: boolean;
+}
+
+export interface NewsNotificationConfig {
+  readonly feishuWebhookUrl?: string;
+  readonly feishuWebhookSecret?: string;
+  readonly notifyOnSourceFailure: boolean;
+  readonly notifyOnContentFailure: boolean;
+  readonly notifyOnTranslationFailure: boolean;
 }
 
 function hasProviderCredential(env: NewsEnv): boolean {
@@ -152,6 +167,13 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): RunConfig {
     translationMaxAttempts: env.NEWS_TRANSLATION_MAX_ATTEMPTS,
     articleContentTimeoutMs: env.NEWS_ARTICLE_CONTENT_TIMEOUT_MS,
     articleContentMaxItems: env.NEWS_ARTICLE_CONTENT_MAX_ITEMS,
+    notification: {
+      feishuWebhookUrl: env.NEWS_FEISHU_WEBHOOK_URL,
+      feishuWebhookSecret: env.NEWS_FEISHU_WEBHOOK_SECRET,
+      notifyOnSourceFailure: env.NEWS_NOTIFY_ON_SOURCE_FAILURE,
+      notifyOnContentFailure: env.NEWS_NOTIFY_ON_CONTENT_FAILURE,
+      notifyOnTranslationFailure: env.NEWS_NOTIFY_ON_TRANSLATION_FAILURE,
+    },
     cron: env.NEWS_CRON,
     timezone: env.NEWS_TZ,
     runAtBoot: env.NEWS_RUN_AT_BOOT,

@@ -333,7 +333,8 @@ export const SOURCES: readonly NewsSource[] = [
     kind: "community",
     lang: "en",
     layerHint: "security-governance",
-    enabled: true,
+    // 2026-07-31: service-side live runs receive HTTP 403 for the feed; keep documented until a parseable feed is available.
+    enabled: false,
   },
   // —— 官方框架 / SDK release feed：补足 Agent 工程实践层 —— 
   {

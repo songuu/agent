@@ -49,6 +49,9 @@ export async function fetchArticleContent(
 ): Promise<ArticleContentResult> {
   const fetchedAt = (options.now ?? new Date()).toISOString();
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const skipReason = knownArticleContentSkipReason(url);
+  if (skipReason) return emptyResult("empty", fetchedAt, skipReason);
+
   const directResult = await fetchAndExtractArticle(url, fetchedAt, timeoutMs, fetchImpl, {
     accept: ACCEPT_HTML,
     extractor: extractArticleTextFromHtml,
@@ -65,6 +68,18 @@ export async function fetchArticleContent(
 
   if (readerResult.status === "fetched") return readerResult;
   return mergeFallbackErrors(directResult, readerResult);
+}
+
+function knownArticleContentSkipReason(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.toLowerCase() === "news.ycombinator.com" && parsed.pathname === "/item") {
+      return "Hacker News discussion pages are intentionally skipped for article body extraction; feed title and summary are retained";
+    }
+  } catch {
+    return null;
+  }
+  return null;
 }
 
 export function extractArticleTextFromHtml(html: string): string {

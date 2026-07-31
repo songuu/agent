@@ -274,3 +274,42 @@ test("a transient invalid JSON response is retried once and records the successf
   assert.equal(translated.titleZh, "重试成功");
   assert.equal((translated.metadata.translation as Record<string, unknown>).attempts, 2);
 });
+
+test("a non JSON response is retried with repair context", async () => {
+  const prompts: string[] = [];
+  let calls = 0;
+  const [translated] = await translateItems([newsItem()], {
+    maxItems: 1,
+    maxAttempts: 2,
+    client: {
+      async chat(options) {
+        calls += 1;
+        prompts.push(options.messages[0]?.content ?? "");
+        if (calls === 1) {
+          return {
+            text: "I cannot provide a strict JSON translation for this request.",
+            toolCalls: [],
+            stopReason: "stop",
+            usage: { inputTokens: 10, outputTokens: 10 },
+          };
+        }
+        return {
+          text: JSON.stringify({
+            titleZh: "修复提示成功",
+            summaryZh: "第二次严格返回 JSON。",
+            contentParagraphsZh: ["第一段。", "第二段。"],
+          }),
+          toolCalls: [],
+          stopReason: "stop",
+          usage: { inputTokens: 10, outputTokens: 20 },
+        };
+      },
+    },
+  });
+
+  assert.equal(calls, 2);
+  assert.equal(translated.translationStatus, "translated");
+  assert.match(prompts[1] ?? "", /上一次响应未通过校验/);
+  assert.match(prompts[1] ?? "", /did not contain a JSON object/);
+  assert.match(prompts[1] ?? "", /I cannot provide a strict JSON translation/);
+});

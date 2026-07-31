@@ -93,6 +93,32 @@ test("feed concurrency defaults to a conservative four workers and accepts overr
   assert.equal(loadConfig({}).feedConcurrency, 4);
   assert.equal(loadConfig({ NEWS_FEED_CONCURRENCY: "2" }).feedConcurrency, 2);
 });
+test("Feishu notifications are optional and default to RSS source failures only", () => {
+  assert.deepEqual(loadConfig({}).notification, {
+    feishuWebhookUrl: undefined,
+    feishuWebhookSecret: undefined,
+    notifyOnSourceFailure: true,
+    notifyOnContentFailure: false,
+    notifyOnTranslationFailure: false,
+  });
+
+  assert.deepEqual(
+    loadConfig({
+      NEWS_FEISHU_WEBHOOK_URL: "https://open.feishu.cn/open-apis/bot/v2/hook/test",
+      NEWS_FEISHU_WEBHOOK_SECRET: "test-secret",
+      NEWS_NOTIFY_ON_SOURCE_FAILURE: "false",
+      NEWS_NOTIFY_ON_CONTENT_FAILURE: "true",
+      NEWS_NOTIFY_ON_TRANSLATION_FAILURE: "true",
+    }).notification,
+    {
+      feishuWebhookUrl: "https://open.feishu.cn/open-apis/bot/v2/hook/test",
+      feishuWebhookSecret: "test-secret",
+      notifyOnSourceFailure: false,
+      notifyOnContentFailure: true,
+      notifyOnTranslationFailure: true,
+    },
+  );
+});
 
 test("MySQL content repository enables writes without Supabase credentials", () => {
   const config = loadConfig({

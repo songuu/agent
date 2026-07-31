@@ -89,11 +89,11 @@ news-collector/
 | weaviate-blog | Weaviate Blog | 数据与记忆 | ✅ 官方 RSS |
 | redhat-ai | Red Hat AI | 企业运行时 | ✅ 官方 RSS |
 | microsoft-agent-framework-releases | Microsoft Agent Framework Releases | Agent 运行时 | ✅ 官方 Atom |
-| owasp-genai | OWASP GenAI Security Project | 安全治理 | ✅ 官方 RSS |
+| owasp-genai | OWASP GenAI Security Project | 安全治理 | ❌ 403（保留注册，默认禁用） |
 | huggingface | Hugging Face Blog | 厂商 | ✅ 官方 RSS |
 | openai | OpenAI News | 厂商 | ✅ 官方 RSS |
 
-当前注册 63 个来源，其中 60 个启用。加源：编辑 `src/sources.ts` 的 `SOURCES` 数组（key / name / url / kind / lang / 可选 layerHint）。只加入现有 `fetchFeed` 能实时解析并返回条目的 RSS/Atom 源。
+当前注册 63 个来源，其中 59 个启用。加源：编辑 `src/sources.ts` 的 `SOURCES` 数组（key / name / url / kind / lang / 可选 layerHint）。只加入现有 `fetchFeed` 能实时解析并返回条目的 RSS/Atom 源。
 
 ## 快速开始
 
@@ -199,7 +199,8 @@ journalctl -u news-collector -f
 
 ## 故障排查
 
-- **某些源 0 items / ✗**：多为间歇 502 或 feed 改版；故障隔离保证其它源照常。改 `src/sources.ts` 增删源。
+- **某些源 0 items / ✗**：多为间歇 502、403 或 feed 改版；故障隔离保证其它源照常。配置 `NEWS_FEISHU_WEBHOOK_URL` 后会主动推送到飞书。改 `src/sources.ts` 增删源。
+- **飞书没有收到告警**：确认群机器人 webhook/签名密钥在服务器 `.env` 中，飞书机器人安全设置中的关键词应包含 `RSS 采集告警`，并在 PM2 重启日志中看到 `notify=feishu`。
 - **PostgreSQL 写库失败**：先确认 `CONTENT_REPOSITORY_POSTGRES_ONLY=true`、`CONTENT_REPOSITORY_DRIVER=postgres` 和 `CONTENT_POSTGRES_URL` / `CONTENT_POSTGRES_WRITE_URL`，再核对表 schema、网络、SSL 与最小权限账号。
 - **legacy Supabase/MySQL 手工脚本失败**：只在迁移/回归时处理；不要把它们作为当前定时 writer 的成功路径。
 - **dryRun 一直生效**：检查 `NEWS_DRY_RUN=true` 或命令是否显式 dry-run；PostgreSQL-only 配置缺失应直接失败，不应静默 dry-run 或回退 Supabase。

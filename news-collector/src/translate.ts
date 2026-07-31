@@ -85,22 +85,36 @@ const TRANSLATION_TOOL: ToolSpec = {
   },
 };
 
-function buildPrompt(item: NewsItem, contentParagraphs: readonly string[]): string {
+function buildPrompt(
+  item: NewsItem,
+  contentParagraphs: readonly string[],
+  previousFailure?: { readonly error: string; readonly responseText: string },
+): string {
   const payload = {
     title: item.title,
     summary: item.summary,
     contentParagraphs,
   };
-  return [
+  const instructions = [
     "你是专业的英中科技文章翻译。把下面 JSON 中的英文完整翻译为简体中文。",
     "必须忠实翻译，不得摘要、扩写、删减、合并或拆分段落。",
     "术语、产品名、模型名、代码、URL 和数字要保持准确；中文表达自然但不改变事实与语气。",
     "返回严格 JSON，字段固定为 titleZh、summaryZh、contentParagraphsZh。",
     "contentParagraphsZh 必须与 contentParagraphs 数量和顺序完全一致。",
     "若支持工具调用，必须调用 emit_translation；否则只输出严格 JSON，不要 Markdown 代码围栏或解释。",
-    "",
-    JSON.stringify(payload),
-  ].join("\n");
+    "返回内容必须以 { 开始、以 } 结束；不要道歉、解释或自然语言前后缀。",
+  ];
+
+  if (previousFailure) {
+    instructions.push(
+      "",
+      `上一次响应未通过校验：${previousFailure.error}`,
+      `上一次响应片段：${previousFailure.responseText || "<empty>"}`,
+      "请修正格式并只返回一个 JSON object，必须以 { 开始、以 } 结束。",
+    );
+  }
+
+  return [...instructions, "", JSON.stringify(payload)].join("\n");
 }
 
 function parseResponse(text: string, expectedParagraphCount: number): TranslationResponse {
@@ -184,17 +198,19 @@ async function translateOne(
 ): Promise<NewsItem> {
   const sourceParagraphs = splitSourceParagraphs(item.contentText);
   let detail = "translation failed";
+  let previousFailure: { error: string; responseText: string } | undefined;
   for (let attempt = 1; attempt <= options.maxAttempts; attempt += 1) {
+    let responseText = "";
     try {
       const response = await client.chat({
         maxTokens: 4_096,
         temperature: 0,
         signal: AbortSignal.timeout(options.timeoutMs),
         tools: [TRANSLATION_TOOL],
-        messages: [{ role: "user", content: buildPrompt(item, sourceParagraphs) }],
+        messages: [{ role: "user", content: buildPrompt(item, sourceParagraphs, previousFailure) }],
       });
       const toolCall = response.toolCalls.find((call) => call.name === TRANSLATION_TOOL.name);
-      const responseText = toolCall ? JSON.stringify(toolCall.arguments) : response.text;
+      responseText = toolCall ? JSON.stringify(toolCall.arguments) : response.text;
       const translated = parseResponse(responseText, sourceParagraphs.length);
       return {
         ...item,
@@ -207,6 +223,10 @@ async function translateOne(
       };
     } catch (error) {
       detail = (error instanceof Error ? error.message : String(error)).slice(0, 500);
+      previousFailure = {
+        error: detail,
+        responseText: responseText.replace(/\s+/g, " ").trim().slice(0, 500),
+      };
     }
   }
   return {
