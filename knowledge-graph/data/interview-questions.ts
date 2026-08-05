@@ -39,7 +39,7 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   project: "项目深挖类",
 };
 
-const COLLECTED_DATE = "2026-07-29";
+const COLLECTED_DATE = "2026-08-05";
 const COLLECTED_AT = `${COLLECTED_DATE}T09:00:00+08:00`;
 
 interface RawInterviewQuestion {
@@ -1595,6 +1595,126 @@ const RAW_QUESTIONS: RawInterviewQuestion[] = [
     rationale:
       "本题来自 2026-07-27 arXiv：模型报告把 agentic RL、长上下文和 sandbox state 放进训练/评测资产，适合考开源模型平台治理。",
   },
+  {
+    slug: "cloudflare-agents-durable-edge-runtime-boundary",
+    category: "engineering",
+    question:
+      "Cloudflare Agents 这类边缘 agent runtime 为什么要把 Durable Objects、SQL state、schedule、human-in-the-loop、MCP 和 workflows 放在同一套部署边界里评估？",
+    relatedChapters: ["05", "11", "12", "14", "16", "17", "18", "19"],
+    sourceTitles: ["Cloudflare Agents SDK 0.20.0 package and docs"],
+    sourceUrls: ["https://www.npmjs.com/package/agents"],
+    confidence: "high",
+    rationale:
+      "本题来自 npm / Cloudflare Agents 官方文档：边缘 agent 的生产问题集中在状态、触发、工具协议、人工确认和执行身份，而不是单次模型调用。",
+  },
+  {
+    slug: "make-ai-agent-subagents-output-filtering-boundary",
+    category: "engineering",
+    question:
+      "低代码 AI Agent 加入 sub-agents 和 tool output filtering 时，为什么这不仅是功能增强，而是在重划委托边界、上下文预算、敏感字段暴露和可测试性？",
+    relatedChapters: ["05", "07", "11", "14", "16", "17", "19"],
+    sourceTitles: ["Make AI Agent: Sub-agents and tool output filtering"],
+    sourceUrls: ["https://help.make.com/ai-agents/make-ai-agent-sub-agents-and-tool-output-filtering"],
+    confidence: "high",
+    rationale:
+      "本题来自 Make Help Center 2026-07-27：sub-agents 处理职责拆分，tool output filtering 处理上下文瘦身和字段投影，适合考产品化 agent 控制面。",
+  },
+  {
+    slug: "enterprise-coding-agent-portfolio-governance",
+    category: "engineering",
+    question:
+      "企业从单一 Copilot 许可转向 Codex、Claude Code、Cursor 等 coding agent 工具组合时，为什么治理重点会从“哪个模型更强”变成权限、审计、成本、数据边界和迁移路径？",
+    relatedChapters: ["12", "15", "16", "17", "18", "19", "capstone"],
+    sourceTitles: ["Disney steers developers from GitHub Copilot toward Codex, Claude Code and Cursor"],
+    sourceUrls: ["https://www.businessinsider.com/disney-microsoft-github-copilot-openai-codex-ai-tools-claude-cursor-2026-7"],
+    confidence: "medium",
+    rationale:
+      "本题来自 2026-07-30 Business Insider 企业采用报道：可作为采购/迁移治理信号，但不能当作工具质量排名。",
+  },
+  {
+    slug: "openai-agents-js-provider-version-supply-chain",
+    category: "engineering",
+    question:
+      "OpenAI Agents JS provider 包升级到 0.14.0 时，为什么版本治理不能只盯 core SDK？provider adapter、AI SDK 互操作、tool calling、streaming events 和供应链审计分别要测什么？",
+    relatedChapters: ["05", "12", "13", "14", "15", "16", "17", "19"],
+    sourceTitles: ["OpenAI Agents JS OpenAI provider 0.14.0 and AI SDK extension"],
+    sourceUrls: ["https://www.npmjs.com/package/@openai/agents-openai"],
+    confidence: "high",
+    rationale:
+      "本题来自 npm / OpenAI Agents JS 官方文档：agent SDK 的真实风险边界横跨 provider package、模型适配、工具调用、流式输出和第三方 SDK 兼容。",
+  },
+  {
+    slug: "claude-context-engineering-signal-budget",
+    category: "engineering",
+    question:
+      "为什么 Claude 5 时代的 context engineering 不是“上下文越长越好”？system prompt、conversation history、retrieved context、tool definitions、tool outputs 和 scratchpad 分别怎样影响信号密度、成本和可靠性？",
+    relatedChapters: ["03", "05", "07", "08", "09", "14", "16", "19", "capstone"],
+    sourceTitles: ["The new rules of context engineering for Claude 5 generation models"],
+    sourceUrls: ["https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models"],
+    confidence: "high",
+    rationale:
+      "本题来自 Anthropic 2026-07-24 context engineering 文章：生产 agent 的主要工程面在上下文装配、检索噪声、工具定义和 token budget 取舍。",
+  },
+  {
+    slug: "datadog-claude-code-remote-machine-tool",
+    category: "engineering",
+    question:
+      "Datadog 给 Claude Code 做 universal machine tool 时，为什么要把仓库、依赖、工具链和副作用放进远程隔离环境？这和让 coding agent 直接在开发者本机跑有什么治理差异？",
+    relatedChapters: ["05", "12", "15", "16", "17", "18", "19", "capstone"],
+    sourceTitles: ["How Datadog built a universal machine tool for Claude Code"],
+    sourceUrls: ["https://claude.com/blog/how-datadog-built-a-universal-machine-tool-for-claude-code"],
+    confidence: "high",
+    rationale:
+      "本题来自 Claude Blog / Datadog 技术实践：enterprise coding agent 的核心边界是可审计、可复现、可回收的执行沙箱。",
+  },
+  {
+    slug: "agentforce-multi-agent-mcp-enterprise-controls",
+    category: "engineering",
+    question:
+      "Agentforce 这类企业 agent 平台同时推进 multi-agent orchestration、Tableau MCP connector、testing center、observability 和管理员控制时，为什么平台评估要覆盖编排、数据协议、测试、监控和 rollout 策略？",
+    relatedChapters: ["05", "11", "12", "15", "16", "17", "18", "19"],
+    sourceTitles: ["Salesforce Summer '26 Agentforce release: multi-agent orchestration and Tableau MCP"],
+    sourceUrls: ["https://www.salesforce.com/news/stories/summer-2026-product-release-announcement/"],
+    confidence: "high",
+    rationale:
+      "本题来自 Salesforce Summer '26 官方发布：企业 agent 平台的成熟度正在从聊天入口转向跨 agent 编排、MCP/数据接入、测试和观测治理。",
+  },
+  {
+    slug: "cloudflare-agent-traces-observability-boundary",
+    category: "engineering",
+    question:
+      "Cloudflare Agents 把 agent turn、model call、tool run、approval、token usage 和 Workers runtime operations 放到同一条 trace 时，为什么 observability 设计必须同时考虑可回放、成本归因、隐私存储和工具 payload 最小化？",
+    relatedChapters: ["14", "15", "16", "17", "18", "19"],
+    sourceTitles: ["Cloudflare Agent traces for Think, Flue, and AI SDK"],
+    sourceUrls: ["https://developers.cloudflare.com/changelog/post/2026-08-04-agent-tracing/"],
+    confidence: "high",
+    rationale:
+      "本题来自 Cloudflare 2026-08-04 Agent tracing 更新：agent 观测已经扩展到 turn/model/tool/runtime 同轨迹审计，适合考 trace、成本和隐私边界。",
+  },
+  {
+    slug: "cloudflare-computer-vfs-container-execution-boundary",
+    category: "engineering",
+    question:
+      "@cloudflare/computer 这类 agent runtime 为什么要把 virtual filesystem、isolate/container execution、gated operations、audit 和 observation 放在同一执行边界里？这和直接让 coding agent 跑本机 shell 有什么风险差异？",
+    relatedChapters: ["05", "12", "15", "16", "17", "18", "19", "capstone"],
+    sourceTitles: ["Preview: @cloudflare/computer agent runtime"],
+    sourceUrls: ["https://developers.cloudflare.com/changelog/post/2026-08-03-cloudflare-computer/"],
+    confidence: "high",
+    rationale:
+      "本题来自 Cloudflare 2026-08-03 preview：开源 agent runtime 把文件系统、执行后端、审计和观测收进一套边界，适合考 coding agent 执行安全。",
+  },
+  {
+    slug: "microsoft-mcp-skills-central-distribution-boundary",
+    category: "engineering",
+    question:
+      "Microsoft Agent Framework 允许 .NET agent 从 MCP server 发现并加载 Agent Skills 时，为什么 skill 分发治理要覆盖 discovery document、认证连接、archive 解包、脚本执行、版本回滚和多 agent 一致性？",
+    relatedChapters: ["05", "11", "12", "16", "17", "18", "19", "capstone"],
+    sourceTitles: ["Discover Agent Skills from MCP servers in .NET"],
+    sourceUrls: ["https://devblogs.microsoft.com/agent-framework/discover-agent-skills-from-mcp-servers-in-net/"],
+    confidence: "high",
+    rationale:
+      "本题来自 Microsoft Agent Framework 2026-07-28 博文：Agent Skills 可由 MCP server 集中发布并按需加载，适合考 skill 供应链、远程内容和企业 rollout 边界。",
+  },
   // C. 项目深挖类
   {
     slug: "project-why-multi-agent",
@@ -1774,8 +1894,10 @@ const LOCAL_ANSWER_SUMMARIES: Partial<Record<string, string>> = {
   "trace-router-task-level-routing-vs-call-routing": "长流程 agent 的质量由整条任务轨迹决定，单次 call 路由只能优化局部成本/质量。Task-level routing 要读取 trace、阶段状态和历史反馈，在必要时升级模型，而不是每步都重新猜。",
   "skill-regression-tax-vs-average-uplift": "Skill 可能帮一类任务，也可能伤害另一类任务；平均提升会把负迁移藏起来。上线前要按任务类型、模型、harness 和失败模式分桶，并准备禁用或回滚单个 skill。",
   "dynamic-capability-scoping-vs-static-credentials": "静态 credentials 会让 agent 在任何任务里都握着过宽权限。Dynamic scoping 按当前任务和工具意图临时授予能力，先减少可暴露凭证，再谈检测和告警。",
-  "benchmark-protocol-validity-vs-score-claim": "Agent benchmark 分数只有在目标能力是完成任务的必要条件时才有意义。若能读到答案、利用评测 artifact 或和 grader 侧信道互动，高分证明的是协议漏洞，不是 agent 能力。"
-};
+  "benchmark-protocol-validity-vs-score-claim": "Agent benchmark 分数只有在目标能力是完成任务的必要条件时才有意义。若能读到答案、利用评测 artifact 或和 grader 侧信道互动，高分证明的是协议漏洞，不是 agent 能力。",
+  "cloudflare-agent-traces-observability-boundary": "Agent trace 只有同时覆盖 turn、model、tool、approval、token 和 runtime operations，才能把失败复现、成本归因和副作用审计串起来。但 trace 也是敏感数据面，消息和工具 payload 是否存储、如何脱敏、谁能读取，都必须和观测价值一起设计。",
+  "cloudflare-computer-vfs-container-execution-boundary": "把 virtual filesystem、执行后端、gated operation、audit 和 observation 放在同一 runtime 边界里，是为了让 coding agent 的每次读写和执行都能被限制、回放和清理。直接跑本机 shell 会把凭证、文件系统和副作用暴露给模型，事后日志很难补回最小权限。",
+  "microsoft-mcp-skills-central-distribution-boundary": "MCP-hosted Agent Skills 把 skill 从应用包内配置变成远程可发现内容。治理重点也随之转移到 discovery document 是否可信、MCP 连接如何认证、archive 解包能否越界、脚本是否需要审批、版本如何回滚，以及多个 agent 是否拿到同一份政策和 playbook。"};
 
 function chapterAnswerLabel(chapter: string): string {
   if (chapter === "capstone") return "毕业项目（capstone）";

@@ -316,6 +316,17 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 113. 为什么 multi-agent code repair 不能把“多循环几轮”当可靠性？state-bound evidence、typed revision contract 和 verification gate 分别如何防止空转、误修和不可审计修复？（→ 10 / 12 / 15 / 16 / 19 / capstone）
 114. 开源 frontier model 报告强调 Agentic RL、million-token context、persistent rollout 和 sandbox states 时，为什么这会影响 coding/agent benchmark 的复现、成本和安全治理？（→ 10 / 12 / 15 / 16 / 18 / 19 / capstone）
 
+115. Cloudflare Agents 这类边缘 agent runtime 为什么要把 Durable Objects、SQL state、schedule、human-in-the-loop、MCP 和 workflows 放在同一套部署边界里评估？（→ 05 / 11 / 12 / 14 / 16 / 17 / 18 / 19）
+116. 低代码 AI Agent 加入 sub-agents 和 tool output filtering 时，为什么这不仅是功能增强，而是在重划委托边界、上下文预算、敏感字段暴露和可测试性？（→ 05 / 07 / 11 / 14 / 16 / 17 / 19）
+117. 企业从单一 Copilot 许可转向 Codex、Claude Code、Cursor 等 coding agent 工具组合时，为什么治理重点会从“哪个模型更强”变成权限、审计、成本、数据边界和迁移路径？（→ 12 / 15 / 16 / 17 / 18 / 19 / capstone）
+
+118. OpenAI Agents JS provider 包升级到 0.14.0 时，为什么版本治理不能只盯 core SDK？provider adapter、AI SDK 互操作、tool calling、streaming events 和供应链审计分别要测什么？（→ 05 / 12 / 13 / 14 / 15 / 16 / 17 / 19）
+119. 为什么 Claude 5 时代的 context engineering 不是“上下文越长越好”？system prompt、conversation history、retrieved context、tool definitions、tool outputs 和 scratchpad 分别怎样影响信号密度、成本和可靠性？（→ 03 / 05 / 07 / 08 / 09 / 14 / 16 / 19 / capstone）
+120. Datadog 给 Claude Code 做 universal machine tool 时，为什么要把仓库、依赖、工具链和副作用放进远程隔离环境？这和让 coding agent 直接在开发者本机跑有什么治理差异？（→ 05 / 12 / 15 / 16 / 17 / 18 / 19 / capstone）
+121. Agentforce 这类企业 agent 平台同时推进 multi-agent orchestration、Tableau MCP connector、testing center、observability 和管理员控制时，为什么平台评估要覆盖编排、数据协议、测试、监控和 rollout 策略？（→ 05 / 11 / 12 / 15 / 16 / 17 / 18 / 19）
+122. Cloudflare Agents 把 agent turn、model call、tool run、approval、token usage 和 Workers runtime operations 放到同一条 trace 时，为什么 observability 设计必须同时考虑可回放、成本归因、隐私存储和工具 payload 最小化？（→ 14 / 15 / 16 / 17 / 18 / 19）
+123. @cloudflare/computer 这类 agent runtime 为什么要把 virtual filesystem、isolate/container execution、gated operations、audit 和 observation 放在同一执行边界里？这和直接让 coding agent 跑本机 shell 有什么风险差异？（→ 05 / 12 / 15 / 16 / 17 / 18 / 19 / capstone）
+124. Microsoft Agent Framework 允许 .NET agent 从 MCP server 发现并加载 Agent Skills 时，为什么 skill 分发治理要覆盖 discovery document、认证连接、archive 解包、脚本执行、版本回滚和多 agent 一致性？（→ 05 / 11 / 12 / 16 / 17 / 18 / 19 / capstone）
 ### C. 项目深挖类（考你是不是真做过）
 
 > 这一类没有标准题库，面试官会顺着你的简历项目往下钻。**提前给自己出这些题**：
