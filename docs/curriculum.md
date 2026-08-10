@@ -43,7 +43,7 @@
 
 > 提示：全程用便宜模型（如 `gpt-4o-mini` / `claude-haiku`）跑完成本很低；第 16 章会专门教你怎么算账和省钱。
 
-想直接跳到任意课程，使用 [全局课程导航](./navigation.md)。想按 agent 类型、岗位目标或生产能力倒推学习路线，使用 [Agent 学习指南与分类地图](./agent-learning-guides.md)。这两页按顺序、按主题整理了第 00–21 章、B1-B12 基础指南、Agent Engineering 三单元、毕业项目、2026 Agent 五平面架构蓝图、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone、RAG 系统实战项目和源码解析。
+想直接跳到任意课程，使用 [全局课程导航](./navigation.md)。想按 agent 类型、岗位目标或生产能力倒推学习路线，使用 [Agent 学习指南与分类地图](./agent-learning-guides.md)。这两页按顺序、按主题整理了第 00–21 章、B1-B12 基础指南、Agent Engineering A1–A8 完整课程、毕业项目、2026 Agent 五平面架构蓝图、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone、RAG 系统实战项目和源码解析。
 
 ### 三层学习法
 
@@ -81,16 +81,16 @@
 | 第六部分 · 生产化 | 15–18 | ~5 小时 |
 | 第七部分 · 前沿与生态 | 19–20 | ~1.5 小时 |
 | 第 21 章 · 源码解析 | source-analysis 章节 + 仓库矩阵/源码对话/CodeMap + 3 篇深入页 | ~5 小时 |
-| 🎓 毕业项目（28 个）· Deep Research / 客服 / 评审 / 评测 / 告警响应 / 反馈洞察 / 销售线索 / 企业知识库 | 综合 | ~88–124 小时 |
+| 🎓 毕业项目（29 个）· Deep Research / 客服 / 评审 / 评测 / Mini Harness / 告警响应 / 反馈洞察 / 销售线索 / 企业知识库 | 综合 | ~96–136 小时 |
 | 🔬 进阶 RAG 专题 | rag-advanced ×11 | ~7–9 小时 |
 | 🧩 进阶 LangGraph 专题 | langgraph-advanced ×6 + 生产化扩章地图 | ~4–6 小时 |
+| 🛠️ Agent Engineering 完整课程 | A1–A8 · 20 周 | 120–160 小时 |
 | 🧭 2026 Agent 趋势与五平面架构 | 架构阅读 | ~1 小时 |
-| 🛠️ Agent Engineering 专题 | run contract / context compiler / prompt release gate | ~2.5–3 小时 |
 | 🧭 RAG 完整架构蓝图 | 架构阅读 | ~1 小时 |
 | 🏢 企业知识库 Agent 蓝图 | 纵向项目设计 | ~1 小时 |
-| **合计** | **21 章 + 基础概念扩展 + Agent Engineering 三单元 + 28 个毕业项目 + RAG 专题 + LangGraph 专题 + Agent 架构蓝图 + RAG 架构蓝图 + 企业知识库蓝图** | **约 132–177.5 小时**（不含动手扩展） |
+| **合计** | **21 章 + 基础概念扩展 + Agent Engineering A1–A8 完整课程 + 29 个毕业项目 + RAG 专题 + LangGraph 专题 + 三份架构蓝图** | **约 257.5–346.5 小时**（不含自选扩展） |
 
-> 按每天投入 1–1.5 小时算，大约 **3–4 周**可以完整走完一遍。建议分散学、多动手，比一口气刷完更扎实。
+> 全仓路线按每天投入 1–1.5 小时约需 **6–10 个月**；若只走 Agent Engineering A1–A8，按每周 6–8 小时完成 20 周路线。建议分散学习并保留实验、反例和验收证据。
 
 ---
 
@@ -278,9 +278,9 @@
 | 21.2 | LangGraph 源码解析 | ⭐⭐⭐⭐ | 75 分钟 | 从 `StateGraph`、Pregel runtime、ToolNode 读懂可恢复状态机 runtime | [../source-analysis/langgraph.md](../source-analysis/langgraph.md) |
 | 21.3 | LlamaIndex 源码解析 | ⭐⭐⭐⭐ | 60 分钟 | 从 QueryEngine、Retriever、ResponseSynthesizer、Workflow 读懂 data-first agent/RAG 框架 | [../source-analysis/llamaindex.md](../source-analysis/llamaindex.md) |
 
-### 🎓 毕业项目（28 个综合实战，可直接放进作品集）
+### 🎓 毕业项目（29 个综合实战，可直接放进作品集）
 
-> 28 个项目各展示一种完整架构，彼此互补：研究型 agent / 生产客服系统 / 多智能体评审 / Agent 评测 / 告警响应 / 用户反馈洞察 / 销售线索研究 / 企业知识库纵向全栈。新增的 20 个项目覆盖真实业务流程，按统一 README 规格交付，并由 `pnpm capstone:catalog:smoke` 验证结构完整；既有可运行项目继续用 `pnpm <name>:smoke` 验证。
+> 29 个项目各展示一种完整架构，彼此互补：研究型 agent / 生产客服系统 / 多智能体评审 / Agent 评测 / **MCP + Docker Runtime Harness** / 告警响应 / 用户反馈洞察 / 销售线索研究 / 企业知识库纵向全栈。新增的 20 个领域项目按统一 README 规格交付，并由 `pnpm capstone:catalog:smoke` 验证结构完整；可运行项目继续用各自 smoke 验证。
 
 | # | 标题 | 难度 | 预计 | 一句话简介 | 链接 |
 |---|------|------|------|------------|------|
@@ -288,6 +288,7 @@
 | 🎓 | 客服 Copilot | ⭐⭐⭐⭐ | 3–4 小时 | 记忆 / RAG / 工具 / HITL 审批 / 注入·PII 安全 / 成本可观测，串成单轮纵深防御管线 | [../capstone/support-copilot/README.md](../capstone/support-copilot/README.md) |
 | 🎓 | 代码评审团 | ⭐⭐⭐ | 2–3 小时 | 安全/性能/风格多智能体并行评审，结构化发现 + 严重度排序 + critical 即 BLOCK 的评审门 | [../capstone/code-review-crew/README.md](../capstone/code-review-crew/README.md) |
 | 🎓 | Agent 评测与回归门 | ⭐⭐⭐ | 2–3 小时 | golden 测试集 + 离线裁判 + 通过率/拒答准确率/成本指标 + CI 回归门，自动拦下退化版本 | [../capstone/agent-eval-harness/README.md](../capstone/agent-eval-harness/README.md) |
+| 🎓 | Mini Agent Harness | ⭐⭐⭐⭐⭐ | 8–12 小时 | 接入 MCP stdio/Streamable HTTP/legacy SSE，Docker 安全执行、Context token 管理、状态机与 Git checkpoint/rollback | [../capstone/mini-agent-harness/README.md](../capstone/mini-agent-harness/README.md) |
 | 🎓 | 告警响应 Agent | ⭐⭐⭐⭐ | 2–3 小时 | 告警分级、日志证据链、runbook 匹配、审批分层、客户话术与复盘清单 | [../capstone/incident-responder/README.md](../capstone/incident-responder/README.md) |
 | 🎓 | 用户反馈洞察 Agent | ⭐⭐⭐ | 2–3 小时 | 多渠道反馈注入隔离、PII 脱敏、主题聚类、价值加权与 roadmap ticket 生成 | [../capstone/feedback-intelligence/README.md](../capstone/feedback-intelligence/README.md) |
 | 🎓 | 销售线索研究 Agent | ⭐⭐⭐ | 2–3 小时 | ICP fit、业务信号、合规风险、销售开场话术与下一步动作 | [../capstone/sales-lead-researcher/README.md](../capstone/sales-lead-researcher/README.md) |
@@ -328,13 +329,18 @@
 
 ### 🛠️ Agent Engineering 专题
 
-> 目标：沿同一条生产变更审查场景，把五平面架构中的控制、上下文和 assurance 责任落成离线可运行、可测试、可回滚的工程合同。
+> 目标：沿同一条生产变更审查场景，把五平面架构中的控制、上下文和 assurance 责任落成离线可运行、可测试、可回滚的工程合同。完整路线为 20 周、总投入 120–160 小时；逐周实验、里程碑与评分规则见 [Agent Engineering 完整课程](../agent-engineering/CURRICULUM.md)。
 
 | # | 标题 | 难度 | 预计 | 一句话简介 | 链接 |
 |---|------|------|------|------------|------|
 | A1 | Run Contract：可恢复运行契约 | ⭐⭐⭐⭐ | 50 分钟 | 固定完整行为 revision，用状态机、checkpoint/resume、outcome evidence 和 authority subset 定义一次 run | [../agent-engineering/01-run-contract/README.md](../agent-engineering/01-run-contract/README.md) |
 | A2 | Context Compiler：可审计上下文编译 | ⭐⭐⭐⭐ | 60 分钟 | 把持久 sources 经 trust/audience/stage/sensitivity 与 token budget 编译成本轮 packet，并保留 provenance ledger | [../agent-engineering/02-context-compiler/README.md](../agent-engineering/02-context-compiler/README.md) |
 | A3 | Prompt Release Gate：行为包发布门 | ⭐⭐⭐⭐ | 60 分钟 | 发布 prompt/context/tools/model/guardrails/evaluator 完整 behavior bundle，用归因 eval 决定晋级或整包回滚 | [../agent-engineering/03-prompt-release-gate/README.md](../agent-engineering/03-prompt-release-gate/README.md) |
+| A4 | Context Runtime：身份、策略与可解释装配 | ⭐⭐⭐⭐ | 3 周路线 | 在 principal/tenant/purpose 约束下生成带 policy snapshot、预算与指纹的 Context Package | [../agent-engineering/04-context-runtime/README.md](../agent-engineering/04-context-runtime/README.md) |
+| A5 | Evidence RAG：权限、引用与充分性 | ⭐⭐⭐⭐⭐ | 3 周路线 | 先执行 ACL 再检索，建立 claim/citation、冲突与证据充分性门 | [../agent-engineering/05-evidence-rag/README.md](../agent-engineering/05-evidence-rag/README.md) |
+| A6 | Durable State & Memory：恢复、压缩与治理 | ⭐⭐⭐⭐⭐ | 4 周路线 | 用 CAS ledger、checkpoint、compaction、TTL、遗忘和删除传播支撑长任务恢复 | [../agent-engineering/06-durable-memory/README.md](../agent-engineering/06-durable-memory/README.md) |
+| A7 | Cache & Multi-Agent：指纹、隔离与聚合 | ⭐⭐⭐⭐⭐ | 3 周路线 | 用权限安全指纹隔离缓存，以最小包分配 worker 并按独立 evidence lineage 聚合 | [../agent-engineering/07-cache-multi-agent/README.md](../agent-engineering/07-cache-multi-agent/README.md) |
+| A8 | Observability Capstone：回放、灰度与发布 | ⭐⭐⭐⭐⭐ | 2 周路线 | 把 trace/replay、shadow/canary、critical veto、发布/回滚与补偿边界收成最终 dossier | [../agent-engineering/08-observability-capstone/README.md](../agent-engineering/08-observability-capstone/README.md) |
 
 ### 🧭 RAG 完整架构蓝图
 
@@ -399,7 +405,7 @@
 - 🔬 **进阶 RAG（仓库内）** → 看 [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md)：分块、混合检索、重排、查询改写、评估、生产化、安全、索引与上下文工程，把第 08/09 章的最小 RAG 补成生产级，能力沉淀在 `src/shared/rag/`。
 - 🧩 **进阶 LangGraph（仓库内）** → 看 [进阶 LangGraph 专题](../langgraph-advanced/README.md)：从 StateGraph 机制走到 production runtime 的扩章地图。
 - 🧭 **Agent 架构演进** → 看 [2026 Agent 趋势与五平面架构蓝图](./agent-trends-architecture.md)：把 harness、上下文/记忆/工件、协议边界、多 agent 拓扑、评估、身份与隔离还原为生产责任和演进 gate。
-- 🛠️ **Agent Engineering 实践** → 按 [A1 Run Contract](../agent-engineering/01-run-contract/README.md) → [A2 Context Compiler](../agent-engineering/02-context-compiler/README.md) → [A3 Prompt Release Gate](../agent-engineering/03-prompt-release-gate/README.md) 把架构责任落成确定性合同与回归门。
+- 🛠️ **Agent Engineering 实践** → 进入 [20 周完整课程（A1–A8，120–160 小时）](../agent-engineering/CURRICULUM.md)，把 Run、Context Runtime、Evidence RAG、Durable Memory、Cache/Multi-Agent 与 Observability 发布闭环落成确定性合同和回归门。
 - **源码解析** → 看 [源码解析路线](../source-analysis/README.md)：先从热门库卡片或仓库矩阵定位源码边界，再用源码对话检索行号证据，并用 CodeMap 对照职责层，再顺着 LangChain、LangGraph、LlamaIndex 官方源码入口读懂框架运行时。
 - 🧭 **RAG 架构设计** → 看 [RAG 完整架构蓝图](./rag-architecture.md)：把 demo 能力组织成写入路径、查询路径、数据模型、安全治理、质量闭环和部署拓扑。
 - 🏢 **企业知识库 Agent** → 看 [企业知识库 Agent 蓝图](./enterprise-knowledge-base-agent.md)：把 RAG、记忆、工具、流式 UX、定时任务和部署串成一个企业级作品集。

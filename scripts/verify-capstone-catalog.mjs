@@ -34,9 +34,13 @@ const curriculum = read("docs/curriculum.md");
 const guides = read("docs/agent-learning-guides.md");
 const graph = read("knowledge-graph/data/graph.ts");
 const pkg = JSON.parse(read("package.json"));
+const miniHarnessReadme = "capstone/mini-agent-harness/README.md";
 
 expect(Boolean(pkg.scripts?.["capstone:catalog:smoke"]), "package.json missing capstone:catalog:smoke script");
 expect(pkg.scripts?.["capstone:smoke"]?.includes("capstone:catalog:smoke"), "capstone:smoke does not include capstone:catalog:smoke");
+expect(existsSync(join(ROOT, miniHarnessReadme)), `${miniHarnessReadme} missing`);
+expect(hub.includes("mini-agent-harness"), "capstone hub missing mini-agent-harness");
+expect(Boolean(pkg.scripts?.["mini-agent-harness:smoke"]), "package.json missing mini-agent-harness:smoke script");
 
 for (const project of CAPSTONE_PROJECTS) {
   const rel = `capstone/${project.slug}/README.md`;

@@ -12,7 +12,7 @@
 | 想做多 agent 协作 | [B7 Workflow vs Agent](../agent-basics/07-workflow-vs-agent.md) | [第 11 章](../lessons/11-multi-agent-orchestration/) + [LangGraph 专题](../langgraph-advanced/) | supervisor/worker 拆分与失败处理协议 |
 | 想读框架源码 | [第 12 章上框架](../lessons/12-intro-to-frameworks/) | [第 21 章 · 源码解析](../source-analysis/) | 能沿入口函数读懂 LangChain / LangGraph / LlamaIndex runtime |
 | 想上线生产 | [B10 Guardrails](../agent-basics/10-guardrails-intro.md) + [B11 Evaluation](../agent-basics/11-evaluation-first.md) | [第 15-18 章](../lessons/15-evaluation-and-testing/) | 评估门、权限边界、成本与部署清单 |
-| 想做作品集 | [毕业项目总览](../capstone/) | 从 28 个 capstone 中选一个 | 可演示的端到端项目 |
+| 想做作品集 | [毕业项目总览](../capstone/) | 从 29 个 capstone 中选一个 | 可演示的端到端项目 |
 
 ## 分类 1: 按学习阶段
 
@@ -55,6 +55,7 @@
 | 合规治理 | [合规政策监控 Agent](../capstone/compliance-policy-monitor/) | 一个合规变更影响分析工作流，输出政策差异、影响流程、owner、deadline 和审计说明。 |
 | 研发效率 | [开发者入仓引导 Agent](../capstone/developer-onboarding-guide/) | 一个 repo onboarding 工作流，输出环境检查、关键目录、首个任务、代码阅读路径和风险提醒。 |
 | 质量工程 | [测试用例生成 Agent](../capstone/test-case-synthesizer/) | 一个测试设计工作流，输出覆盖矩阵、测试数据、优先级、自动化候选和缺口。 |
+| Agent Runtime | [Mini Agent Harness](../capstone/mini-agent-harness/) | MCP Tool 协议、Docker 执行隔离、Context token 管理、可恢复状态机与 checkpoint/rollback。 |
 | 客户成功 | [客户成功续约 Agent](../capstone/customer-success-renewal/) | 一个续约健康工作流，输出风险分层、证据、推荐动作、QBR 议程和 follow-up。 |
 | 电商运营 | [电商选品运营 Agent](../capstone/ecommerce-merchandising-planner/) | 一个 merchandising 工作流，输出商品分层、库存风险、内容缺口、活动建议和监控指标。 |
 | 教育科技 | [自适应学习教练 Agent](../capstone/adaptive-learning-tutor/) | 一个学习教练工作流，输出知识点掌握度、下一题推荐、讲解计划和家长/导师摘要。 |

@@ -1,5 +1,5 @@
 /**
- * Agent Engineering 三单元离线合同测试。
+ * Agent Engineering A1-A3 基础合同离线测试；A4-A8 见 advanced-smoke.ts。
  *
  * 这些 fixtures 只验证 pure contracts：版本 pin、状态迁移、上下文编译与发布门。
  * 它们不调用模型、不触发真实工具，也不证明生产安全或真实 LLM 质量。

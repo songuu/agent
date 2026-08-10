@@ -5,6 +5,20 @@ import { CAPSTONE_PROJECTS } from "../capstone/project-catalog.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
+// 这些项目拥有真实 CLI/源码，不属于 20 个 catalog blueprint；单独维护，避免
+// catalog generator 覆盖它们的手写 README。
+const RUNNABLE_CAPSTONES = [
+  { slug: "deep-research-agent", title: "Deep Research Agent", domain: "综合研究", difficulty: "⭐⭐⭐⭐", duration: "6-10 小时" },
+  { slug: "support-copilot", title: "客服 Copilot", domain: "服务运营", difficulty: "⭐⭐⭐⭐", duration: "3-4 小时" },
+  { slug: "code-review-crew", title: "代码评审团", domain: "研发效率", difficulty: "⭐⭐⭐", duration: "2-3 小时" },
+  { slug: "agent-eval-harness", title: "Agent 评测与回归门", domain: "质量工程", difficulty: "⭐⭐⭐", duration: "2-3 小时" },
+  { slug: "mini-agent-harness", title: "Mini Agent Harness", domain: "Agent Runtime", difficulty: "⭐⭐⭐⭐⭐", duration: "8-12 小时" },
+  { slug: "incident-responder", title: "告警响应 Agent", domain: "运维实战", difficulty: "⭐⭐⭐⭐", duration: "3-4 小时" },
+  { slug: "feedback-intelligence", title: "用户反馈洞察 Agent", domain: "产品实战", difficulty: "⭐⭐⭐", duration: "3-4 小时" },
+  { slug: "sales-lead-researcher", title: "销售线索研究 Agent", domain: "增长实战", difficulty: "⭐⭐⭐", duration: "3-4 小时" },
+  { slug: "enterprise-knowledge-base-agent", title: "企业知识库 Agent", domain: "纵向全栈", difficulty: "⭐⭐⭐⭐⭐", duration: "4 周" },
+];
+
 function checkboxLines(items) {
   return items.map((item) => `- [ ] ${item}`);
 }
@@ -109,14 +123,21 @@ function buildReadme(project) {
 }
 
 function buildHub() {
+  const totalCapstones = RUNNABLE_CAPSTONES.length + CAPSTONE_PROJECTS.length;
   const lines = [
     "# 毕业项目总览",
     "",
-    "这里集中管理课程的作品集项目。新增的 20 个项目覆盖协作、法务、数据、HR、售前、医疗运营、安全、合规、研发效率、质量、客户成功、电商、教育、招聘、科研、供应链、现场服务和隐私合规等真实业务场景。",
+    `这里集中管理课程的 ${totalCapstones} 个作品集项目：9 个可运行综合项目，加上覆盖协作、法务、数据、HR、售前、医疗运营、安全、合规、研发效率、质量、客户成功、电商、教育、招聘、科研、供应链、现场服务和隐私合规的 20 个领域项目蓝图。`,
     "",
-    "所有新增项目都按同一交付规格组织：最终交付、核心流程、数据与接口、护栏、里程碑、验收清单、扩展方向、简历话术和面试追问。",
+    "可运行项目提供源码、CLI 与 smoke；领域项目按统一交付规格组织：最终交付、核心流程、数据与接口、护栏、里程碑、验收清单、扩展方向、简历话术和面试追问。",
     "",
-    "## 新增 20 个实践项目",
+    "## 可运行综合项目",
+    "",
+    "| # | 项目 | 领域 | 难度 | 预计用时 |",
+    "|---|------|------|------|----------|",
+    ...RUNNABLE_CAPSTONES.map((project, index) => `| ${index + 1} | [${project.title}](./${project.slug}/README.md) | ${project.domain} | ${project.difficulty} | ${project.duration} |`),
+    "",
+    "## 领域项目蓝图（20 个）",
     "",
     "| # | 项目 | 领域 | 难度 | 预计用时 |",
     "|---|------|------|------|----------|",

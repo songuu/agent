@@ -77,15 +77,29 @@ test("chapter-driven domains keep their full catalogs", () => {
     6,
   );
   assert.ok(langGraphLinks.includes("/langgraph-advanced/06-event-streaming/"));
-  assert.equal(capstoneLinks.filter((link) => link.startsWith("/capstone/")).length, 28);
+  assert.equal(capstoneLinks.filter((link) => link.startsWith("/capstone/")).length, 29);
 });
 
-test("Agent Engineering is a first-class three-unit learning track", () => {
-  const chapterIds = ["ae-run", "ae-context", "ae-prompt"] as const;
+test("Agent Engineering is a first-class A1-A8 learning track", () => {
+  const chapterIds = [
+    "ae-run",
+    "ae-context",
+    "ae-prompt",
+    "ae-runtime",
+    "ae-evidence",
+    "ae-memory",
+    "ae-multi",
+    "ae-capstone",
+  ] as const;
   const expectedDirs = [
     "agent-engineering/01-run-contract",
     "agent-engineering/02-context-compiler",
     "agent-engineering/03-prompt-release-gate",
+    "agent-engineering/04-context-runtime",
+    "agent-engineering/05-evidence-rag",
+    "agent-engineering/06-durable-memory",
+    "agent-engineering/07-cache-multi-agent",
+    "agent-engineering/08-observability-capstone",
   ] as const;
 
   const chapters = chapterIds.map((id) => CHAPTERS.find((chapter) => chapter.id === id));
@@ -95,7 +109,7 @@ test("Agent Engineering is a first-class three-unit learning track", () => {
     assert.equal(chapter?.demo?.needsKey, "none");
   }
 
-  assert.ok(CHAPTERS.length >= 69, "the existing chapter catalog plus three AE units must remain intact");
+  assert.ok(CHAPTERS.length >= 74, "the existing chapter catalog plus eight AE units must remain intact");
   for (const chapterId of chapterIds) {
     const conceptIds = new Set(
       CONCEPTS.filter((concept) => concept.chapter === chapterId).map((concept) => concept.id),
@@ -119,9 +133,15 @@ test("Agent Engineering is a first-class three-unit learning track", () => {
 
 test("Agent Engineering stays reachable from primary nav, its own sidebar, and public guides", () => {
   const expectedLinks = [
+    "/agent-engineering/CURRICULUM",
     "/agent-engineering/01-run-contract/",
     "/agent-engineering/02-context-compiler/",
     "/agent-engineering/03-prompt-release-gate/",
+    "/agent-engineering/04-context-runtime/",
+    "/agent-engineering/05-evidence-rag/",
+    "/agent-engineering/06-durable-memory/",
+    "/agent-engineering/07-cache-multi-agent/",
+    "/agent-engineering/08-observability-capstone/",
   ];
   const sidebarLinks = collectSidebarLinks(CONTEXTUAL_SIDEBAR["/agent-engineering/"]);
   assert.deepEqual(sidebarLinks.filter((link) => link.startsWith("/agent-engineering/")), expectedLinks);
@@ -136,6 +156,11 @@ test("Agent Engineering stays reachable from primary nav, its own sidebar, and p
       "agent-engineering/01-run-contract",
       "agent-engineering/02-context-compiler",
       "agent-engineering/03-prompt-release-gate",
+      "agent-engineering/04-context-runtime",
+      "agent-engineering/05-evidence-rag",
+      "agent-engineering/06-durable-memory",
+      "agent-engineering/07-cache-multi-agent",
+      "agent-engineering/08-observability-capstone",
     ]) {
       assert.match(guide, new RegExp(link), `public guide must expose ${link}`);
     }

@@ -20,7 +20,7 @@
 - ▶️ **每章可运行**：`npx tsx` 直接跑，零编译、零环境折腾。
 - 🗺️ **先看图，再看代码**：每章都有可缩放的 `图解学习地图` / Mermaid 图（默认就放到可读尺度，不必手动放大），并自动插入「抽象概念可视化」模块——每个概念按类型渲染专属的内联 SVG 动画场景（循环环 / 传送带 / 双路汇流 / 语义空间…）；本章概念图谱还会高亮本章焦点、按关系类型给连线配色。所有图片由代码内联绘制（零外部图片资源），用流程图、示意图、轻量动画、彩色加粗重点和外部阅读链接先建立心智模型，再进入原理讲解和代码走读。
 - 🔌 **厂商无关**：统一的 `getLLM()` 抽象，换 Claude / OpenAI 只改一行 `.env`。
-- 💼 **能写进简历**：毕业项目覆盖 28 个可演示作品集项目；附**求职指南**（简历模板 + 面试题）与**创业指南**（demo → 产品）。
+- 💼 **能写进简历**：毕业项目覆盖 29 个可演示作品集项目；附**求职指南**（简历模板 + 面试题）与**创业指南**（demo → 产品）。
 
 > 适合：有基础 JS/TS、想入行或转行做 AI 应用 / Agent 工程的同学。
 
@@ -79,7 +79,7 @@ pnpm site:live
 
 ## 全局导航
 
-想直接跳到具体课程，走 [**全局课程导航**](./docs/navigation.md)。如果你想按 agent 类型、岗位目标或生产能力倒推学习路线，走 [**Agent 学习指南与分类地图**](./docs/agent-learning-guides.md)。如果你要把 2026 年 agent 趋势落成工程边界，先读 [**Agent 趋势与五平面架构蓝图**](./docs/agent-trends-architecture.md)，再进入 [**Agent Engineering 实践轨道**](./agent-engineering/README.md)。它们一起整理了第 00–21 章、B1-B12 基础指南、Agent Engineering 三单元、28 个毕业项目、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone、RAG 系统实战项目和源码解析。
+想直接跳到具体课程，走 [**全局课程导航**](./docs/navigation.md)。如果你想按 agent 类型、岗位目标或生产能力倒推学习路线，走 [**Agent 学习指南与分类地图**](./docs/agent-learning-guides.md)。如果你要把 2026 年 agent 趋势落成工程边界，先读 [**Agent 趋势与五平面架构蓝图**](./docs/agent-trends-architecture.md)，再进入 [**Agent Engineering 20 周完整课程**](./agent-engineering/CURRICULUM.md)。它们一起整理了第 00–21 章、B1-B12 基础指南、Agent Engineering A1–A8、29 个毕业项目、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone、RAG 系统实战项目和源码解析。
 
 ---
 
@@ -196,8 +196,9 @@ pnpm site:live
 | 21.1 | [LangChain 源码解析](./source-analysis/langchain.md) | ⭐⭐⭐⭐ | `create_agent`、Runnable、middleware、structured output |
 | 21.2 | [LangGraph 源码解析](./source-analysis/langgraph.md) | ⭐⭐⭐⭐ | `StateGraph`、Pregel runtime、prebuilt ReAct agent、ToolNode |
 | 21.3 | [LlamaIndex 源码解析](./source-analysis/llamaindex.md) | ⭐⭐⭐⭐ | QueryEngine、Retriever、ResponseSynthesizer、Workflow |
-| 🎓 | [毕业项目总览（28 个）](./capstone/) | ⭐⭐⭐-⭐⭐⭐⭐⭐ | 8 个既有综合项目 + 20 个新增实践项目，覆盖真实业务工作流 |
+| 🎓 | [毕业项目总览（29 个）](./capstone/) | ⭐⭐⭐-⭐⭐⭐⭐⭐ | 9 个可运行综合项目 + 20 个领域项目蓝图，覆盖真实业务工作流 |
 | 🎓 | [毕业项目 · Deep Research Agent](./capstone/deep-research-agent/) | ⭐⭐⭐⭐ | 综合所有能力的实战项目 |
+| 🎓 | [毕业项目 · Mini Agent Harness](./capstone/mini-agent-harness/) | ⭐⭐⭐⭐⭐ | MCP Tool 发现、Docker/Node 执行边界、token context、状态机与 Git checkpoint/rollback |
 | 🎓 | [毕业项目 · 告警响应 Agent](./capstone/incident-responder/) | ⭐⭐⭐⭐ | 告警、日志、runbook、审批和复盘的运维实战项目 |
 | 🎓 | [毕业项目 · 用户反馈洞察 Agent](./capstone/feedback-intelligence/) | ⭐⭐⭐ | 反馈清洗、主题聚类、价值加权和 roadmap ticket 的产品实战项目 |
 | 🎓 | [毕业项目 · 销售线索研究 Agent](./capstone/sales-lead-researcher/) | ⭐⭐⭐ | ICP 评分、业务信号、合规风险和销售话术的增长实战项目 |
@@ -226,6 +227,11 @@ pnpm site:live
 | A1 | [Run Contract：可恢复运行契约](./agent-engineering/01-run-contract/) | ⭐⭐⭐⭐ | 行为版本冻结、状态迁移、checkpoint/resume、结果证据与 authority 边界（离线可跑） |
 | A2 | [Context Compiler：可审计上下文编译](./agent-engineering/02-context-compiler/) | ⭐⭐⭐⭐ | trust/audience/stage/sensitivity、token budget、稳定前缀与 provenance ledger（离线可跑） |
 | A3 | [Prompt Release Gate：行为包发布门](./agent-engineering/03-prompt-release-gate/) | ⭐⭐⭐⭐ | typed prompt、完整 behavior bundle、归因 eval、候选晋级与整包回滚（离线可跑） |
+| A4 | [Context Runtime：身份、策略与可解释装配](./agent-engineering/04-context-runtime/) | ⭐⭐⭐⭐ | principal/tenant/purpose、policy snapshot、Manifest、Fingerprint 与预算报告（离线可跑） |
+| A5 | [Evidence RAG：权限、引用与充分性](./agent-engineering/05-evidence-rag/) | ⭐⭐⭐⭐⭐ | ACL 前置、claim/citation、独立来源、冲突与 abstain 门（离线可跑） |
+| A6 | [Durable State & Memory：恢复、压缩与治理](./agent-engineering/06-durable-memory/) | ⭐⭐⭐⭐⭐ | CAS ledger、checkpoint、compaction、TTL、冲突与删除（离线可跑） |
+| A7 | [Cache & Multi-Agent：指纹、隔离与聚合](./agent-engineering/07-cache-multi-agent/) | ⭐⭐⭐⭐⭐ | permission-safe cache、worker 权限/预算子集与 evidence reducer（离线可跑） |
+| A8 | [Observability Capstone：回放、灰度与发布](./agent-engineering/08-observability-capstone/) | ⭐⭐⭐⭐⭐ | trace/replay、Shadow/Canary、critical veto 与 release dossier（离线可跑） |
 | **进阶专题** | **RAG 生产化（rag-advanced）** | | |
 | R1 | [进阶分块策略](./rag-advanced/01-chunking-strategies/) | ⭐⭐⭐ | 递归语义切分、Markdown 感知、按 token 控大小（纯函数，免 key 可跑） |
 | R2 | [混合检索](./rag-advanced/02-hybrid-search/) | ⭐⭐⭐ | 向量 + BM25 + RRF 融合 |
@@ -269,12 +275,13 @@ agent/
 │   ├── 01-what-is-an-agent/
 │   └── ...
 └── capstone/
-    ├── README.md                        # 🎓 28 个毕业项目总览
+    ├── README.md                        # 🎓 29 个毕业项目总览
     ├── project-catalog.mjs              # 新增 20 个实践项目的数据源
     ├── deep-research-agent/             # 🎓 Deep Research 综合实战
     ├── support-copilot/                 # 客服 Copilot
     ├── code-review-crew/                # 代码评审团
     ├── agent-eval-harness/              # Agent 评测与回归门
+    ├── mini-agent-harness/              # MCP + Docker sandbox + checkpoint
     ├── incident-responder/              # 告警响应与复盘实战
     ├── feedback-intelligence/           # 用户反馈洞察实战
     ├── sales-lead-researcher/           # 销售线索研究实战
@@ -294,7 +301,7 @@ agent/
 - 🚀 [**创业指南**](./docs/startup-guide.md)：机会判断、MVP 裁剪、成本控制、上线 checklist。
 - [**Agent 学习指南与分类地图**](./docs/agent-learning-guides.md)：按学习阶段、agent 类型、工程能力和岗位路线拆解全项目。
 - 🧭 [**2026 Agent 趋势与五平面架构**](./docs/agent-trends-architecture.md)：把 harness、外置状态、隔离执行、协议互操作与 trajectory/outcome assurance 组织成可渐进落地的工程框架。
-- 🛠️ [**Agent Engineering 实践轨道**](./agent-engineering/README.md)：用 [A1 Run Contract](./agent-engineering/01-run-contract/)、[A2 Context Compiler](./agent-engineering/02-context-compiler/) 和 [A3 Prompt Release Gate](./agent-engineering/03-prompt-release-gate/) 把架构责任落成可执行、可验证、可回滚的纯函数合同。
+- 🛠️ [**Agent Engineering 20 周完整课程**](./agent-engineering/CURRICULUM.md)：沿 A1–A8 把 Run、Prompt、Context Runtime、Evidence RAG、Durable Memory、Cache/Multi-Agent 与 Trace/发布治理落成可执行、可验证、可回放的企业合同。
 - 🧩 [**进阶 LangGraph · L6 Event streaming**](./langgraph-advanced/06-event-streaming/)：用真实 multi-mode stream 建立 user/debug/audit 投影边界，避免前端直接绑定框架 chunk。
 - 🔬 [**进阶 RAG 专题**](./rag-advanced/01-chunking-strategies/)：分块策略、混合检索、重排、查询改写、评估、生产化六章，把第 08/09 章的最小 RAG 补成生产级，能力沉淀在 `src/shared/rag/`。
 - [**源码解析**](./source-analysis/)：先从热门库卡片或仓库矩阵解析器定位任意 GitHub 仓库的包/文件边界，再用源码对话检索 raw source 和行号引用，再切 CodeMap 对照职责层，再顺着官方源码入口读 LangChain、LangGraph、LlamaIndex，把“会用框架”推进到“能看懂和调试框架”。

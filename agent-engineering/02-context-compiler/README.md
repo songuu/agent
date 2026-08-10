@@ -173,23 +173,27 @@ graph LR
   n_caectx_policy_budget["上下文策略与预算编译"]
   n_caectx_provenance_ledger["来源账本与缺失证据"]
   n_caeprompt_release_rollback["评估门禁与整包回滚（第ae-prompt章）"]
+  n_caeruntime_principal_purpose["Principal / Tenant / Purpose 作用域（第ae-runtime章）"]
   n_caectx_persistent_sources -->|前置| n_caectx_policy_budget
   n_caectx_policy_budget -->|组成| n_caectx_provenance_ledger
   n_caectx_provenance_ledger -->|应用| n_caeprompt_release_rollback
+  n_caectx_provenance_ledger -->|深化| n_caeruntime_principal_purpose
   class n_caectx_persistent_sources,n_caectx_policy_budget,n_caectx_provenance_ledger own;
-  class n_caeprompt_release_rollback cross;
+  class n_caeprompt_release_rollback,n_caeruntime_principal_purpose cross;
   linkStyle 0 stroke:#2563eb,stroke-width:2px;
   linkStyle 1 stroke:#d97706,stroke-width:2px;
   linkStyle 2 stroke:#059669,stroke-width:2px;
+  linkStyle 3 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
 
 - `来源账本与缺失证据` —**应用**→ `评估门禁与整包回滚`（第 ae-prompt 章）
+- `来源账本与缺失证据` —**深化**→ `Principal / Tenant / Purpose 作用域`（第 ae-runtime 章）
 
 ### 延伸阅读
 
-- [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) — Anthropic 官方：上下文是有限资源，需主动裁剪、压缩和按需装配，对应窗口预算与 context compiler `blog`
+- [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) — Anthropic 官方：上下文是有限资源，需主动裁剪、压缩和按需装配，对应 compiler、runtime 与长期任务压缩 `blog`
 
 > 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
 

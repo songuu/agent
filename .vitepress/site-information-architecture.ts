@@ -25,8 +25,8 @@ export const PORTAL_PILLARS: PortalPillar[] = [
   {
     id: "build",
     eyebrow: "BUILD · 项目实践",
-    title: "用 28 个真实项目把知识变成作品",
-    description: "从离线工作流到企业知识库，按场景选择可运行、可验收的 capstone。",
+    title: "用 29 个真实项目把知识变成作品",
+    description: "从离线工作流到 MCP/Docker Agent Runtime 与企业知识库，按场景选择可运行、可验收的 capstone。",
     href: "/capstone/",
     action: "选择实战项目",
   },
@@ -171,7 +171,13 @@ const ragSidebar: SiteSidebarItem[] = [
 ];
 
 const agentEngineeringSidebar: SiteSidebarItem[] = [
-  { text: "Agent Engineering 专题", items: chapterItems("Agent Engineering 专题") },
+  {
+    text: "Agent Engineering 专题",
+    items: [
+      { text: "20 周完整课程", link: "/agent-engineering/CURRICULUM" },
+      ...chapterItems("Agent Engineering 专题"),
+    ],
+  },
   {
     text: "关联架构",
     items: [
@@ -206,7 +212,7 @@ const sourceSidebar: SiteSidebarItem[] = [
 ];
 
 const capstoneSidebar: SiteSidebarItem[] = [
-  { text: "毕业项目 · 28 个", items: chapterItems("毕业项目") },
+  { text: "毕业项目 · 29 个", items: chapterItems("毕业项目") },
 ];
 
 const intelligenceSidebar: SiteSidebarItem[] = [
@@ -267,7 +273,7 @@ const projectSidebar: SiteSidebarItem[] = [
     text: "项目工作区",
     items: [
       { text: "项目中心", link: "/docs/projects" },
-      { text: "28 个毕业项目", link: "/capstone/" },
+      { text: "29 个毕业项目", link: "/capstone/" },
       { text: "源码解析", link: "/source-analysis/repository-matrix" },
       { text: "RAG 系统实战", link: "/docs/rag-system-project" },
       { text: "企业知识库 Agent", link: "/docs/enterprise-knowledge-base-agent" },

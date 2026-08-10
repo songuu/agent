@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **69** 个单元、**344** 个概念、**480** 条关系、**274** 篇关联文章。
+共 **74** 个单元、**359** 个概念、**496** 条关系、**275** 篇关联文章。
 
 ## 章节地图
 
@@ -102,6 +102,11 @@ flowchart LR
     C_ae-run["ae-run Run Contract：可恢复运行契约"]
     C_ae-context["ae-context Context Compiler：可审计上下文编译"]
     C_ae-prompt["ae-prompt Prompt Release Gate：行为包发布门"]
+    C_ae-runtime["ae-runtime Context Runtime：身份、策略与可解释装配"]
+    C_ae-evidence["ae-evidence Evidence RAG：权限、引用与充分性"]
+    C_ae-memory["ae-memory Durable State & Memory：恢复、压缩与治理"]
+    C_ae-multi["ae-multi Cache & Multi-Agent：指纹、隔离与聚合"]
+    C_ae-capstone["ae-capstone Observability Capstone：回放、灰度与发布"]
   end
   C_01 --> C_02
   C_02 --> C_03
@@ -171,6 +176,11 @@ flowchart LR
   C_lg-streaming --> C_ae-run
   C_ae-run --> C_ae-context
   C_ae-context --> C_ae-prompt
+  C_ae-prompt --> C_ae-runtime
+  C_ae-runtime --> C_ae-evidence
+  C_ae-evidence --> C_ae-memory
+  C_ae-memory --> C_ae-multi
+  C_ae-multi --> C_ae-capstone
 ```
 
 ## 概念图谱
@@ -546,6 +556,21 @@ graph LR
     n_caeprompt_template_contract["Prompt 模板契约"]
     n_caeprompt_behavior_bundle["完整 Behavior Bundle"]
     n_caeprompt_release_rollback["评估门禁与整包回滚"]
+    n_caeruntime_principal_purpose["Principal / Tenant / Purpose 作用域"]
+    n_caeruntime_partition_budget["分区预算与可解释装配"]
+    n_caeruntime_context_fingerprint["Context Manifest 与 Fingerprint"]
+    n_caeevidence_acl_first_retrieval["ACL 前置检索"]
+    n_caeevidence_claim_citation["Claim / Citation 映射"]
+    n_caeevidence_sufficiency_gate["冲突与证据充分性门"]
+    n_caememory_task_ledger["Durable Task Ledger"]
+    n_caememory_checkpoint_resume["Checkpoint / Resume 协议"]
+    n_caememory_governed_compaction["受治理记忆与压缩"]
+    n_caemulti_permission_cache["Permission-safe Cache Fingerprint"]
+    n_caemulti_worker_isolation["Worker 最小包与预算隔离"]
+    n_caemulti_evidence_reducer["Evidence-aware Reducer"]
+    n_caecap_trace_replay["Trace Digest 与 Replay"]
+    n_caecap_shadow_canary["Shadow / Canary 质量门"]
+    n_caecap_release_dossier["Release / Rollback Dossier"]
   end
   n_c01_llm_vs_agent -->|深化| n_c01_agent_formula
   n_c01_agent_formula -->|组成| n_c01_react_loop
@@ -1027,6 +1052,22 @@ graph LR
   n_caeprompt_behavior_bundle -->|前置| n_caeprompt_release_rollback
   n_caectx_provenance_ledger -->|应用| n_caeprompt_release_rollback
   n_caeprompt_behavior_bundle -->|应用| n_caerun_behavior_pin
+  n_caectx_provenance_ledger -->|深化| n_caeruntime_principal_purpose
+  n_caeruntime_principal_purpose -->|前置| n_caeruntime_partition_budget
+  n_caeruntime_partition_budget -->|组成| n_caeruntime_context_fingerprint
+  n_caeruntime_context_fingerprint -->|前置| n_caeevidence_acl_first_retrieval
+  n_caeevidence_acl_first_retrieval -->|前置| n_caeevidence_claim_citation
+  n_caeevidence_claim_citation -->|组成| n_caeevidence_sufficiency_gate
+  n_caeevidence_sufficiency_gate -->|前置| n_caememory_task_ledger
+  n_caememory_task_ledger -->|前置| n_caememory_checkpoint_resume
+  n_caememory_checkpoint_resume -->|应用| n_caememory_governed_compaction
+  n_caememory_checkpoint_resume -->|前置| n_caemulti_permission_cache
+  n_caemulti_permission_cache -->|组成| n_caemulti_worker_isolation
+  n_caemulti_worker_isolation -->|前置| n_caemulti_evidence_reducer
+  n_caemulti_evidence_reducer -->|前置| n_caecap_trace_replay
+  n_caecap_trace_replay -->|前置| n_caecap_shadow_canary
+  n_caecap_shadow_canary -->|前置| n_caecap_release_dossier
+  n_caecap_release_dossier -->|应用| n_caeprompt_release_rollback
 ```
 
 ## 概念索引
@@ -1377,6 +1418,21 @@ graph LR
 | Prompt 模板契约 | [ae-prompt Prompt Release Gate：行为包发布门](../agent-engineering/03-prompt-release-gate/README.md) | 模板版本、精确变量集与输出 contract 一起进入版本库，而不是散落字符串 |
 | 完整 Behavior Bundle | [ae-prompt Prompt Release Gate：行为包发布门](../agent-engineering/03-prompt-release-gate/README.md) | 发布单元同时固定 prompt、context policy、tools、model、guardrails 与 evaluator revisions |
 | 评估门禁与整包回滚 | [ae-prompt Prompt Release Gate：行为包发布门](../agent-engineering/03-prompt-release-gate/README.md) | 用可归因 eval report 决定候选晋级；退化时回滚整个行为包并保留审计说明 |
+| Principal / Tenant / Purpose 作用域 | [ae-runtime Context Runtime：身份、策略与可解释装配](../agent-engineering/04-context-runtime/README.md) | 每次 Context Request 固定主体、租户与用途，策略评估不能只依赖自由文本或 userId |
+| 分区预算与可解释装配 | [ae-runtime Context Runtime：身份、策略与可解释装配](../agent-engineering/04-context-runtime/README.md) | 按 control、evidence、memory、tool 等分区保留输出预留和硬约束，并记录每项选择或拒绝原因 |
+| Context Manifest 与 Fingerprint | [ae-runtime Context Runtime：身份、策略与可解释装配](../agent-engineering/04-context-runtime/README.md) | 把来源、policy snapshot、权限摘要、版本和预算编入可回放 Manifest 与缓存失效指纹 |
+| ACL 前置检索 | [ae-evidence Evidence RAG：权限、引用与充分性](../agent-engineering/05-evidence-rag/README.md) | 候选在进入排序与模型可见集合前先执行租户、主体、用途和资源授权过滤 |
+| Claim / Citation 映射 | [ae-evidence Evidence RAG：权限、引用与充分性](../agent-engineering/05-evidence-rag/README.md) | 关键 claim 必须绑定可访问、可定位、带 lineage 的 citation，而不是只列文档名 |
+| 冲突与证据充分性门 | [ae-evidence Evidence RAG：权限、引用与充分性](../agent-engineering/05-evidence-rag/README.md) | 覆盖、权威、时效或独立性不足以及来源冲突都应显式 abstain 或升级人工复核 |
+| Durable Task Ledger | [ae-memory Durable State & Memory：恢复、压缩与治理](../agent-engineering/06-durable-memory/README.md) | 强一致任务状态用 revision 与 CAS 记录；受治理 memory 不替代执行 ledger |
+| Checkpoint / Resume 协议 | [ae-memory Durable State & Memory：恢复、压缩与治理](../agent-engineering/06-durable-memory/README.md) | 恢复前重验证行为、权限与未知副作用，并以幂等 receipt 防止重复执行 |
+| 受治理记忆与压缩 | [ae-memory Durable State & Memory：恢复、压缩与治理](../agent-engineering/06-durable-memory/README.md) | 记忆写入保留 provenance、scope、TTL、supersede 与删除 lineage；压缩产物能回到原始引用 |
+| Permission-safe Cache Fingerprint | [ae-multi Cache & Multi-Agent：指纹、隔离与聚合](../agent-engineering/07-cache-multi-agent/README.md) | 查询、行为、索引、权限和状态 revision 共同决定缓存 namespace，权限收窄立即失效 |
+| Worker 最小包与预算隔离 | [ae-multi Cache & Multi-Agent：指纹、隔离与聚合](../agent-engineering/07-cache-multi-agent/README.md) | Supervisor 只下发任务需要的 Context/Evidence Package、权限和子预算，child 不得扩权 |
+| Evidence-aware Reducer | [ae-multi Cache & Multi-Agent：指纹、隔离与聚合](../agent-engineering/07-cache-multi-agent/README.md) | 聚合先按 lineage 去重再处理冲突，以证据和验证状态而非多数意见提交结果 |
+| Trace Digest 与 Replay | [ae-capstone Observability Capstone：回放、灰度与发布](../agent-engineering/08-observability-capstone/README.md) | 版本、Context Manifest、工具、状态、审批与结果进入脱敏 trace，固定输入可重建决策 |
+| Shadow / Canary 质量门 | [ae-capstone Observability Capstone：回放、灰度与发布](../agent-engineering/08-observability-capstone/README.md) | 候选先旁路比较再小流量灰度，质量、安全、成本和延迟任一关键门失败即阻断 |
+| Release / Rollback Dossier | [ae-capstone Observability Capstone：回放、灰度与发布](../agent-engineering/08-observability-capstone/README.md) | 发布档案绑定 behavior、eval、trace、canary 与 promotion lineage，并区分配置回滚和副作用补偿 |
 
 ## 关联文章
 
@@ -1389,7 +1445,7 @@ graph LR
 | [OpenAI Responses API Reference](https://platform.openai.com/docs/api-reference/responses) | OpenAI | doc | 19 | OpenAI 官方 Responses API 参考，对应模型原生输入输出、工具调用与状态化交互接口层 |
 | [OpenAI: The next evolution of the Agents SDK](https://openai.com/index/the-next-evolution-of-the-agents-sdk/) | OpenAI | blog | 19, ae-run | OpenAI 官方产品文章：Agents SDK 向 sandbox execution、long-horizon tasks、durable harness 演进，是前沿趋势与可恢复 run contract 的来源 |
 | [OpenAI Docs · Sandbox agents](https://developers.openai.com/api/docs/guides/agents/sandboxes) | OpenAI | doc | 19 | Agents SDK sandbox 文档，对应 code execution / long-running task 的隔离执行与生产化边界 |
-| [OpenAI Docs · Evaluate agent workflows](https://developers.openai.com/api/docs/guides/agent-evals) | OpenAI | doc | 19, cap-eval | OpenAI 官方 agent workflow eval 指南，对应第 19 章评估治理层 |
+| [OpenAI Docs · Evaluate agent workflows](https://developers.openai.com/api/docs/guides/agent-evals) | OpenAI | doc | 19, cap-eval, ae-capstone | OpenAI 官方 agent workflow eval 指南，对应离线评估、trace/replay 与发布门治理 |
 | [Google SRE Book · Managing Incidents](https://sre.google/sre-book/managing-incidents/) | Google SRE | doc | cap-incident | Google SRE 事件管理章节，对应告警分级、角色分工、沟通和复盘的生产化边界 |
 | [Voice of the customer](https://en.wikipedia.org/wiki/Voice_of_the_customer) | Wikipedia | doc | cap-feedback | Voice of Customer 方法入口，对应多渠道反馈收集、主题归纳和产品改进闭环 |
 | [Lead scoring](https://en.wikipedia.org/wiki/Lead_scoring) | Wikipedia | doc | cap-sales | Lead scoring 概念入口，对应 fit、行为信号、风险和销售优先级的结构化评分 |
@@ -1407,9 +1463,9 @@ graph LR
 | [Anthropic Docs · Tool use (function calling) with Claude](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) | docs.anthropic.com | doc | 05, 06 | 官方工具调用文档，含 tool_use stopReason 与 tool_result 回传机制 |
 | [OpenAI Docs · Function calling](https://platform.openai.com/docs/guides/function-calling) | platform.openai.com | doc | 05 | OpenAI 侧 function calling 指南，与本章抽象对应 |
 | [Zod 官方文档](https://zod.dev) | zod.dev | doc | 06 | 本章 schema 校验与类型推断的基础库，README 前置知识引用 |
-| [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) | Anthropic | blog | 07, 19, ae-context | Anthropic 官方：上下文是有限资源，需主动裁剪、压缩和按需装配，对应窗口预算与 context compiler |
+| [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) | Anthropic | blog | 07, 19, ae-context, ae-runtime, ae-memory | Anthropic 官方：上下文是有限资源，需主动裁剪、压缩和按需装配，对应 compiler、runtime 与长期任务压缩 |
 | [Vector embeddings - OpenAI API documentation](https://platform.openai.com/docs/guides/embeddings) | platform.openai.com | doc | 08 | 本章 embedding 默认调用 OpenAI text-embedding-3-small，官方指南 |
-| [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401) | arxiv.org | paper | 09, capstone, cap-enterprise-kb | RAG 原始论文 (Lewis et al., 2020)，提出检索增强生成范式 |
+| [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401) | arxiv.org | paper | 09, capstone, cap-enterprise-kb, ae-evidence | RAG 原始论文 (Lewis et al., 2020)，提出检索增强生成范式；Evidence RAG 在其上增加授权、引用和充分性门 |
 | [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366) | arxiv.org | paper | 10 | Reflection/自我反思修正的代表性论文 |
 | [Claude Code Docs · Orchestrate teams of Claude Code sessions](https://code.claude.com/docs/en/agent-teams) | code.claude.com | doc | 11 | Claude Code 官方 agent teams 文档：team lead、teammates、共享任务列表、mailbox、hooks 与限制 |
 | [Codex Docs · Subagents](https://developers.openai.com/codex/subagents) | developers.openai.com | doc | 11 | OpenAI Codex 官方 subagent workflows 文档：显式 spawn、线程管理、sandbox/approval 继承与 custom agents |
@@ -1658,3 +1714,4 @@ graph LR
 | [LangGraph StateGraph and Pregel runtime source](https://github.com/langchain-ai/langgraph/blob/main/libs/langgraph/langgraph/graph/state.py) | LangGraph | doc | 21 | LangGraph 官方源码入口：StateGraph 的 state schema、channel reducer、node、edge 与 compile |
 | [LlamaIndex RetrieverQueryEngine source](https://github.com/run-llama/llama_index/blob/main/llama-index-core/llama_index/core/query_engine/retriever_query_engine.py) | LlamaIndex | doc | 21 | LlamaIndex 官方源码入口：retriever、node postprocessor、response synthesizer 组成 data-first RAG 查询链路 |
 | [OpenAI · Prompting](https://developers.openai.com/api/docs/guides/prompting) | OpenAI | doc | ae-prompt | 把 prompt 作为 application code 管理，以命名模块、typed arguments、测试/eval、Git、feature flag 与 rollback 建立发布生命周期 |
+| [Architecting efficient context-aware multi-agent framework for production](https://developers.googleblog.com/architecting-efficient-context-aware-multi-agent-framework-for-production/) | Google Developers Blog | blog | ae-multi | 生产多 Agent 的上下文边界、分工与聚合参考；本章进一步用权限指纹、最小包和 evidence reducer 固化合同 |

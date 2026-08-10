@@ -181,22 +181,26 @@ graph LR
   n_caeprompt_release_rollback["评估门禁与整包回滚"]
   n_caectx_provenance_ledger["来源账本与缺失证据（第ae-context章）"]
   n_caerun_behavior_pin["行为版本冻结（第ae-run章）"]
+  n_caecap_release_dossier["Release / Rollback Dossier（第ae-capstone章）"]
   n_caeprompt_template_contract -->|组成| n_caeprompt_behavior_bundle
   n_caeprompt_behavior_bundle -->|前置| n_caeprompt_release_rollback
   n_caectx_provenance_ledger -->|应用| n_caeprompt_release_rollback
   n_caeprompt_behavior_bundle -->|应用| n_caerun_behavior_pin
+  n_caecap_release_dossier -->|应用| n_caeprompt_release_rollback
   class n_caeprompt_template_contract,n_caeprompt_behavior_bundle,n_caeprompt_release_rollback own;
-  class n_caectx_provenance_ledger,n_caerun_behavior_pin cross;
+  class n_caectx_provenance_ledger,n_caerun_behavior_pin,n_caecap_release_dossier cross;
   linkStyle 0 stroke:#d97706,stroke-width:2px;
   linkStyle 1 stroke:#2563eb,stroke-width:2px;
   linkStyle 2 stroke:#059669,stroke-width:2px;
   linkStyle 3 stroke:#059669,stroke-width:2px;
+  linkStyle 4 stroke:#059669,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
 
 - `来源账本与缺失证据` —**应用**→ `评估门禁与整包回滚`（第 ae-context 章）
 - `完整 Behavior Bundle` —**应用**→ `行为版本冻结`（第 ae-run 章）
+- `Release / Rollback Dossier` —**应用**→ `评估门禁与整包回滚`（第 ae-capstone 章）
 
 ### 延伸阅读
 

@@ -83,8 +83,8 @@ jobs:
           pnpm lg:typecheck
           pnpm lg:smoke
           pnpm ae:typecheck
-          pnpm ae:smoke
           pnpm ae:research:test
+          pnpm ae:course:smoke
           pnpm demo:registry:test
           pnpm supabase:typecheck
           pnpm content:api:typecheck

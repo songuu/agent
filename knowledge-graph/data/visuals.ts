@@ -483,6 +483,46 @@ export const CONCEPT_VISUALS: ConceptVisual[] = [
     steps: ["定义模板契约", "组装 behavior bundle", "运行多 trial eval", "门禁判定", "整包晋级/回滚"],
     takeaway: "生产 PromptOps 发布的是完整行为版本，不是一段脱离上下文和工具的文案。",
   },
+  {
+    chapter: "ae-runtime",
+    kind: "layers",
+    title: "Context Runtime：身份与策略约束下的可解释装配",
+    summary: "Context Request 先固定 principal、tenant 与 purpose，再经 policy snapshot、分区预算和来源选择生成可回放的 Package、Manifest 与 Fingerprint。",
+    steps: ["固定身份与用途", "加载策略快照", "执行来源过滤", "分配分区预算", "生成 Manifest / Fingerprint"],
+    takeaway: "运行时上下文不是多抓一些内容，而是在当前身份、用途和预算下生成可解释、可复核的最小视图。",
+  },
+  {
+    chapter: "ae-evidence",
+    kind: "fusion",
+    title: "Evidence RAG：授权检索到证据充分性门",
+    summary: "检索通道先执行 ACL，再融合和重排；关键 claim 绑定可访问 citation，冲突、陈旧或覆盖不足时显式 abstain。",
+    steps: ["ACL 前置过滤", "多通道召回", "融合与去重", "Claim / Citation 映射", "冲突与充分性判定"],
+    takeaway: "相关片段不是证据闭环；只有权限、引用、lineage、时效和覆盖共同成立，系统才可以据此作答。",
+  },
+  {
+    chapter: "ae-memory",
+    kind: "loop",
+    title: "Durable State & Memory：可恢复状态与受治理记忆",
+    summary: "Task Ledger 以 revision/CAS 保存执行事实，checkpoint 恢复前重验证未知副作用；Memory 另走 provenance、scope、TTL、supersede 和删除治理。",
+    steps: ["提交 Ledger revision", "创建 checkpoint", "崩溃后对账", "幂等 resume", "压缩 / TTL / 删除传播"],
+    takeaway: "强一致任务状态与长期记忆职责不同：前者保证恢复正确，后者只保存可追溯、可撤销、受作用域约束的断言。",
+  },
+  {
+    chapter: "ae-multi",
+    kind: "space",
+    title: "Cache & Multi-Agent：权限指纹、Worker 隔离与证据聚合",
+    summary: "缓存键纳入行为、索引、权限和状态 revision；Supervisor 向每个 Worker 下发最小包与子预算，Reducer 按独立 evidence lineage 去重并处理冲突。",
+    steps: ["计算权限安全指纹", "命中后重新鉴权", "下发最小 Worker Package", "隔离权限与预算", "Evidence-aware Reduce"],
+    takeaway: "缓存复用和多 Agent 扩展都不能跨越权限边界；聚合依据应是独立证据，而不是 Worker 数量。",
+  },
+  {
+    chapter: "ae-capstone",
+    kind: "stream",
+    title: "Observability Capstone：从 Trace 回放到灰度发布",
+    summary: "脱敏 trace 关联行为版本、Context Manifest、工具、状态、审批与结果；候选依次经过 replay、shadow、canary 和四类门禁后才形成 release dossier。",
+    steps: ["记录 Trace Digest", "固定输入 Replay", "Shadow 对照", "Canary 四门判定", "发布 / 回滚 / 补偿档案"],
+    takeaway: "离线全绿不是生产完成；可回放、可归因的运行证据和受控灰度才让发布与回滚成为可审计决策。",
+  },
 ];
 
 const CONCEPT_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> = {
@@ -678,6 +718,26 @@ const CONCEPT_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> =
   "ae-prompt": [
     { tone: "core", label: "核心判断", body: "PromptOps 的发布单元是完整 behavior bundle；候选必须绑定精确变量 contract、版本引用和可归因 eval report。" },
     { tone: "warning", label: "易错边界", body: "不要只回滚 prompt 文案或直接激活候选；context/tool/model/guardrail revision 的变化同样会改变行为，外部副作用也不会被版本回滚逆转。" },
+  ],
+  "ae-runtime": [
+    { tone: "core", label: "核心判断", body: "Context Runtime 在 principal、tenant、purpose、policy snapshot 和预算约束下生成 Package、Manifest 与 Fingerprint；每个 included/excluded 决定都可解释。" },
+    { tone: "warning", label: "易错边界", body: "不要信任调用方自报的 tenant 或复用旧权限摘要；Context Package 被消费或命中缓存时仍需按当前授权和时效重验证。" },
+  ],
+  "ae-evidence": [
+    { tone: "core", label: "核心判断", body: "Evidence RAG 先做 ACL 再召回，并把关键 claim 映射到可访问 citation；覆盖、独立 lineage、权威、时效和冲突共同决定充分性。" },
+    { tone: "warning", label: "易错边界", body: "不要先召回敏感内容再让模型忽略，也不要把多个引用同一 lineage 的片段当独立交叉验证；证据不足必须 abstain。" },
+  ],
+  "ae-memory": [
+    { tone: "core", label: "核心判断", body: "Task Ledger 以 revision/CAS 保证执行状态，checkpoint/resume 负责恢复；Memory 只保存带 provenance、scope、TTL 与撤销链的受治理断言。" },
+    { tone: "warning", label: "易错边界", body: "不要用聊天摘要替代强一致任务状态，也不要在未知副作用后盲目重试；删除必须沿缓存、压缩和派生引用传播。" },
+  ],
+  "ae-multi": [
+    { tone: "core", label: "核心判断", body: "安全缓存键包含行为、索引、权限和状态 revision；Supervisor 分发最小包，Reducer 按 evidence lineage 去重、验证和处理冲突。" },
+    { tone: "warning", label: "易错边界", body: "不要只用 query 文本做缓存键、向所有 Worker 广播全局上下文或以多数票代替证据；权限收窄必须立即 miss/purge。" },
+  ],
+  "ae-capstone": [
+    { tone: "core", label: "核心判断", body: "Trace 把行为版本、Context Manifest、工具、状态、审批和结果连接成可回放证据；候选必须依次经过 replay、shadow、canary 和四类发布门。" },
+    { tone: "warning", label: "易错边界", body: "不要把离线全绿外推为生产安全，也不要声称配置回滚会自动撤销外部副作用；补偿动作需要独立账本和审批。" },
   ],
   "21": [
     { tone: "core", label: "核心判断", body: "读框架源码先找入口函数和 runtime，再追状态、工具、检索、停止条件；不要停在公开 API 名字上。" },

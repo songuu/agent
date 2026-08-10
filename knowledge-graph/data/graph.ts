@@ -185,6 +185,7 @@ export const CHAPTERS: Chapter[] = [
   { id: "cap-support", slug: "support-copilot", title: "毕业项目 · 客服 Copilot", part: "毕业项目", dir: "capstone/support-copilot", demo: { entry: "capstone/support-copilot/src/cli.ts", needsKey: "none" } },
   { id: "cap-review", slug: "code-review-crew", title: "毕业项目 · 代码评审团", part: "毕业项目", dir: "capstone/code-review-crew", demo: { entry: "capstone/code-review-crew/src/cli.ts", needsKey: "none" } },
   { id: "cap-eval", slug: "agent-eval-harness", title: "毕业项目 · Agent 评测与回归门", part: "毕业项目", dir: "capstone/agent-eval-harness", demo: { entry: "capstone/agent-eval-harness/src/cli.ts", needsKey: "none" } },
+  { id: "cap-mini-harness", slug: "mini-agent-harness", title: "毕业项目 · Mini Agent Harness", part: "毕业项目", dir: "capstone/mini-agent-harness", demo: { entry: "capstone/mini-agent-harness/src/smoke.ts", needsKey: "none" } },
   { id: "cap-incident", slug: "incident-responder", title: "毕业项目 · 告警响应 Agent", part: "毕业项目", dir: "capstone/incident-responder", demo: { entry: "capstone/incident-responder/src/cli.ts", needsKey: "none" } },
   { id: "cap-feedback", slug: "feedback-intelligence", title: "毕业项目 · 用户反馈洞察 Agent", part: "毕业项目", dir: "capstone/feedback-intelligence", demo: { entry: "capstone/feedback-intelligence/src/cli.ts", needsKey: "none" } },
   { id: "cap-sales", slug: "sales-lead-researcher", title: "毕业项目 · 销售线索研究 Agent", part: "毕业项目", dir: "capstone/sales-lead-researcher", demo: { entry: "capstone/sales-lead-researcher/src/cli.ts", needsKey: "none" } },
@@ -210,6 +211,11 @@ export const CHAPTERS: Chapter[] = [
   { id: "ae-run", slug: "01-run-contract", title: "Run Contract：可恢复运行契约", part: "Agent Engineering 专题", dir: "agent-engineering/01-run-contract", demo: { needsKey: "none" } },
   { id: "ae-context", slug: "02-context-compiler", title: "Context Compiler：可审计上下文编译", part: "Agent Engineering 专题", dir: "agent-engineering/02-context-compiler", demo: { needsKey: "none" } },
   { id: "ae-prompt", slug: "03-prompt-release-gate", title: "Prompt Release Gate：行为包发布门", part: "Agent Engineering 专题", dir: "agent-engineering/03-prompt-release-gate", demo: { needsKey: "none" } },
+  { id: "ae-runtime", slug: "04-context-runtime", title: "Context Runtime：身份、策略与可解释装配", part: "Agent Engineering 专题", dir: "agent-engineering/04-context-runtime", demo: { needsKey: "none" } },
+  { id: "ae-evidence", slug: "05-evidence-rag", title: "Evidence RAG：权限、引用与充分性", part: "Agent Engineering 专题", dir: "agent-engineering/05-evidence-rag", demo: { needsKey: "none" } },
+  { id: "ae-memory", slug: "06-durable-memory", title: "Durable State & Memory：恢复、压缩与治理", part: "Agent Engineering 专题", dir: "agent-engineering/06-durable-memory", demo: { needsKey: "none" } },
+  { id: "ae-multi", slug: "07-cache-multi-agent", title: "Cache & Multi-Agent：指纹、隔离与聚合", part: "Agent Engineering 专题", dir: "agent-engineering/07-cache-multi-agent", demo: { needsKey: "none" } },
+  { id: "ae-capstone", slug: "08-observability-capstone", title: "Observability Capstone：回放、灰度与发布", part: "Agent Engineering 专题", dir: "agent-engineering/08-observability-capstone", demo: { needsKey: "none" } },
 ];
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -389,6 +395,14 @@ export const CONCEPTS: Concept[] = [
   { id: "cev-metrics", label: "聚合指标", chapter: "cap-eval", summary: "通过率/工具准确率/拒答准确率/成本，量化 Agent 质量" },
   { id: "cev-gate", label: "回归门 (CI exit code)", chapter: "cap-eval", summary: "指标跌破阈值即非零退出，自动拦下退化版本" },
 
+  // ── 毕业项目 · Mini Agent Harness ──
+  { id: "cmh-mcp", label: "MCP Tool 发现与分发", chapter: "cap-mini-harness", summary: "通过 stdio、Streamable HTTP 与 legacy SSE 接入 MCP，分页发现 tools/list 并将 tools/call 结果回灌 AgentLoop" },
+  { id: "cmh-sandbox", label: "Docker 隔离执行", chapter: "cap-mini-harness", summary: "短生命周期容器关闭网络、只读根、非 root、cap-drop、资源上限与 timeout kill；Node fallback 只用于开发" },
+  { id: "cmh-context", label: "Token Context 与稳定前缀", chapter: "cap-mini-harness", summary: "js-tiktoken 预算、摘要/滑窗与固定系统前缀，降低上下文膨胀并改善 KV cache 命中条件" },
+  { id: "cmh-state", label: "可审计 Agent 状态机", chapter: "cap-mini-harness", summary: "IDLE→THINKING→TOOL_CALLING/WAITING_FOR_SANDBOX→EVALUATING→COMPLETE/ERROR 的合法迁移与有限纠错" },
+  { id: "cmh-checkpoint", label: "受管 Git Checkpoint 与回滚", chapter: "cap-mini-harness", summary: "仅在 marker 临时工作区创建 Git/file snapshot，回滚本会话的受管文件副作用而不触碰用户仓库" },
+  { id: "cmh-events", label: "流式动作日志", chapter: "cap-mini-harness", summary: "输出状态、工具、checkpoint、隔离级别与截断错误摘要，不输出模型隐藏推理或 secrets" },
+
   // ── 毕业项目 · 告警响应 Agent ──
   { id: "cinc-severity", label: "告警 SEV 分级", chapter: "cap-incident", summary: "把 5xx、延迟、队列积压等信号合成 SEV1/2/3 处置等级" },
   { id: "cinc-runbook", label: "Runbook 匹配", chapter: "cap-incident", summary: "用日志关键词匹配最可能的处置手册，避免临场拍脑袋" },
@@ -544,6 +558,21 @@ export const CONCEPTS: Concept[] = [
   { id: "caeprompt-template-contract", label: "Prompt 模板契约", chapter: "ae-prompt", summary: "模板版本、精确变量集与输出 contract 一起进入版本库，而不是散落字符串" },
   { id: "caeprompt-behavior-bundle", label: "完整 Behavior Bundle", chapter: "ae-prompt", summary: "发布单元同时固定 prompt、context policy、tools、model、guardrails 与 evaluator revisions" },
   { id: "caeprompt-release-rollback", label: "评估门禁与整包回滚", chapter: "ae-prompt", summary: "用可归因 eval report 决定候选晋级；退化时回滚整个行为包并保留审计说明" },
+  { id: "caeruntime-principal-purpose", label: "Principal / Tenant / Purpose 作用域", chapter: "ae-runtime", summary: "每次 Context Request 固定主体、租户与用途，策略评估不能只依赖自由文本或 userId" },
+  { id: "caeruntime-partition-budget", label: "分区预算与可解释装配", chapter: "ae-runtime", summary: "按 control、evidence、memory、tool 等分区保留输出预留和硬约束，并记录每项选择或拒绝原因" },
+  { id: "caeruntime-context-fingerprint", label: "Context Manifest 与 Fingerprint", chapter: "ae-runtime", summary: "把来源、policy snapshot、权限摘要、版本和预算编入可回放 Manifest 与缓存失效指纹" },
+  { id: "caeevidence-acl-first-retrieval", label: "ACL 前置检索", chapter: "ae-evidence", summary: "候选在进入排序与模型可见集合前先执行租户、主体、用途和资源授权过滤" },
+  { id: "caeevidence-claim-citation", label: "Claim / Citation 映射", chapter: "ae-evidence", summary: "关键 claim 必须绑定可访问、可定位、带 lineage 的 citation，而不是只列文档名" },
+  { id: "caeevidence-sufficiency-gate", label: "冲突与证据充分性门", chapter: "ae-evidence", summary: "覆盖、权威、时效或独立性不足以及来源冲突都应显式 abstain 或升级人工复核" },
+  { id: "caememory-task-ledger", label: "Durable Task Ledger", chapter: "ae-memory", summary: "强一致任务状态用 revision 与 CAS 记录；受治理 memory 不替代执行 ledger" },
+  { id: "caememory-checkpoint-resume", label: "Checkpoint / Resume 协议", chapter: "ae-memory", summary: "恢复前重验证行为、权限与未知副作用，并以幂等 receipt 防止重复执行" },
+  { id: "caememory-governed-compaction", label: "受治理记忆与压缩", chapter: "ae-memory", summary: "记忆写入保留 provenance、scope、TTL、supersede 与删除 lineage；压缩产物能回到原始引用" },
+  { id: "caemulti-permission-cache", label: "Permission-safe Cache Fingerprint", chapter: "ae-multi", summary: "查询、行为、索引、权限和状态 revision 共同决定缓存 namespace，权限收窄立即失效" },
+  { id: "caemulti-worker-isolation", label: "Worker 最小包与预算隔离", chapter: "ae-multi", summary: "Supervisor 只下发任务需要的 Context/Evidence Package、权限和子预算，child 不得扩权" },
+  { id: "caemulti-evidence-reducer", label: "Evidence-aware Reducer", chapter: "ae-multi", summary: "聚合先按 lineage 去重再处理冲突，以证据和验证状态而非多数意见提交结果" },
+  { id: "caecap-trace-replay", label: "Trace Digest 与 Replay", chapter: "ae-capstone", summary: "版本、Context Manifest、工具、状态、审批与结果进入脱敏 trace，固定输入可重建决策" },
+  { id: "caecap-shadow-canary", label: "Shadow / Canary 质量门", chapter: "ae-capstone", summary: "候选先旁路比较再小流量灰度，质量、安全、成本和延迟任一关键门失败即阻断" },
+  { id: "caecap-release-dossier", label: "Release / Rollback Dossier", chapter: "ae-capstone", summary: "发布档案绑定 behavior、eval、trace、canary 与 promotion lineage，并区分配置回滚和副作用补偿" },
 ];
 
 export const RELATIONS: Relation[] = [
@@ -808,6 +837,16 @@ export const RELATIONS: Relation[] = [
   { from: "cev-metrics", to: "c16-observability", type: "应用", note: "成本与调用统计沿用第16章可观测思路" },
   { from: "cev-judges", to: "crageval-llm-judge-rag", type: "对比", note: "RAG 用裁判模型 vs 这里用离线规则裁判" },
 
+  // ── 毕业项目 · Mini Agent Harness（内部组成 + 跨章复用）──
+  { from: "cmh-mcp", to: "cmh-state", type: "应用", note: "发现和调用的 Tool 结果作为状态机的可见 observation" },
+  { from: "cmh-context", to: "cmh-state", type: "组成", note: "每轮规划前按 token 预算构建可发送上下文" },
+  { from: "cmh-state", to: "cmh-sandbox", type: "应用", note: "状态机仅在受控执行阶段把代码交给 SandboxRunner" },
+  { from: "cmh-checkpoint", to: "cmh-sandbox", type: "前置", note: "可写 sandbox 动作前先建立受管 rollback anchor" },
+  { from: "cmh-events", to: "cmh-state", type: "应用", note: "流式事件让一次状态迁移、工具结果与失败纠正可追溯" },
+  { from: "cmh-mcp", to: "c19-mcp", type: "组成", note: "把第19章 MCP 概念落成真实 Client/Server、tools/list 与 tools/call" },
+  { from: "cmh-sandbox", to: "c19-hosted-tools", type: "深化", note: "把 hosted sandbox 概念拆为 Docker 权限、网络、挂载和超时边界" },
+  { from: "cmh-events", to: "c16-observability", type: "应用", note: "动作事件与截断错误摘要是 agent 运行时观测的一部分" },
+
   // ── 毕业项目 · 告警响应 Agent（内部组成 + 跨章复用）──
   { from: "cinc-severity", to: "c16-observability", type: "应用", note: "告警分级依赖指标、日志和成本/延迟观测" },
   { from: "cinc-runbook", to: "cinc-evidence", type: "前置", note: "先选 runbook 才能整理对应证据链" },
@@ -1055,6 +1094,22 @@ export const RELATIONS: Relation[] = [
   { from: "caeprompt-behavior-bundle", to: "caeprompt-release-rollback", type: "前置", note: "候选行为包经评估门晋级，退化时按同一 digest 整包回滚" },
   { from: "caectx-provenance-ledger", to: "caeprompt-release-rollback", type: "应用", note: "上下文选择证据让 prompt/context 退化可归因" },
   { from: "caeprompt-behavior-bundle", to: "caerun-behavior-pin", type: "应用", note: "晋级后的行为包 revision 被下一次 run manifest 固定" },
+  { from: "caectx-provenance-ledger", to: "caeruntime-principal-purpose", type: "深化", note: "离线 compiler 的来源账本进入运行时后，还必须绑定主体、租户、用途与策略快照" },
+  { from: "caeruntime-principal-purpose", to: "caeruntime-partition-budget", type: "前置", note: "先确定身份与用途边界，再分配各类上下文的硬软预算" },
+  { from: "caeruntime-partition-budget", to: "caeruntime-context-fingerprint", type: "组成", note: "装配选择、预算与拒绝理由共同进入 Manifest 和 Fingerprint" },
+  { from: "caeruntime-context-fingerprint", to: "caeevidence-acl-first-retrieval", type: "前置", note: "检索必须沿用同一 principal、tenant、purpose 与 policy snapshot，避免旁路越权" },
+  { from: "caeevidence-acl-first-retrieval", to: "caeevidence-claim-citation", type: "前置", note: "只有通过授权过滤的证据才能进入 claim/citation 映射" },
+  { from: "caeevidence-claim-citation", to: "caeevidence-sufficiency-gate", type: "组成", note: "citation 覆盖、独立 lineage、权威与时效共同决定是否充分" },
+  { from: "caeevidence-sufficiency-gate", to: "caememory-task-ledger", type: "前置", note: "只有通过充分性门的已验证事实才能推进 durable task state" },
+  { from: "caememory-task-ledger", to: "caememory-checkpoint-resume", type: "前置", note: "checkpoint 以可比较的 ledger revision 为恢复基线" },
+  { from: "caememory-checkpoint-resume", to: "caememory-governed-compaction", type: "应用", note: "恢复与压缩都必须保留 provenance、关键事实和删除约束" },
+  { from: "caememory-checkpoint-resume", to: "caemulti-permission-cache", type: "前置", note: "ledger revision 与恢复后的权限状态必须进入缓存指纹" },
+  { from: "caemulti-permission-cache", to: "caemulti-worker-isolation", type: "组成", note: "每个 worker 的可见包与缓存 namespace 继承其最小权限摘要" },
+  { from: "caemulti-worker-isolation", to: "caemulti-evidence-reducer", type: "前置", note: "隔离 worker 的输出只作为候选，由 reducer 按独立证据聚合" },
+  { from: "caemulti-evidence-reducer", to: "caecap-trace-replay", type: "前置", note: "聚合输入、lineage 去重和冲突决议必须进入可回放 trace" },
+  { from: "caecap-trace-replay", to: "caecap-shadow-canary", type: "前置", note: "可重放基线使 shadow 与 canary 差异能归因到候选行为" },
+  { from: "caecap-shadow-canary", to: "caecap-release-dossier", type: "前置", note: "四类门禁通过后才生成可审计的发布档案" },
+  { from: "caecap-release-dossier", to: "caeprompt-release-rollback", type: "应用", note: "最终发布档案把运行期信号绑定回 behavior promotion 与整包回滚谱系" },
 ];
 
 export const ARTICLES: Article[] = [
@@ -1063,7 +1118,7 @@ export const ARTICLES: Article[] = [
   { title: "OpenAI Responses API Reference", url: "https://platform.openai.com/docs/api-reference/responses", kind: "doc", source: "OpenAI", chapters: ["19"], note: "OpenAI 官方 Responses API 参考，对应模型原生输入输出、工具调用与状态化交互接口层" },
   { title: "OpenAI: The next evolution of the Agents SDK", url: "https://openai.com/index/the-next-evolution-of-the-agents-sdk/", kind: "blog", source: "OpenAI", chapters: ["19","ae-run"], note: "OpenAI 官方产品文章：Agents SDK 向 sandbox execution、long-horizon tasks、durable harness 演进，是前沿趋势与可恢复 run contract 的来源" },
   { title: "OpenAI Docs · Sandbox agents", url: "https://developers.openai.com/api/docs/guides/agents/sandboxes", kind: "doc", source: "OpenAI", chapters: ["19"], note: "Agents SDK sandbox 文档，对应 code execution / long-running task 的隔离执行与生产化边界" },
-  { title: "OpenAI Docs · Evaluate agent workflows", url: "https://developers.openai.com/api/docs/guides/agent-evals", kind: "doc", source: "OpenAI", chapters: ["19","cap-eval"], note: "OpenAI 官方 agent workflow eval 指南，对应第 19 章评估治理层" },
+  { title: "OpenAI Docs · Evaluate agent workflows", url: "https://developers.openai.com/api/docs/guides/agent-evals", kind: "doc", source: "OpenAI", chapters: ["19","cap-eval","ae-capstone"], note: "OpenAI 官方 agent workflow eval 指南，对应离线评估、trace/replay 与发布门治理" },
   { title: "Google SRE Book · Managing Incidents", url: "https://sre.google/sre-book/managing-incidents/", kind: "doc", source: "Google SRE", chapters: ["cap-incident"], note: "Google SRE 事件管理章节，对应告警分级、角色分工、沟通和复盘的生产化边界" },
   { title: "Voice of the customer", url: "https://en.wikipedia.org/wiki/Voice_of_the_customer", kind: "doc", source: "Wikipedia", chapters: ["cap-feedback"], note: "Voice of Customer 方法入口，对应多渠道反馈收集、主题归纳和产品改进闭环" },
   { title: "Lead scoring", url: "https://en.wikipedia.org/wiki/Lead_scoring", kind: "doc", source: "Wikipedia", chapters: ["cap-sales"], note: "Lead scoring 概念入口，对应 fit、行为信号、风险和销售优先级的结构化评分" },
@@ -1081,9 +1136,9 @@ export const ARTICLES: Article[] = [
   { title: "Anthropic Docs · Tool use (function calling) with Claude", url: "https://docs.anthropic.com/en/docs/build-with-claude/tool-use", kind: "doc", chapters: ["05","06"], note: "官方工具调用文档，含 tool_use stopReason 与 tool_result 回传机制" },
   { title: "OpenAI Docs · Function calling", url: "https://platform.openai.com/docs/guides/function-calling", kind: "doc", chapters: ["05"], note: "OpenAI 侧 function calling 指南，与本章抽象对应" },
   { title: "Zod 官方文档", url: "https://zod.dev", kind: "doc", chapters: ["06"], note: "本章 schema 校验与类型推断的基础库，README 前置知识引用" },
-  { title: "Effective context engineering for AI agents", url: "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents", kind: "blog", source: "Anthropic", chapters: ["07","19","ae-context"], note: "Anthropic 官方：上下文是有限资源，需主动裁剪、压缩和按需装配，对应窗口预算与 context compiler" },
+  { title: "Effective context engineering for AI agents", url: "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents", kind: "blog", source: "Anthropic", chapters: ["07","19","ae-context","ae-runtime","ae-memory"], note: "Anthropic 官方：上下文是有限资源，需主动裁剪、压缩和按需装配，对应 compiler、runtime 与长期任务压缩" },
   { title: "Vector embeddings - OpenAI API documentation", url: "https://platform.openai.com/docs/guides/embeddings", kind: "doc", chapters: ["08"], note: "本章 embedding 默认调用 OpenAI text-embedding-3-small，官方指南" },
-  { title: "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks", url: "https://arxiv.org/abs/2005.11401", kind: "paper", chapters: ["09","capstone","cap-enterprise-kb"], note: "RAG 原始论文 (Lewis et al., 2020)，提出检索增强生成范式" },
+  { title: "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks", url: "https://arxiv.org/abs/2005.11401", kind: "paper", chapters: ["09","capstone","cap-enterprise-kb","ae-evidence"], note: "RAG 原始论文 (Lewis et al., 2020)，提出检索增强生成范式；Evidence RAG 在其上增加授权、引用和充分性门" },
   { title: "Reflexion: Language Agents with Verbal Reinforcement Learning", url: "https://arxiv.org/abs/2303.11366", kind: "paper", chapters: ["10"], note: "Reflection/自我反思修正的代表性论文" },
   { title: "Claude Code Docs · Orchestrate teams of Claude Code sessions", url: "https://code.claude.com/docs/en/agent-teams", kind: "doc", chapters: ["11"], note: "Claude Code 官方 agent teams 文档：team lead、teammates、共享任务列表、mailbox、hooks 与限制" },
   { title: "Codex Docs · Subagents", url: "https://developers.openai.com/codex/subagents", kind: "doc", chapters: ["11"], note: "OpenAI Codex 官方 subagent workflows 文档：显式 spawn、线程管理、sandbox/approval 继承与 custom agents" },
@@ -4182,4 +4237,5 @@ export const ARTICLES: Article[] = [
   { title: "LangGraph StateGraph and Pregel runtime source", url: "https://github.com/langchain-ai/langgraph/blob/main/libs/langgraph/langgraph/graph/state.py", kind: "doc", source: "LangGraph", chapters: ["21"], note: "LangGraph 官方源码入口：StateGraph 的 state schema、channel reducer、node、edge 与 compile" },
   { title: "LlamaIndex RetrieverQueryEngine source", url: "https://github.com/run-llama/llama_index/blob/main/llama-index-core/llama_index/core/query_engine/retriever_query_engine.py", kind: "doc", source: "LlamaIndex", chapters: ["21"], note: "LlamaIndex 官方源码入口：retriever、node postprocessor、response synthesizer 组成 data-first RAG 查询链路" },
   { title: "OpenAI · Prompting", url: "https://developers.openai.com/api/docs/guides/prompting", kind: "doc", source: "OpenAI", chapters: ["ae-prompt"], note: "把 prompt 作为 application code 管理，以命名模块、typed arguments、测试/eval、Git、feature flag 与 rollback 建立发布生命周期" },
+  { title: "Architecting efficient context-aware multi-agent framework for production", url: "https://developers.googleblog.com/architecting-efficient-context-aware-multi-agent-framework-for-production/", kind: "blog", source: "Google Developers Blog", chapters: ["ae-multi"], note: "生产多 Agent 的上下文边界、分工与聚合参考；本章进一步用权限指纹、最小包和 evidence reducer 固化合同" },
 ];

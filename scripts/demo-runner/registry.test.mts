@@ -19,7 +19,16 @@ assert.equal(registry.get("08")?.needsKey, "embedding");
 assert.ok(registry.has("19"), "keyless ecosystem demo should be runnable");
 assert.equal(registry.get("19")?.needsKey, "none");
 
-for (const id of ["ae-run", "ae-context", "ae-prompt"] as const) {
+for (const id of [
+  "ae-run",
+  "ae-context",
+  "ae-prompt",
+  "ae-runtime",
+  "ae-evidence",
+  "ae-memory",
+  "ae-multi",
+  "ae-capstone",
+] as const) {
   assert.ok(registry.has(id), `${id} should be discovered as a runnable offline demo`);
   assert.equal(registry.get(id)?.needsKey, "none");
   assert.equal(registry.get(id)?.entry, `${registry.get(id)?.dir}/index.ts`);

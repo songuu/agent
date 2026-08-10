@@ -16,11 +16,11 @@
 | 已安排 | 想查看现有定时任务、同步脚本、数据落点和验证边界 | [已安排任务](./scheduled.md) |
 | 源码解析 | 想从调用框架升级到读懂 LangChain / LangGraph / LlamaIndex 源码 | [第 21 章 · 源码解析](../source-analysis/README.md) |
 | 前沿文章库 | 想按日期、体系层浏览 agent 前沿资料和原文入口 | [第 20 章 · Agent 前沿文章库](../lessons/20-agent-frontier-news/README.md) |
-| 毕业项目 | 想把前面能力组装成完整作品 | [毕业项目总览（28 个）](../capstone/README.md) · [Deep Research Agent](../capstone/deep-research-agent/README.md) · [客服 Copilot](../capstone/support-copilot/README.md) · [代码评审团](../capstone/code-review-crew/README.md) · [Agent 评测与回归门](../capstone/agent-eval-harness/README.md) · [告警响应](../capstone/incident-responder/README.md) · [反馈洞察](../capstone/feedback-intelligence/README.md) · [销售线索研究](../capstone/sales-lead-researcher/README.md) · [企业知识库 Agent](../capstone/enterprise-knowledge-base-agent/README.md) |
+| 毕业项目 | 想把前面能力组装成完整作品 | [毕业项目总览（29 个）](../capstone/README.md) · [Deep Research Agent](../capstone/deep-research-agent/README.md) · [客服 Copilot](../capstone/support-copilot/README.md) · [代码评审团](../capstone/code-review-crew/README.md) · [Agent 评测与回归门](../capstone/agent-eval-harness/README.md) · [Mini Agent Harness](../capstone/mini-agent-harness/README.md) · [告警响应](../capstone/incident-responder/README.md) · [反馈洞察](../capstone/feedback-intelligence/README.md) · [销售线索研究](../capstone/sales-lead-researcher/README.md) · [企业知识库 Agent](../capstone/enterprise-knowledge-base-agent/README.md) |
 | 进阶 RAG 专题 | 想把最小 RAG 补成生产级（分块/混合/精排/改写/评估/生产化） | [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md) |
 | 进阶 LangGraph 专题 | 想把第 12 章的框架入门补成状态图、持久化、HITL、多 agent 与生产化路线 | [进阶 LangGraph 专题](../langgraph-advanced/README.md) |
 | 2026 Agent 架构蓝图 | 想把近期 agent 趋势落成可演进的工程框架，而不是继续堆框架名 | [五平面架构与落地路线](./agent-trends-architecture.md) |
-| Agent Engineering 专题 | 想把架构责任落成可运行合同，深入 run 生命周期、上下文编译和 prompt 发布 | [A1 Run Contract](../agent-engineering/01-run-contract/README.md) · [A2 Context Compiler](../agent-engineering/02-context-compiler/README.md) · [A3 Prompt Release Gate](../agent-engineering/03-prompt-release-gate/README.md) |
+| Agent Engineering 专题 | 想用 20 周把架构责任落成可恢复、可审计、可灰度的工程系统 | [20 周完整课程（A1–A8，120–160 小时）](../agent-engineering/CURRICULUM.md) · [专题首页](../agent-engineering/README.md) |
 | RAG 完整架构 | 想把 RAG 从 demo 设计成可维护系统 | [RAG 完整架构蓝图](./rag-architecture.md) |
 | 企业知识库 Agent | 想把 RAG、记忆、工具、流式 UX、评估和部署串成一个企业级作品集 | [企业知识库 Agent 蓝图](./enterprise-knowledge-base-agent.md) · [企业知识库 Agent Capstone](../capstone/enterprise-knowledge-base-agent/README.md) |
 | RAG 实战项目 | 想从课程最小 RAG 走向生产级知识库系统 | [仓库内 checkpoint](../capstone/rag-system/README.md) · [songuu/rag-system 连接指南](./rag-system-project.md) |
@@ -56,11 +56,12 @@
 | 🎓 | 综合实战 | [客服 Copilot](../capstone/support-copilot/README.md) | 记忆、RAG、工具、HITL 审批、注入/PII 安全、成本可观测的纵深防御管线（离线可跑） |
 | 🎓 | 综合实战 | [代码评审团](../capstone/code-review-crew/README.md) | 多智能体并行评审、结构化发现、严重度排序、critical 即 BLOCK 的评审门（离线可跑） |
 | 🎓 | 综合实战 | [Agent 评测与回归门](../capstone/agent-eval-harness/README.md) | golden 测试集、离线裁判、通过率/拒答准确率/成本指标、CI 回归门（离线可跑） |
+| 🎓 | Agent Runtime 实战 | [Mini Agent Harness](../capstone/mini-agent-harness/README.md) | MCP stdio/HTTP/SSE 兼容、Docker 安全隔离、Context token 窗口、状态机与 Git checkpoint/rollback |
 | 🎓 | 运维实战 | [告警响应 Agent](../capstone/incident-responder/README.md) | 告警分级、runbook 匹配、审批分层、客户话术与 postmortem（离线可跑） |
 | 🎓 | 产品实战 | [用户反馈洞察 Agent](../capstone/feedback-intelligence/README.md) | 多渠道反馈安全清洗、主题聚类、价值加权、roadmap ticket（离线可跑） |
 | 🎓 | 增长实战 | [销售线索研究 Agent](../capstone/sales-lead-researcher/README.md) | ICP 评分、业务信号证据链、合规风险、销售下一步动作（离线可跑） |
 | 🎓 | 纵向全栈实战 | [企业知识库 Agent](../capstone/enterprise-knowledge-base-agent/README.md) | ingestion、ACL、Agentic RAG、事件流、trace/eval、定时知识巡检 |
-| 🎓 | 项目总览 | [毕业项目总览（28 个）](../capstone/README.md) | 8 个既有综合项目 + 20 个新增实践项目，按领域选择作品集题目 |
+| 🎓 | 项目总览 | [毕业项目总览（29 个）](../capstone/README.md) | 9 个可运行综合项目 + 20 个领域项目蓝图，按领域选择作品集题目 |
 | 🎓 | 协作效率实战 | [会议行动项 Agent](../capstone/meeting-action-agent/README.md) | 一个可离线演示的 meeting-to-action 工作流，能输出行动项、风险、跟进提醒和复盘摘要。 |
 | 🎓 | 法务协作实战 | [合同风险审阅 Agent](../capstone/contract-risk-reviewer/README.md) | 一个合同条款审阅工作流，输出风险等级、证据条款、建议改写和需法务确认的问题。 |
 | 🎓 | 数据平台实战 | [数据质量哨兵 Agent](../capstone/data-quality-sentinel/README.md) | 一个数据质量巡检工作流，输出异常、影响报表、可能根因、回滚建议和通知摘要。 |
@@ -120,13 +121,18 @@
 
 ## Agent Engineering 专题（agent-engineering）
 
-> 五平面架构蓝图之后的可运行深化。三个单元共享一条“生产变更审查 Agent”场景，全部是确定性纯函数 demo，不需要 API key。
+> 五平面架构蓝图之后的完整实践路线。A1–A8 共 20 周、建议投入 120–160 小时；八个单元共享“生产变更审查 Agent”场景，全部提供不需要 API key 的离线实验。逐周安排、里程碑与评分规则见 [20 周完整课程](../agent-engineering/CURRICULUM.md)。
 
 | # | 专题 | 链接 | 核心能力 |
 |---|------|------|----------|
 | A1 | Run Contract | [01-run-contract](../agent-engineering/01-run-contract/README.md) | 行为 revision 冻结、状态迁移、checkpoint/resume、outcome evidence、最小 authority handoff |
 | A2 | Context Compiler | [02-context-compiler](../agent-engineering/02-context-compiler/README.md) | 多来源策略过滤、token budget、stable prefix、provenance ledger、缺失证据 |
 | A3 | Prompt Release Gate | [03-prompt-release-gate](../agent-engineering/03-prompt-release-gate/README.md) | typed prompt、behavior bundle、归因 eval、晋级门禁、整包回滚 |
+| A4 | Context Runtime | [04-context-runtime](../agent-engineering/04-context-runtime/README.md) | principal/tenant/purpose、policy snapshot、分区预算、Manifest 与 Fingerprint |
+| A5 | Evidence RAG | [05-evidence-rag](../agent-engineering/05-evidence-rag/README.md) | ACL 前置检索、claim/citation、冲突检测与 sufficiency gate |
+| A6 | Durable State & Memory | [06-durable-memory](../agent-engineering/06-durable-memory/README.md) | CAS ledger、checkpoint/resume、compaction、TTL、遗忘与删除传播 |
+| A7 | Cache & Multi-Agent | [07-cache-multi-agent](../agent-engineering/07-cache-multi-agent/README.md) | permission-safe fingerprint、worker 隔离、budget tree 与 evidence reducer |
+| A8 | Observability Capstone | [08-observability-capstone](../agent-engineering/08-observability-capstone/README.md) | trace/replay、shadow/canary、发布门、回滚与补偿边界 |
 
 ## 第 21 章 · 源码解析（source-analysis）
 
