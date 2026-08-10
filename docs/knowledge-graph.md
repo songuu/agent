@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **74** 个单元、**359** 个概念、**496** 条关系、**275** 篇关联文章。
+共 **75** 个单元、**365** 个概念、**504** 条关系、**275** 篇关联文章。
 
 ## 章节地图
 
@@ -52,6 +52,7 @@ flowchart LR
     C_cap-support["cap-support 毕业项目 · 客服 Copilot"]
     C_cap-review["cap-review 毕业项目 · 代码评审团"]
     C_cap-eval["cap-eval 毕业项目 · Agent 评测与回归门"]
+    C_cap-mini-harness["cap-mini-harness 毕业项目 · Mini Agent Harness"]
     C_cap-incident["cap-incident 毕业项目 · 告警响应 Agent"]
     C_cap-feedback["cap-feedback 毕业项目 · 用户反馈洞察 Agent"]
     C_cap-sales["cap-sales 毕业项目 · 销售线索研究 Agent"]
@@ -132,7 +133,8 @@ flowchart LR
   C_capstone --> C_cap-support
   C_cap-support --> C_cap-review
   C_cap-review --> C_cap-eval
-  C_cap-eval --> C_cap-incident
+  C_cap-eval --> C_cap-mini-harness
+  C_cap-mini-harness --> C_cap-incident
   C_cap-incident --> C_cap-feedback
   C_cap-feedback --> C_cap-sales
   C_cap-sales --> C_cap-enterprise-kb
@@ -383,6 +385,12 @@ graph LR
     n_cev_judges["离线裁判 (tool/keyword/refusal)"]
     n_cev_metrics["聚合指标"]
     n_cev_gate["回归门 (CI exit code)"]
+    n_cmh_mcp["MCP Tool 发现与分发"]
+    n_cmh_sandbox["Docker 隔离执行"]
+    n_cmh_context["Token Context 与稳定前缀"]
+    n_cmh_state["可审计 Agent 状态机"]
+    n_cmh_checkpoint["受管 Git Checkpoint 与回滚"]
+    n_cmh_events["流式动作日志"]
     n_cinc_severity["告警 SEV 分级"]
     n_cinc_runbook["Runbook 匹配"]
     n_cinc_evidence["根因证据链"]
@@ -826,6 +834,14 @@ graph LR
   n_cev_gate -->|组成| n_c15_eval_harness
   n_cev_metrics -->|应用| n_c16_observability
   n_cev_judges -->|对比| n_crageval_llm_judge_rag
+  n_cmh_mcp -->|应用| n_cmh_state
+  n_cmh_context -->|组成| n_cmh_state
+  n_cmh_state -->|应用| n_cmh_sandbox
+  n_cmh_checkpoint -->|前置| n_cmh_sandbox
+  n_cmh_events -->|应用| n_cmh_state
+  n_cmh_mcp -->|组成| n_c19_mcp
+  n_cmh_sandbox -->|深化| n_c19_hosted_tools
+  n_cmh_events -->|应用| n_c16_observability
   n_cinc_severity -->|应用| n_c16_observability
   n_cinc_runbook -->|前置| n_cinc_evidence
   n_cinc_evidence -->|前置| n_cinc_approval
@@ -1239,6 +1255,12 @@ graph LR
 | 离线裁判 (tool/keyword/refusal) | [cap-eval 毕业项目 · Agent 评测与回归门](../capstone/agent-eval-harness/README.md) | 纯函数裁判逐条打分，复用 shared 的 isRefusalAnswer 规则 |
 | 聚合指标 | [cap-eval 毕业项目 · Agent 评测与回归门](../capstone/agent-eval-harness/README.md) | 通过率/工具准确率/拒答准确率/成本，量化 Agent 质量 |
 | 回归门 (CI exit code) | [cap-eval 毕业项目 · Agent 评测与回归门](../capstone/agent-eval-harness/README.md) | 指标跌破阈值即非零退出，自动拦下退化版本 |
+| MCP Tool 发现与分发 | [cap-mini-harness 毕业项目 · Mini Agent Harness](../capstone/mini-agent-harness/README.md) | 通过 stdio、Streamable HTTP 与 legacy SSE 接入 MCP，分页发现 tools/list 并将 tools/call 结果回灌 AgentLoop |
+| Docker 隔离执行 | [cap-mini-harness 毕业项目 · Mini Agent Harness](../capstone/mini-agent-harness/README.md) | 短生命周期容器关闭网络、只读根、非 root、cap-drop、资源上限与 timeout kill；Node fallback 只用于开发 |
+| Token Context 与稳定前缀 | [cap-mini-harness 毕业项目 · Mini Agent Harness](../capstone/mini-agent-harness/README.md) | js-tiktoken 预算、摘要/滑窗与固定系统前缀，降低上下文膨胀并改善 KV cache 命中条件 |
+| 可审计 Agent 状态机 | [cap-mini-harness 毕业项目 · Mini Agent Harness](../capstone/mini-agent-harness/README.md) | IDLE→THINKING→TOOL_CALLING/WAITING_FOR_SANDBOX→EVALUATING→COMPLETE/ERROR 的合法迁移与有限纠错 |
+| 受管 Git Checkpoint 与回滚 | [cap-mini-harness 毕业项目 · Mini Agent Harness](../capstone/mini-agent-harness/README.md) | 仅在 marker 临时工作区创建 Git/file snapshot，回滚本会话的受管文件副作用而不触碰用户仓库 |
+| 流式动作日志 | [cap-mini-harness 毕业项目 · Mini Agent Harness](../capstone/mini-agent-harness/README.md) | 输出状态、工具、checkpoint、隔离级别与截断错误摘要，不输出模型隐藏推理或 secrets |
 | 告警 SEV 分级 | [cap-incident 毕业项目 · 告警响应 Agent](../capstone/incident-responder/README.md) | 把 5xx、延迟、队列积压等信号合成 SEV1/2/3 处置等级 |
 | Runbook 匹配 | [cap-incident 毕业项目 · 告警响应 Agent](../capstone/incident-responder/README.md) | 用日志关键词匹配最可能的处置手册，避免临场拍脑袋 |
 | 根因证据链 | [cap-incident 毕业项目 · 告警响应 Agent](../capstone/incident-responder/README.md) | 把错误日志、指标和影响服务整理成可审计诊断 |
@@ -1441,10 +1463,10 @@ graph LR
 | 文章 | 来源 | 类型 | 关联章节 | 说明 |
 | --- | --- | --- | --- | --- |
 | [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) | Anthropic | doc | 01, 19, cap-support | Anthropic 官方工程博客，系统讲解 Agent 的循环、工具与何时该用 Agent，与本章心智模型高度对应 |
-| [OpenAI Agents SDK for TypeScript](https://openai.github.io/openai-agents-js/) | OpenAI | doc | 19 | OpenAI 官方 TypeScript Agents SDK 文档，对应 agent、tool、handoff、guardrail、session、tracing、MCP 等 SDK 层能力 |
+| [OpenAI Agents SDK for TypeScript](https://openai.github.io/openai-agents-js/) | OpenAI | doc | 19, cap-mini-harness | OpenAI 官方 TypeScript Agents SDK 文档，对应 agent、tool、handoff、guardrail、session、tracing、MCP 等 SDK 层能力 |
 | [OpenAI Responses API Reference](https://platform.openai.com/docs/api-reference/responses) | OpenAI | doc | 19 | OpenAI 官方 Responses API 参考，对应模型原生输入输出、工具调用与状态化交互接口层 |
 | [OpenAI: The next evolution of the Agents SDK](https://openai.com/index/the-next-evolution-of-the-agents-sdk/) | OpenAI | blog | 19, ae-run | OpenAI 官方产品文章：Agents SDK 向 sandbox execution、long-horizon tasks、durable harness 演进，是前沿趋势与可恢复 run contract 的来源 |
-| [OpenAI Docs · Sandbox agents](https://developers.openai.com/api/docs/guides/agents/sandboxes) | OpenAI | doc | 19 | Agents SDK sandbox 文档，对应 code execution / long-running task 的隔离执行与生产化边界 |
+| [OpenAI Docs · Sandbox agents](https://developers.openai.com/api/docs/guides/agents/sandboxes) | OpenAI | doc | 19, cap-mini-harness | Agents SDK sandbox 文档，对应 code execution / long-running task 的隔离执行与生产化边界 |
 | [OpenAI Docs · Evaluate agent workflows](https://developers.openai.com/api/docs/guides/agent-evals) | OpenAI | doc | 19, cap-eval, ae-capstone | OpenAI 官方 agent workflow eval 指南，对应离线评估、trace/replay 与发布门治理 |
 | [Google SRE Book · Managing Incidents](https://sre.google/sre-book/managing-incidents/) | Google SRE | doc | cap-incident | Google SRE 事件管理章节，对应告警分级、角色分工、沟通和复盘的生产化边界 |
 | [Voice of the customer](https://en.wikipedia.org/wiki/Voice_of_the_customer) | Wikipedia | doc | cap-feedback | Voice of Customer 方法入口，对应多渠道反馈收集、主题归纳和产品改进闭环 |
@@ -1463,7 +1485,7 @@ graph LR
 | [Anthropic Docs · Tool use (function calling) with Claude](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) | docs.anthropic.com | doc | 05, 06 | 官方工具调用文档，含 tool_use stopReason 与 tool_result 回传机制 |
 | [OpenAI Docs · Function calling](https://platform.openai.com/docs/guides/function-calling) | platform.openai.com | doc | 05 | OpenAI 侧 function calling 指南，与本章抽象对应 |
 | [Zod 官方文档](https://zod.dev) | zod.dev | doc | 06 | 本章 schema 校验与类型推断的基础库，README 前置知识引用 |
-| [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) | Anthropic | blog | 07, 19, ae-context, ae-runtime, ae-memory | Anthropic 官方：上下文是有限资源，需主动裁剪、压缩和按需装配，对应 compiler、runtime 与长期任务压缩 |
+| [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) | Anthropic | blog | 07, 19, ae-context, ae-runtime, ae-memory, cap-mini-harness | Anthropic 官方：上下文是有限资源，需主动裁剪、压缩和按需装配，对应 compiler、runtime 与长期任务压缩 |
 | [Vector embeddings - OpenAI API documentation](https://platform.openai.com/docs/guides/embeddings) | platform.openai.com | doc | 08 | 本章 embedding 默认调用 OpenAI text-embedding-3-small，官方指南 |
 | [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401) | arxiv.org | paper | 09, capstone, cap-enterprise-kb, ae-evidence | RAG 原始论文 (Lewis et al., 2020)，提出检索增强生成范式；Evidence RAG 在其上增加授权、引用和充分性门 |
 | [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366) | arxiv.org | paper | 10 | Reflection/自我反思修正的代表性论文 |

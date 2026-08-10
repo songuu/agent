@@ -420,3 +420,62 @@ pnpm mini-agent-harness -- --development-fallback --rollback
 ## 许可证
 
 本项目随仓库采用 [MIT License](../../LICENSE)。
+
+<!-- KG:START (由 npm run kg 自动生成，勿手改本标记区) -->
+
+## 知识图谱与延伸阅读
+
+> 本节由 `npm run kg` 自动生成（数据源 `knowledge-graph/data/graph.ts`）。要增删请改数据源后重跑。
+
+### 本章概念图谱
+
+> 节点：**橙框**=本章概念，蓝框=关联的其他章概念。连线按关系类型着色：前置(蓝) · 深化(紫) · 对比(玫红) · 应用(绿) · 组成(橙)。
+
+```mermaid
+graph TB
+  classDef own fill:#fff7ed,stroke:#ea580c,stroke-width:3px,color:#7c2d12;
+  classDef cross fill:#eef2ff,stroke:#6366f1,stroke-width:1.5px,color:#312e81;
+  n_cmh_mcp["MCP Tool 发现与分发"]
+  n_cmh_sandbox["Docker 隔离执行"]
+  n_cmh_context["Token Context 与稳定前缀"]
+  n_cmh_state["可审计 Agent 状态机"]
+  n_cmh_checkpoint["受管 Git Checkpoint 与回滚"]
+  n_cmh_events["流式动作日志"]
+  n_c19_mcp["MCP (模型上下文协议)（第19章）"]
+  n_c19_hosted_tools["Hosted tools 与 sandbox（第19章）"]
+  n_c16_observability["可观测性 (Observability)（第16章）"]
+  n_cmh_mcp -->|应用| n_cmh_state
+  n_cmh_context -->|组成| n_cmh_state
+  n_cmh_state -->|应用| n_cmh_sandbox
+  n_cmh_checkpoint -->|前置| n_cmh_sandbox
+  n_cmh_events -->|应用| n_cmh_state
+  n_cmh_mcp -->|组成| n_c19_mcp
+  n_cmh_sandbox -->|深化| n_c19_hosted_tools
+  n_cmh_events -->|应用| n_c16_observability
+  class n_cmh_mcp,n_cmh_sandbox,n_cmh_context,n_cmh_state,n_cmh_checkpoint,n_cmh_events own;
+  class n_c19_mcp,n_c19_hosted_tools,n_c16_observability cross;
+  linkStyle 0 stroke:#059669,stroke-width:2px;
+  linkStyle 1 stroke:#d97706,stroke-width:2px;
+  linkStyle 2 stroke:#059669,stroke-width:2px;
+  linkStyle 3 stroke:#2563eb,stroke-width:2px;
+  linkStyle 4 stroke:#059669,stroke-width:2px;
+  linkStyle 5 stroke:#d97706,stroke-width:2px;
+  linkStyle 6 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 7 stroke:#059669,stroke-width:2px;
+```
+
+### 与其他章节的关系
+
+- `MCP Tool 发现与分发` —**组成**→ `MCP (模型上下文协议)`（第 19 章）
+- `Docker 隔离执行` —**深化**→ `Hosted tools 与 sandbox`（第 19 章）
+- `流式动作日志` —**应用**→ `可观测性 (Observability)`（第 16 章）
+
+### 延伸阅读
+
+- [OpenAI Agents SDK for TypeScript](https://openai.github.io/openai-agents-js/) — OpenAI 官方 TypeScript Agents SDK 文档，对应 agent、tool、handoff、guardrail、session、tracing、MCP 等 SDK 层能力 `doc`
+- [OpenAI Docs · Sandbox agents](https://developers.openai.com/api/docs/guides/agents/sandboxes) — Agents SDK sandbox 文档，对应 code execution / long-running task 的隔离执行与生产化边界 `doc`
+- [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) — Anthropic 官方：上下文是有限资源，需主动裁剪、压缩和按需装配，对应 compiler、runtime 与长期任务压缩 `blog`
+
+> 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
+
+<!-- KG:END -->

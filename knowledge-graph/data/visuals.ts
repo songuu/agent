@@ -283,6 +283,14 @@ export const CONCEPT_VISUALS: ConceptVisual[] = [
     takeaway: "让 Agent 跑起来只是起点；能证明它没有变差，才适合持续迭代。",
   },
   {
+    chapter: "cap-mini-harness",
+    kind: "pipeline",
+    title: "Mini Agent Harness 把行动放进可回滚的安全闭环",
+    summary: "固定上下文先交给 AgentLoop，MCP 动态发现工具；每次执行受限代码前后创建 checkpoint，失败日志回灌有限修正，最后可回滚受管副作用。",
+    steps: ["稳定 Context", "MCP tools/list", "工具或代码动作", "Docker Sandbox", "错误回灌", "Checkpoint rollback"],
+    takeaway: "Harness 的价值不是替模型多想一步，而是让每次工具与代码副作用都有隔离、证据和撤销边界。",
+  },
+  {
     chapter: "cap-incident",
     kind: "shield",
     title: "告警响应 Agent 把诊断和变更分成两条权限边界",
@@ -621,6 +629,10 @@ const CONCEPT_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> =
   "cap-eval": [
     { tone: "core", label: "核心判断", body: "Agent 评测框架用 golden set、裁判、聚合指标和阈值，把质量变化变成可回归信号。" },
     { tone: "warning", label: "易错边界", body: "不要只靠人工抽查判断 Agent 变好；没有固定测试集，就无法证明改动没有退化。" },
+  ],
+  "cap-mini-harness": [
+    { tone: "core", label: "核心判断", body: "Mini Agent Harness 要把 MCP 发现、隔离执行、上下文预算、有限纠错和 checkpoint 组合成可观测的执行闭环。" },
+    { tone: "warning", label: "易错边界", body: "Node fallback 只能服务可信本地 fixture；没有 Docker daemon 的成功演示不能被表述为已完成安全隔离验证。" },
   ],
   "cap-incident": [
     { tone: "core", label: "核心判断", body: "告警响应 Agent 必须先形成证据链，再区分安全诊断动作和需要审批的生产变更。" },

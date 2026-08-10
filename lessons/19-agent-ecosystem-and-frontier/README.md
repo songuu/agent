@@ -470,6 +470,8 @@ graph TB
   n_c12_framework_choice["框架选型决策（第12章）"]
   n_c05_native_tool_use["原生工具调用 (Function Calling)（第05章）"]
   n_c20_news_archive["前沿文章库（第20章）"]
+  n_cmh_mcp["MCP Tool 发现与分发（第cap-mini-harness章）"]
+  n_cmh_sandbox["Docker 隔离执行（第cap-mini-harness章）"]
   n_c19_ecosystem_layers -->|组成| n_c19_mcp
   n_c19_ecosystem_layers -->|组成| n_c19_agent_sdk
   n_c19_ecosystem_layers -->|组成| n_c19_orchestration_runtime
@@ -489,8 +491,10 @@ graph TB
   n_c19_ecosystem_layers -->|深化| n_c12_framework_choice
   n_c19_mcp -->|应用| n_c05_native_tool_use
   n_c20_news_archive -->|深化| n_c19_ecosystem_layers
+  n_cmh_mcp -->|组成| n_c19_mcp
+  n_cmh_sandbox -->|深化| n_c19_hosted_tools
   class n_c19_ecosystem_layers,n_c19_five_plane_architecture,n_c19_mcp,n_c19_a2a,n_c19_agent_sdk,n_c19_orchestration_runtime,n_c19_hosted_tools,n_c19_stack_selection,n_c19_governance own;
-  class n_c20_layer_filter,n_c20_article_detail,n_c12_framework_choice,n_c05_native_tool_use,n_c20_news_archive cross;
+  class n_c20_layer_filter,n_c20_article_detail,n_c12_framework_choice,n_c05_native_tool_use,n_c20_news_archive,n_cmh_mcp,n_cmh_sandbox cross;
   linkStyle 0 stroke:#d97706,stroke-width:2px;
   linkStyle 1 stroke:#d97706,stroke-width:2px;
   linkStyle 2 stroke:#d97706,stroke-width:2px;
@@ -510,6 +514,8 @@ graph TB
   linkStyle 16 stroke:#7c3aed,stroke-width:2px;
   linkStyle 17 stroke:#059669,stroke-width:2px;
   linkStyle 18 stroke:#7c3aed,stroke-width:2px;
+  linkStyle 19 stroke:#d97706,stroke-width:2px;
+  linkStyle 20 stroke:#7c3aed,stroke-width:2px;
 ```
 
 ### 与其他章节的关系
@@ -519,6 +525,8 @@ graph TB
 - `Agent 生态分层` —**深化**→ `框架选型决策`（第 12 章）
 - `MCP (模型上下文协议)` —**应用**→ `原生工具调用 (Function Calling)`（第 05 章）
 - `前沿文章库` —**深化**→ `Agent 生态分层`（第 20 章）
+- `MCP Tool 发现与分发` —**组成**→ `MCP (模型上下文协议)`（第 cap-mini-harness 章）
+- `Docker 隔离执行` —**深化**→ `Hosted tools 与 sandbox`（第 cap-mini-harness 章）
 
 ### 延伸阅读
 
