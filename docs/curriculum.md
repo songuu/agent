@@ -43,7 +43,7 @@
 
 > 提示：全程用便宜模型（如 `gpt-4o-mini` / `claude-haiku`）跑完成本很低；第 16 章会专门教你怎么算账和省钱。
 
-想直接跳到任意课程，使用 [全局课程导航](./navigation.md)。想按 agent 类型、岗位目标或生产能力倒推学习路线，使用 [Agent 学习指南与分类地图](./agent-learning-guides.md)。这两页按顺序、按主题整理了第 00–21 章、B1-B12 基础指南、毕业项目、2026 Agent 五平面架构蓝图、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone、RAG 系统实战项目和源码解析。
+想直接跳到任意课程，使用 [全局课程导航](./navigation.md)。想按 agent 类型、岗位目标或生产能力倒推学习路线，使用 [Agent 学习指南与分类地图](./agent-learning-guides.md)。这两页按顺序、按主题整理了第 00–21 章、B1-B12 基础指南、Agent Engineering 三单元、毕业项目、2026 Agent 五平面架构蓝图、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone、RAG 系统实战项目和源码解析。
 
 ### 三层学习法
 
@@ -85,9 +85,10 @@
 | 🔬 进阶 RAG 专题 | rag-advanced ×11 | ~7–9 小时 |
 | 🧩 进阶 LangGraph 专题 | langgraph-advanced ×6 + 生产化扩章地图 | ~4–6 小时 |
 | 🧭 2026 Agent 趋势与五平面架构 | 架构阅读 | ~1 小时 |
+| 🛠️ Agent Engineering 专题 | run contract / context compiler / prompt release gate | ~2.5–3 小时 |
 | 🧭 RAG 完整架构蓝图 | 架构阅读 | ~1 小时 |
 | 🏢 企业知识库 Agent 蓝图 | 纵向项目设计 | ~1 小时 |
-| **合计** | **21 章 + 基础概念扩展 + 28 个毕业项目 + RAG 专题 + LangGraph 专题 + Agent 架构蓝图 + RAG 架构蓝图 + 企业知识库蓝图** | **约 129.5–174.5 小时**（不含动手扩展） |
+| **合计** | **21 章 + 基础概念扩展 + Agent Engineering 三单元 + 28 个毕业项目 + RAG 专题 + LangGraph 专题 + Agent 架构蓝图 + RAG 架构蓝图 + 企业知识库蓝图** | **约 132–177.5 小时**（不含动手扩展） |
 
 > 按每天投入 1–1.5 小时算，大约 **3–4 周**可以完整走完一遍。建议分散学、多动手，比一口气刷完更扎实。
 
@@ -325,6 +326,16 @@
 |---|------|------|------|------------|------|
 | 🧭 | 2026 Agent 趋势与五平面架构 | ⭐⭐⭐⭐ | 60 分钟 | 用七条证据化趋势、五平面职责、L0–L4 成熟度和决策矩阵规划 agent 系统演进 | [./agent-trends-architecture.md](./agent-trends-architecture.md) |
 
+### 🛠️ Agent Engineering 专题
+
+> 目标：沿同一条生产变更审查场景，把五平面架构中的控制、上下文和 assurance 责任落成离线可运行、可测试、可回滚的工程合同。
+
+| # | 标题 | 难度 | 预计 | 一句话简介 | 链接 |
+|---|------|------|------|------------|------|
+| A1 | Run Contract：可恢复运行契约 | ⭐⭐⭐⭐ | 50 分钟 | 固定完整行为 revision，用状态机、checkpoint/resume、outcome evidence 和 authority subset 定义一次 run | [../agent-engineering/01-run-contract/README.md](../agent-engineering/01-run-contract/README.md) |
+| A2 | Context Compiler：可审计上下文编译 | ⭐⭐⭐⭐ | 60 分钟 | 把持久 sources 经 trust/audience/stage/sensitivity 与 token budget 编译成本轮 packet，并保留 provenance ledger | [../agent-engineering/02-context-compiler/README.md](../agent-engineering/02-context-compiler/README.md) |
+| A3 | Prompt Release Gate：行为包发布门 | ⭐⭐⭐⭐ | 60 分钟 | 发布 prompt/context/tools/model/guardrails/evaluator 完整 behavior bundle，用归因 eval 决定晋级或整包回滚 | [../agent-engineering/03-prompt-release-gate/README.md](../agent-engineering/03-prompt-release-gate/README.md) |
+
 ### 🧭 RAG 完整架构蓝图
 
 > 目标：把仓库里的最小 RAG、进阶 RAG 和毕业项目 RAG 工具，整理成可落地到独立知识库产品的系统架构。
@@ -388,6 +399,7 @@
 - 🔬 **进阶 RAG（仓库内）** → 看 [进阶 RAG 专题](../rag-advanced/01-chunking-strategies/README.md)：分块、混合检索、重排、查询改写、评估、生产化、安全、索引与上下文工程，把第 08/09 章的最小 RAG 补成生产级，能力沉淀在 `src/shared/rag/`。
 - 🧩 **进阶 LangGraph（仓库内）** → 看 [进阶 LangGraph 专题](../langgraph-advanced/README.md)：从 StateGraph 机制走到 production runtime 的扩章地图。
 - 🧭 **Agent 架构演进** → 看 [2026 Agent 趋势与五平面架构蓝图](./agent-trends-architecture.md)：把 harness、上下文/记忆/工件、协议边界、多 agent 拓扑、评估、身份与隔离还原为生产责任和演进 gate。
+- 🛠️ **Agent Engineering 实践** → 按 [A1 Run Contract](../agent-engineering/01-run-contract/README.md) → [A2 Context Compiler](../agent-engineering/02-context-compiler/README.md) → [A3 Prompt Release Gate](../agent-engineering/03-prompt-release-gate/README.md) 把架构责任落成确定性合同与回归门。
 - **源码解析** → 看 [源码解析路线](../source-analysis/README.md)：先从热门库卡片或仓库矩阵定位源码边界，再用源码对话检索行号证据，并用 CodeMap 对照职责层，再顺着 LangChain、LangGraph、LlamaIndex 官方源码入口读懂框架运行时。
 - 🧭 **RAG 架构设计** → 看 [RAG 完整架构蓝图](./rag-architecture.md)：把 demo 能力组织成写入路径、查询路径、数据模型、安全治理、质量闭环和部署拓扑。
 - 🏢 **企业知识库 Agent** → 看 [企业知识库 Agent 蓝图](./enterprise-knowledge-base-agent.md)：把 RAG、记忆、工具、流式 UX、定时任务和部署串成一个企业级作品集。

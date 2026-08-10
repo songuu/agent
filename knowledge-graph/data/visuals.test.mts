@@ -106,8 +106,8 @@ for (const chapter of CHAPTERS) {
   const readme = readFileSync(readmePath, "utf8");
   assert.match(
     readme,
-    /```mermaid\s*(flowchart|graph|mindmap)/,
-    `missing Mermaid flowchart or mindmap for ${chapter.id}: ${readmePath}`,
+    /```mermaid\s*(flowchart|graph|mindmap|stateDiagram-v2)/,
+    `missing supported Mermaid diagram for ${chapter.id}: ${readmePath}`,
   );
 }
 

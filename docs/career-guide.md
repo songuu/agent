@@ -327,6 +327,12 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 122. Cloudflare Agents 把 agent turn、model call、tool run、approval、token usage 和 Workers runtime operations 放到同一条 trace 时，为什么 observability 设计必须同时考虑可回放、成本归因、隐私存储和工具 payload 最小化？（→ 14 / 15 / 16 / 17 / 18 / 19）
 123. @cloudflare/computer 这类 agent runtime 为什么要把 virtual filesystem、isolate/container execution、gated operations、audit 和 observation 放在同一执行边界里？这和直接让 coding agent 跑本机 shell 有什么风险差异？（→ 05 / 12 / 15 / 16 / 17 / 18 / 19 / capstone）
 124. Microsoft Agent Framework 允许 .NET agent 从 MCP server 发现并加载 Agent Skills 时，为什么 skill 分发治理要覆盖 discovery document、认证连接、archive 解包、脚本执行、版本回滚和多 agent 一致性？（→ 05 / 11 / 12 / 16 / 17 / 18 / 19 / capstone）
+125. Copilot 周更同时推进 cloud-agent reasoning level、CLI session/worktree、VS Code rewind 和 tool-call duration 时，为什么要把会话恢复、工作区隔离、回滚体验和执行耗时放在同一套 agent 运行边界里评估？（→ 11 / 12 / 14 / 15 / 16 / 18 / 19）
+126. 为什么 Copilot cloud agent 的 reasoning level 应该按任务风险、验证深度和成本预算配置，而不是固定成一个全局默认？（→ 10 / 12 / 15 / 16 / 18 / 19）
+127. AI code review 有了 effort levels 后，为什么团队要按 PR 风险、测试覆盖、发布紧急度和人工 reviewer 负载选择 faster/normal/deeper，而不是全量用同一种审查强度？（→ 12 / 15 / 16 / 17 / 18 / 19 / capstone）
+128. Copilot usage metrics 把 IDE/CLI telemetry 与 server-side telemetry 汇总后，为什么采用度、留存、token 成本和代码活动必须按具体 agent/app surface 归因？只看 IDE 补全或合并 PR 会漏掉什么？（→ 15 / 16 / 18 / 19）
+129. 企业给 Copilot CLI 开 MCP server 时，为什么 allowlist、认证、tool surface、审计和默认拒绝策略应集中控制并 fail-closed，而不能靠每个 agent 会话临时自觉？（→ 05 / 11 / 16 / 17 / 18 / 19 / capstone）
+130. Microsoft 365 Agents SDK for Python 1.3.0 增加 header propagation middleware、LLM service registration 和 Teams hosting typing 时，为什么 agent SDK 升级要回归 host integration、身份传播、服务注册和渠道适配，而不只是跑一次模型调用？（→ 05 / 11 / 12 / 16 / 17 / 18 / 19 / capstone）
 ### C. 项目深挖类（考你是不是真做过）
 
 > 这一类没有标准题库，面试官会顺着你的简历项目往下钻。**提前给自己出这些题**：

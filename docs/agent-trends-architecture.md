@@ -324,6 +324,10 @@ type AgentEvent =
 | guardrails、sandbox 思维与部署 | 第 17–18 章 | Execution / Assurance |
 | 生态与协议选型 | 第 19–20 章 | 五平面横向映射 |
 
+### 可执行 companion
+
+本文仍是 Agent 工程的**唯一 canonical 生产责任模型**；[Agent Engineering 实践轨道](../agent-engineering/README.md) 是它的可执行 companion，把责任边界落实为离线可运行、可测试的合同，而不是复制五平面正文或建立第二套架构真相。
+
 当前最有价值的继续演进方向，不是再造一个全能 orchestrator，而是补齐可验证的薄契约：
 
 1. 用稳定事件 schema 隔离 LangGraph/SDK 内部事件和前端投影；

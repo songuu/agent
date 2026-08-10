@@ -79,7 +79,7 @@ pnpm site:live
 
 ## 全局导航
 
-想直接跳到具体课程，走 [**全局课程导航**](./docs/navigation.md)。如果你想按 agent 类型、岗位目标或生产能力倒推学习路线，走 [**Agent 学习指南与分类地图**](./docs/agent-learning-guides.md)。如果你要把 2026 年 agent 趋势落成工程边界，读 [**Agent 趋势与五平面架构蓝图**](./docs/agent-trends-architecture.md)。它们一起整理了第 00–21 章、B1-B12 基础指南、28 个毕业项目、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone、RAG 系统实战项目和源码解析。
+想直接跳到具体课程，走 [**全局课程导航**](./docs/navigation.md)。如果你想按 agent 类型、岗位目标或生产能力倒推学习路线，走 [**Agent 学习指南与分类地图**](./docs/agent-learning-guides.md)。如果你要把 2026 年 agent 趋势落成工程边界，先读 [**Agent 趋势与五平面架构蓝图**](./docs/agent-trends-architecture.md)，再进入 [**Agent Engineering 实践轨道**](./agent-engineering/README.md)。它们一起整理了第 00–21 章、B1-B12 基础指南、Agent Engineering 三单元、28 个毕业项目、RAG 架构蓝图、企业知识库 Agent 蓝图、企业知识库 Agent Capstone、RAG 系统实战项目和源码解析。
 
 ---
 
@@ -222,6 +222,10 @@ pnpm site:live
 | 🎓 | [毕业项目 · 供应链风险雷达 Agent](./capstone/supply-chain-risk-radar/) | ⭐⭐⭐⭐☆ | 供应链管理：把供应商表现、地区风险、交付记录和替代方案整理成采购风险监控。 |
 | 🎓 | [毕业项目 · 现场服务调度 Agent](./capstone/field-service-dispatch/) | ⭐⭐⭐⭐☆ | 服务交付：把工单、技师技能、地理区域、备件和 SLA 整理成派单建议，降低迟到和重复上门。 |
 | 🎓 | [毕业项目 · 隐私数据请求 Agent](./capstone/privacy-dsr-automation/) | ⭐⭐⭐⭐⭐ | 隐私合规：把用户的数据访问/删除请求、身份验证状态、系统目录和法定时限组织成 DSR 处理队列。 |
+| **Agent Engineering 专题** | **把架构责任落成可运行合同** | | |
+| A1 | [Run Contract：可恢复运行契约](./agent-engineering/01-run-contract/) | ⭐⭐⭐⭐ | 行为版本冻结、状态迁移、checkpoint/resume、结果证据与 authority 边界（离线可跑） |
+| A2 | [Context Compiler：可审计上下文编译](./agent-engineering/02-context-compiler/) | ⭐⭐⭐⭐ | trust/audience/stage/sensitivity、token budget、稳定前缀与 provenance ledger（离线可跑） |
+| A3 | [Prompt Release Gate：行为包发布门](./agent-engineering/03-prompt-release-gate/) | ⭐⭐⭐⭐ | typed prompt、完整 behavior bundle、归因 eval、候选晋级与整包回滚（离线可跑） |
 | **进阶专题** | **RAG 生产化（rag-advanced）** | | |
 | R1 | [进阶分块策略](./rag-advanced/01-chunking-strategies/) | ⭐⭐⭐ | 递归语义切分、Markdown 感知、按 token 控大小（纯函数，免 key 可跑） |
 | R2 | [混合检索](./rag-advanced/02-hybrid-search/) | ⭐⭐⭐ | 向量 + BM25 + RRF 融合 |
@@ -290,6 +294,7 @@ agent/
 - 🚀 [**创业指南**](./docs/startup-guide.md)：机会判断、MVP 裁剪、成本控制、上线 checklist。
 - [**Agent 学习指南与分类地图**](./docs/agent-learning-guides.md)：按学习阶段、agent 类型、工程能力和岗位路线拆解全项目。
 - 🧭 [**2026 Agent 趋势与五平面架构**](./docs/agent-trends-architecture.md)：把 harness、外置状态、隔离执行、协议互操作与 trajectory/outcome assurance 组织成可渐进落地的工程框架。
+- 🛠️ [**Agent Engineering 实践轨道**](./agent-engineering/README.md)：用 [A1 Run Contract](./agent-engineering/01-run-contract/)、[A2 Context Compiler](./agent-engineering/02-context-compiler/) 和 [A3 Prompt Release Gate](./agent-engineering/03-prompt-release-gate/) 把架构责任落成可执行、可验证、可回滚的纯函数合同。
 - 🧩 [**进阶 LangGraph · L6 Event streaming**](./langgraph-advanced/06-event-streaming/)：用真实 multi-mode stream 建立 user/debug/audit 投影边界，避免前端直接绑定框架 chunk。
 - 🔬 [**进阶 RAG 专题**](./rag-advanced/01-chunking-strategies/)：分块策略、混合检索、重排、查询改写、评估、生产化六章，把第 08/09 章的最小 RAG 补成生产级，能力沉淀在 `src/shared/rag/`。
 - [**源码解析**](./source-analysis/)：先从热门库卡片或仓库矩阵解析器定位任意 GitHub 仓库的包/文件边界，再用源码对话检索 raw source 和行号引用，再切 CodeMap 对照职责层，再顺着官方源码入口读 LangChain、LangGraph、LlamaIndex，把“会用框架”推进到“能看懂和调试框架”。

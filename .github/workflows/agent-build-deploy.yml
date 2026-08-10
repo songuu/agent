@@ -82,6 +82,10 @@ jobs:
           pnpm typecheck
           pnpm lg:typecheck
           pnpm lg:smoke
+          pnpm ae:typecheck
+          pnpm ae:smoke
+          pnpm ae:research:test
+          pnpm demo:registry:test
           pnpm supabase:typecheck
           pnpm content:api:typecheck
           pnpm content:api:test
@@ -122,7 +126,10 @@ jobs:
           AGENT_BUILD_PRODUCTION_ENV: ${{ secrets.AGENT_BUILD_PRODUCTION_ENV }}
 
       - name: Generate knowledge graph artifacts
-        run: pnpm kg
+        run: |
+          set -euo pipefail
+          pnpm kg
+          git diff --exit-code -- docs/knowledge-graph.md knowledge-graph/output/index.html ':(glob)**/README.md'
 
       - name: Build static site
         run: pnpm site:build

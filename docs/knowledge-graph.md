@@ -4,7 +4,7 @@
 
 交互式（可缩放/筛选/点节点看关联文章）版本：[`knowledge-graph/output/index.html`](../knowledge-graph/output/index.html)（下载到本地用浏览器打开）。
 
-共 **66** 个单元、**335** 个概念、**472** 条关系、**267** 篇关联文章。
+共 **69** 个单元、**344** 个概念、**480** 条关系、**274** 篇关联文章。
 
 ## 章节地图
 
@@ -98,6 +98,11 @@ flowchart LR
     C_lg-multiagent["lg-multiagent 多 Agent 编排（supervisor / 并行 team）"]
     C_lg-streaming["lg-streaming Event streaming 与安全前端投影"]
   end
+  subgraph P11["Agent Engineering 专题"]
+    C_ae-run["ae-run Run Contract：可恢复运行契约"]
+    C_ae-context["ae-context Context Compiler：可审计上下文编译"]
+    C_ae-prompt["ae-prompt Prompt Release Gate：行为包发布门"]
+  end
   C_01 --> C_02
   C_02 --> C_03
   C_03 --> C_04
@@ -163,6 +168,9 @@ flowchart LR
   C_lg-checkpoint --> C_lg-hitl
   C_lg-hitl --> C_lg-multiagent
   C_lg-multiagent --> C_lg-streaming
+  C_lg-streaming --> C_ae-run
+  C_ae-run --> C_ae-context
+  C_ae-context --> C_ae-prompt
 ```
 
 ## 概念图谱
@@ -527,6 +535,17 @@ graph LR
     n_lges_updates_delta["updates 节点增量"]
     n_lges_values_snapshot["values 完整快照"]
     n_lges_safe_projection["安全前端投影"]
+  end
+  subgraph G11["Agent Engineering 专题"]
+    n_caerun_behavior_pin["行为版本冻结"]
+    n_caerun_state_machine["可恢复 Run 状态机"]
+    n_caerun_outcome_evidence["结果证据契约"]
+    n_caectx_persistent_sources["持久状态与本轮视图"]
+    n_caectx_policy_budget["上下文策略与预算编译"]
+    n_caectx_provenance_ledger["来源账本与缺失证据"]
+    n_caeprompt_template_contract["Prompt 模板契约"]
+    n_caeprompt_behavior_bundle["完整 Behavior Bundle"]
+    n_caeprompt_release_rollback["评估门禁与整包回滚"]
   end
   n_c01_llm_vs_agent -->|深化| n_c01_agent_formula
   n_c01_agent_formula -->|组成| n_c01_react_loop
@@ -1000,6 +1019,14 @@ graph LR
   n_lges_custom_progress -->|深化| n_c14_progress_streaming
   n_lges_safe_projection -->|应用| n_c16_span_trace_tree
   n_lges_safe_projection -->|应用| n_c17_output_validation
+  n_caerun_behavior_pin -->|前置| n_caerun_state_machine
+  n_caerun_state_machine -->|应用| n_caerun_outcome_evidence
+  n_caectx_persistent_sources -->|前置| n_caectx_policy_budget
+  n_caectx_policy_budget -->|组成| n_caectx_provenance_ledger
+  n_caeprompt_template_contract -->|组成| n_caeprompt_behavior_bundle
+  n_caeprompt_behavior_bundle -->|前置| n_caeprompt_release_rollback
+  n_caectx_provenance_ledger -->|应用| n_caeprompt_release_rollback
+  n_caeprompt_behavior_bundle -->|应用| n_caerun_behavior_pin
 ```
 
 ## 概念索引
@@ -1341,6 +1368,15 @@ graph LR
 | ToolNode 工具边界 | [21 源码解析](../source-analysis/README.md) | 读取 tool_calls、执行工具、把 ToolMessage 写回 messages |
 | LlamaIndex QueryEngine | [21 源码解析](../source-analysis/README.md) | retriever、postprocessor、response synthesizer 串成 data-first RAG 查询链路 |
 | LlamaIndex Workflow | [21 源码解析](../source-analysis/README.md) | 用 step、event、context、handoff 组织 agent 和多 agent 控制流 |
+| 行为版本冻结 | [ae-run Run Contract：可恢复运行契约](../agent-engineering/01-run-contract/README.md) | 一次 run 在创建时固定 prompt、模型、工具、上下文策略与评估器 revision，避免执行中漂移 |
+| 可恢复 Run 状态机 | [ae-run Run Contract：可恢复运行契约](../agent-engineering/01-run-contract/README.md) | 用 revision、合法迁移、checkpoint 与幂等 resume token 管理暂停、恢复和终态 |
+| 结果证据契约 | [ae-run Run Contract：可恢复运行契约](../agent-engineering/01-run-contract/README.md) | 成功必须绑定 outcome evidence，handoff 只传引用且不得扩大 authority |
+| 持久状态与本轮视图 | [ae-context Context Compiler：可审计上下文编译](../agent-engineering/02-context-compiler/README.md) | Session、Memory、Artifact、Evidence 等是持久来源，working context 是一次可丢弃的编译结果 |
+| 上下文策略与预算编译 | [ae-context Context Compiler：可审计上下文编译](../agent-engineering/02-context-compiler/README.md) | 按 trust、audience、stage、sensitivity、过期时间和 token budget 确定性选择本轮最小高信号集合 |
+| 来源账本与缺失证据 | [ae-context Context Compiler：可审计上下文编译](../agent-engineering/02-context-compiler/README.md) | 每个候选项都记录 included/dropped 原因，并显式报告必需证据缺失 |
+| Prompt 模板契约 | [ae-prompt Prompt Release Gate：行为包发布门](../agent-engineering/03-prompt-release-gate/README.md) | 模板版本、精确变量集与输出 contract 一起进入版本库，而不是散落字符串 |
+| 完整 Behavior Bundle | [ae-prompt Prompt Release Gate：行为包发布门](../agent-engineering/03-prompt-release-gate/README.md) | 发布单元同时固定 prompt、context policy、tools、model、guardrails 与 evaluator revisions |
+| 评估门禁与整包回滚 | [ae-prompt Prompt Release Gate：行为包发布门](../agent-engineering/03-prompt-release-gate/README.md) | 用可归因 eval report 决定候选晋级；退化时回滚整个行为包并保留审计说明 |
 
 ## 关联文章
 
@@ -1351,7 +1387,7 @@ graph LR
 | [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) | Anthropic | doc | 01, 19, cap-support | Anthropic 官方工程博客，系统讲解 Agent 的循环、工具与何时该用 Agent，与本章心智模型高度对应 |
 | [OpenAI Agents SDK for TypeScript](https://openai.github.io/openai-agents-js/) | OpenAI | doc | 19 | OpenAI 官方 TypeScript Agents SDK 文档，对应 agent、tool、handoff、guardrail、session、tracing、MCP 等 SDK 层能力 |
 | [OpenAI Responses API Reference](https://platform.openai.com/docs/api-reference/responses) | OpenAI | doc | 19 | OpenAI 官方 Responses API 参考，对应模型原生输入输出、工具调用与状态化交互接口层 |
-| [OpenAI: The next evolution of the Agents SDK](https://openai.com/index/the-next-evolution-of-the-agents-sdk/) | OpenAI | blog | 19 | OpenAI 官方产品文章：Agents SDK 向 sandbox execution、long-horizon tasks、durable harness 演进，是前沿趋势来源 |
+| [OpenAI: The next evolution of the Agents SDK](https://openai.com/index/the-next-evolution-of-the-agents-sdk/) | OpenAI | blog | 19, ae-run | OpenAI 官方产品文章：Agents SDK 向 sandbox execution、long-horizon tasks、durable harness 演进，是前沿趋势与可恢复 run contract 的来源 |
 | [OpenAI Docs · Sandbox agents](https://developers.openai.com/api/docs/guides/agents/sandboxes) | OpenAI | doc | 19 | Agents SDK sandbox 文档，对应 code execution / long-running task 的隔离执行与生产化边界 |
 | [OpenAI Docs · Evaluate agent workflows](https://developers.openai.com/api/docs/guides/agent-evals) | OpenAI | doc | 19, cap-eval | OpenAI 官方 agent workflow eval 指南，对应第 19 章评估治理层 |
 | [Google SRE Book · Managing Incidents](https://sre.google/sre-book/managing-incidents/) | Google SRE | doc | cap-incident | Google SRE 事件管理章节，对应告警分级、角色分工、沟通和复盘的生产化边界 |
@@ -1371,7 +1407,7 @@ graph LR
 | [Anthropic Docs · Tool use (function calling) with Claude](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) | docs.anthropic.com | doc | 05, 06 | 官方工具调用文档，含 tool_use stopReason 与 tool_result 回传机制 |
 | [OpenAI Docs · Function calling](https://platform.openai.com/docs/guides/function-calling) | platform.openai.com | doc | 05 | OpenAI 侧 function calling 指南，与本章抽象对应 |
 | [Zod 官方文档](https://zod.dev) | zod.dev | doc | 06 | 本章 schema 校验与类型推断的基础库，README 前置知识引用 |
-| [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) | Anthropic | blog | 07, 19 | Anthropic 官方：上下文是有限资源，需主动裁剪与压缩，与本章窗口预算/摘要思路一致 |
+| [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) | Anthropic | blog | 07, 19, ae-context | Anthropic 官方：上下文是有限资源，需主动裁剪、压缩和按需装配，对应窗口预算与 context compiler |
 | [Vector embeddings - OpenAI API documentation](https://platform.openai.com/docs/guides/embeddings) | platform.openai.com | doc | 08 | 本章 embedding 默认调用 OpenAI text-embedding-3-small，官方指南 |
 | [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401) | arxiv.org | paper | 09, capstone, cap-enterprise-kb | RAG 原始论文 (Lewis et al., 2020)，提出检索增强生成范式 |
 | [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366) | arxiv.org | paper | 10 | Reflection/自我反思修正的代表性论文 |
@@ -1573,6 +1609,12 @@ graph LR
 | [Grok 4.5 is now available in GitHub Copilot](https://github.blog/changelog/2026-07-28-grok-4-5-is-now-available-in-github-copilot/) | GitHub Changelog | blog | 19 | GitHub Copilot 引入 xAI Grok 4.5 public preview，并强调其在代码生成、debug、架构推理、agentic workflows、500k token context、reasoning effort、terminal-based coding tasks 与 parallel tool dispatch 上的适用面。信号是 coding agent 模型选择正在同时牵动上下文窗口、推理预算、工具并发、preview 风险、管理员启用策略和成本治理。 |
 | [GitHub Copilot app usage metrics expand across report rollups](https://github.blog/changelog/2026-07-28-github-copilot-app-usage-metrics-now-expand-across-report-rollups/) | GitHub Changelog | blog | 19 | GitHub 把 Copilot app usage metrics 扩展到组织级、企业级和团队级 report rollups，按 totals_by_copilot_app 汇总 session_count、request_count、prompt_count、token usage、code activity 与 daily active users。信号是 agentic coding 的采用、留存、成本和活动面需要按 app surface 归因，不能只看总活跃人数或最终 PR 数。 |
 | [Enterprise managed settings in GitHub Copilot app and Copilot cloud agent](https://github.blog/changelog/2026-07-27-enterprise-managed-settings-in-the-github-copilot-app-and-copilot-cloud-agent/) | GitHub Changelog | blog | 19 | GitHub 让 managed-settings.json 管理策略扩展到 Copilot app 与 Copilot cloud agent，覆盖 plugins 与 marketplaces、bypass approvals、auto model selection、plan mode、web search、MCP registry、instructions、default model、context 以及 cloud-agent specific policies。信号是企业治理要管最容易漏掉的新入口，而不是只管 IDE 扩展或 CLI。 |
+| [GitHub Copilot weekly releases: August 3](https://github.blog/changelog/2026-08-07-github-copilot-weekly-releases-august-3) | GitHub Changelog | blog | 19 | GitHub Copilot 8 月 3 日周更把 cloud-agent reasoning level、CLI session/worktree/workflow polish、VS Code rewind improvements 和 tool-call duration observability 放在同一批更新里。信号是 coding agent 产品正在从单点模型能力转向可恢复会话、工作区隔离、执行耗时可见和模型推理预算可调的组合控制面。 |
+| [Customize the reasoning level for Copilot cloud agent](https://github.blog/changelog/2026-08-06-customize-the-reasoning-level-for-copilot-cloud-agent) | GitHub Changelog | blog | 19 | GitHub 允许用户在 Copilot cloud agent 中为任务选择推理等级，把模型推理预算从隐式默认变成用户可见的任务级旋钮。信号是 coding agent 的质量、延迟和成本不应只由全局默认模型决定，而要按 issue/PR 风险、验证深度和预算上限配置。 |
+| [Copilot code review effort levels are generally available](https://github.blog/changelog/2026-08-07-copilot-code-review-effort-levels-are-generally-available) | GitHub Changelog | blog | 19 | GitHub Copilot code review 的 effort levels GA，团队可在 faster/normal/deeper 等审查深度之间选择，权衡反馈速度、发现深层问题的概率与计算成本。信号是 AI reviewer 不应只有开关状态，生产集成需要按变更风险、测试覆盖、发布紧急度和人工 reviewer 负载配置审查强度。 |
+| [GitHub Copilot usage metrics docs: agent and IDE telemetry attribution](https://docs.github.com/en/copilot/concepts/copilot-usage-metrics/copilot-metrics) | GitHub Docs | doc | 19 | GitHub Copilot usage metrics 文档把 Copilot 使用度量拆成 API、dashboard、code generation dashboard、impact dashboard 和 NDJSON export，并说明指标来自 IDE/CLI telemetry 与 server-side telemetry。信号是 agent 采用度、留存、成本和产出代理指标必须按具体 surface 与数据新鲜度归因，不能只看 IDE 补全、活跃用户或合并 PR。 |
+| [GitHub Copilot CLI enterprise MCP allowlist](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference#enterprise-mcp-allowlist) | GitHub Docs | doc | 19 | GitHub Copilot CLI 文档说明 enterprise MCP allowlist 会对非默认 MCP server 计算 fingerprint 并请求企业 allowlist evaluate endpoint；未获批准或 endpoint 不可达时 fail-closed 阻断连接。信号是 MCP 扩展能力从开发者便利进入企业治理面后，必须把 server allowlist、tool surface、认证、审计和默认拒绝策略作为基础设施配置，而不是交给每个 agent 会话临时判断。 |
+| [Microsoft 365 Agents SDK for Python 1.3.0 release notes](https://github.com/microsoft/Agents-for-python/blob/main/changelog.md) | Microsoft Agents for Python changelog | doc | 19 | Microsoft 365 Agents SDK for Python 1.3.0 在开源 changelog 中记录了 header propagation middleware、LLM service registration、MSTeams hosting install extra、TeamsActivityHandler typing 和 TurnContext.services 等 runtime/hosting 改动。信号是企业 agent SDK 的成熟度不只看模型调用，还要看 host integration、身份/头传播、服务注册、类型契约和 Teams 渠道适配是否可回归。 |
 | [GitHub Copilot for JetBrains adds OpenTelemetry configuration and model management](https://github.blog/changelog/2026-07-27-github-copilot-for-jetbrains-improved-opentelemetry-configuration-model-management-and-more/) | GitHub Changelog | blog | 19 | GitHub Copilot for JetBrains 增加 OpenTelemetry 配置、每会话 token limit、模型管理、文件编辑工具、MCP servers、custom agents in Claude flows、rubber-duck mode、todo list 与 UI/性能修复。信号是 IDE agent 的生产面已经包含遥测、成本上限、模型选择、外部工具接入、自定义 agent 和文件系统副作用。 |
 | [MCP Go SDK v1.7.0 adds full 2026-07-28 protocol support](https://github.com/modelcontextprotocol/go-sdk/releases/tag/v1.7.0) | Model Context Protocol Go SDK releases | doc | 19 | MCP Go SDK v1.7.0 支持完整 2026-07-28 协议版本，包括 per-request _meta、server/discover、MRTR、subscriptions/listen、标准 HTTP headers、stateless core、backwards compatibility，并删除过时 roots/sampling/logging primitives。信号是 MCP 迁移要同时验证无状态运行、请求级元数据、能力发现、监听/订阅、HTTP 兼容和废弃 primitive 移除。 |
 | [The Physics of Multi-Turn Long-Horizon Planning with Language Models](https://arxiv.org/abs/2607.24720) | arXiv | paper | 19 | 论文在受控多轮环境中把 CoT 当作中间 world-model transition，比较 online policy distillation、multi-turn online policy distillation 与 teacher consistency，指出长周期规划的瓶颈在转移一致性、终局状态依赖和 teacher 冲突，而不只是单步答案质量。信号是 long-horizon agent 训练与评测要看轨迹状态、转移误差和多轮蒸馏策略。 |
@@ -1615,3 +1657,4 @@ graph LR
 | [LangChain v1 agents source](https://github.com/langchain-ai/langchain/blob/master/libs/langchain_v1/langchain/agents/factory.py) | LangChain | doc | 21 | LangChain 官方源码入口：create_agent 如何组装模型、工具、middleware、structured output 与 agent runtime |
 | [LangGraph StateGraph and Pregel runtime source](https://github.com/langchain-ai/langgraph/blob/main/libs/langgraph/langgraph/graph/state.py) | LangGraph | doc | 21 | LangGraph 官方源码入口：StateGraph 的 state schema、channel reducer、node、edge 与 compile |
 | [LlamaIndex RetrieverQueryEngine source](https://github.com/run-llama/llama_index/blob/main/llama-index-core/llama_index/core/query_engine/retriever_query_engine.py) | LlamaIndex | doc | 21 | LlamaIndex 官方源码入口：retriever、node postprocessor、response synthesizer 组成 data-first RAG 查询链路 |
+| [OpenAI · Prompting](https://developers.openai.com/api/docs/guides/prompting) | OpenAI | doc | ae-prompt | 把 prompt 作为 application code 管理，以命名模块、typed arguments、测试/eval、Git、feature flag 与 rollback 建立发布生命周期 |

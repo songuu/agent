@@ -4,6 +4,8 @@
 > 预计用时：35 分钟 | 难度：⭐☆☆☆☆
 > 全局导航：[课程导航](../../docs/navigation.md) · [完整大纲](../../docs/curriculum.md) · [知识图谱](../../docs/knowledge-graph.md)
 
+> **基础 → 进阶**：本章先掌握 prompt 的角色、示例与格式约束；继续学习 [Agent Engineering A3 · Prompt 发布门](../../agent-engineering/03-prompt-release-gate/README.md)，把 prompt 升级为代码管理、可做行为差异比较并能回滚的发布资产。
+
 ## 学习目标
 
 学完本章你能够：

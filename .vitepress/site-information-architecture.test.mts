@@ -8,6 +8,8 @@ import {
   collectNavigationLinks,
   collectSidebarLinks,
 } from "./site-information-architecture";
+import { ARTICLES, CHAPTERS, CONCEPTS, RELATIONS } from "../knowledge-graph/data/graph";
+import { CONCEPT_VISUALS } from "../knowledge-graph/data/visuals";
 
 const CRITICAL_ROUTES = [
   "/docs/navigation",
@@ -16,6 +18,7 @@ const CRITICAL_ROUTES = [
   "/interview/",
   "/notion/",
   "/source-analysis/repository-matrix",
+  "/agent-engineering/",
   "/docs/knowledge-graph",
   "/knowledge-graph/",
 ] as const;
@@ -75,6 +78,68 @@ test("chapter-driven domains keep their full catalogs", () => {
   );
   assert.ok(langGraphLinks.includes("/langgraph-advanced/06-event-streaming/"));
   assert.equal(capstoneLinks.filter((link) => link.startsWith("/capstone/")).length, 28);
+});
+
+test("Agent Engineering is a first-class three-unit learning track", () => {
+  const chapterIds = ["ae-run", "ae-context", "ae-prompt"] as const;
+  const expectedDirs = [
+    "agent-engineering/01-run-contract",
+    "agent-engineering/02-context-compiler",
+    "agent-engineering/03-prompt-release-gate",
+  ] as const;
+
+  const chapters = chapterIds.map((id) => CHAPTERS.find((chapter) => chapter.id === id));
+  assert.deepEqual(chapters.map((chapter) => chapter?.dir), expectedDirs);
+  for (const chapter of chapters) {
+    assert.equal(chapter?.part, "Agent Engineering 专题");
+    assert.equal(chapter?.demo?.needsKey, "none");
+  }
+
+  assert.ok(CHAPTERS.length >= 69, "the existing chapter catalog plus three AE units must remain intact");
+  for (const chapterId of chapterIds) {
+    const conceptIds = new Set(
+      CONCEPTS.filter((concept) => concept.chapter === chapterId).map((concept) => concept.id),
+    );
+    assert.ok(conceptIds.size >= 2, `${chapterId} must expose multiple graph concepts`);
+    assert.ok(
+      RELATIONS.some((relation) => conceptIds.has(relation.from) || conceptIds.has(relation.to)),
+      `${chapterId} concepts must participate in graph relations`,
+    );
+    assert.ok(
+      ARTICLES.some((article) => article.chapters.includes(chapterId)),
+      `${chapterId} must cite at least one research source`,
+    );
+    assert.equal(
+      CONCEPT_VISUALS.filter((visual) => visual.chapter === chapterId).length,
+      1,
+      `${chapterId} must have exactly one visual`,
+    );
+  }
+});
+
+test("Agent Engineering stays reachable from primary nav, its own sidebar, and public guides", () => {
+  const expectedLinks = [
+    "/agent-engineering/01-run-contract/",
+    "/agent-engineering/02-context-compiler/",
+    "/agent-engineering/03-prompt-release-gate/",
+  ];
+  const sidebarLinks = collectSidebarLinks(CONTEXTUAL_SIDEBAR["/agent-engineering/"]);
+  assert.deepEqual(sidebarLinks.filter((link) => link.startsWith("/agent-engineering/")), expectedLinks);
+
+  const publicGuides = [
+    readFileSync(new URL("../README.md", import.meta.url), "utf8"),
+    readFileSync(new URL("../docs/navigation.md", import.meta.url), "utf8"),
+    readFileSync(new URL("../docs/curriculum.md", import.meta.url), "utf8"),
+  ];
+  for (const guide of publicGuides) {
+    for (const link of [
+      "agent-engineering/01-run-contract",
+      "agent-engineering/02-context-compiler",
+      "agent-engineering/03-prompt-release-gate",
+    ]) {
+      assert.match(guide, new RegExp(link), `public guide must expose ${link}`);
+    }
+  }
 });
 
 test("docs sidebar exposes the agent trends architecture blueprint", () => {

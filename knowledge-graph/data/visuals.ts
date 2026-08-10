@@ -459,6 +459,30 @@ export const CONCEPT_VISUALS: ConceptVisual[] = [
     steps: ["入口函数", "runtime 对象", "状态/工具/检索", "停止条件", "课程手写对照"],
     takeaway: "会用框架只是第一层；能读懂它把哪些复杂度托管了，才知道线上问题该从哪层下钻。",
   },
+  {
+    chapter: "ae-run",
+    kind: "loop",
+    title: "Run contract：版本冻结、状态迁移与证据闭环",
+    summary: "创建时冻结完整行为 revision，运行中只允许合法迁移；暂停写 checkpoint，恢复校验幂等 token，成功终态必须绑定可核验证据。",
+    steps: ["冻结行为版本", "created → running", "checkpoint 暂停", "幂等 resume", "evidence 终态"],
+    takeaway: "Agent 的完成不是一句文本，而是固定版本、合法状态和结果证据共同成立。",
+  },
+  {
+    chapter: "ae-context",
+    kind: "pipeline",
+    title: "Context Compiler：从持久来源到一次性 working context",
+    summary: "多来源候选先经过 trust、audience、stage、sensitivity 与时效过滤，再按 token budget 确定性打包；每个选择或丢弃都进入 ledger。",
+    steps: ["读取持久来源", "策略过滤", "预算排序", "稳定前缀打包", "provenance ledger"],
+    takeaway: "上下文不是聊天历史拼接，而是带策略、预算、来源和缺失证据的可重复编译产物。",
+  },
+  {
+    chapter: "ae-prompt",
+    kind: "shield",
+    title: "Prompt release gate：评估完整行为包，再决定晋级或回滚",
+    summary: "候选发布同时固定 prompt、context policy、tools、model、guardrails 与 evaluator；eval report 归因到 bundle digest，关键退化立即阻断。",
+    steps: ["定义模板契约", "组装 behavior bundle", "运行多 trial eval", "门禁判定", "整包晋级/回滚"],
+    takeaway: "生产 PromptOps 发布的是完整行为版本，不是一段脱离上下文和工具的文案。",
+  },
 ];
 
 const CONCEPT_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> = {
@@ -642,6 +666,18 @@ const CONCEPT_HIGHLIGHTS: Partial<Record<string, readonly ConceptHighlight[]>> =
   "lg-streaming": [
     { tone: "core", label: "核心判断", body: "多模式事件帧先保留 mode、payload 与顺序，再投影成用户、调试、审计视图；custom/updates/values 是不同语义，不应混成一条无类型日志。" },
     { tone: "warning", label: "易错边界", body: "不要把完整 state、调试 payload 或未知事件直接透传前端；用户视图采用白名单最小披露，未知 mode 显式降级到内部通道。" },
+  ],
+  "ae-run": [
+    { tone: "core", label: "核心判断", body: "一次 run 的成功由固定行为 revision、合法状态迁移和 outcome evidence 共同定义；checkpoint 与 resume token 让恢复可重复。" },
+    { tone: "warning", label: "易错边界", body: "不要把模型文本或进程退出码直接当成功；没有 evidence 的终态、扩大 authority 的 handoff 和重复 resume 都必须 fail closed。" },
+  ],
+  "ae-context": [
+    { tone: "core", label: "核心判断", body: "working context 是多来源持久状态经过策略、预算和排序编译出的本轮只读视图；每次选择都要能由 ledger 解释。" },
+    { tone: "warning", label: "易错边界", body: "不要把不可信 control、过期 memory、错误 audience 或 secret 塞进上下文；mandatory 内容超预算时应显式失败，而不是静默截断。" },
+  ],
+  "ae-prompt": [
+    { tone: "core", label: "核心判断", body: "PromptOps 的发布单元是完整 behavior bundle；候选必须绑定精确变量 contract、版本引用和可归因 eval report。" },
+    { tone: "warning", label: "易错边界", body: "不要只回滚 prompt 文案或直接激活候选；context/tool/model/guardrail revision 的变化同样会改变行为，外部副作用也不会被版本回滚逆转。" },
   ],
   "21": [
     { tone: "core", label: "核心判断", body: "读框架源码先找入口函数和 runtime，再追状态、工具、检索、停止条件；不要停在公开 API 名字上。" },

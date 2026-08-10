@@ -19,6 +19,12 @@ assert.equal(registry.get("08")?.needsKey, "embedding");
 assert.ok(registry.has("19"), "keyless ecosystem demo should be runnable");
 assert.equal(registry.get("19")?.needsKey, "none");
 
+for (const id of ["ae-run", "ae-context", "ae-prompt"] as const) {
+  assert.ok(registry.has(id), `${id} should be discovered as a runnable offline demo`);
+  assert.equal(registry.get(id)?.needsKey, "none");
+  assert.equal(registry.get(id)?.entry, `${registry.get(id)?.dir}/index.ts`);
+}
+
 assert.equal(registry.has("18"), false, "server.listen demo should be excluded");
 assert.equal(registry.has("20"), false, "article-library chapter should not expose a terminal demo");
 assert.equal(registry.has("capstone"), false, "interactive capstone CLI should be excluded");

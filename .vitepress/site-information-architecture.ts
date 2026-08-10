@@ -18,7 +18,7 @@ export const PORTAL_PILLARS: PortalPillar[] = [
     id: "learn",
     eyebrow: "LEARN · 体系学习",
     title: "从原理到生产，建立 Agent 工程能力",
-    description: "沿 21 章主课、基础扩展、RAG 与 LangGraph 专题逐层推进。",
+    description: "沿 21 章主课、基础扩展、Agent Engineering、RAG 与 LangGraph 专题逐层推进。",
     href: "/docs/navigation",
     action: "查看学习路线",
   },
@@ -47,6 +47,7 @@ export const PRIMARY_NAVIGATION: DefaultTheme.NavItem[] = [
     items: [
       { text: "学习路线", link: "/docs/navigation" },
       { text: "基础概念", link: "/agent-basics/" },
+      { text: "Agent Engineering", link: "/agent-engineering/" },
       { text: "进阶 RAG", link: "/rag-advanced/01-chunking-strategies/" },
       { text: "进阶 LangGraph", link: "/langgraph-advanced/" },
     ],
@@ -133,6 +134,7 @@ function chapterItems(part: string): SiteSidebarItem[] {
 
 function chapterLabel(chapter: Chapter, index: number): string {
   if (chapter.part === "毕业项目") return chapter.title.replace(/^毕业项目 · /, "");
+  if (chapter.part === "Agent Engineering 专题") return `A${index + 1} ${chapter.title}`;
   if (chapter.part === "进阶 RAG 专题") return `R${index + 1} ${chapter.title}`;
   if (chapter.part === "进阶 LangGraph 专题") return `L${index + 1} ${chapter.title}`;
   return `${chapter.id} ${chapter.title}`;
@@ -164,6 +166,17 @@ const ragSidebar: SiteSidebarItem[] = [
       { text: "RAG 完整架构", link: "/docs/rag-architecture" },
       { text: "RAG 系统实战", link: "/docs/rag-system-project" },
       { text: "企业知识库 Agent", link: "/docs/enterprise-knowledge-base-agent" },
+    ],
+  },
+];
+
+const agentEngineeringSidebar: SiteSidebarItem[] = [
+  { text: "Agent Engineering 专题", items: chapterItems("Agent Engineering 专题") },
+  {
+    text: "关联架构",
+    items: [
+      { text: "2026 Agent 五平面架构", link: "/docs/agent-trends-architecture" },
+      { text: "评估与测试", link: "/lessons/15-evaluation-and-testing/" },
     ],
   },
 ];
@@ -242,6 +255,7 @@ const docsSidebar: SiteSidebarItem[] = [
       { text: "求职指南", link: "/docs/career-guide" },
       { text: "创业指南", link: "/docs/startup-guide" },
       { text: "2026 Agent 五平面架构", link: "/docs/agent-trends-architecture" },
+      { text: "Agent Engineering 实践轨道", link: "/agent-engineering/" },
       { text: "RAG 完整架构", link: "/docs/rag-architecture" },
       { text: "企业知识库 Agent", link: "/docs/enterprise-knowledge-base-agent" },
     ],
@@ -264,6 +278,7 @@ const projectSidebar: SiteSidebarItem[] = [
 export const CONTEXTUAL_SIDEBAR: DefaultTheme.SidebarMulti = {
   "/lessons/": learningSidebar,
   "/agent-basics/": learningSidebar,
+  "/agent-engineering/": agentEngineeringSidebar,
   "/rag-advanced/": ragSidebar,
   "/langgraph-advanced/": langGraphSidebar,
   "/source-analysis/": sourceSidebar,

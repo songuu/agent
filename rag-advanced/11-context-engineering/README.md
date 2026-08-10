@@ -4,6 +4,8 @@
 > 预计用时：35 分钟 | 难度：⭐⭐⭐
 > 全局导航：[课程导航](../../docs/navigation.md) · [完整大纲](../../docs/curriculum.md) · [知识图谱](../../docs/knowledge-graph.md)
 
+> **基础 → 进阶**：本章先装配检索片段；继续学习 [Agent Engineering A2 · Context Compiler](../../agent-engineering/02-context-compiler/README.md)，把 Retrieval 扩展为 Session、Memory、Artifact、Tool Result 等异构来源的有序编译，并记录过滤、降级与 provenance。
+
 ## 学习目标
 
 学完本章你能够：

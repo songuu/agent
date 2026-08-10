@@ -4,6 +4,8 @@
 > 预计用时：50 分钟 | 难度：⭐⭐⭐☆☆
 > 全局导航：[课程导航](../../docs/navigation.md) · [完整大纲](../../docs/curriculum.md) · [知识图谱](../../docs/knowledge-graph.md)
 
+> **基础 → 进阶**：本章先建立通用 eval 数据集、评分器与回归观念；继续学习 [Agent Engineering A3 · Prompt 发布门](../../agent-engineering/03-prompt-release-gate/README.md)，把 prompt、context、model、tools 与 policy 的完整候选版本纳入可归因的发布 gate。
+
 ## 学习目标
 
 学完本章你能够：

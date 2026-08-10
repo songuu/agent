@@ -1,0 +1,8 @@
+{
+  "//": "Agent Engineering 专题的独立 typecheck，覆盖共享工程能力与专题示例。",
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/shared/agent/engineering/**/*.ts",
+    "agent-engineering/**/*.ts"
+  ]
+}

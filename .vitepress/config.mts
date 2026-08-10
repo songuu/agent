@@ -194,6 +194,8 @@ export default withMermaid(
     rewrites: {
       "lessons/:lesson/README.md": "lessons/:lesson/index.md",
       "agent-basics/README.md": "agent-basics/index.md",
+      "agent-engineering/README.md": "agent-engineering/index.md",
+      "agent-engineering/:unit/README.md": "agent-engineering/:unit/index.md",
       "rag-advanced/:topic/README.md": "rag-advanced/:topic/index.md",
       "langgraph-advanced/README.md": "langgraph-advanced/index.md",
       "langgraph-advanced/:topic/README.md": "langgraph-advanced/:topic/index.md",

@@ -39,8 +39,8 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   project: "项目深挖类",
 };
 
-const COLLECTED_DATE = "2026-08-05";
-const COLLECTED_AT = `${COLLECTED_DATE}T09:00:00+08:00`;
+const COLLECTED_DATE = "2026-08-10";
+const COLLECTED_AT = `${COLLECTED_DATE}T09:40:00+08:00`;
 
 interface RawInterviewQuestion {
   slug: string;
@@ -1512,6 +1512,78 @@ const RAW_QUESTIONS: RawInterviewQuestion[] = [
       "本题来自 2026-07-27 GitHub Changelog：治理要覆盖最新 agent 入口和最容易漏配的策略面，而不是只管传统 IDE 插件。",
   },
   {
+    slug: "copilot-weekly-session-worktree-rewind-observability",
+    category: "engineering",
+    question:
+      "Copilot 周更同时推进 cloud-agent reasoning level、CLI session/worktree、VS Code rewind 和 tool-call duration 时，为什么要把会话恢复、工作区隔离、回滚体验和执行耗时放在同一套 agent 运行边界里评估？",
+    relatedChapters: ["11", "12", "14", "15", "16", "18", "19"],
+    sourceTitles: ["GitHub Copilot weekly releases: August 3"],
+    sourceUrls: ["https://github.blog/changelog/2026-08-07-github-copilot-weekly-releases-august-3"],
+    confidence: "high",
+    rationale:
+      "本题来自 GitHub Copilot 2026-08-07 周更：agent 体验改进已经跨越模型推理预算、CLI 会话、工作区隔离、回滚和工具耗时观测。",
+  },
+  {
+    slug: "copilot-cloud-agent-reasoning-level-task-budget",
+    category: "engineering",
+    question:
+      "为什么 Copilot cloud agent 的 reasoning level 应该按任务风险、验证深度和成本预算配置，而不是固定成一个全局默认？",
+    relatedChapters: ["10", "12", "15", "16", "18", "19"],
+    sourceTitles: ["Customize the reasoning level for Copilot cloud agent"],
+    sourceUrls: ["https://github.blog/changelog/2026-08-06-customize-the-reasoning-level-for-copilot-cloud-agent"],
+    confidence: "high",
+    rationale:
+      "本题来自 GitHub Changelog 2026-08-06：cloud agent 的推理等级变成任务级控制项，适合考质量、时延和成本三角。",
+  },
+  {
+    slug: "copilot-code-review-effort-level-risk-gating",
+    category: "engineering",
+    question:
+      "AI code review 有了 effort levels 后，为什么团队要按 PR 风险、测试覆盖、发布紧急度和人工 reviewer 负载选择 faster/normal/deeper，而不是全量用同一种审查强度？",
+    relatedChapters: ["12", "15", "16", "17", "18", "19", "capstone"],
+    sourceTitles: ["Copilot code review effort levels are generally available"],
+    sourceUrls: ["https://github.blog/changelog/2026-08-07-copilot-code-review-effort-levels-are-generally-available"],
+    confidence: "high",
+    rationale:
+      "本题来自 GitHub Changelog 2026-08-07：AI reviewer 的深度成为可配置控制面，适合考风险分层、成本和 review SLA。",
+  },
+  {
+    slug: "copilot-agent-app-activity-metrics-attribution",
+    category: "engineering",
+    question:
+      "Copilot metrics API 增加 agent app activity 后，为什么采用度、留存、token 成本和代码活动必须按 agent app surface 归因？只看 IDE 补全或合并 PR 会漏掉什么？",
+    relatedChapters: ["15", "16", "18", "19"],
+    sourceTitles: ["GitHub Copilot usage metrics docs: agent and IDE telemetry attribution"],
+    sourceUrls: ["https://docs.github.com/en/copilot/concepts/copilot-usage-metrics/copilot-metrics"],
+    confidence: "high",
+    rationale:
+      "本题来自 GitHub Docs 当前 Copilot metrics 文档：usage metrics 来自 IDE/CLI telemetry 与 server-side telemetry，适合考组织级 adoption、成本归因和后台 agent 工作量。",
+  },
+  {
+    slug: "mcp-allowlist-enterprise-managed-settings",
+    category: "engineering",
+    question:
+      "企业给 Copilot 开 MCP server 时，为什么 allowlist、认证、tool surface、审计和默认拒绝策略应由 managed settings 集中控制，而不能靠每个 agent 会话临时自觉？",
+    relatedChapters: ["05", "11", "16", "17", "18", "19", "capstone"],
+    sourceTitles: ["GitHub Copilot CLI enterprise MCP allowlist"],
+    sourceUrls: ["https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference#enterprise-mcp-allowlist"],
+    confidence: "high",
+    rationale:
+      "本题来自 GitHub Docs 当前 CLI command reference：Enterprise MCP allowlist 对 MCP server 连接做 fingerprint/evaluate 并 fail-closed，说明远程工具协议已成为企业治理面。",
+  },
+  {
+    slug: "microsoft-agents-python-runtime-hosting-contract",
+    category: "engineering",
+    question:
+      "Microsoft 365 Agents SDK for Python 1.3.0 增加 header propagation middleware、LLM service registration 和 Teams hosting typing 时，为什么 agent SDK 升级要回归 host integration、身份传播、服务注册和渠道适配，而不只是跑一次模型调用？",
+    relatedChapters: ["05", "11", "12", "16", "17", "18", "19", "capstone"],
+    sourceTitles: ["Microsoft 365 Agents SDK for Python 1.3.0 release notes"],
+    sourceUrls: ["https://github.com/microsoft/Agents-for-python/blob/main/changelog.md"],
+    confidence: "high",
+    rationale:
+      "本题来自 Microsoft Agents for Python 2026-07-30 changelog：SDK runtime/hosting 变更会影响身份、服务注册、Teams 适配和企业部署回归。",
+  },
+  {
     slug: "jetbrains-agent-otel-mcp-custom-agent-governance",
     category: "engineering",
     question:
@@ -1897,7 +1969,13 @@ const LOCAL_ANSWER_SUMMARIES: Partial<Record<string, string>> = {
   "benchmark-protocol-validity-vs-score-claim": "Agent benchmark 分数只有在目标能力是完成任务的必要条件时才有意义。若能读到答案、利用评测 artifact 或和 grader 侧信道互动，高分证明的是协议漏洞，不是 agent 能力。",
   "cloudflare-agent-traces-observability-boundary": "Agent trace 只有同时覆盖 turn、model、tool、approval、token 和 runtime operations，才能把失败复现、成本归因和副作用审计串起来。但 trace 也是敏感数据面，消息和工具 payload 是否存储、如何脱敏、谁能读取，都必须和观测价值一起设计。",
   "cloudflare-computer-vfs-container-execution-boundary": "把 virtual filesystem、执行后端、gated operation、audit 和 observation 放在同一 runtime 边界里，是为了让 coding agent 的每次读写和执行都能被限制、回放和清理。直接跑本机 shell 会把凭证、文件系统和副作用暴露给模型，事后日志很难补回最小权限。",
-  "microsoft-mcp-skills-central-distribution-boundary": "MCP-hosted Agent Skills 把 skill 从应用包内配置变成远程可发现内容。治理重点也随之转移到 discovery document 是否可信、MCP 连接如何认证、archive 解包能否越界、脚本是否需要审批、版本如何回滚，以及多个 agent 是否拿到同一份政策和 playbook。"};
+  "microsoft-mcp-skills-central-distribution-boundary": "MCP-hosted Agent Skills 把 skill 从应用包内配置变成远程可发现内容。治理重点也随之转移到 discovery document 是否可信、MCP 连接如何认证、archive 解包能否越界、脚本是否需要审批、版本如何回滚，以及多个 agent 是否拿到同一份政策和 playbook。",
+  "copilot-weekly-session-worktree-rewind-observability": "成熟 coding agent 不是只有模型回答，还要管理 session、worktree、回滚和工具耗时。会话恢复保证长任务可续跑，worktree 隔离防止改动串扰，rewind 让用户可撤销 agent 路径，tool-call duration 则把慢点和成本暴露出来。",
+  "copilot-cloud-agent-reasoning-level-task-budget": "Reasoning level 是任务级成本/质量旋钮：高风险改动需要更深推理和验证，简单改动适合低延迟低成本路径。全局默认会把复杂任务做浅、或把简单任务做贵；合理做法是按风险、预算和验收深度配置。",
+  "copilot-code-review-effort-level-risk-gating": "AI review effort 要和 PR 风险匹配。deeper 能多挖跨文件、边界和安全问题，但会增加等待和计算成本；faster 适合低风险小改。团队应把审查强度接到路径、测试覆盖、发布窗口和人工 reviewer 负载上。",
+  "copilot-agent-app-activity-metrics-attribution": "Agent app activity 归因能把后台 agent 会话、请求、prompt/token 和代码活动从普通 IDE 补全里拆出来。只看合并 PR 或活跃用户会漏掉长任务成本、无效尝试、留存质量和不同 app surface 的采用差异。",
+  "mcp-allowlist-enterprise-managed-settings": "MCP server 是远程工具入口，默认让每个 agent 会话自由连接会扩大供应链和越权风险。企业应集中维护 allowlist、认证、审批、日志和默认拒绝策略，让新工具先经过治理再进入 agent 能力面。",
+  "microsoft-agents-python-runtime-hosting-contract": "SDK 升级会改变 host integration、身份/头传播、服务注册和 Teams 渠道契约。一次模型调用只能证明 provider 可用，不能证明中间件、channel adapter、typing 和部署身份仍按生产边界工作。"};
 
 function chapterAnswerLabel(chapter: string): string {
   if (chapter === "capstone") return "毕业项目（capstone）";

@@ -4,6 +4,8 @@
 > 预计用时：40 分钟 | 难度：⭐⭐☆☆☆
 > 全局导航：[课程导航](../../docs/navigation.md) · [完整大纲](../../docs/curriculum.md) · [知识图谱](../../docs/knowledge-graph.md)
 
+> **基础 → 进阶**：本章先处理单次会话的滑窗与摘要；继续学习 [Agent Engineering A2 · Context Compiler](../../agent-engineering/02-context-compiler/README.md)，把 Session、Memory、Artifact 与工具结果编译成带预算、信任和 provenance 的临时 Working Context。
+
 ## 学习目标
 
 学完本章你能够：
@@ -340,7 +342,7 @@ graph TB
 
 ### 延伸阅读
 
-- [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) — Anthropic 官方：上下文是有限资源，需主动裁剪与压缩，与本章窗口预算/摘要思路一致 `blog`
+- [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) — Anthropic 官方：上下文是有限资源，需主动裁剪、压缩和按需装配，对应窗口预算与 context compiler `blog`
 
 > 🗺️ 在[全局知识图谱](../../docs/knowledge-graph.md) / [交互式图谱](../../knowledge-graph/output/index.html) 中查看本章位置。
 

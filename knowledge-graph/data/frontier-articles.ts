@@ -32,9 +32,9 @@ export interface FrontierArticle {
 // 第 20 章是文章库承载页；资料集合沿用第 19 章生态资料，避免复制 70 篇文章清单。
 const FRONTIER_SOURCE_CHAPTER_ID = "19";
 const FRONTIER_CHAPTER_ID = "20";
-const FRONTIER_COLLECTED_DATE = "2026-08-05";
-const FRONTIER_COLLECTED_AT = `${FRONTIER_COLLECTED_DATE}T09:00:00+08:00`;
-const FRONTIER_DISPLAY_DATE_LABEL = "8月5日 · 星期三";
+const FRONTIER_COLLECTED_DATE = "2026-08-10";
+const FRONTIER_COLLECTED_AT = `${FRONTIER_COLLECTED_DATE}T09:40:00+08:00`;
+const FRONTIER_DISPLAY_DATE_LABEL = "8月10日 · 星期一";
 const READ_COUNT_BASE = 73;
 
 const chapter = CHAPTERS.find((item) => item.id === FRONTIER_CHAPTER_ID);

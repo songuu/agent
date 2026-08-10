@@ -4,6 +4,8 @@
 > 预计用时：2–3 小时 | 难度：⭐⭐⭐☆☆
 > 全局导航：[课程导航](../../docs/navigation.md) · [完整大纲](../../docs/curriculum.md) · [知识图谱](../../docs/knowledge-graph.md)
 
+> **基础 → 进阶**：本项目先搭通用 Agent eval harness；继续学习 [Agent Engineering A3 · Prompt 发布门](../../agent-engineering/03-prompt-release-gate/README.md)，复用 golden set 与回归门，把结果归因到完整 behavior bundle，并演示候选晋级、阻断与配置回滚。
+
 把课程里「评估与测试 / LLM-as-judge / 可观测」组装成一个**Agent 评测框架**：用一组 **golden 测试集**喂给被测 Agent，收集它的轨迹（用了哪些工具、答了什么），用**离线裁判**逐条打分，聚合成「通过率 / 工具准确率 / 拒答准确率 / 成本」等指标，最后由**回归门**裁决——指标跌破阈值就以非零退出码拦下这个版本。
 
 为什么这是毕业项目级的能力？**「让 Agent 跑起来」只是起点，「证明它没变差」才是上线的前提。** 评测框架就是你对 Agent 质量的自动化护栏。本项目特意准备了一个**退化版 Agent**（「该拒答却乱答」），演示评测门如何把它精准拦下。
