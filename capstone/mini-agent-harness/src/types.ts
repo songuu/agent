@@ -69,11 +69,29 @@ export interface SandboxGateway {
   run(request: SandboxRequest, workspacePath: string): Promise<SandboxResult>;
 }
 
-export interface PlannerObservation {
-  kind: "tool" | "sandbox" | "system";
-  ok: boolean;
-  summary: string;
-}
+/**
+ * 交给 Planner 的受控观测。`summary` 用于日志与模型纠错提示；`result` 保留
+ * 同一次动作的原始结构化结果，便于确定性 Planner 或模型 adapter 验证输入，而不必
+ * 反过来解析终端日志。Streaming Logger 仍只渲染经过截断的 summary。
+ */
+export type PlannerObservation =
+  | {
+      kind: "tool";
+      ok: boolean;
+      summary: string;
+      result: ToolResult;
+    }
+  | {
+      kind: "sandbox";
+      ok: boolean;
+      summary: string;
+      result: SandboxResult;
+    }
+  | {
+      kind: "system";
+      ok: boolean;
+      summary: string;
+    };
 
 export interface ContextMessage {
   role: "system" | "user" | "assistant" | "tool";

@@ -88,6 +88,7 @@ test("2026-07-21 live-probed official feeds stay enabled at their verified URLs"
 test("high-value sources have independent fallbacks for transient upstream failures", () => {
   const expectedFallbacks = {
     "hn-ai": "https://hnrss.org/newest?q=AI+OR+LLM+OR+agent&count=30",
+    "hn-frontpage": "https://hnrss.org/frontpage",
     "llamaindex-python-releases": "https://github.com/run-llama/llama_index/tags.atom",
     huggingface: "https://github.com/huggingface/transformers/releases.atom",
     openai: "https://github.com/openai/openai-cookbook/commits/main.atom",
@@ -104,6 +105,30 @@ test("high-value sources have independent fallbacks for transient upstream failu
     assert.ok(urls.includes(fallbackUrl), `${key} should retain fallback ${fallbackUrl}`);
   }
 });
+
+test("must-succeed daily sources use critical retry policy", () => {
+  const expectedCriticalSources = ["ithome", "hn-frontpage"] as const;
+
+  for (const key of expectedCriticalSources) {
+    const source = SOURCES.find((candidate) => candidate.key === key);
+    assert.ok(source, `missing source: ${key}`);
+    assert.equal(source.enabled, true, `${key} should stay enabled`);
+    assert.equal(source.critical, true, `${key} should notify as critical`);
+    assert.deepEqual(
+      source.retry,
+      { maxAttempts: 5, baseDelayMs: 1_000 },
+      `${key} should retry as a must-succeed source`,
+    );
+  }
+
+  const ithome = SOURCES.find((candidate) => candidate.key === "ithome");
+  assert.equal(ithome?.requestTimeoutMs, 30_000);
+
+  const hnFrontpage = SOURCES.find((candidate) => candidate.key === "hn-frontpage");
+  assert.equal(hnFrontpage?.format, "hacker-news-algolia");
+  assert.equal(hnFrontpage?.url, "https://hn.algolia.com/api/v1/search_by_date?tags=front_page&hitsPerPage=30");
+});
+
 test("challenge-protected sources stay documented but disabled", () => {
   for (const key of ["linuxdo-latest", "36kr-feed", "techweb-it", "owasp-genai"]) {
     const source = SOURCES.find((candidate) => candidate.key === key);

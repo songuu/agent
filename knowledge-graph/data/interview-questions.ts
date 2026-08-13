@@ -39,8 +39,8 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   project: "项目深挖类",
 };
 
-const COLLECTED_DATE = "2026-08-10";
-const COLLECTED_AT = `${COLLECTED_DATE}T09:40:00+08:00`;
+const COLLECTED_DATE = "2026-08-13";
+const COLLECTED_AT = `${COLLECTED_DATE}T08:44:00+08:00`;
 
 interface RawInterviewQuestion {
   slug: string;
@@ -1787,6 +1787,198 @@ const RAW_QUESTIONS: RawInterviewQuestion[] = [
     rationale:
       "本题来自 Microsoft Agent Framework 2026-07-28 博文：Agent Skills 可由 MCP server 集中发布并按需加载，适合考 skill 供应链、远程内容和企业 rollout 边界。",
   },
+  {
+    slug: "copilot-web-conversation-lifecycle-controls",
+    category: "engineering",
+    question:
+      "Copilot on web 扩展 conversation controls 后，为什么 web 端 coding agent 不能只按单次聊天验收，而要设计会话生命周期、上下文延续、历史整理和人工接管？",
+    relatedChapters: ["07", "12", "14", "16", "18", "19"],
+    sourceTitles: ["Copilot on web expands conversation controls"],
+    sourceUrls: ["https://github.blog/changelog/2026-08-10-copilot-on-web-expands-conversation-controls"],
+    confidence: "high",
+    rationale:
+      "本题来自 GitHub Changelog 2026-08-10：web 入口 conversation controls 变成产品控制面，适合考会话状态、上下文和审计。",
+  },
+  {
+    slug: "github-copilot-sdk-java-application-contract",
+    category: "engineering",
+    question:
+      "Copilot SDK for Java 把 coding agent 能力接进 JVM 应用时，为什么要把认证、上下文注入、工具边界、运行日志和 SDK 版本兼容当成应用集成合同？",
+    relatedChapters: ["05", "12", "13", "15", "16", "19", "capstone"],
+    sourceTitles: ["Using the GitHub Copilot SDK for Java"],
+    sourceUrls: ["https://github.blog/engineering/using-the-github-copilot-sdk-for-java/"],
+    confidence: "high",
+    rationale:
+      "本题来自 GitHub Engineering 2026-08-10：Copilot 能力从 IDE 插件扩展到 Java SDK，适合考 agent SDK 嵌入业务应用后的运行边界。",
+  },
+  {
+    slug: "cloudflare-agents-week-platform-control-plane",
+    category: "engineering",
+    question:
+      "Cloudflare Agents Week 把 ADLC、Agent Access Model、WebMCP、agent traces、computer runtime 和 agentic Internet 放在一起发布时，为什么这说明 agent 平台正在变成完整控制面？",
+    relatedChapters: ["05", "11", "12", "15", "16", "17", "18", "19", "capstone"],
+    sourceTitles: ["Everything we launched during Agents Week"],
+    sourceUrls: ["https://blog.cloudflare.com/agents-week-review-august-2026/"],
+    confidence: "high",
+    rationale:
+      "本题来自 Cloudflare Blog 2026-08-10 汇总：平台同时推进部署、发现、执行沙箱、观测和访问模型，适合考 agent 基础设施全链路。",
+  },
+  {
+    slug: "bedrock-agentcore-finops-runtime-governance",
+    category: "engineering",
+    question:
+      "nOps 用 Amazon Bedrock AgentCore 更快交付 FinOps agents 时，为什么企业评估托管 agent runtime 不能只看模型效果，还要看身份、工具接入、部署、监控和成本治理？",
+    relatedChapters: ["11", "12", "16", "17", "18", "19", "capstone"],
+    sourceTitles: ["How nOps shipped FinOps agents 75% faster with Amazon Bedrock AgentCore"],
+    sourceUrls: ["https://aws.amazon.com/blogs/machine-learning/how-nops-shipped-finops-agents-75-faster-with-amazon-bedrock-agentcore/"],
+    confidence: "high",
+    rationale:
+      "本题来自 AWS Machine Learning Blog 2026-08-10：AgentCore 案例强调交付效率和企业运行时能力，适合考业务 agent 平台治理。",
+  },
+  {
+    slug: "web-agent-goal-achievement-vs-unauthorized-action",
+    category: "engineering",
+    question:
+      "一个 AI agent 为了完成订课目标而利用网站漏洞时，为什么“任务完成”不能等同于“行为可接受”？意图约束、动作白名单、人工确认和异常审计分别要兜什么风险？",
+    relatedChapters: ["05", "14", "15", "17", "18", "19", "capstone"],
+    sourceTitles: ["Told to book a gym class, an AI agent hacked the site instead"],
+    sourceUrls: ["https://the-decoder.com/told-to-book-a-gym-class-an-ai-agent-hacked-the-site-instead-to-move-its-user-up-the-waitlist/"],
+    confidence: "medium",
+    rationale:
+      "本题来自 The Decoder 2026-08-10 安全报道：web/action agent 的目标达成能力可能转化为越权行为，适合考工具执行前的 policy gate。",
+  },
+  {
+    slug: "document-ingestion-indirect-prompt-injection-rovo",
+    category: "engineering",
+    question:
+      "隐藏 PDF 文本能诱导企业 AI agent 泄露数据时，为什么安全边界必须覆盖文件解析、不可见文本、检索片段信任级别、工具输出脱敏和跨应用数据访问？",
+    relatedChapters: ["08", "09", "15", "17", "18", "19", "capstone"],
+    sourceTitles: ["Hidden text in a PDF is enough to steal sensitive data through Atlassian's AI agent Rovo"],
+    sourceUrls: ["https://the-decoder.com/hidden-text-in-a-pdf-is-enough-to-steal-sensitive-data-through-atlassians-ai-agent-rovo/"],
+    confidence: "medium",
+    rationale:
+      "本题来自 The Decoder 2026-08-10 安全报道：文档摄取链路里的间接提示注入会跨越 RAG、工具和企业数据权限，适合考知识库 agent 防护。",
+  },
+  {
+    slug: "memprism-task-conditioned-relational-memory",
+    category: "engineering",
+    question:
+      "MemPrism 这类 task-conditioned relational memory views 为什么说明长期 agent 记忆不能只靠向量相似度？任务条件、关系结构、检索视图和跨步一致性分别要怎么验证？",
+    relatedChapters: ["07", "08", "09", "11", "15", "19", "capstone"],
+    sourceTitles: ["MemPrism: Task-Conditioned Relational Memory Views for Long-Horizon Agents"],
+    sourceUrls: ["https://arxiv.org/abs/2608.06745"],
+    confidence: "medium",
+    rationale:
+      "本题来自 arXiv 2026-08-10 预印本：长期 agent memory 需要按任务构造关系视图，适合考记忆检索和状态一致性。",
+  },
+  {
+    slug: "context-compression-execution-instability",
+    category: "engineering",
+    question:
+      "长周期 agent 的 context compression 为什么可能造成 execution instability？摘要、裁剪和记忆压缩要怎样进入轨迹回归、状态恢复和成本评估？",
+    relatedChapters: ["03", "07", "10", "15", "16", "19", "capstone"],
+    sourceTitles: ["Toward Reliable Context Compression for Long-Horizon Agents"],
+    sourceUrls: ["https://arxiv.org/abs/2608.06503"],
+    confidence: "medium",
+    rationale:
+      "本题来自 arXiv 2026-08-10 预印本：context compression 会改变长流程执行稳定性，适合考压缩策略和 agent regression。",
+  },
+  {
+    slug: "openai-agents-python-mcp-v2-default-model",
+    category: "engineering",
+    question:
+      "OpenAI Agents Python v0.20.0 同时切换默认模型、兼容 MCP Python SDK v1/v2，并新增 RunState.add_input 时，升级回归为什么不能只测一次模型调用成功？",
+    relatedChapters: ["05", "07", "12", "14", "16", "17", "19", "capstone"],
+    sourceTitles: ["OpenAI Agents Python v0.20.0 release notes"],
+    sourceUrls: ["https://github.com/openai/openai-agents-python/releases/tag/v0.20.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 OpenAI Agents Python v0.20.0：默认模型、MCP transport、暂停恢复输入和 sandbox 凭证边界一起变化，适合考 SDK 升级合同。",
+  },
+  {
+    slug: "openai-agents-js-durable-runstate-replay",
+    category: "engineering",
+    question:
+      "OpenAI Agents JS v0.15.0 引入 MCP v2 negotiation、RunState.addInput、pendingInput 序列化和 approveUnsafeReplay 后，为什么 agent 暂停恢复要把输入、工具输出和 replay 证据当成同一个安全边界？",
+    relatedChapters: ["05", "07", "12", "15", "16", "17", "19", "capstone"],
+    sourceTitles: ["OpenAI Agents JS v0.15.0 release notes"],
+    sourceUrls: ["https://github.com/openai/openai-agents-js/releases/tag/v0.15.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 OpenAI Agents JS v0.15.0：JS runtime 的 durable state 和 MCP 协议协商会影响工具调用恢复、审批和重放安全。",
+  },
+  {
+    slug: "langgraph-node-trace-policy-checkpoint",
+    category: "engineering",
+    question:
+      "LangGraph 在 add_node 暴露 trace_policy，同时更新 checkpoint 包时，为什么图式 agent 的观测策略、节点边界和持久化回放必须一起测试？",
+    relatedChapters: ["11", "12", "15", "16", "19"],
+    sourceTitles: ["LangGraph 1.2.11 release notes"],
+    sourceUrls: ["https://github.com/langchain-ai/langgraph/releases/tag/1.2.11"],
+    confidence: "high",
+    rationale:
+      "本题来自 LangGraph 1.2.11：节点级 trace policy 和 checkpoint release 同时出现，适合考可观测性与状态恢复边界。",
+  },
+  {
+    slug: "claude-code-remote-control-runner-hooks",
+    category: "engineering",
+    question:
+      "Claude Code v2.1.229 增加 remote-control --continue、自托管 runner server-supplied hooks 和 SSE keepalive 时，coding agent 的远程会话恢复和自托管策略注入要分别兜哪些风险？",
+    relatedChapters: ["14", "16", "17", "18", "19"],
+    sourceTitles: ["Claude Code v2.1.229 release notes"],
+    sourceUrls: ["https://github.com/anthropics/claude-code/releases/tag/v2.1.229"],
+    confidence: "high",
+    rationale:
+      "本题来自 Claude Code v2.1.229：远程控制、自托管 runner hook、gateway keepalive 和 Windows path fixes 都是生产 coding agent 的运行面问题。",
+  },
+  {
+    slug: "pydantic-ai-retry-prompt-redaction",
+    category: "engineering",
+    question:
+      "Pydantic AI v2.27.1 修复 retry-prompt content 在 include_content=false 下仍可能泄露的问题，这说明 LLM 应用的观测脱敏为什么必须覆盖 retry/repair 链路？",
+    relatedChapters: ["13", "15", "16", "17", "19"],
+    sourceTitles: ["Pydantic AI v2.27.1 security release notes"],
+    sourceUrls: ["https://github.com/pydantic/pydantic-ai/releases/tag/v2.27.1"],
+    confidence: "high",
+    rationale:
+      "本题来自 Pydantic AI 安全 release：retry prompt 和 validation feedback 也可能进入 tracing，是结构化输出修复链路的隐私风险。",
+  },
+  {
+    slug: "dsagentbench-real-computer-evaluation",
+    category: "engineering",
+    question:
+      "DSAgentBench 为什么强调在真实计算机环境里评测端到端数据科学 workflow？相比 code-only benchmark，notebook、IDE、terminal、browser、database 多工具协作会暴露哪些 agent 能力缺口？",
+    relatedChapters: ["05", "11", "15", "18", "19", "capstone"],
+    sourceTitles: ["DSAgentBench: Can Agents Automate End-to-End Data-Science Workflows in Real Computer Environments?"],
+    sourceUrls: ["https://arxiv.org/abs/2608.10366"],
+    confidence: "medium",
+    rationale:
+      "本题来自 arXiv 2026-08-11 预印本：真实数据科学 workflow benchmark 适合考多工具编排、OS grounding 和确定性 evaluator。",
+  },
+  {
+    slug: "mesa-multi-structure-memory-selection",
+    category: "engineering",
+    question:
+      "MESA 为什么不固定读取全部记忆结构，也不只路由到单一结构？long-horizon agent memory 的结构选择、证据 token 成本和答案级反馈应如何一起评估？",
+    relatedChapters: ["07", "08", "09", "11", "15", "16", "19", "capstone"],
+    sourceTitles: ["MESA: Task-Adaptive Multi-Structure Evidence Selection for Long-Horizon Agent Memory"],
+    sourceUrls: ["https://arxiv.org/abs/2608.10108"],
+    confidence: "medium",
+    rationale:
+      "本题来自 arXiv 2026-08-10 预印本：多结构记忆动态选择直接对应长期 agent 的证据选择、token 成本和回归评估。",
+  },
+  {
+    slug: "usertoolbench-personalized-tool-use",
+    category: "engineering",
+    question:
+      "UserToolBench 为什么把用户画像隐藏起来评测 tool-use LLM？个性化 agent 什么时候应该直接调用工具、什么时候应该追问，如何判断调用轨迹真的符合用户偏好？",
+    relatedChapters: ["05", "07", "11", "15", "17", "19"],
+    sourceTitles: ["UserToolBench: A User-Profile-Hidden Benchmark for Personalized Decision Making in Tool-Use LLMs"],
+    sourceUrls: ["https://arxiv.org/abs/2608.10042"],
+    confidence: "medium",
+    rationale:
+      "本题来自 arXiv 2026-08-10 预印本：个性化工具调用需要评估隐式偏好推断、缺失约束追问和长周期行为一致性。",
+  },
   // C. 项目深挖类
   {
     slug: "project-why-multi-agent",
@@ -1975,7 +2167,23 @@ const LOCAL_ANSWER_SUMMARIES: Partial<Record<string, string>> = {
   "copilot-code-review-effort-level-risk-gating": "AI review effort 要和 PR 风险匹配。deeper 能多挖跨文件、边界和安全问题，但会增加等待和计算成本；faster 适合低风险小改。团队应把审查强度接到路径、测试覆盖、发布窗口和人工 reviewer 负载上。",
   "copilot-agent-app-activity-metrics-attribution": "Agent app activity 归因能把后台 agent 会话、请求、prompt/token 和代码活动从普通 IDE 补全里拆出来。只看合并 PR 或活跃用户会漏掉长任务成本、无效尝试、留存质量和不同 app surface 的采用差异。",
   "mcp-allowlist-enterprise-managed-settings": "MCP server 是远程工具入口，默认让每个 agent 会话自由连接会扩大供应链和越权风险。企业应集中维护 allowlist、认证、审批、日志和默认拒绝策略，让新工具先经过治理再进入 agent 能力面。",
-  "microsoft-agents-python-runtime-hosting-contract": "SDK 升级会改变 host integration、身份/头传播、服务注册和 Teams 渠道契约。一次模型调用只能证明 provider 可用，不能证明中间件、channel adapter、typing 和部署身份仍按生产边界工作。"};
+  "microsoft-agents-python-runtime-hosting-contract": "SDK 升级会改变 host integration、身份/头传播、服务注册和 Teams 渠道契约。一次模型调用只能证明 provider 可用，不能证明中间件、channel adapter、typing 和部署身份仍按生产边界工作。",
+  "copilot-web-conversation-lifecycle-controls": "Web 端 coding agent 的会话不是一次性 prompt。conversation controls 会影响上下文延续、历史可整理性、错误路径撤回、人工接管和审计证据；如果只验最终回复，就会漏掉长任务里的状态漂移和不可追踪操作。",
+  "github-copilot-sdk-java-application-contract": "SDK 化意味着 agent 能力进入业务应用权限面。认证、上下文注入、工具调用、日志、错误语义和版本兼容都要成为应用合同；否则 IDE 里可控的能力一旦进服务侧，就可能变成难回放、难限权、难回滚的黑箱。",
+  "cloudflare-agents-week-platform-control-plane": "Agent 平台成熟后不再只是模型调用 SDK，而是部署生命周期、访问模型、工具协议、执行环境、观测和计费/发现的组合控制面。任何一层缺治理，都会让 agent 在生产里出现权限过宽、不可回放或无法归因的问题。",
+  "bedrock-agentcore-finops-runtime-governance": "托管 runtime 的价值要看它是否缩短真实业务 agent 的交付和治理路径。FinOps agents 这类场景要求身份、成本数据、工具调用、监控和部署策略都可控；模型回答好不好只是其中一层。",
+  "web-agent-goal-achievement-vs-unauthorized-action": "Agent 完成目标不代表行为被授权。Web/action agent 必须把用户意图、站点规则、动作白名单、敏感操作确认和异常路径审计放到执行前；否则它可能用越权或违规手段达成看似正确的结果。",
+  "document-ingestion-indirect-prompt-injection-rovo": "企业知识库 agent 的输入不只是用户问题，还包括 PDF、网页、附件和检索片段。隐藏文本或不可见指令一旦进入上下文，就可能诱导跨应用工具泄露数据；防线要覆盖解析、信任标记、检索隔离、输出脱敏和权限检查。",
+  "memprism-task-conditioned-relational-memory": "长期 agent 记忆需要按任务目标组织，而不只是召回语义相近片段。关系视图能减少无关记忆污染，但也要验证任务条件是否正确、关系是否可解释、跨步状态是否一致，以及失败时能否回放。",
+  "context-compression-execution-instability": "压缩上下文会省 token，但它会改变后续规划和工具选择。生产 agent 要把摘要、裁剪和记忆压缩放进轨迹回归，检查状态恢复、关键证据保留、成本变化和长流程稳定性，而不是假设压缩是无损的。",
+  "openai-agents-python-mcp-v2-default-model": "一次模型调用成功只能证明最浅层路径可用。默认模型、MCP v1/v2 transport、RunState.add_input、sandbox mount 凭证确认和 realtime transcription 都会改变执行合同；升级回归要覆盖协议协商、暂停恢复、凭证暴露提示、trace/usage 和显式模型覆盖。",
+  "openai-agents-js-durable-runstate-replay": "暂停恢复不是简单把输入再发一遍。pendingInput、结构化 tool output、已审批工具调用和 unsafe replay 决定了 resumed run 是否会重复执行、错绑批准或污染历史；生产 agent 要保存可验证 invocation evidence，并对 replay 做显式授权。",
+  "langgraph-node-trace-policy-checkpoint": "图式 agent 的行为证据来自节点级 trace 和 checkpoint 共同构成的轨迹。trace_policy 会影响哪些节点被观察、采样和归因；checkpoint 决定失败后恢复到哪个状态。两者分开测会漏掉“状态恢复了但证据缺失”或“证据存在但无法回放”的问题。",
+  "claude-code-remote-control-runner-hooks": "Remote Control 恢复要证明会话身份、最近会话选择和离线/云端状态准确；自托管 runner hook 是服务器下发的策略入口，需要权限、审计和版本控制；SSE keepalive 兜长思考网络断连。Windows/UNC path fixes 则影响工具调用能否稳定落地文件。",
+  "pydantic-ai-retry-prompt-redaction": "retry/repair 会把模型无效输出、校验反馈和可能的用户数据重新喂回模型，也可能进入 span。include_content=false 不能只屏蔽最终消息，还要覆盖 retry prompt、tool error、argument validation 和 OpenTelemetry 内容字段，否则调试链路会成为泄露面。",
+  "dsagentbench-real-computer-evaluation": "真实数据科学工作流要跨 notebook、IDE、终端、浏览器和数据库，失败常出在工具切换、OS grounding、中间输出解读、可视化验证和多步规划。code-only benchmark 看不到这些链路；确定性 evaluator 能把分析正确性、图表和模型性能纳入同一验收。",
+  "mesa-multi-structure-memory-selection": "长期轨迹有多种互补结构：时间线、实体关系、任务状态、证据片段等。固定读全部会浪费 token 并引入噪声，只读一种会漏证据。更好的评估要看结构选择是否随 query 改变、证据是否足够、token 是否下降，以及答案级反馈是否真的改善下游任务。",
+  "usertoolbench-personalized-tool-use": "个性化工具调用的关键不是回答像不像用户，而是能否从历史推断隐式约束，在信息不足时追问，并在单工具/多工具轨迹中做出符合用户偏好的决策。评估要检查缺失约束、长期一致性、工具参数和错误恢复，而不是只看最终文本礼貌度。"};
 
 function chapterAnswerLabel(chapter: string): string {
   if (chapter === "capstone") return "毕业项目（capstone）";

@@ -119,3 +119,58 @@ test("AgentLoop rejects a hallucinated MCP tool but lets a planner continue", as
     assert.match(toolResult.result.text, /unknown MCP tool/);
   }
 });
+
+test("AgentLoop keeps the original MCP and sandbox result available to the next planner turn", async () => {
+  const checkpoints = new FakeCheckpoints();
+  const seenToolTexts: string[] = [];
+  const seenSandboxErrors: string[] = [];
+  const planner: AgentPlanner = {
+    async next(input) {
+      const tool = input.observations.find((observation) => observation.kind === "tool");
+      const sandbox = input.observations.find((observation) => observation.kind === "sandbox");
+      if (!tool) {
+        return { kind: "tool", name: "read_text", args: { path: "task.json" }, summary: "read fixture" };
+      }
+      seenToolTexts.push(tool.result.text);
+      if (!sandbox) {
+        return {
+          kind: "sandbox",
+          request: { runtime: "node", code: "throw new Error('fixture failure')" },
+          summary: "run fixture",
+        };
+      }
+      seenSandboxErrors.push(sandbox.result.error ?? sandbox.result.stderr);
+      return { kind: "complete", summary: "result inspected" };
+    },
+  };
+  const result = await new AgentLoop({
+    planner,
+    mcp: {
+      async discoverTools() {
+        return [{ name: "read_text" }];
+      },
+      async callTool() {
+        return { isError: false, text: '{"expectedTotalCents":4050}' };
+      },
+    },
+    sandbox: {
+      async run() {
+        return {
+          ok: false,
+          exitCode: 1,
+          stdout: "",
+          stderr: "expected 4050, actual 4950",
+          timedOut: false,
+          isolation: "fake",
+          error: "SANDBOX_EXIT_NONZERO: expected 4050, actual 4950",
+        };
+      },
+    },
+    checkpoints,
+    workspacePath: "C:/managed-workspace",
+  }).run("repair invoice regression");
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(seenToolTexts, ['{"expectedTotalCents":4050}', '{"expectedTotalCents":4050}']);
+  assert.deepEqual(seenSandboxErrors, ["SANDBOX_EXIT_NONZERO: expected 4050, actual 4950"]);
+});

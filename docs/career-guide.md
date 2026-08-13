@@ -333,6 +333,22 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 128. Copilot usage metrics 把 IDE/CLI telemetry 与 server-side telemetry 汇总后，为什么采用度、留存、token 成本和代码活动必须按具体 agent/app surface 归因？只看 IDE 补全或合并 PR 会漏掉什么？（→ 15 / 16 / 18 / 19）
 129. 企业给 Copilot CLI 开 MCP server 时，为什么 allowlist、认证、tool surface、审计和默认拒绝策略应集中控制并 fail-closed，而不能靠每个 agent 会话临时自觉？（→ 05 / 11 / 16 / 17 / 18 / 19 / capstone）
 130. Microsoft 365 Agents SDK for Python 1.3.0 增加 header propagation middleware、LLM service registration 和 Teams hosting typing 时，为什么 agent SDK 升级要回归 host integration、身份传播、服务注册和渠道适配，而不只是跑一次模型调用？（→ 05 / 11 / 12 / 16 / 17 / 18 / 19 / capstone）
+131. Copilot on web 扩展 conversation controls 后，为什么 web 端 coding agent 不能只按单次聊天验收，而要设计会话生命周期、上下文延续、历史整理和人工接管？（→ 07 / 12 / 14 / 16 / 18 / 19）
+132. Copilot SDK for Java 把 coding agent 能力接进 JVM 应用时，为什么要把认证、上下文注入、工具边界、运行日志和 SDK 版本兼容当成应用集成合同？（→ 05 / 12 / 13 / 15 / 16 / 19 / capstone）
+133. Cloudflare Agents Week 把 ADLC、Agent Access Model、WebMCP、agent traces、computer runtime 和 agentic Internet 放在一起发布时，为什么这说明 agent 平台正在变成完整控制面？（→ 05 / 11 / 12 / 15 / 16 / 17 / 18 / 19 / capstone）
+134. nOps 用 Amazon Bedrock AgentCore 更快交付 FinOps agents 时，为什么企业评估托管 agent runtime 不能只看模型效果，还要看身份、工具接入、部署、监控和成本治理？（→ 11 / 12 / 16 / 17 / 18 / 19 / capstone）
+135. 一个 AI agent 为了完成订课目标而利用网站漏洞时，为什么“任务完成”不能等同于“行为可接受”？意图约束、动作白名单、人工确认和异常审计分别要兜什么风险？（→ 05 / 14 / 15 / 17 / 18 / 19 / capstone）
+136. 隐藏 PDF 文本能诱导企业 AI agent 泄露数据时，为什么安全边界必须覆盖文件解析、不可见文本、检索片段信任级别、工具输出脱敏和跨应用数据访问？（→ 08 / 09 / 15 / 17 / 18 / 19 / capstone）
+137. MemPrism 这类 task-conditioned relational memory views 为什么说明长期 agent 记忆不能只靠向量相似度？任务条件、关系结构、检索视图和跨步一致性分别要怎么验证？（→ 07 / 08 / 09 / 11 / 15 / 19 / capstone）
+138. 长周期 agent 的 context compression 为什么可能造成 execution instability？摘要、裁剪和记忆压缩要怎样进入轨迹回归、状态恢复和成本评估？（→ 03 / 07 / 10 / 15 / 16 / 19 / capstone）
+139. OpenAI Agents Python v0.20.0 同时切换默认模型、兼容 MCP Python SDK v1/v2，并新增 RunState.add_input 时，升级回归为什么不能只测一次模型调用成功？（→ 05 / 07 / 12 / 14 / 16 / 17 / 19 / capstone）
+140. OpenAI Agents JS v0.15.0 引入 MCP v2 negotiation、RunState.addInput、pendingInput 序列化和 approveUnsafeReplay 后，为什么 agent 暂停恢复要把输入、工具输出和 replay 证据当成同一个安全边界？（→ 05 / 07 / 12 / 15 / 16 / 17 / 19 / capstone）
+141. LangGraph 在 add_node 暴露 trace_policy，同时更新 checkpoint 包时，为什么图式 agent 的观测策略、节点边界和持久化回放必须一起测试？（→ 11 / 12 / 15 / 16 / 19）
+142. Claude Code v2.1.229 增加 remote-control --continue、自托管 runner server-supplied hooks 和 SSE keepalive 时，coding agent 的远程会话恢复和自托管策略注入要分别兜哪些风险？（→ 14 / 16 / 17 / 18 / 19）
+143. Pydantic AI v2.27.1 修复 retry-prompt content 在 include_content=false 下仍可能泄露的问题，这说明 LLM 应用的观测脱敏为什么必须覆盖 retry/repair 链路？（→ 13 / 15 / 16 / 17 / 19）
+144. DSAgentBench 为什么强调在真实计算机环境里评测端到端数据科学 workflow？相比 code-only benchmark，notebook、IDE、terminal、browser、database 多工具协作会暴露哪些 agent 能力缺口？（→ 05 / 11 / 15 / 18 / 19 / capstone）
+145. MESA 为什么不固定读取全部记忆结构，也不只路由到单一结构？long-horizon agent memory 的结构选择、证据 token 成本和答案级反馈应如何一起评估？（→ 07 / 08 / 09 / 11 / 15 / 16 / 19 / capstone）
+146. UserToolBench 为什么把用户画像隐藏起来评测 tool-use LLM？个性化 agent 什么时候应该直接调用工具、什么时候应该追问，如何判断调用轨迹真的符合用户偏好？（→ 05 / 07 / 11 / 15 / 17 / 19）
 ### C. 项目深挖类（考你是不是真做过）
 
 > 这一类没有标准题库，面试官会顺着你的简历项目往下钻。**提前给自己出这些题**：

@@ -153,8 +153,9 @@ export class AgentLoop {
     this.transition("TOOL_CALLING", emit);
     if (!tools.some((tool) => tool.name === action.name)) {
       const summary = `unknown MCP tool: ${action.name}`;
-      observations.push({ kind: "tool", ok: false, summary });
-      emit({ type: "tool_result", name: action.name, result: { isError: true, text: summary } });
+      const result = { isError: true, text: summary };
+      observations.push({ kind: "tool", ok: false, summary, result });
+      emit({ type: "tool_result", name: action.name, result });
       this.transition("EVALUATING", emit);
       return;
     }
@@ -169,6 +170,7 @@ export class AgentLoop {
       kind: "tool",
       ok: !result.isError,
       summary: result.isError ? `MCP ${action.name} failed: ${result.text}` : `MCP ${action.name}: ${result.text}`,
+      result,
     });
     this.options.context?.add({
       role: "tool",
@@ -198,6 +200,7 @@ export class AgentLoop {
       summary: result.ok
         ? `sandbox succeeded: ${truncate(result.stdout || "no stdout")}`
         : `sandbox failed: ${truncate((result.error ?? result.stderr) || "unknown error")}`,
+      result,
     });
     this.options.context?.add({
       role: "tool",

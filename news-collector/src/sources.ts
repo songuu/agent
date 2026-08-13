@@ -56,6 +56,9 @@ export const SOURCES: readonly NewsSource[] = [
     kind: "cn-media",
     lang: "zh",
     layerHint: "product-ui",
+    critical: true,
+    retry: { maxAttempts: 5, baseDelayMs: 1_000 },
+    requestTimeoutMs: 30_000,
     enabled: true,
   },
   {
@@ -116,9 +119,18 @@ export const SOURCES: readonly NewsSource[] = [
   {
     key: "hn-frontpage",
     name: "Hacker News Front Page",
-    url: "https://hnrss.org/frontpage",
+    url: "https://hn.algolia.com/api/v1/search_by_date?tags=front_page&hitsPerPage=30",
+    format: "hacker-news-algolia",
+    fallbacks: [
+      {
+        url: "https://hnrss.org/frontpage",
+        format: "feed",
+      },
+    ],
     kind: "community",
     lang: "en",
+    critical: true,
+    retry: { maxAttempts: 5, baseDelayMs: 1_000 },
     enabled: true,
   },
   {

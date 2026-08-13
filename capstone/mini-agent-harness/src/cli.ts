@@ -1,17 +1,13 @@
-import { access, readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 import { color } from "../../../src/shared/util/logger";
-import { AgentLoop } from "./agent-loop";
-import { CheckpointStore, createManagedWorkspace } from "./checkpoint";
-import { ContextManager } from "./context-manager";
-import { DemoPlanner } from "./demo-planner";
+import { invoiceRegressionScenario } from "./demo-scenario";
+import { runInvoiceRegressionDemo } from "./demo-runtime";
 import { createStreamingLogger } from "./logger";
 import { McpClient } from "./mcp-client";
 import { DockerSandboxRunner } from "./sandbox-runner";
 
 interface DemoOptions {
+  scenario: string;
   task: string;
   developmentFallback: boolean;
   keepWorkspace: boolean;
@@ -26,13 +22,14 @@ interface ToolsOptions {
   stdioArg?: string[];
 }
 
-const DEFAULT_TASK = "读取 task.txt，然后在受控工作区生成一个可回滚的 result.txt。";
+const DEFAULT_TASK = "修复订单金额回归：折扣后总额应为 4050 分，并保留可回滚证据。";
 
 const program = new Command();
 program
   .name("mini-agent-harness")
   .description("MCP + Docker sandbox + checkpoint 的最小 Agent Harness")
-  .option("--task <text>", "demo 的任务描述", DEFAULT_TASK)
+  .option("--scenario <id>", "可运行教学场景", invoiceRegressionScenario.id)
+  .option("--task <text>", "写入受控 task.json 的任务目标", DEFAULT_TASK)
   .option("--development-fallback", "显式允许非安全的宿主 Node 开发回退")
   .option("--keep-workspace", "保留受控临时工作区，便于检查 demo 结果")
   .option("--rollback", "demo 成功后回滚最后一次 sandbox 写入")
@@ -59,67 +56,54 @@ void program.parseAsync(process.argv).catch((error: unknown) => {
 });
 
 async function runDemo(options: DemoOptions): Promise<void> {
-  const workspace = await createManagedWorkspace("demo");
-  const checkpoints = new CheckpointStore({ workspacePath: workspace.workspacePath, strategy: "git" });
-  try {
-    await writeFile(join(workspace.workspacePath, "task.txt"), `${options.task}\n`, "utf8");
-    const sandbox = new DockerSandboxRunner({
-      developmentFallback: options.developmentFallback ? "node" : "disabled",
-    });
-    const preflight = await sandbox.preflight();
-    if (!preflight.available && !options.developmentFallback) {
-      console.error(
-        color(
-          `SANDBOX_DOCKER_UNAVAILABLE: ${preflight.error ?? "Docker daemon ping failed"}. Use --development-fallback only for trusted local fixtures.`,
-          "red",
-        ),
-      );
-      process.exitCode = 2;
-      return;
-    }
-    if (!preflight.available) {
-      console.warn(
-        color(
-          `Docker unavailable; continuing only because --development-fallback was explicitly selected: ${preflight.error ?? "unknown error"}`,
-          "yellow",
-        ),
-      );
-    }
+  assertSupportedScenario(options.scenario);
+  const sandbox = new DockerSandboxRunner({
+    developmentFallback: options.developmentFallback ? "node" : "disabled",
+  });
+  const preflight = await sandbox.preflight();
+  if (!preflight.available && !options.developmentFallback) {
+    console.error(
+      color(
+        `SANDBOX_DOCKER_UNAVAILABLE: ${preflight.error ?? "Docker daemon ping failed"}. Use --development-fallback only for trusted local fixtures.`,
+        "red",
+      ),
+    );
+    process.exitCode = 2;
+    return;
+  }
+  if (!preflight.available) {
+    console.warn(
+      color(
+        `Docker unavailable; continuing only because --development-fallback was explicitly selected: ${preflight.error ?? "unknown error"}`,
+        "yellow",
+      ),
+    );
+  }
 
-    const mcp = await createDemoMcpClient(workspace.workspacePath);
-    const logger = createStreamingLogger({ verbose: options.verbose });
-    const context = new ContextManager({ maxTokens: 512, reserveTokens: 96 });
-    const loop = new AgentLoop({
-      planner: new DemoPlanner(),
-      mcp,
-      sandbox,
-      checkpoints,
-      context,
-      workspacePath: workspace.workspacePath,
-      onEvent: logger,
-    });
-    const result = await loop.run(options.task);
-    if (!result.ok) {
-      process.exitCode = 1;
-      return;
-    }
+  console.log(color(`▶ ${invoiceRegressionScenario.id}: MCP task fixture → regression failure → repair → checkpoint rollback`, "cyan"));
+  if (options.developmentFallback) {
+    console.warn(color("⚠ development-node 仅用于受信任教学 fixture，不提供 Docker 级隔离。", "yellow"));
+  }
+  const logger = createStreamingLogger({ verbose: options.verbose });
+  const outcome = await runInvoiceRegressionDemo({
+    sandbox,
+    objective: options.task,
+    rollback: options.rollback,
+    keepWorkspace: options.keepWorkspace,
+    onEvent: logger,
+  });
+  if (!outcome.run.ok) {
+    process.exitCode = 1;
+    return;
+  }
 
-    const resultPath = join(workspace.workspacePath, "result.txt");
-    const resultText = await readFile(resultPath, "utf8");
-    console.log(color(`✓ demo completed: ${resultText.trim()}`, "green"));
-
-    if (options.rollback) {
-      const checkpoint = await loop.rollbackLastStep(logger);
-      await expectMissing(resultPath, "rollback should remove result.txt");
-      console.log(color(`✓ rollback verified at checkpoint ${checkpoint.id.slice(0, 8)}`, "green"));
-    }
-
-    if (options.keepWorkspace) {
-      console.log(color(`managed workspace retained: ${workspace.workspacePath}`, "yellow"));
-    }
-  } finally {
-    await checkpoints.dispose().catch(() => undefined);
-    if (!options.keepWorkspace) await workspace.cleanup().catch(() => undefined);
+  console.log(color(`✓ demo completed: ${outcome.run.summary}`, "green"));
+  console.log(color("✓ result.json verified: subtotal=4500, discount=450, total=4050", "green"));
+  if (outcome.rollbackCheckpoint) {
+    console.log(color(`✓ rollback verified at checkpoint ${outcome.rollbackCheckpoint.id.slice(0, 8)}: result.json removed and invoice.mjs restored`, "green"));
+  }
+  if (outcome.workspacePath) {
+    console.log(color(`managed workspace retained: ${outcome.workspacePath}`, "yellow"));
   }
 }
 
@@ -156,25 +140,10 @@ async function createExternalMcpClient(options: ToolsOptions): Promise<McpClient
   });
 }
 
-async function createDemoMcpClient(workspacePath: string): Promise<McpClient> {
-  const tsxCli = fileURLToPath(new URL("../../../node_modules/tsx/dist/cli.mjs", import.meta.url));
-  const serverEntry = fileURLToPath(new URL("./demo-mcp-server.ts", import.meta.url));
-  return McpClient.connectStdio({
-    command: process.execPath,
-    args: [tsxCli, serverEntry],
-    cwd: workspacePath,
-    env: buildDemoEnvironment(workspacePath),
-    stderr: "pipe",
-  });
-}
-
-function buildDemoEnvironment(workspacePath: string): Record<string, string> {
-  const environment: Record<string, string> = { MINI_AGENT_HARNESS_WORKSPACE: workspacePath };
-  for (const key of ["PATH", "Path", "SYSTEMROOT", "SystemRoot", "WINDIR", "ComSpec"] as const) {
-    const value = process.env[key];
-    if (value) environment[key] = value;
+function assertSupportedScenario(scenario: string): asserts scenario is typeof invoiceRegressionScenario.id {
+  if (scenario !== invoiceRegressionScenario.id) {
+    throw new Error(`UNKNOWN_DEMO_SCENARIO: ${JSON.stringify(scenario)}; supported: ${invoiceRegressionScenario.id}`);
   }
-  return environment;
 }
 
 function assertAllowedRemoteEndpoint(value: string): URL {
@@ -184,13 +153,4 @@ function assertAllowedRemoteEndpoint(value: string): URL {
     throw new Error("REMOTE_MCP_URL_REJECTED: use https, or http only for a loopback development server");
   }
   return endpoint;
-}
-
-async function expectMissing(path: string, message: string): Promise<void> {
-  try {
-    await access(path);
-  } catch {
-    return;
-  }
-  throw new Error(message);
 }
