@@ -349,6 +349,41 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 144. DSAgentBench 为什么强调在真实计算机环境里评测端到端数据科学 workflow？相比 code-only benchmark，notebook、IDE、terminal、browser、database 多工具协作会暴露哪些 agent 能力缺口？（→ 05 / 11 / 15 / 18 / 19 / capstone）
 145. MESA 为什么不固定读取全部记忆结构，也不只路由到单一结构？long-horizon agent memory 的结构选择、证据 token 成本和答案级反馈应如何一起评估？（→ 07 / 08 / 09 / 11 / 15 / 16 / 19 / capstone）
 146. UserToolBench 为什么把用户画像隐藏起来评测 tool-use LLM？个性化 agent 什么时候应该直接调用工具、什么时候应该追问，如何判断调用轨迹真的符合用户偏好？（→ 05 / 07 / 11 / 15 / 17 / 19）
+147. GPT-5.6 builder guide 把模型选择、reasoning effort、programmatic tool calling、多 agent 和 prompt caching 放在一起讲时，为什么 agent 成本优化不能只靠换一个更便宜模型？（→ 05 / 10 / 11 / 12 / 16 / 19 / capstone）
+148. Google ADK v2.7.0 让模型自行声明 capability、工具结果携带 media，并保留 thought signatures 和 parallel function call result 时，为什么 SDK 升级回归要覆盖 conversation history 和工具结果形态？（→ 05 / 07 / 12 / 13 / 15 / 19）
+149. Claude Code v2.1.232 默认开启 subagent forking，又支持 @ 提及其它 session 和 SendMessage 时，跨会话 coding agent 应如何验证 session identity、inbound message policy、secret redaction 和 shell/path sandbox？（→ 11 / 14 / 16 / 17 / 18 / 19 / capstone）
+150. AgentCore Observability 支持 on-premises 和 multi-cloud agent 通过 ADOT/OpenTelemetry 接入时，为什么生产观测不能只看托管 runtime 日志？framework span、tool 调用和审计证据要怎样统一？（→ 15 / 16 / 18 / 19 / capstone）
+151. 用 AgentCore Browser Tool 自动化 legacy web application 时，为什么验收不能只看页面能不能点通？remote browser isolation、live view、session replay、人类接管和副作用审计分别兜什么风险？（→ 05 / 14 / 17 / 18 / 19 / capstone）
+152. Agent Plugins 1.0 让同一个 plugin 横跨 VS Code、Copilot CLI 和 Copilot app 时，为什么插件治理要从单客户端配置升级到签名、版本、权限声明、市场源和多入口一致性？（→ 05 / 12 / 16 / 17 / 19 / capstone）
+153. InfraBench 为什么不只给 infrastructure agent 一个最终成功率，而要按系统层、运维生命周期和风险细项评分？非持久化变更、distributed invariant 破坏和未清理状态分别说明什么？（→ 15 / 16 / 17 / 18 / 19 / capstone）
+154. EvoGraph-Mem 为什么说 long-term agent memory 不能 append-only？positive/negative evidence、activation state、archive/revise/add insight 这些机制分别解决什么记忆污染问题？（→ 07 / 08 / 09 / 11 / 15 / 19 / capstone）
+155. OpenAI Agents Python v0.21.0 把 provider-neutral testing APIs 做成正式能力时，为什么 agent SDK 的回归不能依赖真实模型、真实 sandbox 或 WebRTC/WebSocket？ScriptedModel / scripted sandbox / realtime transport 分别在兜什么测试边界？（→ 12 / 13 / 15 / 16 / 19 / capstone）
+156. OpenAI Agents JS v0.16.0 同时加入确定性测试工具和 Standard Schema 输入/输出时，为什么 TypeScript agent stack 要把 schema 可移植性、runner 测试和 realtime 流一起纳入回归？（→ 12 / 13 / 14 / 15 / 19 / capstone）
+157. OpenAI Agents Python v0.21.1 增加 model call timeout、run-scoped sandbox working directories 和 Docker sandbox disable networking 时，为什么 sandbox agent 的隔离、网络、审批和成本统计要按 run 级别验证？（→ 12 / 15 / 16 / 17 / 18 / 19 / capstone）
+158. Claude Code v2.1.233 同时加入 forward_user_identity、Bash memory cgroup、MCP v2 listen 修复和 Windows NT 路径校验时，为什么 coding agent 升级要按身份归因、资源上限、协议恢复和路径安全四条线验收？（→ 11 / 16 / 17 / 18 / 19 / capstone）
+159. Pydantic AI v2.30.0 修复 Agent.to_web()/clai web 的 DNS rebinding 漏洞时，为什么本地 dev web UI 也要当成高权限 agent 攻击面？allowed_hosts、Host 校验和工具凭据隔离分别兜什么风险？（→ 05 / 12 / 16 / 17 / 18 / 19）
+160. browser-use 0.13.8 修复 Anthropic tool arguments 被序列化成文本、domain-restricted action 空 URL 暴露和 remote-browser download callback 时，为什么 browser agent 回归不能只测最终页面状态？（→ 05 / 14 / 15 / 17 / 18 / 19 / capstone）
+161. Cloudflare 用协议级 heuristics 检测 MCP traffic 并治理 shadow MCP 时，为什么企业不能只靠 agent 配置里的 server allowlist？Portal-only、direct MCP 阻断和网络侧可见性分别解决什么问题？（→ 05 / 11 / 16 / 17 / 18 / 19 / capstone）
+162. 用 SageMaker AI OpenAI-compatible endpoints 和 Bedrock AgentCore 组合多 agent workflow 时，为什么 specialized agents 应按任务选择模型与运行时，而不是把所有步骤塞给一个通用模型？（→ 10 / 11 / 12 / 16 / 18 / 19 / capstone）
+163. Claude Code v2.1.234 同时修 NT-namespace 路径、background subagent permission answers、MCP diagnostics secret redaction 和 marketplace allowlist 时，为什么 coding agent 的文件访问、权限记忆和工具来源要放在同一张升级清单里验收？（→ 11 / 16 / 17 / 18 / 19 / capstone）
+164. Pydantic AI v2.31.0 给 AGUIEventStream 独立 thread_id/run_id，并把 failed FallbackModel spans 归因到真实失败模型时，为什么 agent UI 流身份和 fallback trace attribution 会影响回放、成本和事故排查？（→ 12 / 14 / 15 / 16 / 18 / 19 / capstone）
+165. CrewAI 1.15.16 记录 execution context UUID、flow exception outcome、trace batch sharing、deployment origin 和 running release spans 时，为什么多 agent flow 的 observability 不能只保留一串普通日志？（→ 11 / 12 / 15 / 16 / 18 / 19 / capstone）
+166. LangChain OpenRouter 0.2.8 保留 usage chunks 里的 cost metadata 和 response metadata 里的 provider，同时 OpenAI adapter 修 streamed encrypted reasoning 时，为什么 provider metadata 和 usage stream 要当成 agent 成本/trace 合同？（→ 12 / 14 / 15 / 16 / 19 / capstone）
+167. OpenAI Codex 0.148.0 同时加入 Markdown export、session fork/archive/restore、thread credit/cost visibility、Bedrock provider、async/MCP hooks 和 sandbox fail-closed 时，为什么 coding agent 的会话生命周期、成本和外部执行钩子要一起验收？（→ 11 / 12 / 16 / 17 / 18 / 19 / capstone）
+168. Claude Code v2.1.235 同时修 prompt cache invalidation、Shift+Tab 误批准 session-wide edit permission、不可用 Agent tool 默认值和 notebook 审批内容缺失时，为什么 UX 回归也必须覆盖权限、缓存、子 agent 可用性和审批证据？（→ 11 / 14 / 16 / 17 / 19 / capstone）
+169. Pydantic AI v2.31.1 对 Bedrock 上 Claude Sonnet 5 / Fable 5 禁用 native structured output，又把 Gemini 不支持的 MINIMAL thinking 降到 LOW 时，为什么 provider capability matrix 和 fallback policy 要成为结构化输出回归的一部分？（→ 12 / 13 / 15 / 16 / 19）
+170. Google ADK v2.7.1 恢复 OpenTelemetry 1.42.1 ceiling 并校验 session initialization events 时，为什么观测依赖版本和会话初始化事件属于 agent runtime 合同，而不是普通依赖小修？（→ 12 / 14 / 15 / 16 / 18 / 19）
+171. Google ADK v1.39.0 让 live session 使用 session_resumption.handle、支持 audio_stream_end，并在 live agent run 结束时停止后台 tool tasks，为什么实时 agent 要同时验证恢复句柄、流终止事件和后台任务取消？（→ 07 / 14 / 15 / 16 / 18 / 19）
+172. OpenAI Agents Python v0.22.0 会脱敏被 output guardrail 拒绝的终端工具输出、对 failed/incomplete Responses 抛错，并隔离独立 RunState checkpoint 的 usage accounting，为什么这些都属于 agent runtime hardening？（→ 12 / 13 / 15 / 16 / 17 / 19 / capstone）
+173. OpenAI Agents JS v0.17.0 对 ambiguous serialized approval checkpoint 选择 fail closed，并把被 guardrail 拒绝的工具输出从 SDK-owned replay surface 中替换掉，这说明暂停恢复和 replay 安全要验证哪些边界？（→ 12 / 13 / 15 / 16 / 17 / 19 / capstone）
+174. Mastra core 1.60.0 把 Agents API durable execution、Cloudflare Sandbox provider、MCP stateless 2026-07-28 和 sandbox checkpoints 放在同一轮发布里，为什么这会改变 agent 部署与恢复合同？（→ 07 / 11 / 12 / 15 / 16 / 18 / 19 / capstone）
+175. Claude Code v2.1.237 修复 LLM gateway/custom base URL 下的 prompt caching，又新增 Concise output style，为什么 provider gateway、缓存命中和输出风格要一起纳入 coding agent 回归？（→ 03 / 14 / 16 / 19 / capstone）
+176. CrewAI 1.15.17 同时推进 declarative conversational flows，并修 MCP server_name、failed attempt scope cleanup、tool error attribution 和 redirect-hop SSRF 检查，为什么多 agent flow 的声明式入口和安全清理要一起验收？（→ 05 / 11 / 12 / 15 / 17 / 18 / 19 / capstone）
+177. Pydantic AI v2.32.1 拒绝在 agent run 的同步回调中调用 Agent.run_sync()，并避免向 Anthropic 发送空 signature 的 thinking blocks，这对 agent 框架的同步/异步边界和 reasoning block 序列化有什么启发？（→ 10 / 12 / 13 / 14 / 15 / 19）
+178. Vercel AI SDK Workflow 2.0.0 升级到 Workflow 5 并在 WorkflowAgent model-call step 重试时清理 partial UI message parts，为什么 workflow runtime 版本和前端消息投影要绑定回归？（→ 12 / 14 / 15 / 16 / 18 / 19 / capstone）
+179. FraudBench 为什么把银行 agent 放到共享账户状态、内部政策语料和自适应欺诈对话里评测？相比单轮 policy QA，它多测出了哪些授权、工具开放和历史依赖风险？（→ 05 / 09 / 15 / 17 / 18 / 19 / capstone）
+180. 为什么多 agent 系统的 stale reads、lost updates 和 inconsistent outcomes 不能只归因于 prompt 沟通不好，而要当成 shared-state concurrency control 问题处理？（→ 07 / 11 / 12 / 15 / 16 / 19 / capstone）
+181. 为什么 agentic system 的评测不能只看最终任务分数，而要观察、扰动并解释 action sequence？behavioral tests 能补上传统 benchmark 的哪些盲区？（→ 10 / 11 / 15 / 16 / 19 / capstone）
 ### C. 项目深挖类（考你是不是真做过）
 
 > 这一类没有标准题库，面试官会顺着你的简历项目往下钻。**提前给自己出这些题**：

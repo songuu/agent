@@ -110,7 +110,10 @@ pnpm supabase:news-seed   # → supabase/seed/news_items.sql
 # 4) 真实抓取一次（需仓库根 .env）
 pnpm news:collect
 
-# 5) 启动常驻收集服务
+# 5) Agent 内容每日同步：只写 PostgreSQL，不尝试 Supabase/PostgREST
+npm run content:agent-sync
+
+# 6) 启动常驻收集服务
 pnpm news:cron
 ```
 
@@ -202,6 +205,6 @@ journalctl -u news-collector -f
 - **某些源 0 items / ✗**：多为间歇 502、403 或 feed 改版；故障隔离保证其它源照常。配置 `NEWS_FEISHU_WEBHOOK_URL` 后会主动推送到飞书。改 `src/sources.ts` 增删源。
 - **飞书没有收到告警**：确认群机器人 webhook/签名密钥在服务器 `.env` 中，飞书机器人安全设置中的关键词应包含 `RSS 采集告警`，并在 PM2 重启日志中看到 `notify=feishu`。
 - **PostgreSQL 写库失败**：先确认 `CONTENT_REPOSITORY_POSTGRES_ONLY=true`、`CONTENT_REPOSITORY_DRIVER=postgres` 和 `CONTENT_POSTGRES_URL` / `CONTENT_POSTGRES_WRITE_URL`，再核对表 schema、网络、SSL 与最小权限账号。
-- **legacy Supabase/MySQL 手工脚本失败**：只在迁移/回归时处理；不要把它们作为当前定时 writer 的成功路径。
+- **legacy Supabase/MySQL 手工脚本失败**：只在迁移/回归时处理；不要把它们作为当前定时 writer 的成功路径，也不要在每日 Agent 内容同步里重试或报告为失败。
 - **dryRun 一直生效**：检查 `NEWS_DRY_RUN=true` 或命令是否显式 dry-run；PostgreSQL-only 配置缺失应直接失败，不应静默 dry-run 或回退 Supabase。
 - **Windows `tsx → spawn EPERM`**：用 `node --experimental-transform-types news-collector/src/cli-collect.ts` 作为 workaround（见仓库 supabase/README.md）。

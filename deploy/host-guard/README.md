@@ -5,7 +5,9 @@ pm2-root 在启动时只会恢复保存的 PM2 dump；它不会验证 dump 指�
 - 确认 nginx 与 pm2-root 已启动；
 - 确认预期 PM2 进程在线；
 - 通过 runner、Content API、AICrew、Deploy Management 的本机端点确认进程没有“online 但不可用”；
-- 探测失败时重启对应 PM2 进程，并在仍不可用时让 systemd service 失败，以便从 journalctl -u agent-build-stack-guard 追踪。
+- 连续多次本机 liveness 探测失败后才重启对应 PM2 进程，并在仍不可用时让 systemd service 失败，以便从 journalctl -u agent-build-stack-guard 追踪。单次超时不作为重启依据，避免宿主 I/O/内存抖动清空服务的热连接。
+
+Content API 的 `/healthz` 只代表进程存活，默认允许 20 秒并要求连续 3 次失败才重启。数据库可读性应由独立的 read API 监控观察，不能直接接到自动重启动作上。
 
 DM Tekton bridge 当前是有意停止的，不纳入守卫。
 

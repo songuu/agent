@@ -18,6 +18,15 @@ export const SOURCES: readonly NewsSource[] = [
     enabled: true,
   },
   {
+    key: "80aj",
+    name: "80aj",
+    url: "https://www.80aj.com/feed/",
+    kind: "cn-media",
+    lang: "zh",
+    // 2026-08-20: WordPress RSS 2.0 live probe returned Chinese AI/Agent entries.
+    enabled: true,
+  },
+  {
     key: "aibase-news",
     name: "AIBase 新闻",
     url: "https://news.aibase.com/zh/news",

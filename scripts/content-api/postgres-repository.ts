@@ -188,6 +188,11 @@ interface PgModule {
   }) => PgPool;
 }
 
+// The public API is usually quiet between page loads. Retain a small pool long
+// enough to avoid repeatedly paying a cold PostgreSQL connection during those
+// gaps; max=5 still bounds the process's database footprint.
+const CONTENT_API_PG_IDLE_TIMEOUT_MS = 300_000;
+
 /** Runtime driver boundary for the read-only Content API process. */
 export async function openPgExecutor(
   config: PostgresConnectionConfig,
@@ -205,7 +210,7 @@ export async function openPgExecutor(
     connectionString: config.url,
     ssl: config.ssl ? { rejectUnauthorized: true } : undefined,
     max: 5,
-    idleTimeoutMillis: 30_000,
+    idleTimeoutMillis: CONTENT_API_PG_IDLE_TIMEOUT_MS,
     application_name: "agent-build-content-api",
   });
   return {

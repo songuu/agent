@@ -12,6 +12,7 @@ description: "集中展示当前系统已有的定时任务、同步入口和验
 | 任务 | 默认节奏 | 手动入口 | 常驻入口 | 数据落点 | 站内入口 |
 |------|----------|----------|----------|----------|----------|
 | AI 资讯收集 | `NEWS_CRON=0 8 * * *`，`Asia/Shanghai` | `pnpm news:collect` | `pnpm news:cron` | 服务器 PostgreSQL `news_items` | [AI 资讯](../news/index.md) |
+| Agent 内容每日采集同步 | 由外部 Codex automation 触发 | `npm run content:agent-sync` | 外部 automation | 服务器 PostgreSQL `news_items` / `frontier_ecosystem_articles` / `interview_questions` | [前沿文章库](../lessons/20-agent-frontier-news/README.md) / [面试题库](../interview/index.md) |
 | Notion 文章同步 | `NOTION_CRON=30 8 * * *`，`Asia/Shanghai` | `pnpm notion:sync` | `pnpm notion:cron` | 服务器 PostgreSQL `notion_articles` | [Notion 文章](../notion/index.md) |
 | Codefather 面试题同步 | `CODEFATHER_INTERVIEW_CRON=5 */2 * * *`，`Asia/Shanghai` | `pnpm content:codefather-interview-sync` | `pnpm codefather:interview-cron` | 服务器 PostgreSQL `interview_questions` | [面试题库](../interview/index.md) |
 | 每日项目总结 | 由外部 Codex automation 触发 | 复用日报审计命令组 | 外部 automation | `docs/solutions/*-daily-project-summary.md` | [解决方案记录](./solutions/2026-07-03-daily-project-summary.md) |
@@ -40,5 +41,6 @@ description: "集中展示当前系统已有的定时任务、同步入口和验
 1. 当前阶段写入型定时任务必须设置 `CONTENT_REPOSITORY_POSTGRES_ONLY=true`、`CONTENT_REPOSITORY_DRIVER=postgres` 和 `CONTENT_POSTGRES_URL` 或 `CONTENT_POSTGRES_WRITE_URL`；缺少配置时应失败，不准回退 Supabase。
 2. 缺少其它密钥时，任务应进入 dry-run 或显式失败，不把密钥写入 tracked 文件。
 3. 写入型任务完成后，必须用 PostgreSQL 目标表读回确认，而不是只看本地日志。
-4. 页面展示异常时，先区分“数据没写入”和“前端读取链路没切到 Content API/过滤条件没展示”。
-5. 生产状态必须从 PM2/systemd/CI 或远端 PostgreSQL/API 读取，不用本地成功替代。
+4. Agent 内容每日采集同步只验证 PostgreSQL，不再尝试或报告 Supabase/PostgREST 写入。
+5. 页面展示异常时，先区分“数据没写入”和“前端读取链路没切到 Content API/过滤条件没展示”。
+6. 生产状态必须从 PM2/systemd/CI 或远端 PostgreSQL/API 读取，不用本地成功替代。

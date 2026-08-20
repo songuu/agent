@@ -39,8 +39,8 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   project: "项目深挖类",
 };
 
-const COLLECTED_DATE = "2026-08-13";
-const COLLECTED_AT = `${COLLECTED_DATE}T08:44:00+08:00`;
+const COLLECTED_DATE = "2026-08-20";
+const COLLECTED_AT = `${COLLECTED_DATE}T15:06:00+08:00`;
 
 interface RawInterviewQuestion {
   slug: string;
@@ -1979,6 +1979,429 @@ const RAW_QUESTIONS: RawInterviewQuestion[] = [
     rationale:
       "本题来自 arXiv 2026-08-10 预印本：个性化工具调用需要评估隐式偏好推断、缺失约束追问和长周期行为一致性。",
   },
+  {
+    slug: "gpt56-builder-guide-agent-economics",
+    category: "engineering",
+    question:
+      "GPT-5.6 builder guide 把模型选择、reasoning effort、programmatic tool calling、多 agent 和 prompt caching 放在一起讲时，为什么 agent 成本优化不能只靠换一个更便宜模型？",
+    relatedChapters: ["05", "10", "11", "12", "16", "19", "capstone"],
+    sourceTitles: ["The builder's guide to GPT-5.6"],
+    sourceUrls: ["https://openai.com/index/builders-guide-to-gpt-5-6"],
+    confidence: "high",
+    rationale:
+      "本题来自 OpenAI 2026-08-13 官方 builder guide：生产 agent 的成本/质量来自模型选择、工具编排、subagent 策略和 cache 命中共同作用。",
+  },
+  {
+    slug: "google-adk-capability-history-tool-media",
+    category: "engineering",
+    question:
+      "Google ADK v2.7.0 让模型自行声明 capability、工具结果携带 media，并保留 thought signatures 和 parallel function call result 时，为什么 SDK 升级回归要覆盖 conversation history 和工具结果形态？",
+    relatedChapters: ["05", "07", "12", "13", "15", "19"],
+    sourceTitles: ["Google ADK Python v2.7.0 release notes"],
+    sourceUrls: ["https://github.com/google/adk-python/releases/tag/v2.7.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 Google ADK v2.7.0 release：agent 发给模型和收到的内容形态变化会影响 schema、tool media、历史保留和并行调用回放。",
+  },
+  {
+    slug: "claude-code-cross-session-subagent-permission",
+    category: "engineering",
+    question:
+      "Claude Code v2.1.232 默认开启 subagent forking，又支持 @ 提及其它 session 和 SendMessage 时，跨会话 coding agent 应如何验证 session identity、inbound message policy、secret redaction 和 shell/path sandbox？",
+    relatedChapters: ["11", "14", "16", "17", "18", "19", "capstone"],
+    sourceTitles: ["Claude Code v2.1.232 release notes"],
+    sourceUrls: ["https://github.com/anthropics/claude-code/releases/tag/v2.1.232"],
+    confidence: "high",
+    rationale:
+      "本题来自 Claude Code v2.1.232：多会话协作、GitLab token redaction、PowerShell bypass 修复和 Windows symlink 写审批应作为同一权限控制面回归。",
+  },
+  {
+    slug: "agentcore-observability-multicloud-otel",
+    category: "engineering",
+    question:
+      "AgentCore Observability 支持 on-premises 和 multi-cloud agent 通过 ADOT/OpenTelemetry 接入时，为什么生产观测不能只看托管 runtime 日志？framework span、tool 调用和审计证据要怎样统一？",
+    relatedChapters: ["15", "16", "18", "19", "capstone"],
+    sourceTitles: ["Monitor on-premises and multi-cloud AI agents with AgentCore Observability"],
+    sourceUrls: ["https://aws.amazon.com/blogs/machine-learning/monitor-on-premises-and-multi-cloud-ai-agents-with-agentcore-observability/"],
+    confidence: "high",
+    rationale:
+      "本题来自 AWS 2026-08-13 AgentCore Observability 实践：跨云和本地 agent 的 trace/metric/log 要统一进入可审计的观测管道。",
+  },
+  {
+    slug: "agentcore-browser-legacy-web-isolation",
+    category: "engineering",
+    question:
+      "用 AgentCore Browser Tool 自动化 legacy web application 时，为什么验收不能只看页面能不能点通？remote browser isolation、live view、session replay、人类接管和副作用审计分别兜什么风险？",
+    relatedChapters: ["05", "14", "17", "18", "19", "capstone"],
+    sourceTitles: ["Automate legacy web applications with Amazon Bedrock AgentCore Browser Tool"],
+    sourceUrls: ["https://aws.amazon.com/blogs/machine-learning/automate-legacy-web-applications-with-amazon-bedrock-agentcore-browser-tool/"],
+    confidence: "high",
+    rationale:
+      "本题来自 AWS 2026-08-13 AgentCore Browser 实践和官方文档：浏览器行动能力必须和隔离、观测、回放及人工接管一起设计。",
+  },
+  {
+    slug: "agent-plugins-cross-client-governance",
+    category: "engineering",
+    question:
+      "Agent Plugins 1.0 让同一个 plugin 横跨 VS Code、Copilot CLI 和 Copilot app 时，为什么插件治理要从单客户端配置升级到签名、版本、权限声明、市场源和多入口一致性？",
+    relatedChapters: ["05", "12", "16", "17", "19", "capstone"],
+    sourceTitles: ["Agent Plugins 1.0 in VS Code, Copilot CLI, and the Copilot app"],
+    sourceUrls: ["https://github.blog/changelog/2026-08-12-agent-plugins-1-0-in-vs-code-copilot-cli-and-the-copilot-app"],
+    confidence: "high",
+    rationale:
+      "本题来自 GitHub Changelog：Agent plugin 变成跨客户端能力包后，供应链、安装边界和权限审计比单 IDE 插件更重要。",
+  },
+  {
+    slug: "infrabench-risk-lifecycle-evaluation",
+    category: "engineering",
+    question:
+      "InfraBench 为什么不只给 infrastructure agent 一个最终成功率，而要按系统层、运维生命周期和风险细项评分？非持久化变更、distributed invariant 破坏和未清理状态分别说明什么？",
+    relatedChapters: ["15", "16", "17", "18", "19", "capstone"],
+    sourceTitles: ["InfraBench: Evaluating Infrastructure Agents Across Layers, Lifecycle, and Risk"],
+    sourceUrls: ["https://arxiv.org/abs/2608.11234"],
+    confidence: "medium",
+    rationale:
+      "本题来自 arXiv InfraBench：基础设施 agent 的失败常在副作用、状态清理和分布式不变量上，单一 success rate 会掩盖风险。",
+  },
+  {
+    slug: "evograph-mem-editable-failure-aware-memory",
+    category: "engineering",
+    question:
+      "EvoGraph-Mem 为什么说 long-term agent memory 不能 append-only？positive/negative evidence、activation state、archive/revise/add insight 这些机制分别解决什么记忆污染问题？",
+    relatedChapters: ["07", "08", "09", "11", "15", "19", "capstone"],
+    sourceTitles: ["EvoGraph-Mem: Failure-Aware Editable Graph Memory for Long-Term Language Agents"],
+    sourceUrls: ["https://arxiv.org/abs/2608.11248"],
+    confidence: "medium",
+    rationale:
+      "本题来自 arXiv EvoGraph-Mem：长期记忆要能按失败证据失效、修订和重新检索，append-only 会累积过时或有害 insight。",
+  },
+  {
+    slug: "openai-agents-deterministic-testing-contract",
+    category: "engineering",
+    question:
+      "OpenAI Agents Python v0.21.0 把 provider-neutral testing APIs 做成正式能力时，为什么 agent SDK 的回归不能依赖真实模型、真实 sandbox 或 WebRTC/WebSocket？ScriptedModel / scripted sandbox / realtime transport 分别在兜什么测试边界？",
+    relatedChapters: ["12", "13", "15", "16", "19", "capstone"],
+    sourceTitles: ["OpenAI Agents Python v0.21.0 release notes"],
+    sourceUrls: ["https://github.com/openai/openai-agents-python/releases/tag/v0.21.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 OpenAI Agents Python v0.21.0 release：provider-neutral deterministic tests 让 agent、sandbox、realtime 和 voice flow 能脱离真实 provider 做回归。",
+  },
+  {
+    slug: "openai-agents-js-standard-schema-testing",
+    category: "engineering",
+    question:
+      "OpenAI Agents JS v0.16.0 同时加入确定性测试工具和 Standard Schema 输入/输出时，为什么 TypeScript agent stack 要把 schema 可移植性、runner 测试和 realtime 流一起纳入回归？",
+    relatedChapters: ["12", "13", "14", "15", "19", "capstone"],
+    sourceTitles: ["OpenAI Agents JS v0.16.0 release notes"],
+    sourceUrls: ["https://github.com/openai/openai-agents-js/releases/tag/v0.16.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 OpenAI Agents JS v0.16.0 release：确定性测试和 Standard Schema 会同时影响 runner、schema validation、handoff 和 realtime 回放。",
+  },
+  {
+    slug: "openai-agents-timeout-run-scoped-sandbox",
+    category: "engineering",
+    question:
+      "OpenAI Agents Python v0.21.1 增加 model call timeout、run-scoped sandbox working directories 和 Docker sandbox disable networking 时，为什么 sandbox agent 的隔离、网络、审批和成本统计要按 run 级别验证？",
+    relatedChapters: ["12", "15", "16", "17", "18", "19", "capstone"],
+    sourceTitles: ["OpenAI Agents Python v0.21.1 release notes"],
+    sourceUrls: ["https://github.com/openai/openai-agents-python/releases/tag/v0.21.1"],
+    confidence: "high",
+    rationale:
+      "本题来自 OpenAI Agents Python v0.21.1 release：timeout、run-scoped sandbox、network policy、exact approvals 和 compaction usage 都是生产 run contract。",
+  },
+  {
+    slug: "claude-code-identity-resource-path-control",
+    category: "engineering",
+    question:
+      "Claude Code v2.1.233 同时加入 forward_user_identity、Bash memory cgroup、MCP v2 listen 修复和 Windows NT 路径校验时，为什么 coding agent 升级要按身份归因、资源上限、协议恢复和路径安全四条线验收？",
+    relatedChapters: ["11", "16", "17", "18", "19", "capstone"],
+    sourceTitles: ["Claude Code v2.1.233 release notes"],
+    sourceUrls: ["https://github.com/anthropics/claude-code/releases/tag/v2.1.233"],
+    confidence: "high",
+    rationale:
+      "本题来自 Claude Code v2.1.233 release：identity forwarding、memory cgroup、MCP stream resilience、notification hooks 和 Windows path validation 都在改变 coding agent 控制面。",
+  },
+  {
+    slug: "pydantic-ai-local-dev-ui-dns-rebinding",
+    category: "engineering",
+    question:
+      "Pydantic AI v2.30.0 修复 Agent.to_web()/clai web 的 DNS rebinding 漏洞时，为什么本地 dev web UI 也要当成高权限 agent 攻击面？allowed_hosts、Host 校验和工具凭据隔离分别兜什么风险？",
+    relatedChapters: ["05", "12", "16", "17", "18", "19"],
+    sourceTitles: ["Pydantic AI v2.30.0 release notes"],
+    sourceUrls: ["https://github.com/pydantic/pydantic-ai/releases/tag/v2.30.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 Pydantic AI v2.30.0 release：local dev web chat UI 被修复 DNS rebinding 风险，并新增 allowed_hosts / Host validation。",
+  },
+  {
+    slug: "browser-use-tool-argument-recovery-domain-actions",
+    category: "engineering",
+    question:
+      "browser-use 0.13.8 修复 Anthropic tool arguments 被序列化成文本、domain-restricted action 空 URL 暴露和 remote-browser download callback 时，为什么 browser agent 回归不能只测最终页面状态？",
+    relatedChapters: ["05", "14", "15", "17", "18", "19", "capstone"],
+    sourceTitles: ["browser-use 0.13.8 release notes"],
+    sourceUrls: ["https://github.com/browser-use/browser-use/releases/tag/0.13.8"],
+    confidence: "high",
+    rationale:
+      "本题来自 browser-use 0.13.8 release：tool argument serialization、domain action registry、remote browser downloads 和 structured tool output 都会影响浏览器 agent 的真实轨迹。",
+  },
+  {
+    slug: "cloudflare-mcp-traffic-detection-shadow-tools",
+    category: "engineering",
+    question:
+      "Cloudflare 用协议级 heuristics 检测 MCP traffic 并治理 shadow MCP 时，为什么企业不能只靠 agent 配置里的 server allowlist？Portal-only、direct MCP 阻断和网络侧可见性分别解决什么问题？",
+    relatedChapters: ["05", "11", "16", "17", "18", "19", "capstone"],
+    sourceTitles: ["How Cloudflare detects MCP traffic and helps secure it"],
+    sourceUrls: ["https://blog.cloudflare.com/mcp-security-updates/"],
+    confidence: "high",
+    rationale:
+      "本题来自 Cloudflare 官方博客和仓库采集器摘要：MCP 治理需要在网络侧发现 shadow MCP traffic，并能强制 Portal-only 或阻断 direct MCP。",
+  },
+  {
+    slug: "sagemaker-agentcore-model-routing-workflows",
+    category: "engineering",
+    question:
+      "用 SageMaker AI OpenAI-compatible endpoints 和 Bedrock AgentCore 组合多 agent workflow 时，为什么 specialized agents 应按任务选择模型与运行时，而不是把所有步骤塞给一个通用模型？",
+    relatedChapters: ["10", "11", "12", "16", "18", "19", "capstone"],
+    sourceTitles: ["Building agentic workflows with SageMaker AI and Bedrock AgentCore"],
+    sourceUrls: ["https://aws.amazon.com/blogs/machine-learning/building-agentic-workflows-with-sagemaker-ai-and-bedrock-agentcore/"],
+    confidence: "high",
+    rationale:
+      "本题来自 AWS Machine Learning Blog：SageMaker AI OpenAI-compatible endpoints 可与 Bedrock AgentCore runtime 组合成多 agent workflow，按任务选择模型与运行时。",
+  },
+  {
+    slug: "claude-code-nt-path-permission-session-governance",
+    category: "engineering",
+    question:
+      "Claude Code v2.1.234 同时修 NT-namespace 路径、background subagent permission answers、MCP diagnostics secret redaction 和 marketplace allowlist 时，为什么 coding agent 的文件访问、权限记忆和工具来源要放在同一张升级清单里验收？",
+    relatedChapters: ["11", "16", "17", "18", "19", "capstone"],
+    sourceTitles: ["Claude Code v2.1.234 release notes"],
+    sourceUrls: ["https://github.com/anthropics/claude-code/releases/tag/v2.1.234"],
+    confidence: "high",
+    rationale:
+      "本题来自 Claude Code v2.1.234 release：预审批文件访问、会话权限、MCP 诊断和 marketplace host 校验都属于 coding agent 的执行控制面。",
+  },
+  {
+    slug: "pydantic-ai-agui-event-stream-trace-attribution",
+    category: "engineering",
+    question:
+      "Pydantic AI v2.31.0 给 AGUIEventStream 独立 thread_id/run_id，并把 failed FallbackModel spans 归因到真实失败模型时，为什么 agent UI 流身份和 fallback trace attribution 会影响回放、成本和事故排查？",
+    relatedChapters: ["12", "14", "15", "16", "18", "19", "capstone"],
+    sourceTitles: ["Pydantic AI v2.31.0 release notes"],
+    sourceUrls: ["https://github.com/pydantic/pydantic-ai/releases/tag/v2.31.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 Pydantic AI v2.31.0 release：事件流身份和 fallback model span attribution 直接决定 UI 会话、成本归因与失败定位是否可追踪。",
+  },
+  {
+    slug: "crewai-flow-execution-context-observability",
+    category: "engineering",
+    question:
+      "CrewAI 1.15.16 记录 execution context UUID、flow exception outcome、trace batch sharing、deployment origin 和 running release spans 时，为什么多 agent flow 的 observability 不能只保留一串普通日志？",
+    relatedChapters: ["11", "12", "15", "16", "18", "19", "capstone"],
+    sourceTitles: ["CrewAI 1.15.16 release notes"],
+    sourceUrls: ["https://github.com/crewAIInc/crewAI/releases/tag/1.15.16"],
+    confidence: "high",
+    rationale:
+      "本题来自 CrewAI 1.15.16 release：flow 级上下文、失败类型、发布版本和部署来源都需要结构化进入 span，才能支持排障和回归。",
+  },
+  {
+    slug: "langchain-provider-usage-metadata-contract",
+    category: "engineering",
+    question:
+      "LangChain OpenRouter 0.2.8 保留 usage chunks 里的 cost metadata 和 response metadata 里的 provider，同时 OpenAI adapter 修 streamed encrypted reasoning 时，为什么 provider metadata 和 usage stream 要当成 agent 成本/trace 合同？",
+    relatedChapters: ["12", "14", "15", "16", "19", "capstone"],
+    sourceTitles: ["LangChain OpenRouter 0.2.8 release notes", "LangChain OpenAI 1.5.1 release notes"],
+    sourceUrls: [
+      "https://github.com/langchain-ai/langchain/releases/tag/langchain-openrouter%3D%3D0.2.8",
+      "https://github.com/langchain-ai/langchain/releases/tag/langchain-openai%3D%3D1.5.1",
+    ],
+    confidence: "high",
+    rationale:
+      "本题来自 LangChain 2026-08-14 provider releases：usage/cost、provider attribution 和 streamed reasoning 都会影响多 provider agent 的计费、路由和回放。",
+  },
+  {
+    slug: "codex-session-fork-export-cost-provider-hooks-governance",
+    category: "engineering",
+    question:
+      "OpenAI Codex 0.148.0 同时加入 Markdown export、session fork/archive/restore、thread credit/cost visibility、Bedrock provider、async/MCP hooks 和 sandbox fail-closed 时，为什么 coding agent 的会话生命周期、成本和外部执行钩子要一起验收？",
+    relatedChapters: ["11", "12", "16", "17", "18", "19", "capstone"],
+    sourceTitles: ["OpenAI Codex 0.148.0 release notes"],
+    sourceUrls: ["https://github.com/openai/codex/releases/tag/rust-v0.148.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 OpenAI Codex 0.148.0 release：会话导出/分叉/归档恢复、成本可见性、供应商路由、hooks 与 sandbox fail-closed 共同改变 coding agent 控制面。",
+  },
+  {
+    slug: "claude-code-prompt-cache-permission-ui-subagent-availability",
+    category: "engineering",
+    question:
+      "Claude Code v2.1.235 同时修 prompt cache invalidation、Shift+Tab 误批准 session-wide edit permission、不可用 Agent tool 默认值和 notebook 审批内容缺失时，为什么 UX 回归也必须覆盖权限、缓存、子 agent 可用性和审批证据？",
+    relatedChapters: ["11", "14", "16", "17", "19", "capstone"],
+    sourceTitles: ["Claude Code v2.1.235 release notes"],
+    sourceUrls: ["https://github.com/anthropics/claude-code/releases/tag/v2.1.235"],
+    confidence: "high",
+    rationale:
+      "本题来自 Claude Code v2.1.235 release：表面 UI 修复涉及 prompt cache、permission prompt、Agent tool availability 和 notebook approval evidence。",
+  },
+  {
+    slug: "pydantic-ai-native-structured-output-capability-fallback",
+    category: "engineering",
+    question:
+      "Pydantic AI v2.31.1 对 Bedrock 上 Claude Sonnet 5 / Fable 5 禁用 native structured output，又把 Gemini 不支持的 MINIMAL thinking 降到 LOW 时，为什么 provider capability matrix 和 fallback policy 要成为结构化输出回归的一部分？",
+    relatedChapters: ["12", "13", "15", "16", "19"],
+    sourceTitles: ["Pydantic AI v2.31.1 release notes"],
+    sourceUrls: ["https://github.com/pydantic/pydantic-ai/releases/tag/v2.31.1"],
+    confidence: "high",
+    rationale:
+      "本题来自 Pydantic AI v2.31.1 release：同一抽象接口在不同 provider/model 上的 schema 与 thinking 能力不同，fallback 不能靠隐式猜测。",
+  },
+  {
+    slug: "google-adk-session-init-otel-ceiling-runtime-compatibility",
+    category: "engineering",
+    question:
+      "Google ADK v2.7.1 恢复 OpenTelemetry 1.42.1 ceiling 并校验 session initialization events 时，为什么观测依赖版本和会话初始化事件属于 agent runtime 合同，而不是普通依赖小修？",
+    relatedChapters: ["12", "14", "15", "16", "18", "19"],
+    sourceTitles: ["Google ADK Python v2.7.1 release notes"],
+    sourceUrls: ["https://github.com/google/adk-python/releases/tag/v2.7.1"],
+    confidence: "high",
+    rationale:
+      "本题来自 Google ADK Python v2.7.1 release：OpenTelemetry 兼容性和 session 初始化事件会影响 trace/export、恢复和事件流回放。",
+  },
+  {
+    slug: "google-adk-live-session-resumption-background-tool-cancel",
+    category: "engineering",
+    question:
+      "Google ADK v1.39.0 让 live session 使用 session_resumption.handle、支持 audio_stream_end，并在 live agent run 结束时停止后台 tool tasks，为什么实时 agent 要同时验证恢复句柄、流终止事件和后台任务取消？",
+    relatedChapters: ["07", "14", "15", "16", "18", "19"],
+    sourceTitles: ["Google ADK Python v1.39.0 release notes"],
+    sourceUrls: ["https://github.com/google/adk-python/releases/tag/v1.39.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 Google ADK Python v1.39.0 release：live/realtime agent 的恢复、音频流终止和后台工具任务取消共同决定会话是否可控。",
+  },
+  {
+    slug: "openai-agents-python-output-guardrail-runstate",
+    category: "engineering",
+    question:
+      "OpenAI Agents Python v0.22.0 会脱敏被 output guardrail 拒绝的终端工具输出、对 failed/incomplete Responses 抛错，并隔离独立 RunState checkpoint 的 usage accounting，为什么这些都属于 agent runtime hardening？",
+    relatedChapters: ["12", "13", "15", "16", "17", "19", "capstone"],
+    sourceTitles: ["OpenAI Agents Python v0.22.0 release notes"],
+    sourceUrls: ["https://github.com/openai/openai-agents-python/releases/tag/v0.22.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 OpenAI Agents Python v0.22.0 release：replay state、终态错误、provider 配置和 usage accounting 都被收紧为可验证合同。",
+  },
+  {
+    slug: "openai-agents-js-output-guardrail-replay-fail-closed",
+    category: "engineering",
+    question:
+      "OpenAI Agents JS v0.17.0 对 ambiguous serialized approval checkpoint 选择 fail closed，并把被 guardrail 拒绝的工具输出从 SDK-owned replay surface 中替换掉，这说明暂停恢复和 replay 安全要验证哪些边界？",
+    relatedChapters: ["12", "13", "15", "16", "17", "19", "capstone"],
+    sourceTitles: ["OpenAI Agents JS v0.17.0 release notes"],
+    sourceUrls: ["https://github.com/openai/openai-agents-js/releases/tag/v0.17.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 OpenAI Agents JS v0.17.0 release：工具输出归属、guardrail 元数据、外部副作用与应用自有副本不能混为一谈。",
+  },
+  {
+    slug: "mastra-durable-agents-api-sandbox-checkpoints",
+    category: "engineering",
+    question:
+      "Mastra core 1.60.0 把 Agents API durable execution、Cloudflare Sandbox provider、MCP stateless 2026-07-28 和 sandbox checkpoints 放在同一轮发布里，为什么这会改变 agent 部署与恢复合同？",
+    relatedChapters: ["07", "11", "12", "15", "16", "18", "19", "capstone"],
+    sourceTitles: ["Mastra core 1.60.0 release notes"],
+    sourceUrls: ["https://github.com/mastra-ai/mastra/releases/tag/%40mastra/core%401.60.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 Mastra 1.60.0 release：持久执行、远程 workspace、MCP 协议版本和 checkpoint 能力共同决定任务是否可恢复、可迁移、可观测。",
+  },
+  {
+    slug: "claude-code-gateway-prompt-cache-output-style",
+    category: "engineering",
+    question:
+      "Claude Code v2.1.237 修复 LLM gateway/custom base URL 下的 prompt caching，又新增 Concise output style，为什么 provider gateway、缓存命中和输出风格要一起纳入 coding agent 回归？",
+    relatedChapters: ["03", "14", "16", "19", "capstone"],
+    sourceTitles: ["Claude Code v2.1.237 release notes"],
+    sourceUrls: ["https://github.com/anthropics/claude-code/releases/tag/v2.1.237"],
+    confidence: "high",
+    rationale:
+      "本题来自 Claude Code v2.1.237 release：gateway/custom base URL 会影响 prompt cache，输出风格会影响最终交付合同与用户可读性。",
+  },
+  {
+    slug: "crewai-conversational-flows-tool-error-ssrf",
+    category: "engineering",
+    question:
+      "CrewAI 1.15.17 同时推进 declarative conversational flows，并修 MCP server_name、failed attempt scope cleanup、tool error attribution 和 redirect-hop SSRF 检查，为什么多 agent flow 的声明式入口和安全清理要一起验收？",
+    relatedChapters: ["05", "11", "12", "15", "17", "18", "19", "capstone"],
+    sourceTitles: ["CrewAI 1.15.17 release notes"],
+    sourceUrls: ["https://github.com/crewAIInc/crewAI/releases/tag/1.15.17"],
+    confidence: "high",
+    rationale:
+      "本题来自 CrewAI 1.15.17 release：flow 声明、MCP 标识、失败清理、工具错误和 SSRF 防线都属于执行控制面。",
+  },
+  {
+    slug: "pydantic-ai-agent-run-sync-thinking-signature",
+    category: "engineering",
+    question:
+      "Pydantic AI v2.32.1 拒绝在 agent run 的同步回调中调用 Agent.run_sync()，并避免向 Anthropic 发送空 signature 的 thinking blocks，这对 agent 框架的同步/异步边界和 reasoning block 序列化有什么启发？",
+    relatedChapters: ["10", "12", "13", "14", "15", "19"],
+    sourceTitles: ["Pydantic AI v2.32.1 release notes"],
+    sourceUrls: ["https://github.com/pydantic/pydantic-ai/releases/tag/v2.32.1"],
+    confidence: "high",
+    rationale:
+      "本题来自 Pydantic AI v2.32.1 release：re-entrancy guard、thinking block 签名和 FunctionModel 替身都会影响可恢复执行与测试。",
+  },
+  {
+    slug: "ai-sdk-workflow-retry-ui-parts",
+    category: "engineering",
+    question:
+      "Vercel AI SDK Workflow 2.0.0 升级到 Workflow 5 并在 WorkflowAgent model-call step 重试时清理 partial UI message parts，为什么 workflow runtime 版本和前端消息投影要绑定回归？",
+    relatedChapters: ["12", "14", "15", "16", "18", "19", "capstone"],
+    sourceTitles: ["Vercel AI SDK Workflow 2.0.0 release notes"],
+    sourceUrls: ["https://github.com/vercel/ai/releases/tag/%40ai-sdk%2Fworkflow%402.0.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 Vercel AI SDK Workflow 2.0.0 release：运行时 major upgrade 与 retry UI 清理共同决定用户看到的状态是否和真实重试一致。",
+  },
+  {
+    slug: "fraudbench-policy-grounded-banking-agents",
+    category: "engineering",
+    question:
+      "FraudBench 为什么把银行 agent 放到共享账户状态、内部政策语料和自适应欺诈对话里评测？相比单轮 policy QA，它多测出了哪些授权、工具开放和历史依赖风险？",
+    relatedChapters: ["05", "09", "15", "17", "18", "19", "capstone"],
+    sourceTitles: ["FraudBench: Stress-Testing Policy-Grounded Banking Agents Against Adaptive Fraud"],
+    sourceUrls: ["https://arxiv.org/abs/2608.18136"],
+    confidence: "medium",
+    rationale:
+      "本题来自 FraudBench 预印本：高权限业务 agent 的安全要看历史依赖、禁止动作、干预点、工具授权和政策检索。",
+  },
+  {
+    slug: "multi-agent-concurrency-control-shared-state",
+    category: "engineering",
+    question:
+      "为什么多 agent 系统的 stale reads、lost updates 和 inconsistent outcomes 不能只归因于 prompt 沟通不好，而要当成 shared-state concurrency control 问题处理？",
+    relatedChapters: ["07", "11", "12", "15", "16", "19", "capstone"],
+    sourceTitles: ["Position: Multi-Agent Systems Should Prioritize Concurrency Control"],
+    sourceUrls: ["https://arxiv.org/abs/2608.18092"],
+    confidence: "medium",
+    rationale:
+      "本题来自 2026 MAS concurrency position paper：共享资源访问、隔离保证和冲突检测应成为多 agent runtime 的一等设计目标。",
+  },
+  {
+    slug: "behavioral-agent-tests-process-observation",
+    category: "engineering",
+    question:
+      "为什么 agentic system 的评测不能只看最终任务分数，而要观察、扰动并解释 action sequence？behavioral tests 能补上传统 benchmark 的哪些盲区？",
+    relatedChapters: ["10", "11", "15", "16", "19", "capstone"],
+    sourceTitles: ["Position: Behavioral Systems Require Behavioral Tests"],
+    sourceUrls: ["https://arxiv.org/abs/2608.18081"],
+    confidence: "medium",
+    rationale:
+      "本题来自 ICML 2026 position paper：agent 会与动态环境互动并随时间适应，评测应覆盖行为过程、决策策略和多 agent emergent dynamics。",
+  },
   // C. 项目深挖类
   {
     slug: "project-why-multi-agent",
@@ -2183,7 +2606,43 @@ const LOCAL_ANSWER_SUMMARIES: Partial<Record<string, string>> = {
   "pydantic-ai-retry-prompt-redaction": "retry/repair 会把模型无效输出、校验反馈和可能的用户数据重新喂回模型，也可能进入 span。include_content=false 不能只屏蔽最终消息，还要覆盖 retry prompt、tool error、argument validation 和 OpenTelemetry 内容字段，否则调试链路会成为泄露面。",
   "dsagentbench-real-computer-evaluation": "真实数据科学工作流要跨 notebook、IDE、终端、浏览器和数据库，失败常出在工具切换、OS grounding、中间输出解读、可视化验证和多步规划。code-only benchmark 看不到这些链路；确定性 evaluator 能把分析正确性、图表和模型性能纳入同一验收。",
   "mesa-multi-structure-memory-selection": "长期轨迹有多种互补结构：时间线、实体关系、任务状态、证据片段等。固定读全部会浪费 token 并引入噪声，只读一种会漏证据。更好的评估要看结构选择是否随 query 改变、证据是否足够、token 是否下降，以及答案级反馈是否真的改善下游任务。",
-  "usertoolbench-personalized-tool-use": "个性化工具调用的关键不是回答像不像用户，而是能否从历史推断隐式约束，在信息不足时追问，并在单工具/多工具轨迹中做出符合用户偏好的决策。评估要检查缺失约束、长期一致性、工具参数和错误恢复，而不是只看最终文本礼貌度。"};
+  "usertoolbench-personalized-tool-use": "个性化工具调用的关键不是回答像不像用户，而是能否从历史推断隐式约束，在信息不足时追问，并在单工具/多工具轨迹中做出符合用户偏好的决策。评估要检查缺失约束、长期一致性、工具参数和错误恢复，而不是只看最终文本礼貌度。",
+  "gpt56-builder-guide-agent-economics": "Agent 成本优化是系统问题：简单步骤可用更小模型，复杂步骤再升级；reasoning effort 要按风险调；programmatic tool calling 能把确定性逻辑放到工具层；subagent 只有在收益大于 token 开销时才触发；prompt caching 则减少重复上下文成本。只换便宜模型可能牺牲质量，也会漏掉工具、缓存和编排里的更大收益。",
+  "google-adk-capability-history-tool-media": "SDK 升级改变的不只是 API 名称，而是模型能力声明、schema/tool 组合、工具结果媒介和历史结构。tool response 里有图片或其它 media、history 里有 thought signature 和并行函数结果时，序列化、恢复、评估和 trace 都会变；只测一次文本调用成功会漏掉真正的 agent loop 合同。",
+  "claude-code-cross-session-subagent-permission": "跨会话 coding agent 要先确认发消息的是哪个 session、收消息策略是 accept/hold/refuse 还是静默放行，fork subagent 是否继承了正确上下文和 prompt cache。secret redaction 要覆盖新增 token family，shell/path sandbox 要阻止 PowerShell 参数绕过和 symlink 写穿；否则多会话协作会扩大权限和凭证风险。",
+  "agentcore-observability-multicloud-otel": "托管 runtime 日志只能看到平台内的一部分事件，看不到框架内部规划、外部工具调用、本地或其它云上的执行环境。生产观测要用统一 trace/span 把 model call、tool call、session、runtime operation、metric 和 audit log 串起来，这样才能做跨云排障、成本归因、异常检测和合规回放。",
+  "agentcore-browser-legacy-web-isolation": "Legacy web automation 真实风险在行动副作用，而不是点击本身。Remote browser isolation 防止污染本机和用户会话，live view 和 human takeover 让高风险步骤可接管，session replay 让事故可复现，timeout/ephemeral session 控制长任务漂移；没有这些，agent 可能用不可审计的方式改动旧系统。",
+  "agent-plugins-cross-client-governance": "跨客户端 plugin 一旦安装，就可能在 IDE、CLI、云端 app 等多个入口获得能力。治理要锁定来源、版本、签名或哈希，声明所需权限，记录安装和调用审计，并保证所有入口执行同一策略；否则同一插件在低治理入口里可能绕过高治理入口的审批。",
+  "infrabench-risk-lifecycle-evaluation": "基础设施任务的成功不是一次命令返回 0，而是配置持久、分布式不变量没被破坏、副作用在允许范围内、临时状态被清理且后续生命周期仍可维护。按风险细项评分能暴露“短期目标完成但系统留下隐患”的失败；单一成功率会把这类事故风险藏起来。",
+  "evograph-mem-editable-failure-aware-memory": "长期记忆会过期、过度泛化或在新上下文里变成有害建议。Positive evidence 证明 insight 仍可复用，negative evidence 标记冲突，activation state 控制是否参与检索；archive/revise/add 让记忆能被淘汰、修正和扩展。append-only 只会累积污染，不能治理长期任务里的记忆漂移。",
+  "openai-agents-deterministic-testing-contract": "确定性测试 API 让 agent loop、sandbox 调用、realtime/voice 流程在没有真实模型、网络和浏览器/音频传输的情况下回放。它兜的是状态迁移、工具参数、审批、流式事件和 schema 回归；否则一次线上 provider 抖动就会把 SDK 回归和外部环境故障混在一起。",
+  "openai-agents-js-standard-schema-testing": "Standard Schema 改的是工具、handoff、输入和输出的验证合同；确定性 runner/realtime 测试保证这些合同不依赖 live provider 才能复现。TypeScript agent stack 如果只测一次最终文本，会漏掉 schema 可移植性、流式事件顺序和恢复语义的漂移。",
+  "openai-agents-timeout-run-scoped-sandbox": "Run-scoped sandbox 防止不同任务共享工作目录和残留文件，Docker network-off 降低外传风险，model timeout 与 exact approvals 限住成本和副作用，compaction usage 则保证账单和 trace 不漏。生产 sandbox agent 要按 run 验证这些边界，而不是只看工具能否执行。",
+  "claude-code-identity-resource-path-control": "forward_user_identity 负责把行动和费用归到正确用户，Bash memory cgroup 防止构建或脚本拖垮宿主，MCP listen 修复兜 serverless stream 恢复，NT 路径校验防止凭证泄露和路径绕过。它们共同说明 coding agent 升级是控制面升级，不是普通 CLI 小修。",
+  "pydantic-ai-local-dev-ui-dns-rebinding": "本地 dev UI 常握有本机凭据、环境变量和工具权限，所以不能因为只跑在 localhost 就当低风险。Host 校验和 allowed_hosts 默认收窄浏览器入口，工具凭据隔离防止任意网站借 DNS rebinding 调用本地 agent 工具。",
+  "browser-use-tool-argument-recovery-domain-actions": "Browser agent 的失败常发生在工具参数序列化、DOM/action registry、下载回调和结构化输出里，而不是最后页面是否看起来正确。只验最终页面会漏掉模型把参数塞成文本、空 URL 暴露受限动作、远程浏览器下载不可追踪等轨迹风险。",
+  "cloudflare-mcp-traffic-detection-shadow-tools": "MCP 是网络协议和工具能力面，shadow server 可以绕过应用层 allowlist。Gateway 侧协议检测提供中央可见性，Portal-only 把接入收回受管入口，direct MCP 阻断让未知工具默认失败；这比每个 agent 会话自己守规矩可靠。",
+  "sagemaker-agentcore-model-routing-workflows": "多 agent workflow 应按任务复杂度、工具需求、成本和延迟选择专门模型，再由 AgentCore 这类 runtime 管会话隔离、部署、观测和回滚。把所有步骤塞给一个通用模型会扩大成本和上下文污染，也让错误归因、降级和合规边界更难做清楚。",
+  "claude-code-nt-path-permission-session-governance": "Coding agent 的控制面跨过文件系统、会话状态和外部工具来源。NT-namespace 路径修复防预审批读取绕过，session-scoped permission answers 防后台子任务丢掉人工决策，MCP diagnostics redaction 和 marketplace host 校验则防工具配置泄密或供应链绕过。",
+  "pydantic-ai-agui-event-stream-trace-attribution": "Agent UI 流必须能把前端线程、后端 run、fallback 模型调用和失败 span 对齐。thread_id/run_id 错了会让恢复和审计串线；fallback span 归因错了会把真正失败模型藏在 wrapper 后面，导致成本、质量和事故排查都看错对象。",
+  "crewai-flow-execution-context-observability": "多 agent flow 的一次运行要能回答谁启动、跑在哪个版本、如何结束、trace 是否被共享以及部署来源是什么。只有普通日志时，很难把失败和具体 release、context、exception 类型、部署入口对应起来，也就无法可靠回归。",
+  "langchain-provider-usage-metadata-contract": "多 provider agent stack 的计费和路由依赖细粒度 usage/cost 与 provider attribution。stream 中丢 cost metadata 会让成本统计漏账，provider metadata 丢失会让质量/故障归因混乱，encrypted reasoning 丢失则影响流式回放和调试。",
+  "codex-session-fork-export-cost-provider-hooks-governance": "Coding agent 的会话生命周期、成本和外部执行钩子是同一条控制链。Session fork/archive/restore 决定能否复现和回滚，cost visibility 决定预算归因，Bedrock provider 改变模型路由，async/MCP hooks 扩大副作用面，sandbox fail-closed 则决定越界时是否默认拒绝。",
+  "claude-code-prompt-cache-permission-ui-subagent-availability": "UX 回归可能直接改变安全语义：prompt cache invalidation 影响上下文复用，Shift+Tab 误批准会放大编辑权限，不可用 Agent tool 的默认值会误导调度，notebook 审批缺内容会让用户无法判断副作用。它们都要进权限和审计回归。",
+  "pydantic-ai-native-structured-output-capability-fallback": "结构化输出不是 provider-neutral 魔法。某些模型/通道不支持 native schema，某些 thinking level 会被拒绝；runtime 必须显式维护 capability matrix，并在 fallback 时记录原因、目标模型和输出校验结果，否则会把协议不兼容伪装成模型质量问题。",
+  "google-adk-session-init-otel-ceiling-runtime-compatibility": "OpenTelemetry 版本上限决定 trace/export 是否稳定，session initialization events 决定会话从哪种状态开始。两者一旦漂移，表面可能只是依赖升级，实际会造成观测缺账、恢复错位或事件流不可重放，所以属于 runtime 合同。",
+  "google-adk-live-session-resumption-background-tool-cancel": "Live agent 结束一次 run 时，前端流、会话恢复和后台工具必须同时收口。恢复句柄错会接到错误会话，audio_stream_end 缺失会让流悬挂，后台工具不取消会在用户以为结束后继续产生副作用。",
+  "openai-agents-python-output-guardrail-runstate": "Runtime hardening 的核心是让失败也可回放、可归因、可计费。Output guardrail 拒绝的工具输出不能留在 replay/persisted state 里继续扩散，failed/incomplete Responses 要显式抛错，显式 client 配置不能被 provider 包静默覆盖，RunState usage 也要按 checkpoint 隔离后再聚合嵌套 agent。",
+  "openai-agents-js-output-guardrail-replay-fail-closed": "暂停恢复的危险点在于 serialized checkpoint 可能丢失工具输出归属。无法证明 pending terminal tool output 属于哪个 response 时，fail closed 比继续 replay 更安全；SDK-owned replay surface 可脱敏，但外部工具副作用和应用自己存的副本仍要由业务层审计和补偿。",
+  "mastra-durable-agents-api-sandbox-checkpoints": "Agent 部署合同不只是把代码跑起来。Durable execution 决定长任务能否跨进程恢复，远程 sandbox 决定命令和文件操作在哪个工作区发生，MCP 协议版本决定互操作语义，checkpoint 能力决定是否能从真实快照 warm start 或回滚。",
+  "claude-code-gateway-prompt-cache-output-style": "Gateway/custom base URL 会改变请求路径和缓存归因，prompt cache 修复要验证同一会话是否仍复用稳定前缀、成本是否可解释。Output style 虽像 UX 配置，但会改变最终回答形态、审查噪音和自动化摘要质量，所以也应进入回归清单。",
+  "crewai-conversational-flows-tool-error-ssrf": "声明式 conversational flow 会扩大配置驱动的入口面，必须和执行清理一起看。MCP server_name 错会影响工具身份，failed attempt scope 不关闭会污染后续运行，工具错误归因不清会拖累排障，SSRF 必须按每个 redirect hop 和 peer IP 重新检查，不能只校验初始 URL。",
+  "pydantic-ai-agent-run-sync-thinking-signature": "同步回调里再调用 run_sync 容易造成 re-entrancy、事件循环和状态嵌套混乱，应该显式拒绝。Thinking block 的空 signature 会破坏 provider 协议和历史序列化；FunctionModel callable 支持则说明测试替身也要遵守同一执行合同，而不是绕过 runtime。",
+  "ai-sdk-workflow-retry-ui-parts": "Workflow major upgrade 会改变运行时依赖和持久语义，重试时 partial UI message parts 不清理会让用户看到已经废弃的中间状态。Agent workflow 的验收要同时看 server-side retry、client projection、stream history 和可回放状态。",
+  "fraudbench-policy-grounded-banking-agents": "FraudBench 的价值在于把 agent 放进有共享账户状态、政策语料、工具授权和对话历史的真实风险形态。攻击者会先试探、诱导承认或利用失败尝试，让后续看似局部合法的请求变得不安全；所以评测要标注 prohibited actions、safe dispositions 和 intervention points。",
+  "multi-agent-concurrency-control-shared-state": "多个 agent 并发读写共享状态时，LLM 的长推理窗口会放大 stale read、lost update 和不一致结果。靠提示让大家多沟通不够，runtime 应提供资源访问结构、冲突检测、隔离级别、合并策略和可审计锁/事务边界。",
+  "behavioral-agent-tests-process-observation": "最终得分只能告诉你成败，不能解释 agent 为什么这么做。Behavioral tests 通过系统观察、扰动环境和解释 action sequence，能恢复决策策略、隔离行为差异，并发现多 agent emergent dynamics；这能补上传统 benchmark 对过程风险的盲区。",
+};
 
 function chapterAnswerLabel(chapter: string): string {
   if (chapter === "capstone") return "毕业项目（capstone）";

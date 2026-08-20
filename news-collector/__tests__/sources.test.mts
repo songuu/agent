@@ -63,6 +63,16 @@ test("expanded article sources stay enabled", () => {
   }
 });
 
+test("80aj RSS stays enabled at the verified WordPress feed URL", () => {
+  const source = SOURCES.find((candidate) => candidate.key === "80aj");
+  assert.ok(source, "80aj should remain documented in the source registry");
+  assert.equal(source.name, "80aj");
+  assert.equal(source.url, "https://www.80aj.com/feed/");
+  assert.equal(source.kind, "cn-media");
+  assert.equal(source.lang, "zh");
+  assert.equal(source.enabled, true);
+});
+
 
 test("2026-07-21 live-probed official feeds stay enabled at their verified URLs", () => {
   const expectedSources = {

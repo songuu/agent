@@ -68,6 +68,8 @@ export interface PostgrestCompatibleReadRequest {
   readonly maxPages?: number;
   readonly count?: ContentCountMode;
   readonly fetchImpl?: typeof fetch;
+  /** Cancels the underlying same-origin Content API request when the view is superseded. */
+  readonly signal?: AbortSignal;
 }
 
 /** Explicit public resource boundary; arbitrary database tables are never exposed. */
@@ -120,6 +122,11 @@ export interface ContentApiClientOptions {
 export interface ContentApiRuntimeConfigRequestOptions {
   readonly signal?: AbortSignal;
   readonly timeoutMs?: number;
+}
+
+/** Request-scoped options shared by direct Content API reads. */
+export interface ContentApiRequestOptions {
+  readonly signal?: AbortSignal;
 }
 
 const RUNTIME_CONFIG_FILE = "supabase-runtime-config.json";
@@ -219,6 +226,7 @@ export function adaptPostgrestReadRequest(request: PostgrestCompatibleReadReques
     offset: request.offset,
     maxPages: request.maxPages,
     count: request.count,
+    signal: request.signal,
   };
 }
 
@@ -248,13 +256,14 @@ export class ContentApiClient {
     return this.fetchAllHttp<T>(request, this.fetchImpl);
   }
 
-  public async fetchNewsCalendar(): Promise<NewsCalendarSummary> {
+  public async fetchNewsCalendar(options: ContentApiRequestOptions = {}): Promise<NewsCalendarSummary> {
     const contentApi = this.runtimeConfig.contentApi;
     if (!contentApi) throw new Error(NO_CONTENT_API_CONFIG_MESSAGE);
 
     const response = await this.fetchImpl(buildNewsCalendarUrl(contentApi), {
       headers: { Accept: "application/json" },
       credentials: "same-origin",
+      signal: options.signal,
     });
     if (!response.ok) throw await httpError(response, "Content API");
     return parseNewsCalendarSummary(await response.json());

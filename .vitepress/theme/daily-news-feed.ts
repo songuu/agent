@@ -32,6 +32,7 @@ const NEWS_EXCERPT_MAX_LENGTH = 220;
 const NEWS_DETAIL_MAX_LENGTH = 760;
 const NEWS_PAGE_SIZE_OPTIONS = [10, 20, 50] as const;
 const NEWS_TIME_ZONE = "Asia/Shanghai";
+export const DAILY_NEWS_REQUEST_TIMEOUT_MS = 10_000;
 
 interface NewsItemView {
   externalId: string;
@@ -81,7 +82,7 @@ interface NewsItemRow {
   tags?: unknown;
 }
 
-interface NewsFilterIndexItem {
+export interface NewsFilterIndexItem {
   collectedDate: string;
   ecosystemLayer: FrontierEcosystemLayer;
   articleCount: number;
@@ -107,6 +108,37 @@ interface NewsListQueryState {
   readonly pageSize: number;
 }
 
+/**
+ * The card request deliberately skips the database COUNT query. A calendar
+ * response already carries the same date/layer aggregate needed for numbered
+ * pagination, while `hasMore` remains the safe fallback until it arrives.
+ */
+export interface NewsPageRequest {
+  readonly table: "news_items";
+  readonly select: string;
+  readonly filters: readonly string[];
+  readonly order: readonly string[];
+  readonly pageSize: number;
+  readonly offset: number;
+  readonly count: "none";
+}
+
+export interface NewsPaginationState {
+  /** `null` means that the calendar aggregate has not become available yet. */
+  readonly totalPages: number | null;
+  readonly showControls: boolean;
+  readonly showPageNumbers: boolean;
+  readonly canGoPrevious: boolean;
+  readonly canGoNext: boolean;
+}
+
+export interface BoundedNewsRequest {
+  readonly fetchImpl: typeof fetch;
+  readonly timedOut: boolean;
+  abort(): void;
+  dispose(): void;
+}
+
 const NEWS_COLUMNS = [
   "external_id",
   "title",
@@ -130,6 +162,7 @@ const NEWS_COLUMNS = [
 const BASE = (import.meta.env?.BASE_URL ?? "/") as string;
 
 const initialized = new WeakSet<HTMLElement>();
+const activeDailyNewsFeeds = new Map<HTMLElement, AbortController>();
 
 if (typeof window !== "undefined") {
   installDailyNewsFeeds();
@@ -142,6 +175,7 @@ function installDailyNewsFeeds(): void {
 }
 
 function scanDailyNewsFeeds(): void {
+  cancelDetachedDailyNewsFeeds();
   document.querySelectorAll<HTMLElement>("[data-daily-news]").forEach((root) => {
     if (initialized.has(root)) return;
     initialized.add(root);
@@ -149,38 +183,169 @@ function scanDailyNewsFeeds(): void {
   });
 }
 
+function cancelDetachedDailyNewsFeeds(): void {
+  for (const [root, controller] of activeDailyNewsFeeds) {
+    if (root.isConnected) continue;
+    controller.abort();
+    activeDailyNewsFeeds.delete(root);
+  }
+}
+
 function createFeed(root: HTMLElement): void {
+  activeDailyNewsFeeds.get(root)?.abort();
+  const lifecycleController = new AbortController();
+  activeDailyNewsFeeds.set(root, lifecycleController);
   root.classList.add("frontier-archive-shell");
   root.replaceChildren(statusBlock("正在读取每日资讯..."));
-  void renderFeed(root).catch((error: unknown) => {
+  try {
+    renderFeed(root, lifecycleController.signal);
+  } catch (error: unknown) {
+    if (!isActiveDailyNewsFeed(root, lifecycleController)) return;
     const message = error instanceof Error ? error.message : String(error);
     root.replaceChildren(statusBlock(`资讯读取失败：${message}`));
-  });
+  }
+}
+
+function isActiveDailyNewsFeed(root: HTMLElement, controller: AbortController): boolean {
+  return activeDailyNewsFeeds.get(root) === controller && !controller.signal.aborted && root.isConnected;
+}
+
+/**
+ * Keeps a view-owned request bounded and lets a later interaction supersede it.
+ * The wrapper is passed into existing Content API calls, so no alternate data
+ * path or browser-side database fallback is introduced.
+ */
+export function createBoundedNewsRequest(
+  parentSignal?: AbortSignal,
+  fetchImpl: typeof fetch = globalThis.fetch.bind(globalThis),
+  timeoutMs = DAILY_NEWS_REQUEST_TIMEOUT_MS,
+): BoundedNewsRequest {
+  const controller = new AbortController();
+  let timedOut = false;
+  let disposed = false;
+  const abortFromParent = (): void => controller.abort();
+  if (parentSignal?.aborted) abortFromParent();
+  else parentSignal?.addEventListener("abort", abortFromParent, { once: true });
+
+  const timeoutId = globalThis.setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, timeoutMs);
+
+  const cleanup = (): void => {
+    if (disposed) return;
+    disposed = true;
+    globalThis.clearTimeout(timeoutId);
+    parentSignal?.removeEventListener("abort", abortFromParent);
+  };
+
+  const boundedFetch: typeof fetch = (input, init) => {
+    const requestSignal = init?.signal;
+    const abortFromRequest = (): void => controller.abort();
+    if (requestSignal?.aborted) abortFromRequest();
+    else requestSignal?.addEventListener("abort", abortFromRequest, { once: true });
+
+    const request = fetchImpl(input, { ...init, signal: controller.signal });
+    if (!requestSignal || requestSignal === controller.signal) return request;
+    return request.finally(() => requestSignal.removeEventListener("abort", abortFromRequest));
+  };
+
+  return {
+    fetchImpl: boundedFetch,
+    get timedOut() {
+      return timedOut;
+    },
+    abort() {
+      controller.abort();
+      cleanup();
+    },
+    dispose: cleanup,
+  };
 }
 
 async function fetchNewsPage(
   offset: number,
   filters: readonly string[],
   pageSize: number = DEFAULT_NEWS_PAGE_SIZE,
-): Promise<{ items: NewsItemView[]; totalCount: number | null; hasMore: boolean }> {
+  fetchImpl?: typeof fetch,
+): Promise<{ items: NewsItemView[]; hasMore: boolean }> {
   const page = await fetchPostgrestPage<NewsItemRow>({
+    ...buildNewsPageRequest(offset, filters, pageSize),
+    fetchImpl,
+  });
+
+  return {
+    items: page.rows.map(normalizeRow).filter((item) => item.title && item.url),
+    hasMore: page.hasMore,
+  };
+}
+
+/** Builds the only page-read shape used by the daily news cards. */
+export function buildNewsPageRequest(
+  offset: number,
+  filters: readonly string[],
+  pageSize: number = DEFAULT_NEWS_PAGE_SIZE,
+): NewsPageRequest {
+  return {
     table: "news_items",
     select: NEWS_COLUMNS,
     filters: [...filters],
     order: ["collected_date.desc", "published_date.desc"],
     pageSize,
     offset,
-  });
-
-  return {
-    items: page.rows.map(normalizeRow).filter((item) => item.title && item.url),
-    totalCount: page.totalCount,
-    hasMore: page.hasMore,
+    count: "none",
   };
 }
 
-async function fetchNewsFilterIndex(): Promise<NewsFilterIndex> {
-  const calendar = await (await createContentApiClient()).fetchNewsCalendar();
+/**
+ * Calendar buckets are grouped by collection date and ecosystem layer, which
+ * exactly matches the filters supported by the list request.
+ */
+export function inferNewsListTotalCount(
+  index: readonly NewsFilterIndexItem[],
+  layer: LayerFilter,
+  date: string | null,
+): number {
+  return index.reduce((total, item) => {
+    if (layer !== "all" && item.ecosystemLayer !== layer) return total;
+    if (date !== null && item.collectedDate.slice(0, 10) !== date) return total;
+    return total + item.articleCount;
+  }, 0);
+}
+
+/**
+ * Never manufacture a finite page count from a full page of rows. Before the
+ * calendar is usable, navigation is limited to the API's directional hint.
+ */
+export function resolveNewsPagination(
+  totalCount: number | null,
+  currentPage: number,
+  pageSize: number,
+  hasMore: boolean,
+): NewsPaginationState {
+  const safeCurrentPage = Math.max(1, currentPage);
+  if (totalCount === null) {
+    return {
+      totalPages: null,
+      showControls: safeCurrentPage > 1 || hasMore,
+      showPageNumbers: false,
+      canGoPrevious: safeCurrentPage > 1,
+      canGoNext: hasMore,
+    };
+  }
+
+  const totalPages = resolveTotalPages(totalCount, pageSize);
+  return {
+    totalPages,
+    showControls: totalPages > 1,
+    showPageNumbers: totalPages > 1,
+    canGoPrevious: safeCurrentPage > 1 && totalPages > 0,
+    canGoNext: totalPages > 0 && safeCurrentPage < totalPages,
+  };
+}
+
+async function fetchNewsFilterIndex(fetchImpl?: typeof fetch): Promise<NewsFilterIndex> {
+  const calendar = await (await createContentApiClient({ fetchImpl })).fetchNewsCalendar();
   const items = calendar.buckets.map((bucket) => ({
     collectedDate: bucket.date,
     ecosystemLayer: layerValue(bucket.ecosystemLayer),
@@ -194,7 +359,7 @@ async function fetchNewsFilterIndex(): Promise<NewsFilterIndex> {
   return { items, sourceCounts };
 }
 
-async function renderFeed(root: HTMLElement): Promise<void> {
+function renderFeed(root: HTMLElement, lifecycleSignal: AbortSignal): void {
   root.replaceChildren();
 
   const initialState = readNewsListQueryState();
@@ -206,11 +371,22 @@ async function renderFeed(root: HTMLElement): Promise<void> {
   let sourceCounts: NewsSourceCount[] = [];
   let items: NewsItemView[] = [];
   let totalCount: number | null = null;
+  // Calendar may resolve after an explicit-date card request. Keep its
+  // availability separate from an empty (but valid) aggregate response.
+  let hasCalendarIndex = false;
+  let pageHasMore = false;
   let currentPage = initialState.page;
   let pageSize = initialState.pageSize;
+  // With no URL date, calendar decides the first useful date before a list request starts.
+  let hasStartedPageRequest = false;
   let loadingPage = false;
   let pageError: string | null = null;
   let loadGeneration = 0;
+  let pageRequest: BoundedNewsRequest | null = null;
+  let calendarLoading = false;
+  let calendarError: string | null = null;
+  let calendarGeneration = 0;
+  let calendarRequest: BoundedNewsRequest | null = null;
 
   const overview = document.createElement("header");
   overview.className = "frontier-news-hero";
@@ -287,6 +463,12 @@ async function renderFeed(root: HTMLElement): Promise<void> {
     return articleCount(indexLayerScoped().filter((item) => item.collectedDate.slice(0, 10) === date));
   }
 
+  function calendarTotalCount(): number | null {
+    return hasCalendarIndex
+      ? inferNewsListTotalCount(filterIndex, selectedLayer, selectedDate)
+      : null;
+  }
+
   function sourceCount(layer: LayerFilter = selectedLayer): number {
     return sourceCounts.find((entry) => entry.layer === layer)?.count ?? 0;
   }
@@ -297,7 +479,7 @@ async function renderFeed(root: HTMLElement): Promise<void> {
   }
 
   function alignDateToLayer(): void {
-    // 初始日期始终是今天，即使当天在当前体系层没有文章也不能被静默跳回旧日期。
+    // 仅显式日期会在切换体系层后回退；首屏隐式日期由 calendar 选最新有数据日。
     if (selectedDate === null || !selectedDateWasExplicit) return;
     const dates = availableDates(indexLayerScoped());
     if (dates.includes(selectedDate)) return;
@@ -313,23 +495,44 @@ async function renderFeed(root: HTMLElement): Promise<void> {
     alignDateToLayer();
     calendarMonth =
       yearMonthOf(selectedDate) ?? yearMonthOf(availableDates(filterIndex)[0] ?? null) ?? calendarMonth;
+    totalCount = calendarTotalCount();
+    if (totalCount !== null) {
+      const totalPages = resolveTotalPages(totalCount, pageSize);
+      currentPage = totalPages > 0 ? Math.min(currentPage, totalPages) : 1;
+    }
   }
 
   function renderStatus(): void {
     const visibleCount = currentPageItems().length;
+    timelineStatus.replaceChildren();
+    if (waitingForInitialCalendar()) {
+      timelineStatus.textContent = "正在确认最近有数据的日期…";
+      return;
+    }
     if (loadingPage) {
-      timelineStatus.textContent = `正在加载第 ${currentPage} 页… 当前页 ${items.length} 篇${totalCount ? ` / 总计 ${totalCount} 篇` : ""}`;
+      timelineStatus.textContent = `正在加载第 ${currentPage} 页… 当前页 ${items.length} 篇${totalCount === null ? "" : ` / 总计 ${totalCount} 篇`}`;
       return;
     }
     if (pageError) {
-      timelineStatus.textContent = `分页加载失败：${pageError}`;
+      const message = document.createElement("span");
+      message.textContent = `资讯列表暂不可用：${pageError}`;
+      const retry = pageButton("重试", false, () => {
+        void loadPage(currentPage);
+      });
+      retry.setAttribute("aria-label", "重试加载资讯列表");
+      timelineStatus.append(message, " ", retry);
       return;
     }
-    const totalPages = resolveTotalPages(totalCount, pageSize);
-    timelineStatus.textContent =
-      totalPages > 0
-        ? `第 ${currentPage} / ${totalPages} 页 · 当前页 ${items.length} 篇${visibleCount !== items.length ? ` · 当前筛选命中 ${visibleCount} 篇` : ""}${totalCount ? ` · 总计 ${totalCount} 篇` : ""}`
-        : `当前页 ${items.length} 篇${visibleCount !== items.length ? ` · 当前筛选命中 ${visibleCount} 篇` : ""}`;
+    const paginationState = resolveNewsPagination(totalCount, currentPage, pageSize, pageHasMore);
+    if (paginationState.totalPages !== null && paginationState.totalPages > 0) {
+      timelineStatus.textContent = `第 ${currentPage} / ${paginationState.totalPages} 页 · 当前页 ${items.length} 篇${visibleCount !== items.length ? ` · 当前筛选命中 ${visibleCount} 篇` : ""} · 总计 ${totalCount} 篇`;
+      return;
+    }
+    if (totalCount === null) {
+      timelineStatus.textContent = `第 ${currentPage} 页 · 当前页 ${items.length} 篇${visibleCount !== items.length ? ` · 当前筛选命中 ${visibleCount} 篇` : ""}`;
+      return;
+    }
+    timelineStatus.textContent = "当前筛选暂无文章";
   }
 
 
@@ -400,6 +603,20 @@ async function renderFeed(root: HTMLElement): Promise<void> {
     current.className = "frontier-cal-current";
     current.textContent = `${selectedDateLabel()} · ${selectedDate === null ? totalCount ?? articleCount(indexLayerScoped()) : dateCount(selectedDate)} 篇`;
 
+    const calendarStatus = document.createElement("div");
+    calendarStatus.className = "frontier-timeline-status";
+    if (calendarLoading) {
+      calendarStatus.textContent = "正在加载可用日期…";
+    } else if (calendarError) {
+      const message = document.createElement("span");
+      message.textContent = `日期筛选暂不可用：${calendarError}`;
+      const retry = pageButton("重试", false, () => {
+        void loadCalendar();
+      });
+      retry.setAttribute("aria-label", "重试加载资讯日期筛选");
+      calendarStatus.append(message, " ", retry);
+    }
+
     const weekdays = document.createElement("div");
     weekdays.className = "frontier-cal-weekdays";
     for (const weekday of WEEKDAY_LABELS) {
@@ -450,7 +667,9 @@ async function renderFeed(root: HTMLElement): Promise<void> {
       void loadPage(1);
     });
 
-    calendar.append(head, current, weekdays, grid, all);
+    calendar.append(head, current);
+    if (calendarStatus.childNodes.length > 0) calendar.append(calendarStatus);
+    calendar.append(weekdays, grid, all);
   }
 
   function renderTimeline(): void {
@@ -459,7 +678,13 @@ async function renderFeed(root: HTMLElement): Promise<void> {
     if (rows.length === 0) {
       const empty = document.createElement("p");
       empty.className = "frontier-timeline-empty";
-      empty.textContent = "该筛选条件下当前页暂无文章，可切换页码或调整筛选条件。";
+      empty.textContent = waitingForInitialCalendar()
+        ? "正在确认最近有数据的日期…"
+        : loadingPage
+          ? "正在读取资讯…"
+        : pageError
+          ? "资讯列表暂不可用，可重试加载。"
+          : "该筛选条件下当前页暂无文章，可切换页码或调整筛选条件。";
       timeline.append(empty);
       return;
     }
@@ -507,6 +732,10 @@ async function renderFeed(root: HTMLElement): Promise<void> {
     return buildNewsFilters(selectedLayer, selectedDate);
   }
 
+  function waitingForInitialCalendar(): boolean {
+    return calendarLoading && !calendarError && !selectedDateWasExplicit && !hasStartedPageRequest;
+  }
+
   function replaceNewsListState(): void {
     const params = new URLSearchParams(window.location.search);
     params.set("layer", selectedLayer);
@@ -518,35 +747,44 @@ async function renderFeed(root: HTMLElement): Promise<void> {
 
   function renderPagination(): void {
     pagination.replaceChildren();
-    const totalPages = resolveTotalPages(totalCount, pageSize);
-    if (totalPages <= 1 && totalCount !== null && totalCount <= pageSize) return;
+    const paginationState = resolveNewsPagination(totalCount, currentPage, pageSize, pageHasMore);
+    if (!paginationState.showControls) return;
 
     const controls = document.createElement("div");
     controls.className = "frontier-pagination-controls";
 
-    const prev = pageButton("‹", currentPage <= 1, () => {
+    const prev = pageButton("‹", loadingPage || !paginationState.canGoPrevious, () => {
       void loadPage(currentPage - 1);
     });
     prev.setAttribute("aria-label", "上一页");
     controls.append(prev);
 
-    for (const token of buildPaginationTokens(totalPages, currentPage)) {
-      if (token === "...") {
-        const ellipsis = document.createElement("span");
-        ellipsis.className = "frontier-pagination-ellipsis";
-        ellipsis.textContent = "…";
-        controls.append(ellipsis);
-        continue;
-      }
+    if (paginationState.showPageNumbers && paginationState.totalPages !== null) {
+      for (const token of buildPaginationTokens(paginationState.totalPages, currentPage)) {
+        if (token === "...") {
+          const ellipsis = document.createElement("span");
+          ellipsis.className = "frontier-pagination-ellipsis";
+          ellipsis.textContent = "…";
+          controls.append(ellipsis);
+          continue;
+        }
 
-      const button = pageButton(String(token), token === currentPage, () => {
-        void loadPage(token);
-      });
-      if (token === currentPage) button.dataset.active = "true";
-      controls.append(button);
+        const button = pageButton(String(token), loadingPage || token === currentPage, () => {
+          void loadPage(token);
+        });
+        if (token === currentPage) button.dataset.active = "true";
+        controls.append(button);
+      }
+    } else {
+      // An unknown total has no safe numeric page range. Keep the current page
+      // visible but expose only the API-provided previous/next direction.
+      const current = document.createElement("span");
+      current.className = "frontier-pagination-ellipsis";
+      current.textContent = `第 ${currentPage} 页`;
+      controls.append(current);
     }
 
-    const next = pageButton("›", totalPages > 0 && currentPage >= totalPages, () => {
+    const next = pageButton("›", loadingPage || !paginationState.canGoNext, () => {
       void loadPage(currentPage + 1);
     });
     next.setAttribute("aria-label", "下一页");
@@ -578,36 +816,112 @@ async function renderFeed(root: HTMLElement): Promise<void> {
   }
 
   async function loadPage(targetPage: number): Promise<void> {
-    if (loadingPage) return;
-    const safeTargetPage = Math.max(1, targetPage);
+    const knownTotalCount = calendarTotalCount();
+    const knownTotalPages = resolveTotalPages(knownTotalCount, pageSize);
+    const safeTargetPage = knownTotalCount === null
+      ? Math.max(1, targetPage)
+      : knownTotalPages > 0
+        ? Math.min(Math.max(1, targetPage), knownTotalPages)
+        : 1;
+    hasStartedPageRequest = true;
+    const generation = ++loadGeneration;
+    pageRequest?.abort();
+    const request = createBoundedNewsRequest(lifecycleSignal);
+    pageRequest = request;
+    const requestedFilters = activeQueryFilters();
+    const requestedPageSize = pageSize;
+    currentPage = safeTargetPage;
     loadingPage = true;
     pageError = null;
-    renderStatus();
-    renderPagination();
+    // A filter/page switch must not leave cards from the previous query visible.
+    items = [];
+    totalCount = calendarTotalCount();
+    pageHasMore = false;
+    renderAll();
 
-    const generation = ++loadGeneration;
     try {
-      const page = await fetchNewsPage((safeTargetPage - 1) * pageSize, activeQueryFilters(), pageSize);
-      if (generation !== loadGeneration) return;
+      const page = await fetchNewsPage(
+        (safeTargetPage - 1) * requestedPageSize,
+        requestedFilters,
+        requestedPageSize,
+        request.fetchImpl,
+      );
+      if (generation !== loadGeneration || lifecycleSignal.aborted) return;
       currentPage = safeTargetPage;
       items = page.items;
-      totalCount = page.totalCount;
-      const totalPages = resolveTotalPages(totalCount, pageSize);
+      pageHasMore = page.hasMore;
+      totalCount = calendarTotalCount();
+      const totalPages = resolveTotalPages(totalCount, requestedPageSize);
       if (totalPages > 0 && currentPage > totalPages) {
-        currentPage = totalPages;
+        void loadPage(totalPages);
+        return;
       }
       renderAll();
       replaceNewsListState();
     } catch (error: unknown) {
-      if (generation !== loadGeneration) return;
-      pageError = error instanceof Error ? error.message : String(error);
-      renderStatus();
-      renderPagination();
+      if (generation !== loadGeneration || lifecycleSignal.aborted) return;
+      pageError = newsRequestFailureMessage(error, request);
+      renderAll();
     } finally {
-      if (generation === loadGeneration) {
+      request.dispose();
+      if (pageRequest === request) pageRequest = null;
+      if (generation === loadGeneration && !lifecycleSignal.aborted) {
         loadingPage = false;
-        renderStatus();
-        renderPagination();
+        renderAll();
+      }
+    }
+  }
+
+  async function loadCalendar(): Promise<void> {
+    const generation = ++calendarGeneration;
+    calendarRequest?.abort();
+    const request = createBoundedNewsRequest(lifecycleSignal);
+    calendarRequest = request;
+    calendarLoading = true;
+    calendarError = null;
+    renderAll();
+
+    try {
+      const calendarIndex = await fetchNewsFilterIndex(request.fetchImpl);
+      if (generation !== calendarGeneration || lifecycleSignal.aborted) return;
+
+      filterIndex = calendarIndex.items;
+      sourceCounts = calendarIndex.sourceCounts;
+      hasCalendarIndex = true;
+      const dateBeforeCalendar = selectedDate;
+      const pageBeforeCalendar = currentPage;
+      selectedDate = resolveInitialNewsDate(selectedDate, selectedDateWasExplicit, indexLayerScoped());
+      // A calendar response can also invalidate an explicit URL date for its selected layer.
+      // Compare after this correction so cards never retain the old date's response.
+      if (selectedDateWasExplicit) alignDateToLayer();
+      renderAll();
+      const shouldLoadAfterCalendar = shouldLoadNewsPageAfterCalendar(
+        dateBeforeCalendar,
+        selectedDate,
+        selectedDateWasExplicit,
+        indexLayerScoped(),
+        hasStartedPageRequest,
+      );
+      if (shouldLoadAfterCalendar) {
+        void loadPage(1);
+      } else if (currentPage !== pageBeforeCalendar) {
+        void loadPage(currentPage);
+      }
+    } catch (error: unknown) {
+      if (generation !== calendarGeneration || lifecycleSignal.aborted) return;
+      const shouldStartFallbackPage = shouldLoadNewsPageAfterCalendarFailure(
+        selectedDateWasExplicit,
+        hasStartedPageRequest,
+      );
+      calendarError = newsRequestFailureMessage(error, request);
+      renderAll();
+      if (shouldStartFallbackPage) void loadPage(1);
+    } finally {
+      request.dispose();
+      if (calendarRequest === request) calendarRequest = null;
+      if (generation === calendarGeneration && !lifecycleSignal.aborted) {
+        calendarLoading = false;
+        renderAll();
       }
     }
   }
@@ -619,28 +933,16 @@ async function renderFeed(root: HTMLElement): Promise<void> {
   root.append(overview, layout);
   restoreListDetailPosition(root);
 
-  // 日历只接收服务端按日期与体系层聚合后的分桶，不再把文章明细下载到浏览器。
-  const filterIndexPromise = fetchNewsFilterIndex();
   if (!selectedDateWasExplicit) {
     selectedDate = currentNewsDate();
   }
   calendarMonth = yearMonthOf(selectedDate) ?? calendarMonth;
-
-  const firstPagePromise = loadPage(currentPage);
-  const calendarIndex = await filterIndexPromise;
-  filterIndex = calendarIndex.items;
-  sourceCounts = calendarIndex.sourceCounts;
-  if (selectedDateWasExplicit) alignDateToLayer();
   renderAll();
-  await firstPagePromise;
-
-  if (items.length === 0) {
-    timeline.replaceChildren(
-      statusBlock("每日资讯暂无数据。先确认服务器 PostgreSQL 已写入 news_items，并配置同源 Content API。"),
-    );
-    timelineStatus.textContent = "";
-    pagination.replaceChildren();
-  }
+  // 日历只接收服务端按日期与体系层聚合后的分桶，不再把文章明细下载到浏览器。
+  void loadCalendar();
+  // An explicit URL date is independently actionable. Otherwise wait for the
+  // calendar to select the latest actual collection date before querying cards.
+  if (selectedDateWasExplicit) void loadPage(currentPage);
 }
 
 function readNewsListQueryState(search = typeof window === "undefined" ? "" : window.location.search): NewsListQueryState {
@@ -721,6 +1023,63 @@ export function buildNewsFilters(layer: LayerFilter, date: string | null): strin
   if (layer !== "all") filters.push(`ecosystem_layer=eq.${layer}`);
   if (date !== null) filters.push(`collected_date=eq.${date}`);
   return filters;
+}
+
+/**
+ * The first load starts with today's date so it can render immediately. Once
+ * the calendar index arrives, prefer the newest actual collection date instead
+ * of presenting a normal no-collection day as a backend failure.
+ */
+export function resolveInitialNewsDate(
+  selectedDate: string | null,
+  selectedDateWasExplicit: boolean,
+  index: readonly { collectedDate: string }[],
+): string | null {
+  if (selectedDateWasExplicit) return selectedDate;
+  return availableDates(index)[0] ?? selectedDate;
+}
+
+/**
+ * Calendar completion starts one implicit first page only when it found data.
+ * Explicit dates already start independently; they reload only after calendar
+ * correction changes their final date.
+ */
+export function shouldLoadNewsPageAfterCalendar(
+  dateBeforeCalendar: string | null,
+  dateAfterCalendar: string | null,
+  selectedDateWasExplicit: boolean,
+  index: readonly { collectedDate: string }[],
+  hasStartedPageRequest: boolean,
+): boolean {
+  if (selectedDateWasExplicit) return dateAfterCalendar !== dateBeforeCalendar;
+  return !hasStartedPageRequest && availableDates(index).length > 0;
+}
+
+/**
+ * A failed initial calendar must not strand the page in a loading state. The
+ * current date is still a valid list query; until calendar recovery, that
+ * request uses only the API's `hasMore` signal for directional pagination.
+ */
+export function shouldLoadNewsPageAfterCalendarFailure(
+  selectedDateWasExplicit: boolean,
+  hasStartedPageRequest: boolean,
+): boolean {
+  return !selectedDateWasExplicit && !hasStartedPageRequest;
+}
+
+function newsRequestFailureMessage(error: unknown, request: BoundedNewsRequest): string {
+  if (request.timedOut) return "请求超时（10 秒），请重试。";
+  if (isAbortError(error)) return "请求已取消，请重试。";
+
+  const message = error instanceof Error ? error.message : String(error);
+  if (/Content API HTTP 50[234]\b|content_backend_unavailable/i.test(message)) {
+    return "内容服务暂不可用，请稍后重试。";
+  }
+  return message || "请求失败，请重试。";
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException && error.name === "AbortError";
 }
 
 export function cleanNewsSummary(summary: string): string {

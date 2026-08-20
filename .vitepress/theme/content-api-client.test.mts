@@ -66,6 +66,38 @@ test("news calendar uses one fixed same-origin endpoint and validates aggregate 
   assert.equal(new URL(requestedUrl, "https://site.example").pathname, "/api/content/v1/news/calendar");
 });
 
+test("Content API forwards request cancellation to calendar and compatibility reads", async () => {
+  const runtimeConfig: ContentApiRuntimeConfig = {
+    version: 1,
+    contentApi: { baseUrl: "/api/content/v1" },
+  };
+  const controller = new AbortController();
+  const calls: RequestInit[] = [];
+  let callIndex = 0;
+  const client = new ContentApiClient(runtimeConfig, {
+    fetchImpl: async (_input, init) => {
+      calls.push(init ?? {});
+      if (callIndex++ === 0) {
+        return response({
+          buckets: [{ date: "2026-07-30", ecosystemLayer: "model-platform", articleCount: 20 }],
+          sourceCounts: [{ ecosystemLayer: "all", sourceCount: 8 }],
+        });
+      }
+      return response({ items: [{ external_id: "mapped" }], totalCount: 1, hasMore: false });
+    },
+  });
+
+  await client.fetchNewsCalendar({ signal: controller.signal });
+  await client.fetchPostgrestPage({
+    table: "news_items",
+    select: "external_id",
+    signal: controller.signal,
+  });
+
+  assert.equal(calls[0]?.signal, controller.signal);
+  assert.equal(calls[1]?.signal, controller.signal);
+});
+
 test("ContentApiClient binds the browser global fetch to its native receiver", async () => {
   const originalFetch = Object.getOwnPropertyDescriptor(globalThis, "fetch");
   let receiver: unknown;

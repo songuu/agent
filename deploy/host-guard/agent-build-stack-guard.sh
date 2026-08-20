@@ -7,6 +7,13 @@ set -euo pipefail
 readonly PM2_BIN="${PM2_BIN:-/usr/lib/node_modules/pm2/bin/pm2}"
 readonly RETRIES="${AGENT_BUILD_GUARD_RETRIES:-12}"
 readonly RETRY_DELAY_SECONDS="${AGENT_BUILD_GUARD_RETRY_DELAY_SECONDS:-1}"
+# A single local curl timeout is not proof that an otherwise-online process is
+# broken: under host-wide I/O or memory pressure every sibling probe can miss
+# one deadline. Require several consecutive liveness failures before killing a
+# PM2 process, because a restart discards warm database connections as well.
+readonly PROBE_FAILURE_THRESHOLD="${AGENT_BUILD_GUARD_PROBE_FAILURE_THRESHOLD:-3}"
+readonly PROBE_RETRY_DELAY_SECONDS="${AGENT_BUILD_GUARD_PROBE_RETRY_DELAY_SECONDS:-2}"
+readonly CONTENT_API_PROBE_MAX_TIME="${AGENT_BUILD_CONTENT_API_PROBE_MAX_TIME:-20}"
 readonly REQUIRED_PM2_APPS=(
   agent-build-runner
   agent-build-content-api
@@ -74,12 +81,24 @@ ensure_probe() {
   local app="$1"
   local label="$2"
   shift 2
-  if "$@"; then
-    return 0
-  fi
-  log "probe failed (${label}); restarting PM2 app: ${app}"
+  local attempt
+  for ((attempt = 1; attempt <= PROBE_FAILURE_THRESHOLD; attempt += 1)); do
+    if "$@"; then
+      return 0
+    fi
+    if (( attempt < PROBE_FAILURE_THRESHOLD )); then
+      log "probe failed (${label}; ${attempt}/${PROBE_FAILURE_THRESHOLD}); retrying before restart"
+      sleep "$PROBE_RETRY_DELAY_SECONDS"
+    fi
+  done
+  log "probe failed ${PROBE_FAILURE_THRESHOLD} consecutive times (${label}); restarting PM2 app: ${app}"
   "$PM2_BIN" restart "$app"
   wait_for "$label" "$@"
+}
+
+probe_content_api_liveness() {
+  curl --fail --silent --show-error --output /dev/null --max-time "$CONTENT_API_PROBE_MAX_TIME" \
+    -H 'Host: songuu.top' http://127.0.0.1:5180/healthz
 }
 
 probe_dm_api_connection() {
@@ -105,9 +124,9 @@ main() {
     curl --fail --silent --show-error --output /dev/null --max-time 5 \
       -H 'Host: songuu.top' -H 'X-Demo-Runner: 1' \
       http://127.0.0.1:5174/api/health
-  ensure_probe agent-build-content-api content-api-health \
-    curl --fail --silent --show-error --output /dev/null --max-time 5 \
-      -H 'Host: songuu.top' http://127.0.0.1:5180/healthz
+  # `/healthz` is deliberately liveness-only. Database readability is observed
+  # separately and must never turn a transient slow query into a restart loop.
+  ensure_probe agent-build-content-api content-api-health probe_content_api_liveness
   ensure_probe aicrew-studio aicrew-http \
     curl --fail --silent --show-error --output /dev/null --max-time 5 http://127.0.0.1:3101/aicrew/
   ensure_probe dm-web deploy-management-web \

@@ -1,14 +1,22 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { adaptPostgrestReadRequest, buildContentApiPageUrl } from "./content-api-client";
 import {
   buildNewsDetailParagraphs,
   buildNewsFilters,
+  buildNewsPageRequest,
   buildPaginationTokens,
   buildReadableNewsSummary,
   cleanNewsSummary,
+  createBoundedNewsRequest,
   currentNewsDate,
+  inferNewsListTotalCount,
   normalizeNewsDate,
   preferTranslatedNewsText,
+  resolveInitialNewsDate,
+  resolveNewsPagination,
+  shouldLoadNewsPageAfterCalendar,
+  shouldLoadNewsPageAfterCalendarFailure,
 } from "./daily-news-feed";
 
 test("buildPaginationTokens returns compact leading window", () => {
@@ -32,6 +40,112 @@ test("buildNewsFilters uses collected_date so every article captured that day re
 
 test("buildNewsFilters omits inactive filters", () => {
   assert.deepEqual(buildNewsFilters("all", null), []);
+});
+
+test("news list requests use count none so cards do not trigger a server COUNT", () => {
+  const request = buildNewsPageRequest(20, buildNewsFilters("runtime", "2026-08-18"), 10);
+  assert.equal(request.count, "none");
+
+  const url = buildContentApiPageUrl(
+    { baseUrl: "/api/content/v1" },
+    adaptPostgrestReadRequest(request),
+  );
+  assert.equal(new URL(url, "https://example.test").searchParams.get("count"), "none");
+});
+
+test("calendar buckets derive the total for the current date and layer filters", () => {
+  const index = [
+    { collectedDate: "2026-08-18", ecosystemLayer: "runtime" as const, articleCount: 3 },
+    { collectedDate: "2026-08-18", ecosystemLayer: "foundation" as const, articleCount: 4 },
+    { collectedDate: "2026-08-17", ecosystemLayer: "runtime" as const, articleCount: 5 },
+  ];
+
+  assert.equal(inferNewsListTotalCount(index, "runtime", "2026-08-18"), 3);
+  assert.equal(inferNewsListTotalCount(index, "all", "2026-08-18"), 7);
+  assert.equal(inferNewsListTotalCount(index, "runtime", null), 8);
+});
+
+test("hasMore fallback exposes only directional pagination while calendar is unavailable", () => {
+  assert.deepEqual(resolveNewsPagination(null, 2, 10, true), {
+    totalPages: null,
+    showControls: true,
+    showPageNumbers: false,
+    canGoPrevious: true,
+    canGoNext: true,
+  });
+  assert.deepEqual(resolveNewsPagination(null, 1, 10, false), {
+    totalPages: null,
+    showControls: false,
+    showPageNumbers: false,
+    canGoPrevious: false,
+    canGoNext: false,
+  });
+});
+
+test("a failed initial calendar still starts the current-date list fallback", () => {
+  assert.equal(shouldLoadNewsPageAfterCalendarFailure(false, false), true);
+  assert.equal(shouldLoadNewsPageAfterCalendarFailure(true, false), false);
+  assert.equal(shouldLoadNewsPageAfterCalendarFailure(false, true), false);
+});
+
+test("initial news date moves from an empty current day to the latest calendar bucket", () => {
+  const index = [
+    { collectedDate: "2026-08-16" },
+    { collectedDate: "2026-08-17" },
+    { collectedDate: "2026-08-17" },
+  ];
+  assert.equal(resolveInitialNewsDate("2026-08-18", false, index), "2026-08-17");
+  assert.equal(resolveInitialNewsDate("2026-08-18", true, index), "2026-08-18");
+  assert.equal(resolveInitialNewsDate("2026-08-18", false, []), "2026-08-18");
+});
+
+test("calendar starts an implicit list only after finding data and reloads a corrected explicit date", () => {
+  const index = [{ collectedDate: "2026-08-17" }];
+  assert.equal(shouldLoadNewsPageAfterCalendar("2026-08-18", "2026-08-17", false, index, false), true);
+  assert.equal(shouldLoadNewsPageAfterCalendar("2026-08-18", "2026-08-18", false, [], false), false);
+  assert.equal(shouldLoadNewsPageAfterCalendar("2026-08-18", "2026-08-17", true, index, true), true);
+  assert.equal(shouldLoadNewsPageAfterCalendar("2026-08-18", "2026-08-18", true, index, true), false);
+});
+
+test("bounded news requests abort at their deadline and expose timeout state", async () => {
+  const request = createBoundedNewsRequest(
+    undefined,
+    async (_input, init) =>
+      new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener(
+          "abort",
+          () => reject(new DOMException("aborted", "AbortError")),
+          { once: true },
+        );
+      }),
+    10,
+  );
+
+  await assert.rejects(() => request.fetchImpl("https://content.test/news"), { name: "AbortError" });
+  assert.equal(request.timedOut, true);
+  request.dispose();
+});
+
+test("bounded news requests cancel when their view lifecycle is aborted", async () => {
+  const lifecycle = new AbortController();
+  const request = createBoundedNewsRequest(
+    lifecycle.signal,
+    async (_input, init) =>
+      new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener(
+          "abort",
+          () => reject(new DOMException("aborted", "AbortError")),
+          { once: true },
+        );
+      }),
+    1_000,
+  );
+
+  const pending = request.fetchImpl("https://content.test/news");
+  lifecycle.abort();
+  await assert.rejects(() => pending, { name: "AbortError" });
+  assert.equal(request.timedOut, false);
+  request.dispose();
 });
 
 test("normalizeNewsDate preserves date-only values and converts UTC timestamps to China dates", () => {

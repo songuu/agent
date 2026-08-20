@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import http from "node:http";
 import test from "node:test";
 
-import type { ContentReadRepository, ContentReadRequest } from "./contract.ts";
-import { createContentApiServer } from "./server.ts";
+import type { ContentPage, ContentReadRepository, ContentReadRequest } from "./contract.ts";
+import { createContentApiServer, createNewsCalendarCache, createNewsResponseCache } from "./server.ts";
 
 const allowedHosts = ["content.test"];
 const allowedOrigins = ["https://site.test"];
@@ -57,6 +57,7 @@ test("serves a validated public content page without database details", async ()
   await withServer(successfulRepository, async (port, seen) => {
     const result = await request(port, "/api/content/v1/news?fields=external_id,title&filter=external_id:eq:one");
     assert.equal(result.status, 200);
+    assert.equal(result.headers["cache-control"], "no-store");
     assert.deepEqual(result.json, { items: [{ external_id: "one", title: "One" }], totalCount: 1, hasMore: false });
     assert.deepEqual(seen, [
       {
@@ -90,6 +91,151 @@ test("serves compact server-aggregated news calendar buckets", async () => {
     assert.equal(invalid.json.error, "unknown_parameter");
   });
 });
+
+test("calendar cache coalesces concurrent cold reads and serves the last good value while refreshing", async () => {
+  let now = 0;
+  let calls = 0;
+  let releaseFirst: ((value: Awaited<ReturnType<ContentReadRepository["readNewsCalendar"]>>) => void) | undefined;
+  let markFirstStarted: (() => void) | undefined;
+  const started = new Promise<void>((resolve) => { markFirstStarted = resolve; });
+  const first = new Promise<Awaited<ReturnType<ContentReadRepository["readNewsCalendar"]>>>((resolve) => {
+    releaseFirst = resolve;
+  });
+  const summary = await successfulRepository.readNewsCalendar();
+  const cache = createNewsCalendarCache(
+    {
+      async readNewsCalendar() {
+        calls += 1;
+        if (calls === 1) {
+          markFirstStarted?.();
+          return first;
+        }
+        return { ...summary, buckets: [] };
+      },
+    },
+    { ttlMs: 100, now: () => now },
+  );
+
+  const firstRead = cache.read();
+  await started;
+  const secondRead = cache.read();
+  assert.equal(calls, 1);
+  releaseFirst?.(summary);
+  assert.deepEqual(await firstRead, summary);
+  assert.deepEqual(await secondRead, summary);
+
+  now = 101;
+  assert.deepEqual(await cache.read(), summary);
+  assert.equal(calls, 2);
+});
+
+const newsResponseRequest: ContentReadRequest = {
+  resource: "news",
+  fields: ["external_id"],
+  filters: [],
+  sort: [],
+  limit: 10,
+  offset: 0,
+  includeTotal: true,
+};
+const newsResponseCacheKey = "/api/content/v1/news?fields=external_id&limit=10";
+
+test("news response cache coalesces cold reads, hits, and refreshes stale successes", async () => {
+  let now = 0;
+  let calls = 0;
+  let markFirstStarted: (() => void) | undefined;
+  let markRefreshStarted: (() => void) | undefined;
+  let releaseFirst: ((value: ContentPage) => void) | undefined;
+  let releaseRefresh: ((value: ContentPage) => void) | undefined;
+  const firstStarted = new Promise<void>((resolve) => { markFirstStarted = resolve; });
+  const refreshStarted = new Promise<void>((resolve) => { markRefreshStarted = resolve; });
+  const first = new Promise<ContentPage>((resolve) => { releaseFirst = resolve; });
+  const refreshed = new Promise<ContentPage>((resolve) => { releaseRefresh = resolve; });
+  const firstPage = { items: [{ external_id: "first" }], totalCount: 1, hasMore: false };
+  const refreshedPage = { items: [{ external_id: "refreshed" }], totalCount: 1, hasMore: false };
+  const cache = createNewsResponseCache(
+    {
+      async read() {
+        calls += 1;
+        if (calls === 1) {
+          markFirstStarted?.();
+          return first;
+        }
+        markRefreshStarted?.();
+        return refreshed;
+      },
+    },
+    { ttlMs: 100, maxEntries: 2, now: () => now },
+  );
+
+  const firstRead = cache.read(newsResponseCacheKey, newsResponseRequest);
+  await firstStarted;
+  const sameColdRead = cache.read(newsResponseCacheKey, newsResponseRequest);
+  assert.equal(calls, 1);
+  releaseFirst?.(firstPage);
+  assert.deepEqual(await firstRead, firstPage);
+  assert.deepEqual(await sameColdRead, firstPage);
+
+  now = 99;
+  assert.deepEqual(await cache.read(newsResponseCacheKey, newsResponseRequest), firstPage);
+  assert.equal(calls, 1);
+
+  now = 101;
+  assert.deepEqual(await cache.read(newsResponseCacheKey, newsResponseRequest), firstPage);
+  await refreshStarted;
+  assert.equal(calls, 2);
+  releaseRefresh?.(refreshedPage);
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  assert.deepEqual(await cache.read(newsResponseCacheKey, newsResponseRequest), refreshedPage);
+  assert.equal(calls, 2);
+});
+
+test("news response cache retains the last success when a stale refresh fails", async () => {
+  let now = 0;
+  let calls = 0;
+  const errors: unknown[] = [];
+  const cachedPage = { items: [{ external_id: "cached" }], totalCount: 1, hasMore: false };
+  const cache = createNewsResponseCache(
+    {
+      async read() {
+        calls += 1;
+        if (calls === 1) return cachedPage;
+        throw new Error("temporary database error");
+      },
+    },
+    { ttlMs: 100, now: () => now, onError: (error) => errors.push(error) },
+  );
+
+  assert.deepEqual(await cache.read(newsResponseCacheKey, newsResponseRequest), cachedPage);
+  now = 101;
+  assert.deepEqual(await cache.read(newsResponseCacheKey, newsResponseRequest), cachedPage);
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  assert.equal(calls, 2);
+  assert.equal(errors.length, 1);
+
+  assert.deepEqual(await cache.read(newsResponseCacheKey, newsResponseRequest), cachedPage);
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  assert.equal(calls, 3);
+});
+
+test("news response cache bounds retained query keys", async () => {
+  let calls = 0;
+  const cache = createNewsResponseCache(
+    {
+      async read() {
+        calls += 1;
+        return { items: [{ external_id: String(calls) }], totalCount: 1, hasMore: false };
+      },
+    },
+    { maxEntries: 1 },
+  );
+
+  await cache.read("/api/content/v1/news?fields=external_id&limit=1", newsResponseRequest);
+  await cache.read("/api/content/v1/news?fields=external_id&limit=2", newsResponseRequest);
+  await cache.read("/api/content/v1/news?fields=external_id&limit=1", newsResponseRequest);
+  assert.equal(calls, 3);
+});
+
 test("rejects unsupported methods before reaching the repository", async () => {
   await withServer(successfulRepository, async (port, seen) => {
     const result = await request(port, "/api/content/v1/news?fields=external_id", { method: "POST" });

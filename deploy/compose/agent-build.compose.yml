@@ -33,8 +33,9 @@ services:
     expose:
       - "5174"
 
-  # Read-only data boundary for the static site. It remains healthy while disabled
-  # so legacy Supabase-only deployments do not need a special Compose profile.
+  # Read-only data boundary for the static site. The browser has no Supabase
+  # fallback after the Content API cutover, so the service must fail through
+  # backend health instead of starting in a disabled-but-healthy mode.
   agent-build-content-api:
     image: ${AGENT_BUILD_RUNTIME_IMAGE}
     container_name: agent-build-content-api
@@ -49,6 +50,7 @@ services:
       CONTENT_API_ALLOWED_HOSTS: ${AGENT_BUILD_DOMAIN:-songuu.top}
       CONTENT_API_ALLOWED_ORIGINS: ${AGENT_BUILD_ALLOWED_ORIGINS:-https://songuu.top}
       CONTENT_API_ALLOW_MISSING_ORIGIN: "1"
+      CONTENT_API_ENABLED: "1"
     expose:
       - "5180"
   news-collector:

@@ -1,6 +1,6 @@
-# Supabase assets
+# Historical SQL assets
 
-This folder stores Supabase-ready SQL for the Agent course site.
+This folder stores historical Supabase-compatible SQL assets for the Agent course site. Current scheduled content syncs write only to the PostgreSQL content writer through `content:*` scripts.
 
 迁移 Supabase 地址时，请使用 [MIGRATION.md](./MIGRATION.md)：它覆盖本仓库拥有的内容表、Notion Storage、运行时公开配置、校验与回滚边界。
 
@@ -13,14 +13,14 @@ This folder stores Supabase-ready SQL for the Agent course site.
 - Calendar/list filter field: `collected_date`, so newly collected content is visible in its collection batch; `published_date` remains original publication context.
 - Demo rows: 8 articles (published_date: 2026-06-15 = 2, 2026-06-16 = 6).
 
-Apply order:
+Historical apply order:
 
 ```bash
 supabase db push
 pnpm supabase:news-seed
 ```
 
-Then run the generated `supabase/seed/news_items.sql` in the Supabase SQL editor or through your database connection.
+Then run the generated `supabase/seed/news_items.sql` in the Supabase SQL editor or through your database connection. Do not use this as the daily writer path; daily sync uses `pnpm news:collect` / `npm run content:agent-sync` and PostgreSQL readback.
 
 Windows note:
 
@@ -43,19 +43,14 @@ Windows note:
 - Companion human-readable list: `docs/career-guide.md` section 4; per-question standard answers live in each chapter README's `💡 面试会问`.
 - Rows: 30 questions (9 principle / 13 engineering / 8 project).
 
-Apply order:
+Historical apply order:
 
 ```bash
 supabase db push
-node node_modules/tsx/dist/cli.mjs scripts/generate-interview-questions-supabase-seed.ts
+npm run content:interview-seed
 ```
 
-Then run the generated `supabase/seed/interview_questions.sql` in the Supabase SQL editor or through your database connection.
-
-Windows note:
-
-- If `npx tsx --env-file=.env scripts/push-interview-questions-to-supabase.ts` hits `spawn EPERM`, use:
-  `node --env-file=.env --experimental-transform-types scripts/push-interview-questions-to-supabase.ts`
+Then run the generated `supabase/seed/interview_questions.sql` in the Supabase SQL editor or through your database connection. Current daily sync does not run any `push-*-to-supabase` command.
 
 ## Glossary terms
 
