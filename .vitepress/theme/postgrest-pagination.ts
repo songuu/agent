@@ -8,8 +8,9 @@ export interface PostgrestPagedReadOptions {
   config: PostgrestReadConfig;
   table: string;
   select: string;
-  filters?: string[];
-  order?: string[];
+  // Query builders only consume these arrays. Accept immutable callers too.
+  filters?: readonly string[];
+  order?: readonly string[];
   pageSize?: number;
   maxPages?: number;
   count?: "exact" | "planned" | "estimated" | "none";
