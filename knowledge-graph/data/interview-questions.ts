@@ -39,8 +39,8 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   project: "项目深挖类",
 };
 
-const COLLECTED_DATE = "2026-08-20";
-const COLLECTED_AT = `${COLLECTED_DATE}T15:06:00+08:00`;
+const COLLECTED_DATE = "2026-08-25";
+const COLLECTED_AT = `${COLLECTED_DATE}T08:45:00+08:00`;
 
 interface RawInterviewQuestion {
   slug: string;
@@ -2402,6 +2402,372 @@ const RAW_QUESTIONS: RawInterviewQuestion[] = [
     rationale:
       "本题来自 ICML 2026 position paper：agent 会与动态环境互动并随时间适应，评测应覆盖行为过程、决策策略和多 agent emergent dynamics。",
   },
+  {
+    slug: "codex-agents-dashboard-queue-permission-recovery",
+    category: "engineering",
+    question:
+      "Codex 0.149.0 增加 agents dashboard、queue 和 doctor，同时修复 fork/resume 后 permission profile 恢复，这说明 coding agent 的任务调度和权限恢复为什么要一起验收？",
+    relatedChapters: ["11", "12", "14", "16", "17", "18", "19"],
+    sourceTitles: ["OpenAI Codex 0.149.0 release notes"],
+    sourceUrls: ["https://github.com/openai/codex/releases/tag/rust-v0.149.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 Codex 0.149.0：同一 release 覆盖 task dashboard、queue、doctor、permission profile restore、sub-agent approvals 和 WebRTC reconnect，适合追问 coding agent 控制面验收。",
+  },
+  {
+    slug: "claude-code-plugin-headers-runner-lifecycle-memory",
+    category: "engineering",
+    question:
+      "Claude Code v2.1.238 的 plugin headersHelper、自托管 runner 延迟关闭、proxy authorization refresh 和 subagent tool result 释放为什么属于同一条生产治理链？",
+    relatedChapters: ["11", "12", "14", "16", "17", "18", "19"],
+    sourceTitles: ["Claude Code v2.1.238 release notes"],
+    sourceUrls: ["https://github.com/anthropics/claude-code/releases/tag/v2.1.238"],
+    confidence: "high",
+    rationale:
+      "本题来自 Claude Code v2.1.238：插件安装认证、自托管 runner 生命周期、代理认证、长会话内存释放和 MCP/permission prompt 修复一起暴露生产 coding agent 的权限与运行边界。",
+  },
+  {
+    slug: "workflowagent-resume-ui-chunk-indexes",
+    category: "engineering",
+    question:
+      "Vercel AI SDK WorkflowAgent 恢复 transformed streams 时为什么要用 UI message chunk indexes？如果只恢复 server state，会漏掉哪些前端投影和回放错误？",
+    relatedChapters: ["12", "14", "15", "16", "18", "19"],
+    sourceTitles: ["Vercel AI SDK Workflow 2.0.1 release notes"],
+    sourceUrls: ["https://github.com/vercel/ai/releases/tag/%40ai-sdk/workflow%402.0.1"],
+    confidence: "high",
+    rationale:
+      "本题来自 AI SDK Workflow 2.0.1：resume transformed WorkflowAgent streams using UI message chunk indexes，适合追问 stream resume、UI projection 和回放一致性。",
+  },
+  {
+    slug: "agentcore-dogwood-policy-natural-language-governance",
+    category: "engineering",
+    question:
+      "AgentCore 用自然语言 author Dogwood policies 时，为什么不能把生成 policy 当成普通提示词输出？time-based constraints、版本、测试和拒绝路径要怎样治理？",
+    relatedChapters: ["05", "15", "17", "18", "19"],
+    sourceTitles: ["Authoring Dogwood policies from natural language in Amazon Bedrock AgentCore"],
+    sourceUrls: [
+      "https://aws.amazon.com/blogs/machine-learning/authoring-dogwood-policies-from-natural-language-in-amazon-bedrock-agentcore/",
+    ],
+    confidence: "high",
+    rationale:
+      "本题来自 AWS AgentCore Policy 博文：自然语言生成可执行 policy 会影响真实 agent action authorization，适合考权限策略、测试和 fail-closed。",
+  },
+  {
+    slug: "enterprise-agentic-ai-vendor-lockin-abstraction",
+    category: "engineering",
+    question:
+      "企业规模化 agentic AI 时，为什么避免 vendor lock-in 不是口号，而要落实到模型、工具协议、数据平面、观测和部署抽象？",
+    relatedChapters: ["11", "12", "16", "18", "19"],
+    sourceTitles: ["Scaling agentic AI: Enterprise patterns without vendor lock-in"],
+    sourceUrls: [
+      "https://aws.amazon.com/blogs/machine-learning/scaling-agentic-ai-enterprise-patterns-without-vendor-lock-in/",
+    ],
+    confidence: "high",
+    rationale:
+      "本题来自 AWS 企业 agentic AI pattern 博文：规模化多 agent 需要跨模型、工具、runtime 和部署环境的可替换性，适合追问架构抽象边界。",
+  },
+  {
+    slug: "agentic-cloud-migration-multi-agent-workflow",
+    category: "engineering",
+    question:
+      "云迁移场景为什么适合拆成 discovery、infrastructure assessment、migration planning 等专门 agent？这种 multi-agent workflow 的验收边界在哪里？",
+    relatedChapters: ["11", "12", "15", "16", "18", "19"],
+    sourceTitles: ["Scaling cloud migrations with agentic AI on Amazon Bedrock AgentCore"],
+    sourceUrls: [
+      "https://aws.amazon.com/blogs/machine-learning/scaling-cloud-migrations-with-agentic-ai-on-amazon-bedrock-agentcore/",
+    ],
+    confidence: "high",
+    rationale:
+      "本题来自 AWS Professional Services 的 AgentCore 迁移实践：把迁移流程拆成专门 agent，适合考任务分解、审计记录和人工验收。",
+  },
+  {
+    slug: "vector-search-where-data-lives-agentic-rag",
+    category: "engineering",
+    question:
+      "Agentic RAG 为什么不一定要先迁到独立向量数据库？把 vector search 放在 Aurora、DynamoDB、OpenSearch、S3 等数据所在地时，要怎样权衡权限、延迟、召回和运维？",
+    relatedChapters: ["08", "09", "15", "18", "19", "rag-hybrid", "rag-prod"],
+    sourceTitles: ["AWS vector solutions: Build agentic AI where your data lives"],
+    sourceUrls: [
+      "https://aws.amazon.com/blogs/machine-learning/aws-vector-solutions-build-agentic-ai-where-your-data-lives/",
+    ],
+    confidence: "high",
+    rationale:
+      "本题来自 AWS vector solutions 博文：强调在已有数据库和存储中构建 agentic AI 数据层，适合考生产 RAG 架构选型。",
+  },
+  {
+    slug: "adversarial-review-structured-disagreement-code-agent",
+    category: "engineering",
+    question:
+      "Adversarial Review 为什么说多 agent code review 的关键不是 agent 数量，而是 structured disagreement？false-consensus failure mode 要怎样被发现和压住？",
+    relatedChapters: ["11", "15", "16", "19"],
+    sourceTitles: ["Adversarial Review: Structured Disagreement for Grounded Agentic Code Review"],
+    sourceUrls: ["https://arxiv.org/abs/2608.18167"],
+    confidence: "medium",
+    rationale:
+      "本题来自 arXiv 2608.18167：三 agent 的 reviewer/critic 协议优于更大 baseline，并显式讨论 false consensus，适合考多 agent 评审可靠性。",
+  },
+  {
+    slug: "looped-language-models-compositional-tool-calling",
+    category: "engineering",
+    question:
+      "Looped language models 为什么可能提升 compositional tool calling？recurrent depth、adaptive inference 和外部 orchestrator 的边界应该怎样理解？",
+    relatedChapters: ["05", "10", "12", "15", "19"],
+    sourceTitles: ["Looped Language Models Improve Compositional Tool Calling"],
+    sourceUrls: ["https://arxiv.org/abs/2608.18171"],
+    confidence: "medium",
+    rationale:
+      "本题来自 arXiv 2608.18171：在 API-Bank、BFCL、NESTful 中比较 looped/non-looped 模型，适合追问模型内循环和工具编排的边界。",
+  },
+  {
+    slug: "componentbench-computer-use-agent-observation-action-space",
+    category: "engineering",
+    question:
+      "ComponentBench 为什么要在 UI component 层诊断 computer-use agent？observation/action space 改变同一模型成功率时，说明了什么评测陷阱？",
+    relatedChapters: ["14", "15", "17", "19"],
+    sourceTitles: ["ComponentBench: Diagnosing Component-Level Failures in Computer-Use Agents"],
+    sourceUrls: ["https://arxiv.org/abs/2608.18307"],
+    confidence: "medium",
+    rationale:
+      "本题来自 arXiv 2608.18307：97 类组件、2910 个任务和人类轨迹基线显示 observation/action space 会显著改变结果，适合考 browser/computer-use agent eval。",
+  },
+  {
+    slug: "slack-code-agent-team-channel-audit",
+    category: "engineering",
+    question:
+      "Slack Code 为什么把 coding agent 任务放到团队 channel，而不是继续放在个人 IDE/CLI 标签页？这种 code channel 要验收哪些协作、审批和审计能力？",
+    relatedChapters: ["11", "14", "16", "17", "18", "19"],
+    sourceTitles: ["Slack Code: Where Your Team and Agents Build Together"],
+    sourceUrls: ["https://slack.com/blog/news/slack-code-channels-for-agents"],
+    confidence: "high",
+    rationale:
+      "本题来自 Slack Code 官方发布：code channel 承载 agent plan、diff、preview、反馈、审批和归档记录，适合追问团队级 coding agent 控制面。",
+  },
+  {
+    slug: "ai-native-sdlc-artifact-chain",
+    category: "engineering",
+    question:
+      "AI-Native SDLC 为什么要求 intent、spec、plan、diff、review findings 和 incident record 形成 artifact chain？这和单纯让 agent 多写代码有什么区别？",
+    relatedChapters: ["12", "15", "16", "17", "18", "19"],
+    sourceTitles: ["The AI-Native SDLC playbook"],
+    sourceUrls: ["https://claude.com/blog/the-ai-native-sdlc-playbook"],
+    confidence: "high",
+    rationale:
+      "本题来自 Anthropic AI-Native SDLC playbook：agentic coding 的瓶颈转向计划、评审、部署、维护和可审计交付物。",
+  },
+  {
+    slug: "claude-code-cloud-session-mcp-otel-cost-governance",
+    category: "engineering",
+    question:
+      "Claude Code v2.1.239 同时修复 cloud session 恢复、MCP reconnect、OTel trace fragmentation、proxy/SSO 和成本估算，这说明生产 coding agent 的验收要覆盖哪些非模型能力？",
+    relatedChapters: ["11", "12", "14", "16", "17", "18", "19"],
+    sourceTitles: ["Claude Code v2.1.239 release notes"],
+    sourceUrls: ["https://github.com/anthropics/claude-code/releases/tag/v2.1.239"],
+    confidence: "high",
+    rationale:
+      "本题来自 Claude Code 2026-08-21 release：云会话、MCP、OTel、代理认证、插件同步和成本估算一起构成 coding agent 的生产运行合同。",
+  },
+  {
+    slug: "kiro-continuous-prompt-eval-live-signals",
+    category: "engineering",
+    question:
+      "Kiro 的 continuous prompt evaluation 为什么要结合 LLM judge、真实会话 live signal、cohort A/B 和模型升级复验？只跑离线 benchmark 会漏掉什么？",
+    relatedChapters: ["03", "15", "16", "17", "19"],
+    sourceTitles: [
+      "Continuous Prompt Evaluation: How We Use LLM Judges and Live Signals to Improve Kiro Agent Quality",
+    ],
+    sourceUrls: ["https://kiro.dev/blog/continuous-prompt-evaluation/"],
+    confidence: "high",
+    rationale:
+      "本题来自 Kiro 官方 prompt 评估实践：15 类行为问题、Diagnose/Design/Test/Evaluate 流程和 cohort 结果适合考 prompt release gate。",
+  },
+  {
+    slug: "kiro-incident-triage-readonly-tools-knowledge-flywheel",
+    category: "engineering",
+    question:
+      "生产 incident triage agent 为什么应先从 read-heavy、证据链接、只读权限和人工 gate 做起？Kiro 的 skill/correction/archive flywheel 解决了什么长期问题？",
+    relatedChapters: ["06", "11", "15", "16", "17", "18", "19"],
+    sourceTitles: ["How We Learned to Trust an AI Agent to Triage Production Incidents"],
+    sourceUrls: ["https://kiro.dev/blog/trust-agent-triage/"],
+    confidence: "high",
+    rationale:
+      "本题来自 Kiro incident triage 实践：96.9% tool calls 为读操作，写操作走 gate，事故知识沉淀为 corrections、archives 和 skills。",
+  },
+  {
+    slug: "nvidia-avo-harness-vs-model-benchmark",
+    category: "engineering",
+    question:
+      "NVIDIA AVO 在 ARC-AGI-3 和 GPU kernel optimization 中强调 persistent memory、tools、feedback 和 recovery，这为什么说明 agent benchmark 不能把模型分数和 harness 分数混在一起？",
+    relatedChapters: ["10", "11", "12", "15", "16", "19"],
+    sourceTitles: ["NVIDIA AVO Reaches 100% on ARC-AGI-3"],
+    sourceUrls: [
+      "https://developer.nvidia.com/blog/nvidia-avo-reaches-100-on-arc-agi-3-demonstrating-a-frontier-level-general-purpose-architecture-for-long-horizon-autonomous-agents/",
+    ],
+    confidence: "high",
+    rationale:
+      "本题来自 NVIDIA AVO：长周期 agent 成绩来自模型、persistent memory、supervision、tooling、feedback 和 recovery 的系统组合。",
+  },
+  {
+    slug: "agent-stack-security-authoritative-policy-runtime",
+    category: "engineering",
+    question:
+      "为什么 prompt、model safeguard 和 harness logic 不能当作生产 agent 的硬安全边界？authoritative policy、secure runtime、JIT access 和不可变审计各自兜什么风险？",
+    relatedChapters: ["05", "11", "16", "17", "18", "19"],
+    sourceTitles: ["Where Security Fits in an AI Agent Stack"],
+    sourceUrls: ["https://developer.nvidia.com/blog/where-security-fits-in-an-ai-agent-stack/"],
+    confidence: "high",
+    rationale:
+      "本题来自 NVIDIA agent security stack：行为控制和基础设施控制要分层，真正影响外部系统的权限应由 runtime/infrastructure authoritative policy 决定。",
+  },
+  {
+    slug: "skillevaluator-skill-lift-static-dynamic-eval",
+    category: "engineering",
+    question:
+      "NVIDIA SkillEvaluator 为什么要先做 schema/secret/prompt-injection/license 静态扫描，再做 distinctiveness 和 live Skill Lift A/B？仅看 README 或人工体验会漏掉什么？",
+    relatedChapters: ["12", "15", "16", "17", "19"],
+    sourceTitles: ["Evaluating AI Agent Skill Performance with NVIDIA SkillEvaluator"],
+    sourceUrls: [
+      "https://developer.nvidia.com/blog/evaluating-ai-agent-skill-performance-with-nvidia-skillevaluator/",
+    ],
+    confidence: "high",
+    rationale:
+      "本题来自 NVIDIA SkillEvaluator：开源技能评测层把发布前安全扫描、重复度检测和 Codex/Claude Code live A/B 组合成技能质量门。",
+  },
+  {
+    slug: "reconstruction-blind-bibliography-research-agent-eval",
+    category: "engineering",
+    question:
+      "Reconstruction 为什么要用 temporal cutoff、匿名 reference ID 和冻结 bibliography 来评测研究 agent？reference-only multi-agent peer review 的提升说明了什么，仍然没解决什么？",
+    relatedChapters: ["10", "11", "15", "19", "capstone"],
+    sourceTitles: [
+      "Reconstruction: A Blind Benchmark for Recovering Research Ideas from Pre-Publication Bibliographies",
+    ],
+    sourceUrls: ["https://arxiv.org/abs/2608.16645"],
+    confidence: "medium",
+    rationale:
+      "本题来自 arXiv 2608.16645：研究 idea-recovery eval 需要隔离 prompt-time leakage，多 agent peer-review 能提升但仍远低于真实恢复要求。",
+  },
+  {
+    slug: "skilleffect-checked-lowering-agent-tool-runtime",
+    category: "engineering",
+    question:
+      "SkillEffect 的 checked lowering 为什么适合追问 agent tool runtime？模型生成的工具程序看起来语义正确时，为什么还要用 relation plugin、bounded IR、capacity leasing 和 postcondition？",
+    relatedChapters: ["05", "06", "15", "16", "17", "19"],
+    sourceTitles: ["SkillEffect: Checked Lowering for Memory-Bounded Agent Tools"],
+    sourceUrls: ["https://arxiv.org/abs/2608.17007"],
+    confidence: "medium",
+    rationale:
+      "本题来自 arXiv 2608.17007：降低自然语言/程序义务到真实工具执行时，需要独立 checker 和资源边界防止越界程序被执行。",
+  },
+  {
+    slug: "freetoken-edge-native-agentic-state-reuse",
+    category: "engineering",
+    question:
+      "FreeToken 为什么把本地 MoE serving 的关键问题从显存扩展到带宽、自适应 offload、runtime memory management 和 agentic state reuse？对边缘 agent 部署有什么启发？",
+    relatedChapters: ["12", "16", "18", "19"],
+    sourceTitles: ["FreeToken: Efficient Edge-Native MoE Serving with Bandwidth-Adaptive Execution"],
+    sourceUrls: ["https://arxiv.org/abs/2608.16157"],
+    confidence: "medium",
+    rationale:
+      "本题来自 arXiv 2608.16157：真实 coding/tool-using agents 的本地推理要同时处理模型 state、执行带宽、offload 和 agentic state reuse。",
+  },
+  {
+    slug: "claude-code-usage-modelpicker-prompt-cache-cost-governance",
+    category: "engineering",
+    question:
+      "Claude Code v2.1.243 把 Loops usage、modelPicker、prompt cache TTL、组织 modelPricing 和 managed auth 标记放到产品里，这说明 coding agent 的成本与模型治理要验收哪些边界？",
+    relatedChapters: ["11", "12", "14", "16", "17", "19", "capstone"],
+    sourceTitles: ["Claude Code v2.1.243 release notes"],
+    sourceUrls: ["https://github.com/anthropics/claude-code/releases/tag/v2.1.243"],
+    confidence: "high",
+    rationale:
+      "本题来自 Claude Code v2.1.243 release：成本、模型选择、缓存、组织认证和 subagent 运行信息都进入 coding agent 控制面。",
+  },
+  {
+    slug: "codex-alpha-release-asset-provenance-smoke-gate",
+    category: "engineering",
+    question:
+      "OpenAI Codex 进入高频 alpha release 时，为什么不能只按版本号自动升级？release tag、资产来源、本地 smoke、权限恢复和会话回归分别要兜什么风险？",
+    relatedChapters: ["12", "15", "16", "17", "18", "19", "capstone"],
+    sourceTitles: ["OpenAI Codex 0.150.0-alpha.8 release notes"],
+    sourceUrls: ["https://github.com/openai/codex/releases/tag/rust-v0.150.0-alpha.8"],
+    confidence: "medium",
+    rationale:
+      "本题来自 Codex 0.150.0-alpha.8 pre-release：公开 release 只给版本与资产信息，生产采用前必须补资产 provenance 和行为回归。",
+  },
+  {
+    slug: "gemini-cli-preview-retry-eval-subagent-regression",
+    category: "engineering",
+    question:
+      "Gemini CLI preview 引入 TUI timeout、eval failure summaries、silent retries、取消回滚和 subagent handoff 修复时，为什么预览版 agent CLI 要按交互、重试、评测和委托一起回归？",
+    relatedChapters: ["11", "12", "14", "15", "16", "19", "capstone"],
+    sourceTitles: ["Gemini CLI v0.57.0-preview.1 release notes"],
+    sourceUrls: ["https://github.com/google-gemini/gemini-cli/releases/tag/v0.57.0-preview.1"],
+    confidence: "high",
+    rationale:
+      "本题来自 Gemini CLI 0.57 preview 线：交互挂死、重试语义、取消回滚、eval 可见性和 subagent handoff 共同决定 CLI agent 可用性。",
+  },
+  {
+    slug: "ard-agent-resource-discovery-federation-governance",
+    category: "engineering",
+    question:
+      "Agentic Resource Discovery (ARD) 为什么不是另一个工具调用协议？当 agent、MCP server、skill 和 API 分布在多云/SaaS/企业内网时，catalog、approval、identity 和 revocation 要怎样治理？",
+    relatedChapters: ["05", "11", "12", "17", "18", "19", "capstone"],
+    sourceTitles: ["Agentic Resource Discovery (ARD): An open specification for agent discovery"],
+    sourceUrls: [
+      "https://aws.amazon.com/blogs/machine-learning/agentic-resource-discovery-ard-an-open-specification-for-agent-discovery/",
+    ],
+    confidence: "high",
+    rationale:
+      "本题来自 AWS ARD 官方博文：agent 资源发现需要联邦 catalog、审批、授权、跨环境 discovery 和本地控制，而不只是 invocation runtime。",
+  },
+  {
+    slug: "agent-lightning-skill-optimizes-agent-vs-prompt-tuning",
+    category: "engineering",
+    question:
+      "Agent Lightning Skill 为什么不是普通 prompt tuning？给定一个可编辑 agent 和 benchmark 后，prompts、tools、workflows、models、reasoning settings 应怎样被 measured iteration 优化？",
+    relatedChapters: ["10", "11", "15", "16", "19", "capstone"],
+    sourceTitles: ["Agent Lightning v1.0.1 release notes"],
+    sourceUrls: ["https://github.com/microsoft/agent-lightning/releases/tag/v1.0.1"],
+    confidence: "high",
+    rationale:
+      "本题来自 Microsoft Agent Lightning v1.0.1：skill 让 coding agents 在 benchmark 约束下系统改 agent，本质是可执行优化流程而非一次性 prompt 改写。",
+  },
+  {
+    slug: "mem0-strands-memorymanager-automatic-recall-scoping",
+    category: "engineering",
+    question:
+      "Mem0 Strands Integration 把记忆接进 Strands `MemoryManager` 后，为什么 automatic recall、server-side extraction、verbatim writes 和 user/agent/run/app scoping 必须一起验收？",
+    relatedChapters: ["07", "08", "09", "11", "15", "19", "capstone"],
+    sourceTitles: ["Mem0 Strands Integration v0.1.0 release notes"],
+    sourceUrls: ["https://github.com/mem0ai/mem0/releases/tag/mem0-strands-v0.1.0"],
+    confidence: "medium",
+    rationale:
+      "本题来自 Mem0 Strands v0.1.0：记忆从显式工具下沉到 runtime memory manager 后，自动注入、抽取、命名空间和 hosted/self-hosted 配置都影响可靠性。",
+  },
+  {
+    slug: "terminal-agent-process-evidence-vs-final-outcome",
+    category: "engineering",
+    question:
+      "Terminal Agents survey 为什么强调 terminal-mediated execution、七维 terminal competence profile 和 replayable traces？只看最终任务 outcome 会漏掉哪些 CLI agent 过程风险？",
+    relatedChapters: ["04", "05", "10", "12", "15", "16", "19", "capstone"],
+    sourceTitles: ["Terminal Agents: A Survey of AI Agents in Command-Line Environments"],
+    sourceUrls: ["https://arxiv.org/abs/2608.20485"],
+    confidence: "medium",
+    rationale:
+      "本题来自 arXiv 2608.20485：终端 agent 能力由模型、接口、harness、runtime 和环境共同塑造，评测要保留命令轨迹与恢复证据。",
+  },
+  {
+    slug: "weighted-memory-tree-active-retention-vs-store-more",
+    category: "engineering",
+    question:
+      "Weighted Memory Tree 为什么说 long-horizon agent memory 的关键不是存得更多，而是决定哪些记忆保持 active？retention score、folding、selection decay 和 poisoning 实验分别在验证什么？",
+    relatedChapters: ["07", "08", "09", "10", "15", "16", "19", "capstone"],
+    sourceTitles: ["Weighted Memory Tree: Remembering What Matters for Long-Horizon LLM Agents"],
+    sourceUrls: ["https://arxiv.org/abs/2608.20631"],
+    confidence: "medium",
+    rationale:
+      "本题来自 arXiv 2608.20631：WMT 通过层级记忆和动态 retention score 同时提升准确率、降低 token，并用 poisoning 实验检查记忆污染传播。",
+  },
   // C. 项目深挖类
   {
     slug: "project-why-multi-agent",
@@ -2642,6 +3008,14 @@ const LOCAL_ANSWER_SUMMARIES: Partial<Record<string, string>> = {
   "fraudbench-policy-grounded-banking-agents": "FraudBench 的价值在于把 agent 放进有共享账户状态、政策语料、工具授权和对话历史的真实风险形态。攻击者会先试探、诱导承认或利用失败尝试，让后续看似局部合法的请求变得不安全；所以评测要标注 prohibited actions、safe dispositions 和 intervention points。",
   "multi-agent-concurrency-control-shared-state": "多个 agent 并发读写共享状态时，LLM 的长推理窗口会放大 stale read、lost update 和不一致结果。靠提示让大家多沟通不够，runtime 应提供资源访问结构、冲突检测、隔离级别、合并策略和可审计锁/事务边界。",
   "behavioral-agent-tests-process-observation": "最终得分只能告诉你成败，不能解释 agent 为什么这么做。Behavioral tests 通过系统观察、扰动环境和解释 action sequence，能恢复决策策略、隔离行为差异，并发现多 agent emergent dynamics；这能补上传统 benchmark 对过程风险的盲区。",
+  "claude-code-usage-modelpicker-prompt-cache-cost-governance": "Coding agent 的成本治理要落到每次 loop、每个模型和每段缓存上。Loops usage、modelPicker、prompt cache TTL 与组织定价让团队能发现失控循环、约束可选模型、解释费用并审计 subagent 使用。",
+  "codex-alpha-release-asset-provenance-smoke-gate": "高频 alpha 版本只能说明新构建已发布，不能证明适合生产。应锁定 tag、校验资产来源，先跑本地 smoke，再回归权限恢复、会话续跑、sandbox 和成本可见性，避免把发布频率误当稳定性。",
+  "gemini-cli-preview-retry-eval-subagent-regression": "预览 CLI 的风险常在交互和控制流：TUI 挂死、silent retry、abort rollback、eval 摘要和 subagent handoff 都会改变用户看到的状态与真实执行轨迹。回归要覆盖这些过程证据。",
+  "ard-agent-resource-discovery-federation-governance": "ARD 解决的是调用前发现和信任，不替代 MCP/A2A/skill runtime。企业要治理资源目录、审批、授权、搜索、撤销和跨环境 federation，否则 agent 只能靠手工安装或硬编码工具，规模越大越不可控。",
+  "agent-lightning-skill-optimizes-agent-vs-prompt-tuning": "Agent Lightning 把 agent 本身当成可测系统优化：在固定 benchmark 下迭代 prompt、tools、workflow、model 和 reasoning settings，并同时看准确率、成本、延迟与可靠性。这比改一句 prompt 更接近工程闭环。",
+  "mem0-strands-memorymanager-automatic-recall-scoping": "记忆接入 MemoryManager 后会自动进入 prompt，命名空间和抽取边界就变成安全/质量合同。要验证谁的记忆被召回、server-side extraction 是否合规、verbatim write 是否可控，以及 hosted/self-hosted 配置不会串租户。",
+  "terminal-agent-process-evidence-vs-final-outcome": "终端 agent 的能力体现在命令如何选、反馈如何读、环境状态如何维护、失败如何恢复和副作用如何控制。只看最终 outcome 会漏掉侥幸成功、错误恢复差、运行条件不可复现和命令轨迹不可审计的问题。",
+  "weighted-memory-tree-active-retention-vs-store-more": "长周期记忆不是越多越好，低价值或污染记忆会拖垮推理。WMT 用层级结构、retention score、folding 和 decay 控制 active memory，并用 token 降幅、准确率变化和 poisoning 实验验证是否真的抗污染。",
 };
 
 function chapterAnswerLabel(chapter: string): string {

@@ -384,6 +384,24 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 179. FraudBench 为什么把银行 agent 放到共享账户状态、内部政策语料和自适应欺诈对话里评测？相比单轮 policy QA，它多测出了哪些授权、工具开放和历史依赖风险？（→ 05 / 09 / 15 / 17 / 18 / 19 / capstone）
 180. 为什么多 agent 系统的 stale reads、lost updates 和 inconsistent outcomes 不能只归因于 prompt 沟通不好，而要当成 shared-state concurrency control 问题处理？（→ 07 / 11 / 12 / 15 / 16 / 19 / capstone）
 181. 为什么 agentic system 的评测不能只看最终任务分数，而要观察、扰动并解释 action sequence？behavioral tests 能补上传统 benchmark 的哪些盲区？（→ 10 / 11 / 15 / 16 / 19 / capstone）
+182. Codex 0.149.0 增加 agents dashboard、queue 和 doctor，同时修复 fork/resume 后 permission profile 恢复，这说明 coding agent 的任务调度和权限恢复为什么要一起验收？（→ 11 / 12 / 14 / 16 / 17 / 18 / 19）
+183. Claude Code v2.1.238 的 plugin headersHelper、自托管 runner 延迟关闭、proxy authorization refresh 和 subagent tool result 释放为什么属于同一条生产治理链？（→ 11 / 12 / 14 / 16 / 17 / 18 / 19）
+184. Vercel AI SDK WorkflowAgent 恢复 transformed streams 时为什么要用 UI message chunk indexes？如果只恢复 server state，会漏掉哪些前端投影和回放错误？（→ 12 / 14 / 15 / 16 / 18 / 19）
+185. AgentCore 用自然语言 author Dogwood policies 时，为什么不能把生成 policy 当成普通提示词输出？time-based constraints、版本、测试和拒绝路径要怎样治理？（→ 05 / 15 / 17 / 18 / 19）
+186. 企业规模化 agentic AI 时，为什么避免 vendor lock-in 不是口号，而要落实到模型、工具协议、数据平面、观测和部署抽象？（→ 11 / 12 / 16 / 18 / 19）
+187. 云迁移场景为什么适合拆成 discovery、infrastructure assessment、migration planning 等专门 agent？这种 multi-agent workflow 的验收边界在哪里？（→ 11 / 12 / 15 / 16 / 18 / 19）
+188. Agentic RAG 为什么不一定要先迁到独立向量数据库？把 vector search 放在 Aurora、DynamoDB、OpenSearch、S3 等数据所在地时，要怎样权衡权限、延迟、召回和运维？（→ 08 / 09 / 15 / 18 / 19 / rag-hybrid / rag-prod）
+189. Adversarial Review 为什么说多 agent code review 的关键不是 agent 数量，而是 structured disagreement？false-consensus failure mode 要怎样被发现和压住？（→ 11 / 15 / 16 / 19）
+190. Looped language models 为什么可能提升 compositional tool calling？recurrent depth、adaptive inference 和外部 orchestrator 的边界应该怎样理解？（→ 05 / 10 / 12 / 15 / 19）
+191. ComponentBench 为什么要在 UI component 层诊断 computer-use agent？observation/action space 改变同一模型成功率时，说明了什么评测陷阱？（→ 14 / 15 / 17 / 19）
+192. Claude Code v2.1.243 把 Loops usage、modelPicker、prompt cache TTL、组织 modelPricing 和 managed auth 标记放到产品里，这说明 coding agent 的成本与模型治理要验收哪些边界？（→ 11 / 12 / 14 / 16 / 17 / 19 / capstone）
+193. OpenAI Codex 进入高频 alpha release 时，为什么不能只按版本号自动升级？release tag、资产来源、本地 smoke、权限恢复和会话回归分别要兜什么风险？（→ 12 / 15 / 16 / 17 / 18 / 19 / capstone）
+194. Gemini CLI preview 引入 TUI timeout、eval failure summaries、silent retries、取消回滚和 subagent handoff 修复时，为什么预览版 agent CLI 要按交互、重试、评测和委托一起回归？（→ 11 / 12 / 14 / 15 / 16 / 19 / capstone）
+195. Agentic Resource Discovery (ARD) 为什么不是另一个工具调用协议？当 agent、MCP server、skill 和 API 分布在多云/SaaS/企业内网时，catalog、approval、identity 和 revocation 要怎样治理？（→ 05 / 11 / 12 / 17 / 18 / 19 / capstone）
+196. Agent Lightning Skill 为什么不是普通 prompt tuning？给定一个可编辑 agent 和 benchmark 后，prompts、tools、workflows、models、reasoning settings 应怎样被 measured iteration 优化？（→ 10 / 11 / 15 / 16 / 19 / capstone）
+197. Mem0 Strands Integration 把记忆接进 Strands `MemoryManager` 后，为什么 automatic recall、server-side extraction、verbatim writes 和 user/agent/run/app scoping 必须一起验收？（→ 07 / 08 / 09 / 11 / 15 / 19 / capstone）
+198. Terminal Agents survey 为什么强调 terminal-mediated execution、七维 terminal competence profile 和 replayable traces？只看最终任务 outcome 会漏掉哪些 CLI agent 过程风险？（→ 04 / 05 / 10 / 12 / 15 / 16 / 19 / capstone）
+199. Weighted Memory Tree 为什么说 long-horizon agent memory 的关键不是存得更多，而是决定哪些记忆保持 active？retention score、folding、selection decay 和 poisoning 实验分别在验证什么？（→ 07 / 08 / 09 / 10 / 15 / 16 / 19 / capstone）
 ### C. 项目深挖类（考你是不是真做过）
 
 > 这一类没有标准题库，面试官会顺着你的简历项目往下钻。**提前给自己出这些题**：
