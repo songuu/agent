@@ -38,6 +38,8 @@ interface InterviewMetadata {
   contentMarkdown?: unknown;
   sourceCreatedAt?: unknown;
   sourceUpdatedAt?: unknown;
+  difficulty?: unknown;
+  difficultyLabel?: unknown;
 }
 
 interface InterviewAnswerVariant {
@@ -187,6 +189,10 @@ function render(root: HTMLElement, row: InterviewDetailRow): void {
     localFallback?.answerSource ||
     "面试题详情";
   const layer = asString(row.category_label) || localFallback?.categoryLabel || "未分类";
+  const difficultyLabel =
+    asString(metadata.difficultyLabel) ||
+    localFallback?.difficultyLabel ||
+    defaultDifficultyLabel(layer);
   const tags = [
     ...stringArray(row.related_chapters),
     ...stringArray(row.tags).slice(0, 6),
@@ -208,6 +214,7 @@ function render(root: HTMLElement, row: InterviewDetailRow): void {
 
   const meta = el("div", "news-detail-meta");
   meta.append(el("span", "news-detail-chip", layer));
+  if (difficultyLabel) meta.append(el("span", "news-detail-chip", difficultyLabel));
   const date = resolveInterviewDisplayDate(metadata, asString(row.collected_date));
   if (date) meta.append(el("span", "news-detail-chip", date));
   header.append(meta);
@@ -277,6 +284,13 @@ function buildInterviewParagraphs(input: {
   }
   if (paragraphs.length > 0) return paragraphs;
   return ["当前仅同步到题干，请结合原文和课程标准答案继续阅读。"];
+}
+
+function defaultDifficultyLabel(categoryLabel: string): string {
+  if (categoryLabel === "原理类") return "简单";
+  if (categoryLabel === "项目深挖类") return "复杂";
+  if (categoryLabel === "工程类") return "中等";
+  return "";
 }
 
 function similarityInputFromRow(

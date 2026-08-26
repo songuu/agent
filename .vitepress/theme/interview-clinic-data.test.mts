@@ -23,6 +23,8 @@ test("normalizeInterviewQuestionRow：映射远端行到前端题目结构", () 
       sourceTitles: ["AWS multi-tenancy"],
       sourceUrls: ["https://example.com/aws"],
       confidence: "high",
+      difficulty: "complex",
+      difficultyLabel: "复杂",
       rationale: "official runtime isolation practice",
       sourceUpdatedAt: "2026-07-20T06:55:47.000Z",
     },
@@ -34,7 +36,21 @@ test("normalizeInterviewQuestionRow：映射远端行到前端题目结构", () 
   assert.deepEqual(question.sourceTitles, ["AWS multi-tenancy"]);
   assert.deepEqual(question.sourceUrls, ["https://example.com/aws"]);
   assert.equal(question.confidence, "high");
+  assert.equal(question.difficulty, "complex");
+  assert.equal(question.difficultyLabel, "复杂");
   assert.equal(question.collectedDate, "2026-07-20");
+});
+
+test("normalizeInterviewQuestionRow：旧远端行缺少难度时使用稳定默认值", () => {
+  const question = normalizeInterviewQuestionRow({
+    slug: "legacy-engineering-question",
+    category: "engineering",
+    question: "legacy question",
+    metadata: {},
+  });
+
+  assert.equal(question.difficulty, "medium");
+  assert.equal(question.difficultyLabel, "中等");
 });
 
 test("loadInterviewClinicData：缺少 Content API 配置时回退本地 bundle", async () => {

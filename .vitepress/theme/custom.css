@@ -2727,6 +2727,9 @@ body::after {
 }
 
 .interview-clinic-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
   margin-bottom: 0.5rem;
 }
 

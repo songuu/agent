@@ -31,6 +31,8 @@ function toRows(): ContentRow[] {
       sourceFile: "knowledge-graph/data/interview-questions.ts",
       companionDoc: "docs/career-guide.md#四高频面试题清单",
       answerSource: q.answerSource,
+      difficulty: q.difficulty,
+      difficultyLabel: q.difficultyLabel,
       sourceTitles: q.sourceTitles,
       sourceUrls: q.sourceUrls,
       confidence: q.confidence ?? null,

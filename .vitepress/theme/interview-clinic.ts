@@ -1,14 +1,16 @@
 /**
- * 面试题库列表页：按分类 / 章节筛选后展示卡片列表，点击进入独立详情页。
+ * 面试题库列表页：按分类 / 章节 / 难度筛选后展示卡片列表，点击进入独立详情页。
  */
 import type { InterviewQuestion } from "../../knowledge-graph/data/interview-questions";
 import { loadInterviewClinicData } from "./interview-clinic-data";
 import {
   filterQuestions,
   categoryCounts,
+  difficultyCounts,
   availableChapters,
   type CategoryFilter,
   type ChapterFilter,
+  type DifficultyFilter,
 } from "./interview-clinic-filter";
 import { chapterDisplay, chapterGroup } from "./interview-clinic-chapters.ts";
 import {
@@ -28,6 +30,13 @@ const CATEGORY_TABS: Array<{ id: CategoryFilter; label: string }> = [
   { id: "principle", label: "原理类" },
   { id: "engineering", label: "工程类" },
   { id: "project", label: "项目深挖类" },
+];
+
+const DIFFICULTY_OPTIONS: Array<{ id: DifficultyFilter; label: string }> = [
+  { id: "all", label: "全部难度" },
+  { id: "simple", label: "简单" },
+  { id: "medium", label: "中等" },
+  { id: "complex", label: "复杂" },
 ];
 
 if (typeof window !== "undefined") {
@@ -66,10 +75,12 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
   root.replaceChildren();
 
   const counts = categoryCounts(questions);
+  const difficultyTotals = difficultyCounts(questions);
   const chapters = availableChapters(questions);
   const initialState = readInterviewListQueryState();
   let selectedCategory: CategoryFilter = initialState.category;
   let selectedChapter: ChapterFilter = initialState.chapter === "all" || chapters.includes(initialState.chapter) ? initialState.chapter : "all";
+  let selectedDifficulty: DifficultyFilter = initialState.difficulty;
 
   const tabs = document.createElement("nav");
   tabs.className = "interview-clinic-tabs";
@@ -110,6 +121,27 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
   chapterLabel.append(select);
   controls.append(chapterLabel);
 
+  const difficultyLabel = document.createElement("label");
+  difficultyLabel.className = "interview-clinic-chapter";
+  difficultyLabel.append(document.createTextNode("按难度："));
+  const difficultySelect = document.createElement("select");
+  difficultySelect.className = "interview-clinic-select";
+  for (const optionDefinition of DIFFICULTY_OPTIONS) {
+    const option = document.createElement("option");
+    option.value = optionDefinition.id;
+    option.textContent = `${optionDefinition.label} (${difficultyTotals[optionDefinition.id]})`;
+    difficultySelect.append(option);
+  }
+  difficultySelect.value = selectedDifficulty;
+  difficultySelect.addEventListener("change", () => {
+    selectedDifficulty = DIFFICULTY_OPTIONS.some((option) => option.id === difficultySelect.value)
+      ? (difficultySelect.value as DifficultyFilter)
+      : "all";
+    renderList();
+  });
+  difficultyLabel.append(difficultySelect);
+  controls.append(difficultyLabel);
+
   const summary = document.createElement("p");
   summary.className = "interview-clinic-summary";
 
@@ -136,9 +168,10 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
 
   function renderList(): void {
     replaceInterviewListState();
-    const filtered = filterQuestions(questions, selectedCategory, selectedChapter);
+    const filtered = filterQuestions(questions, selectedCategory, selectedChapter, selectedDifficulty);
     summary.textContent =
       `共 ${filtered.length} 题${selectedChapter === "all" ? "" : ` · 章节 ${chapterDisplay(selectedChapter)}`}` +
+      `${selectedDifficulty === "all" ? "" : ` · 难度 ${DIFFICULTY_OPTIONS.find((option) => option.id === selectedDifficulty)?.label ?? selectedDifficulty}`}` +
       ` · ${sourceNote}`;
     list.replaceChildren();
 
@@ -160,6 +193,7 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
     const params = new URLSearchParams(window.location.search);
     params.set("category", selectedCategory);
     params.set("chapter", selectedChapter);
+    params.set("difficulty", selectedDifficulty);
     replaceCurrentSearch(params);
   }
 }
@@ -167,12 +201,17 @@ function renderClinic(root: HTMLElement, questions: readonly InterviewQuestion[]
 function readInterviewListQueryState(search = typeof window === "undefined" ? "" : window.location.search): {
   category: CategoryFilter;
   chapter: ChapterFilter;
+  difficulty: DifficultyFilter;
 } {
   const params = new URLSearchParams(search);
   const rawCategory = params.get("category");
   const category = CATEGORY_TABS.some((tab) => tab.id === rawCategory) ? (rawCategory as CategoryFilter) : "all";
   const chapter = params.get("chapter")?.trim() || "all";
-  return { category, chapter };
+  const rawDifficulty = params.get("difficulty");
+  const difficulty = DIFFICULTY_OPTIONS.some((option) => option.id === rawDifficulty)
+    ? (rawDifficulty as DifficultyFilter)
+    : "all";
+  return { category, chapter, difficulty };
 }
 function buildInterviewCard(question: InterviewQuestion, returnPath: string): HTMLElement {
   const article = document.createElement("article");
@@ -228,6 +267,7 @@ function buildInterviewCard(question: InterviewQuestion, returnPath: string): HT
   const tags = document.createElement("div");
   tags.className = "interview-clinic-card-tags";
   tags.append(chip(question.categoryLabel, "interview-clinic-badge"));
+  tags.append(chip(question.difficultyLabel, "interview-clinic-badge"));
   for (const tag of buildTagList(question)) {
     tags.append(chip(tag, "interview-clinic-chapter-tag"));
   }

@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { INTERVIEW_QUESTIONS } from "../knowledge-graph/data/interview-questions.ts";
 
@@ -9,6 +9,9 @@ const outputPath = join(
   "seed",
   "interview_questions.sql",
 );
+const companionDocPath = join(import.meta.dirname, "..", "docs", "career-guide.md");
+const DOC_LIST_START = "<!-- interview-question-list:start -->";
+const DOC_LIST_END = "<!-- interview-question-list:end -->";
 
 function sqlString(value: string): string {
   return `'${value.replace(/'/g, "''")}'`;
@@ -28,6 +31,8 @@ const rows = INTERVIEW_QUESTIONS.map((question) => {
     sourceFile: "knowledge-graph/data/interview-questions.ts",
     companionDoc: "docs/career-guide.md#四高频面试题清单",
     answerSource: question.answerSource,
+    difficulty: question.difficulty,
+    difficultyLabel: question.difficultyLabel,
     sourceTitles: question.sourceTitles,
     sourceUrls: question.sourceUrls,
     confidence: question.confidence ?? null,
@@ -86,6 +91,69 @@ on conflict (slug) do update set
   updated_at = now();
 `;
 
+function renderCompanionQuestionList(): string {
+  const sections = [
+    { difficulty: "simple", title: "A. 简单题" },
+    { difficulty: "medium", title: "B. 中等题" },
+    { difficulty: "complex", title: "C. 复杂题" },
+  ] as const;
+
+  const renderedSections = sections.map(({ difficulty, title }) => {
+    const questions = INTERVIEW_QUESTIONS.filter(
+      (question) => question.difficulty === difficulty,
+    );
+    const rows = questions.map(
+      (question, index) =>
+        `${index + 1}. **[${question.categoryLabel}]** ${question.question}（→ ${question.relatedChapters.join(" / ")}）`,
+    );
+    return `### ${title}（${questions.length} 题）\n\n${rows.join("\n")}`;
+  });
+
+  return `${DOC_LIST_START}
+
+> 下列清单由 \`knowledge-graph/data/interview-questions.ts\` 自动生成，共 ${INTERVIEW_QUESTIONS.length} 题；难度与独立刷题页使用同一份数据。
+
+${renderedSections.join("\n\n")}
+
+${DOC_LIST_END}`;
+}
+
+function syncCompanionDoc(): void {
+  const current = readFileSync(companionDocPath, "utf8");
+  const newline = current.includes("\r\n") ? "\r\n" : "\n";
+  const rendered = renderCompanionQuestionList().replace(/\n/g, newline);
+  const markerStart = current.indexOf(DOC_LIST_START);
+  const markerEnd = current.indexOf(DOC_LIST_END);
+
+  let next: string;
+  if (markerStart >= 0 && markerEnd > markerStart) {
+    next =
+      current.slice(0, markerStart) +
+      rendered +
+      current.slice(markerEnd + DOC_LIST_END.length);
+  } else {
+    const legacyStart = current.indexOf("### A. 原理类");
+    const nextSection = current
+      .slice(legacyStart)
+      .search(/\r?\n---\r?\n\r?\n## 五、/);
+    if (legacyStart < 0 || nextSection < 0) {
+      throw new Error(
+        `Cannot locate interview question list in ${companionDocPath}`,
+      );
+    }
+    next =
+      current.slice(0, legacyStart) +
+      rendered +
+      current.slice(legacyStart + nextSection);
+  }
+
+  if (next !== current) {
+    writeFileSync(companionDocPath, next, "utf8");
+  }
+}
+
 mkdirSync(dirname(outputPath), { recursive: true });
 writeFileSync(outputPath, sql, "utf8");
+syncCompanionDoc();
 console.log(`Wrote ${INTERVIEW_QUESTIONS.length} interview questions to ${outputPath}`);
+console.log(`Synced ${INTERVIEW_QUESTIONS.length} interview questions to ${companionDocPath}`);

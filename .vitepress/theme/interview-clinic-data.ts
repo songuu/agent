@@ -2,6 +2,7 @@ import {
   INTERVIEW_QUESTIONS,
   type InterviewQuestion,
   type InterviewQuestionCategory,
+  type InterviewQuestionDifficulty,
 } from "../../knowledge-graph/data/interview-questions";
 import { fetchAllPostgrestRows } from "./content-pagination";
 
@@ -29,6 +30,8 @@ interface InterviewQuestionMetadata {
   faqList?: unknown;
   sourceCreatedAt?: unknown;
   sourceUpdatedAt?: unknown;
+  difficulty?: unknown;
+  difficultyLabel?: unknown;
 }
 
 export interface InterviewClinicDataResult {
@@ -56,6 +59,12 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   principle: "原理类",
   engineering: "工程类",
   project: "项目深挖类",
+};
+
+const DIFFICULTY_LABELS: Record<InterviewQuestionDifficulty, string> = {
+  simple: "简单",
+  medium: "中等",
+  complex: "复杂",
 };
 
 const LOCAL_QUESTION_BY_SLUG = new Map(INTERVIEW_QUESTIONS.map((question) => [question.slug, question]));
@@ -103,6 +112,10 @@ export function normalizeInterviewQuestionRow(row: InterviewQuestionRow): Interv
   const metadata = metadataValue(row.metadata);
   const slug = stringValue(row.slug, "");
   const localFallback = LOCAL_QUESTION_BY_SLUG.get(slug);
+  const difficulty =
+    difficultyValue(metadata.difficulty) ??
+    localFallback?.difficulty ??
+    defaultDifficultyForCategory(category);
   const remoteRationale = optionalStringValue(metadata.rationale);
   const remoteSummaryExcerpt = excerptValue(metadata.plainTextDescription);
   const rationale = remoteRationale ?? localFallback?.rationale;
@@ -119,6 +132,11 @@ export function normalizeInterviewQuestionRow(row: InterviewQuestionRow): Interv
     slug,
     category,
     categoryLabel: stringValue(row.category_label, CATEGORY_LABELS[category]),
+    difficulty,
+    difficultyLabel: stringValue(
+      metadata.difficultyLabel,
+      localFallback?.difficultyLabel ?? DIFFICULTY_LABELS[difficulty],
+    ),
     question: stringValue(row.question, ""),
     relatedChapters: stringArrayValue(row.related_chapters),
     answerSource: stringValue(row.answer_source, ""),
@@ -222,4 +240,15 @@ function categoryValue(value: unknown): InterviewQuestionCategory {
 function confidenceValue(value: unknown): InterviewQuestion["confidence"] | undefined {
   if (value === "high" || value === "medium" || value === "low") return value;
   return undefined;
+}
+
+function difficultyValue(value: unknown): InterviewQuestionDifficulty | undefined {
+  if (value === "simple" || value === "medium" || value === "complex") return value;
+  return undefined;
+}
+
+function defaultDifficultyForCategory(category: InterviewQuestionCategory): InterviewQuestionDifficulty {
+  if (category === "principle") return "simple";
+  if (category === "project") return "complex";
+  return "medium";
 }
