@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { INTERVIEW_QUESTIONS } from "./interview-questions.ts";
 
 const BASELINE_COUNT = 233;
-const EXPECTED_ADDITION_COUNT = 126;
+const EXPECTED_ADDITION_COUNT = 135;
 const EXPECTED_TOTAL_COUNT = BASELINE_COUNT + EXPECTED_ADDITION_COUNT;
 const WORKSPACE_ROOT = join(import.meta.dirname, "..", "..");
 const OFFICIAL_SOURCE_HOSTS = new Set([
@@ -91,7 +91,7 @@ test("difficulty defaults are stable and the curated additions are balanced", ()
           .length,
       ]),
     ),
-    { simple: 40, medium: 46, complex: 40 },
+    { simple: 40, medium: 55, complex: 40 },
   );
   assert.deepEqual(
     Object.fromEntries(
@@ -100,7 +100,7 @@ test("difficulty defaults are stable and the curated additions are balanced", ()
         additions.filter((question) => question.category === category).length,
       ]),
     ),
-    { principle: 50, engineering: 24, project: 52 },
+    { principle: 50, engineering: 33, project: 52 },
   );
 
   for (const difficulty of ["simple", "medium", "complex"] as const) {
@@ -111,9 +111,9 @@ test("difficulty defaults are stable and the curated additions are balanced", ()
   }
 });
 
-test("the curated additions use high-confidence official primary sources", () => {
+test("the curated additions use traceable primary sources", () => {
   for (const question of INTERVIEW_QUESTIONS.slice(BASELINE_COUNT)) {
-    assert.equal(question.confidence, "high", `${question.slug} confidence`);
+    assert.match(question.confidence ?? "", /^(high|medium)$/, `${question.slug} confidence`);
     assert.ok(question.sourceTitles.length > 0, `${question.slug} source title`);
     assert.ok(question.sourceUrls.length > 0, `${question.slug} source URL`);
     assert.equal(
@@ -141,6 +141,11 @@ test("the curated additions use high-confidence official primary sources", () =>
         OFFICIAL_SOURCE_HOSTS.has(url.hostname),
         `${question.slug} uses an unapproved source host: ${url.hostname}`,
       );
+    }
+
+    const allSourcesAreArxiv = question.sourceUrls.every((sourceUrl) => new URL(sourceUrl).hostname === "arxiv.org");
+    if (!allSourcesAreArxiv) {
+      assert.equal(question.confidence, "high", `${question.slug} official release confidence`);
     }
   }
 

@@ -184,7 +184,7 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 
 <!-- interview-question-list:start -->
 
-> 下列清单由 `knowledge-graph/data/interview-questions.ts` 自动生成，共 359 题；难度与独立刷题页使用同一份数据。
+> 下列清单由 `knowledge-graph/data/interview-questions.ts` 自动生成，共 368 题；难度与独立刷题页使用同一份数据。
 
 ### A. 简单题（49 题）
 
@@ -238,7 +238,7 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 48. **[项目深挖类]** CrewAI 中 Agent、Crew 与 Flow 的基本分工是什么？（→ 11 / 12）
 49. **[项目深挖类]** Semantic Kernel 的 Agent abstraction 想统一哪些能力？（→ 05 / 12）
 
-### B. 中等题（262 题）
+### B. 中等题（271 题）
 
 1. **[工程类]** 怎么让 LLM 稳定输出 JSON？校验失败了怎么办（retry-repair 怎么实现）？工具调用 / JSON mode / 提示约束三者区别？（→ 13）
 2. **[工程类]** 如何防 prompt injection？用户能通过输入篡改 system 指令吗？关键操作（删数据、发邮件）你怎么加护栏？（→ 17）
@@ -502,6 +502,15 @@ README 是你项目的"门面 + 落地页"。最低限度包含这几块，**顺
 260. **[工程类]** 为什么 typed Agent runtime 要特别测试零参数 tool call 和 tool retry budget？（→ 05 / 13 / 15 / 16）
 261. **[项目深挖类]** Agent workflow 为什么要同时验证 stream part end、active reasoning part 和 batch webhook 回调合同？（→ 14 / 15 / 16 / 18）
 262. **[项目深挖类]** MCP portal 为什么要让 client 协议版本和 upstream server 协议版本独立协商？（→ 05 / 12 / 17 / 18）
+263. **[工程类]** Claude Code 增加 SendFeedback、组织 tips override、Auto mode 权限提示和 cost-optimize 时，为什么这说明 coding agent 控制面已经覆盖反馈、权限 UX、组织治理和成本优化？（→ 05 / 11 / 16 / 17 / 19 / capstone）
+264. **[工程类]** Codex 0.150.0 支持跨任务 @ mentions、终端内读写 task、自动标题、permission 快捷键和 Interrupt hooks 时，为什么不能只把它当普通 CLI 更新？（→ 11 / 12 / 15 / 16 / 17 / 18 / 19）
+265. **[工程类]** Google ADK v2.8.0 同时加入 RemoteA2aAgent native task mode、ADK_MAX_LLM_CALLS、Model Armor 和 data_agent toolset 时，运行时回归要覆盖哪些边界？（→ 05 / 11 / 12 / 15 / 16 / 17 / 19）
+266. **[工程类]** Pydantic AI v2.35.0 把 capability_loaded 迁移到 capability_active、降低 Temporal metrics 导出频率并保留空 Tool description，这些为什么都属于 typed agent 合同？（→ 05 / 12 / 13 / 15 / 16 / 19）
+267. **[工程类]** Vercel AI SDK 新增 Z.AI/GLM provider 后，为什么 agent workflow 要同时回归 streaming、reasoning、tools、多模态输入、schema 和 fallback 策略？（→ 12 / 13 / 14 / 15 / 16 / 19）
+268. **[工程类]** Recuris 这类长期 agent harness 为什么要区分 Working Memory 和 Experiential Memory？如果只保留完整历史或只做摘要，会漏掉哪些 skill selection 与失败定位信号？（→ 07 / 10 / 11 / 15 / 19 / capstone）
+269. **[工程类]** BrowserForge 为什么要用 parallel browser sandboxes 扩展 web agent episode？这对轨迹质量、站点覆盖、会话隔离和 computer-use 评估有什么影响？（→ 05 / 14 / 15 / 17 / 19 / capstone）
+270. **[工程类]** StarHarness 演化 prompt、tool interface、skills、MCP providers、subagent structure 和 loop config 时，为什么必须区分 proposer-visible、selection 和 held-out 任务？（→ 10 / 11 / 15 / 16 / 19 / capstone）
+271. **[工程类]** StepGuard 为什么把 agent guardrail 做到 tool action 执行前的 step-level？只在完整轨迹结束后审计，会漏掉哪些高权限工具风险？（→ 05 / 15 / 16 / 17 / 19 / capstone）
 
 ### C. 复杂题（48 题）
 

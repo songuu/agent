@@ -42,7 +42,7 @@ const CATEGORY_LABELS: Record<InterviewQuestionCategory, string> = {
   project: "项目深挖类",
 };
 
-const COLLECTED_DATE = "2026-08-26";
+const COLLECTED_DATE = "2026-08-27";
 const COLLECTED_AT = `${COLLECTED_DATE}T08:45:00+08:00`;
 
 interface RawInterviewQuestion {
@@ -3801,6 +3801,141 @@ const MEDIUM_AGENT_QUESTIONS: RawInterviewQuestion[] = [
     summaryExcerpt: "企业迁移不会一次完成：新 client 仍要访问旧 server，旧 client 也可能经 portal 访问新 upstream。独立协商和 fallback 能把协议升级拆成可控步骤，同时保留网关层鉴权、审计和策略判断。",
     sourceKeys: ["cloudflareMcpPortal20260728", "mcpArchitecture", "mcpAuthorization"],
   }),
+  {
+    slug: "claude-code-feedback-cost-optimize-governance",
+    category: "engineering",
+    difficulty: "medium",
+    question:
+      "Claude Code 增加 SendFeedback、组织 tips override、Auto mode 权限提示和 cost-optimize 时，为什么这说明 coding agent 控制面已经覆盖反馈、权限 UX、组织治理和成本优化？",
+    relatedChapters: ["05", "11", "16", "17", "19", "capstone"],
+    summaryExcerpt:
+      "这些能力把 agent 的失败反馈、组织级提示、权限确认和成本调优都放进可配置产品层。生产验收应同时看谁能发反馈、提示是否受管、权限切换是否可审计，以及 cost-optimize 是否基于可测成本证据逐项改动。",
+    sourceTitles: ["Claude Code v2.1.247 release notes"],
+    sourceUrls: ["https://github.com/anthropics/claude-code/releases/tag/v2.1.247"],
+    confidence: "high",
+    rationale:
+      "本题来自 Claude Code 2026-08-26 release：同一版本把反馈报告、组织提示、权限模式切换和 API 成本优化放在一起，适合考 coding agent 产品控制面。",
+  },
+  {
+    slug: "codex-task-mentions-interrupt-hooks-control-plane",
+    category: "engineering",
+    difficulty: "medium",
+    question:
+      "Codex 0.150.0 支持跨任务 @ mentions、终端内读写 task、自动标题、permission 快捷键和 Interrupt hooks 时，为什么不能只把它当普通 CLI 更新？",
+    relatedChapters: ["11", "12", "15", "16", "17", "18", "19"],
+    summaryExcerpt:
+      "这些变更让 CLI 具备跨任务协作、任务生命周期管理和运行中断钩子，副作用面超过单次补丁生成。回归要覆盖 task 身份、消息权限、hook 审计、permission mode 恢复和多任务串扰。",
+    sourceTitles: ["OpenAI Codex 0.150.0 stable and 0.151.0 alpha release line"],
+    sourceUrls: ["https://github.com/openai/codex/releases/tag/rust-v0.150.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 Codex 2026-08-26 release：coding agent CLI 开始跨任务协作并暴露 hook/permission 控制面，适合追问会话边界、审计和副作用治理。",
+  },
+  {
+    slug: "google-adk-remote-a2a-model-armor-call-budget",
+    category: "engineering",
+    difficulty: "medium",
+    question:
+      "Google ADK v2.8.0 同时加入 RemoteA2aAgent native task mode、ADK_MAX_LLM_CALLS、Model Armor 和 data_agent toolset 时，运行时回归要覆盖哪些边界？",
+    relatedChapters: ["05", "11", "12", "15", "16", "17", "19"],
+    summaryExcerpt:
+      "要分别验证远程 A2A task 语义、最大 LLM 调用预算、Model Armor 拒绝路径和 data_agent 工具的创建/更新/删除权限。一次文本调用成功不能证明跨 agent、预算和数据工具生命周期仍安全。",
+    sourceTitles: ["Google ADK Python v2.8.0 release notes"],
+    sourceUrls: ["https://github.com/google/adk-python/releases/tag/v2.8.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 Google ADK 2026-08-26 feed：远程 A2A、调用上限、模型防护和数据 agent 工具生命周期同时变化，适合考 agent runtime 合同升级。",
+  },
+  {
+    slug: "pydantic-ai-capability-active-telemetry-tool-description",
+    category: "engineering",
+    difficulty: "medium",
+    question:
+      "Pydantic AI v2.35.0 把 capability_loaded 迁移到 capability_active、降低 Temporal metrics 导出频率并保留空 Tool description，这些为什么都属于 typed agent 合同？",
+    relatedChapters: ["05", "12", "13", "15", "16", "19"],
+    summaryExcerpt:
+      "能力状态决定调度和工具可见性，metrics 频率决定观测成本和噪音，空工具描述决定模型看到的真实 schema 语义。它们都会改变 typed agent 的运行与可观测合同。",
+    sourceTitles: ["Pydantic AI v2.35.0 release notes"],
+    sourceUrls: ["https://github.com/pydantic/pydantic-ai/releases/tag/v2.35.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 Pydantic AI v2.35.0：能力状态命名、遥测频率和工具描述空值都会影响调度、观测和模型可见工具语义，不是普通依赖小修。",
+  },
+  {
+    slug: "ai-sdk-zai-provider-agent-workflow-regression",
+    category: "engineering",
+    difficulty: "medium",
+    question:
+      "Vercel AI SDK 新增 Z.AI/GLM provider 后，为什么 agent workflow 要同时回归 streaming、reasoning、tools、多模态输入、schema 和 fallback 策略？",
+    relatedChapters: ["12", "13", "14", "15", "16", "19"],
+    summaryExcerpt:
+      "Provider adapter 会决定模型能力如何映射成工具调用、流式事件、结构化输出和多模态输入。新增 provider 必须和 workflow 的 trace、schema 校验、fallback 归因和前端投影一起测。",
+    sourceTitles: ["Vercel AI SDK Z.AI provider release notes"],
+    sourceUrls: ["https://github.com/vercel/ai/releases/tag/%40ai-sdk%2Fzai%402.0.0"],
+    confidence: "high",
+    rationale:
+      "本题来自 Vercel AI SDK 2026-08-26 release：provider adapter 一旦承载工具、流式、多模态和 reasoning，就会改变完整 agent workflow 的行为合同。",
+  },
+  {
+    slug: "long-horizon-working-memory-skill-selection",
+    category: "engineering",
+    difficulty: "medium",
+    question:
+      "Recuris 这类长期 agent harness 为什么要区分 Working Memory 和 Experiential Memory？如果只保留完整历史或只做摘要，会漏掉哪些 skill selection 与失败定位信号？",
+    relatedChapters: ["07", "10", "11", "15", "19", "capstone"],
+    summaryExcerpt:
+      "Working Memory 保留当前任务状态和下一步需求，Experiential Memory 保存可复用经验、失败定位和技能线索。只留完整历史会噪声过大，只做摘要又容易丢掉能指导 skill selection 的结构化证据。",
+    sourceTitles: ["Recursive Experiential-Working Memory Evolution for Long-Horizon Agent Harnesses"],
+    sourceUrls: ["https://arxiv.org/abs/2608.24876"],
+    confidence: "medium",
+    rationale:
+      "本题来自 2026-08-25 arXiv Recuris：论文把当前任务状态和经验记忆拆开，用结构化执行证据指导技能调用，适合考长期记忆架构。",
+  },
+  {
+    slug: "browserforge-parallel-browser-sandbox-episode-quality",
+    category: "engineering",
+    difficulty: "medium",
+    question:
+      "BrowserForge 为什么要用 parallel browser sandboxes 扩展 web agent episode？这对轨迹质量、站点覆盖、会话隔离和 computer-use 评估有什么影响？",
+    relatedChapters: ["05", "14", "15", "17", "19", "capstone"],
+    summaryExcerpt:
+      "并行沙箱能扩大交互轨迹规模，同时把 cookie、下载、页面状态和失败副作用隔离在独立 episode 中。评估时要看轨迹是否可复现、站点是否多样、动作是否被授权，而不是只看最终网页状态。",
+    sourceTitles: ["BrowserForge: Scaling Web Episode via Parallel Browser Sandboxes"],
+    sourceUrls: ["https://arxiv.org/abs/2608.24848"],
+    confidence: "medium",
+    rationale:
+      "本题来自 2026-08-25 arXiv BrowserForge：web agent 训练和评测的数据瓶颈转向可并行、可隔离、可复现的浏览器 episode 生产。",
+  },
+  {
+    slug: "starharness-evolved-harness-hidden-evaluation",
+    category: "engineering",
+    difficulty: "medium",
+    question:
+      "StarHarness 演化 prompt、tool interface、skills、MCP providers、subagent structure 和 loop config 时，为什么必须区分 proposer-visible、selection 和 held-out 任务？",
+    relatedChapters: ["10", "11", "15", "16", "19", "capstone"],
+    summaryExcerpt:
+      "Harness 搜索会同时改提示、工具、技能和拓扑，容易对可见任务过拟合。用 proposer-visible 生成候选、selection 做选择、held-out 做最终验证，才能证明改进不是记住公开失败样本。",
+    sourceTitles: ["StarHarness: Evolving Harnesses with Stratified Search for Enterprise Environments"],
+    sourceUrls: ["https://arxiv.org/abs/2608.24804"],
+    confidence: "medium",
+    rationale:
+      "本题来自 2026-08-25 arXiv StarHarness：agent 优化对象扩展到整个 harness 后，隐藏评估和按失败类型分层能防止只对公开任务过拟合。",
+  },
+  {
+    slug: "stepguard-preexecution-tool-action-guardrails",
+    category: "engineering",
+    difficulty: "medium",
+    question:
+      "StepGuard 为什么把 agent guardrail 做到 tool action 执行前的 step-level？只在完整轨迹结束后审计，会漏掉哪些高权限工具风险？",
+    relatedChapters: ["05", "15", "16", "17", "19", "capstone"],
+    summaryExcerpt:
+      "高权限工具一旦执行，后验审计只能发现事故，不能阻止外发、删除或越权写入。Step-level guardrail 要在动作前检查意图、参数、资源和安全效用取舍，再把结果纳入轨迹复盘。",
+    sourceTitles: ["StepGuard: Learning Step-Level Guardrails with Scalable Supervision and Safety-Utility Balancing"],
+    sourceUrls: ["https://arxiv.org/abs/2608.24777"],
+    confidence: "medium",
+    rationale:
+      "本题来自 2026-08-25 arXiv StepGuard：论文强调工具动作执行前检查和完成轨迹审计要结合，适合考 agent 安全从 final outcome 前移到动作级门禁。",
+  },
 ];
 
 const COMPLEX_AGENT_QUESTIONS: RawInterviewQuestion[] = [
