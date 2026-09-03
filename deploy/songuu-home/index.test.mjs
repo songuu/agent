@@ -14,7 +14,7 @@ function extractEntryPaths(entries) {
   return [...entries.matchAll(/href:\s*"(?<path>[^"\n]+)"/g)].map((match) => match.groups.path);
 }
 
-test("gateway exposes every destination, including Essay, exactly once", () => {
+test("gateway exposes every destination, including Better Agent, exactly once", () => {
   const entries = extractEntriesBlock(html);
   const expectedPaths = [
     "/pipeline/",
@@ -22,12 +22,15 @@ test("gateway exposes every destination, including Essay, exactly once", () => {
     "/aicrew/",
     "/tech-persistence/",
     "/essay/",
+    "/rag-system",
+    "/better-agent/",
   ];
 
   assert.deepEqual(extractEntryPaths(entries), expectedPaths);
   assert.match(entries, /node:\s*"01"/);
-  assert.match(entries, /node:\s*"05"/);
+  assert.match(entries, /node:\s*"07"/);
   assert.match(entries, /title:\s*"折页"/);
+  assert.match(entries, /title:\s*"Better Agent"/);
 });
 
 test("no-script navigation mirrors every destination", () => {
